@@ -1,10 +1,10 @@
-import { distribuirCargaPrevista } from "./distribuicao-horas.js";
+import { distribuirCargaComAbonos } from "./distribuicao-horas.js";
 import { intervaloMin } from "./datas-horas.js";
 
 /** Feriado dispensado abona apenas o trabalho originalmente previsto.
  * Crédito é separado de horas trabalhadas, presença e limites de trabalho. */
 export function apurarSemana(colaborador, dias, config = {}) {
-  const cargaPrevista = distribuirCargaPrevista(colaborador, dias, config);
+  const cargaPrevista = distribuirCargaComAbonos(colaborador, dias, config);
   const alvo = Number(colaborador.horasSemana);
   const horasPadrao =
     config.tipoEscala === "12x36"

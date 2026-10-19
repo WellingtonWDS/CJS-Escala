@@ -1,4 +1,5 @@
-import { distribuirCargaPrevista } from "./distribuicao-horas.js";
+import { createPlanejadorFolgas } from "./folgas-semana.js";
+import { distribuirCargaComAbonos } from "./distribuicao-horas.js";
 import { calcularPausaEfetiva, analisarCobertura } from "./cobertura.js";
 import {
   diasNoMes,
@@ -96,6 +97,12 @@ export function createGerador(state, jornada, feriados, validacao) {
     feriadosMap,
   ) {
     const dias = [];
+    const planejarFolgas = createPlanejadorFolgas(
+      state,
+      escolherFolgasSemana,
+      feriadosMap,
+      idx,
+    );
     // Contexto anterior mantém as folgas consistentes ao gerar meses adjacentes.
     let cursor = addDays(dataInicio, -14);
 
@@ -103,6 +110,9 @@ export function createGerador(state, jornada, feriados, validacao) {
       const date = new Date(cursor.getTime());
       const weekday = date.getDay();
       let status = "F";
+      const key = isoDate(date.getFullYear(), date.getMonth(), date.getDate());
+      const feriado = feriadosMap[key] || null;
+      let plano;
 
       if (state.tipoEscala === "12x36") {
         const grupo = idx % 2;
@@ -117,15 +127,17 @@ export function createGerador(state, jornada, feriados, validacao) {
         if (!operacional) {
           status = "F";
         } else {
-          const folgas = escolherFolgasSemana(date, idx);
-          status = folgas.includes(weekday) ? "F" : "T";
+          plano = planejarFolgas(date);
+          status = plano.opcionais.includes(weekday) ? "F" : "T";
         }
       }
 
-      const key = isoDate(date.getFullYear(), date.getMonth(), date.getDate());
-      const feriado = feriadosMap[key] || null;
       let repousoSeguranca = false;
-      if (state.tipoEscala !== "12x36" && status === "T") {
+      if (
+        state.tipoEscala !== "12x36" &&
+        status === "T" &&
+        !(feriado && !feriado.trabalhado)
+      ) {
         let seguidos = 0;
         for (
           let i = dias.length - 1;
@@ -138,7 +150,10 @@ export function createGerador(state, jornada, feriados, validacao) {
           repousoSeguranca = true;
         }
       }
-      const previsto = status === "T";
+      const previsto =
+        feriado && !feriado.trabalhado && plano
+          ? !plano.base.includes(weekday)
+          : status === "T";
       if (feriado) {
         if (feriado.trabalhado && status === "T") status = "FE";
         else if (!feriado.trabalhado) status = "F";
@@ -152,6 +167,12 @@ export function createGerador(state, jornada, feriados, validacao) {
         horas: 0,
         feriado,
         previsto,
+        previstoOriginal:
+          state.tipoEscala === "12x36"
+            ? previsto
+            : state.diasTrabalho.includes(weekday) &&
+              !plano.base.includes(weekday) &&
+              !repousoSeguranca,
         repousoSeguranca,
         turno: obterTurno(date, idx),
       });
@@ -187,7 +208,7 @@ export function createGerador(state, jornada, feriados, validacao) {
     });
     porSemana.forEach((semana) => {
       // Feriado dispensado preserva sua parcela da carga semanal.
-      const cargaPrevista = distribuirCargaPrevista(colab, semana, state);
+      const cargaPrevista = distribuirCargaComAbonos(colab, semana, state);
       semana.forEach((d) => {
         const trabalho = d.status === "T" || d.status === "FE";
         d.horasPrevistas = d.previsto

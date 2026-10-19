@@ -203,6 +203,27 @@ export function createValidacao(state, jornada, feriados) {
       const folgas = semana.filter(
         (x) => x.status === "F" || x.status === "FC",
       );
+      if (semana.length === 7 && ["5x2", "6x1"].includes(state.tipoEscala)) {
+        const alvoFolgas = state.tipoEscala === "5x2" ? 2 : 1;
+        const obrigatorias = semana.filter(
+          (d) =>
+            !state.diasTrabalho.includes(d.weekday) ||
+            (d.feriado && !d.feriado.trabalhado),
+        );
+        if (
+          obrigatorias.length > alvoFolgas &&
+          semana.some((d) => d.feriado && !d.feriado.trabalhado)
+        ) {
+          out.push(
+            issue(
+              "FOLGAS_OBRIGATORIAS",
+              "info",
+              `${semana[0].data}: dias não operacionais e feriados não trabalhados totalizam ${obrigatorias.length} dias sem expediente, acima das ${alvoFolgas} folga(s) da escala ${state.tipoEscala}. Esses dias foram preservados; revise os dias operacionais ou marque o feriado como trabalhado se a empresa funcionar nessa data.`,
+              semana[0].data,
+            ),
+          );
+        }
+      }
       if (semana.length >= 7 && folgas.length < regime.folgas) {
         out.push(
           issue(

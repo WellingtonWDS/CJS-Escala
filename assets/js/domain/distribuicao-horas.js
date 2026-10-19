@@ -51,3 +51,37 @@ export function distribuirCargaPrevista(colaborador, dias, config) {
   }
   return new Map(previstos.map((d, i) => [d.data, alocadas[i] / 60]));
 }
+
+/** Preserva o abono da jornada original antes de liberar outra folga para
+ * trabalho. Só o saldo contratual é distribuído entre os dias efetivos. */
+export function distribuirCargaComAbonos(colaborador, dias, config) {
+  if (
+    !dias.some((d) => typeof d.previstoOriginal === "boolean") ||
+    config.tipoEscala === "12x36"
+  ) {
+    return distribuirCargaPrevista(colaborador, dias, config);
+  }
+  const original = distribuirCargaPrevista(
+    colaborador,
+    dias.map((d) => ({
+      ...d,
+      previsto: d.previstoOriginal ?? d.previsto,
+    })),
+    config,
+  );
+  const dispensado = (d) => d.previsto && d.feriado && !d.feriado.trabalhado;
+  const abonadas = dias
+    .filter(dispensado)
+    .reduce((s, d) => s + (original.get(d.data) ?? 0), 0);
+  const carga = distribuirCargaPrevista(
+    {
+      ...colaborador,
+      horasSemana: Math.max(0, Number(colaborador.horasSemana) - abonadas),
+    },
+    dias.map((d) => ({ ...d, previsto: d.previsto && !dispensado(d) })),
+    config,
+  );
+  for (const d of dias.filter(dispensado))
+    carga.set(d.data, original.get(d.data) ?? 0);
+  return carga;
+}

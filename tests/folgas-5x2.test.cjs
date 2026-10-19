@@ -104,7 +104,7 @@ test("5x2 é estável entre períodos sobrepostos, inclusive na virada do ano", 
     conferir(curto);
   }
 });
-test("feriado dispensado soma dia sem expediente sem virar terceira folga planejada", () => {
+test("feriado dispensado ocupa uma das duas folgas e mantém seu abono", () => {
   const e = exemplo();
   const inicio = new Date(2026, 8, 7),
     fim = new Date(2026, 8, 13);
@@ -113,7 +113,7 @@ test("feriado dispensado soma dia sem expediente sem virar terceira folga planej
   const dias = e.gerar(inicio, fim, 0, {
     [trabalho.data]: { nome: "Feriado de teste", trabalhado: false },
   });
-  conferir(dias);
-  assert.equal(dias.filter((d) => d.status === "F").length, 3);
+  assert.equal(dias.filter((d) => d.status === "T").length, 5);
+  assert.equal(dias.filter((d) => d.status === "F").length, 2);
   assert.ok(dias.find((d) => d.data === trabalho.data).horasPrevistas > 0);
 });

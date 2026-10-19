@@ -34,19 +34,19 @@ module.exports = async function testarFolgas({ browser, baseURL }) {
       for (const r of state.escalaGerada.resultado) {
         let seguidos = 0;
         for (const d of r.dias) {
-          seguidos = d.previsto ? seguidos + 1 : 0;
+          seguidos = ["T", "FE"].includes(d.status) ? seguidos + 1 : 0;
           assert.ok(seguidos <= 6);
           assert.equal(d.repousoSeguranca, false);
         }
         for (let i = 0; i < r.dias.length; i += 7) {
           const semana = r.dias.slice(i, i + 7);
           assert.equal(
-            semana.filter((d) => d.previsto).length,
+            semana.filter((d) => ["T", "FE"].includes(d.status)).length,
             5,
             semana[0].data,
           );
           assert.equal(
-            semana.filter((d) => !d.previsto).length,
+            semana.filter((d) => d.status === "F").length,
             2,
             semana[0].data,
           );

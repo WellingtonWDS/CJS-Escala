@@ -8,7 +8,7 @@ export function createFeriadosUI({ state, storage, env, invalidarEscala }) {
 
   function renderFeriadoContexto() {
     document.getElementById("feriado-contexto").textContent =
-      `O dia informado é relativo a ${MESES[state.mes]}/${state.ano}. Carnaval e Corpus Christi não são adicionados automaticamente como feriados nacionais.`;
+      `O dia informado é relativo a ${MESES[state.mes]}/${state.ano}. No 5×2 e 6×1, feriados não trabalhados contam entre as folgas da semana; só são escolhidas as folgas restantes. Se dias fechados e feriados já ultrapassarem o total, todos são preservados e o relatório informa o motivo. Marque “Trabalhar neste feriado” se a empresa funcionar nessa data (o colaborador ainda pode estar de folga). Carnaval e Corpus Christi não são adicionados automaticamente como feriados nacionais.`;
   }
 
   function renderFeriados() {
@@ -24,13 +24,13 @@ export function createFeriadosUI({ state, storage, env, invalidarEscala }) {
     wrap.innerHTML = state.feriados
       .map(
         (f, idx) => `
-    <div class="flex justify-between items-center gap-2.5 px-3 py-2.5 border border-slate-200 rounded-lg mb-2 bg-slate-50">
+    <div class="flex flex-wrap justify-between items-center gap-2.5 px-3 py-2.5 border border-slate-200 rounded-lg mb-2 bg-slate-50">
       <div><b class="block text-sm font-semibold">${escapeHtml(f.nome)}</b><span class="text-slate-500 text-xs">${nomeSemana(f.dia)}, dia ${String(f.dia).padStart(2, "0")} de ${MESES[state.mes]} · ${f.tipo === "nacional" ? "Nacional" : f.tipo === "religioso" ? "Religioso" : "Local/municipal"}</span></div>
       <div class="flex items-center gap-2 shrink-0">
-        <select data-idx="${idx}" class="px-2.5 py-1.5 border border-slate-300 rounded-md text-xs bg-white">
-          <option value="0" ${!f.trabalhado ? "selected" : ""}>Não trabalhado</option>
-          <option value="1" ${f.trabalhado ? "selected" : ""}>Trabalhado</option>
-        </select>
+        <label class="flex items-center gap-2 text-xs font-semibold text-fintria-navy cursor-pointer">
+          <input type="checkbox" data-feriado-trabalhado="${idx}" ${f.trabalhado ? "checked" : ""} class="w-4 h-4 rounded border-slate-300 accent-blue-800">
+          Trabalhar neste feriado
+        </label>
         <button data-remove-feriado="${idx}" title="Remover feriado" class="text-fintria-vermelho bg-transparent text-base px-2 py-1.5 rounded hover:bg-red-50">✕</button>
       </div>
     </div>
@@ -38,10 +38,10 @@ export function createFeriadosUI({ state, storage, env, invalidarEscala }) {
       )
       .join("");
 
-    wrap.querySelectorAll("select").forEach((sel) => {
+    wrap.querySelectorAll("[data-feriado-trabalhado]").forEach((sel) => {
       sel.onchange = (e) => {
-        state.feriados[Number(e.target.dataset.idx)].trabalhado =
-          e.target.value === "1";
+        state.feriados[Number(e.target.dataset.feriadoTrabalhado)].trabalhado =
+          e.target.checked;
         invalidarEscala();
         saveState();
       };
