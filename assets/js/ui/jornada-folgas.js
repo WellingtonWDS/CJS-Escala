@@ -83,6 +83,7 @@ export function createJornadaFolgasUI({
 
   function renderJornadaSection() {
     const oculta = ["12x36"].includes(state.tipoEscala);
+    document.getElementById("ciclo-12x36-config").hidden = !oculta;
     document.getElementById("dias-trabalho-wrap").style.display = oculta
       ? "none"
       : "block";
