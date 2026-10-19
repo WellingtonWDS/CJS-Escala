@@ -94,7 +94,7 @@
     <!-- 2. TIPO DE ESCALA -->
     <section id="sec-tipo" class="scroll-mt-4 bg-white border border-slate-200 rounded-xl p-5 md:p-7 mb-5">
       <h2 class="font-display text-fintria-navy text-lg font-semibold mb-1">Tipo de escala</h2>
-      <p class="text-slate-500 text-sm mb-4">Escolha o regime base. Você poderá simular a transição da PEC 221/2019 depois de gerar a escala.</p>
+      <p class="text-slate-500 text-sm mb-4">Escolha o regime base. Compare as etapas da redução de jornada aprovada pelo Senado em 14/10/2026. Os prazos contam da publicação da emenda no DOU.</p>
       <div class="flex gap-2 flex-wrap mb-4" id="tabs-tipo"></div>
       <div id="tipo-desc" class="rounded-lg px-3.5 py-2.5 text-sm bg-fintria-azulBg text-fintria-azul mb-4"></div>
 
@@ -103,9 +103,9 @@
           <div>
             <label class="block text-xs font-semibold text-fintria-navySoft mb-1.5">Referência legal usada na validação</label>
             <select id="regime-jornada" class="w-full px-2.5 py-2 border border-slate-300 rounded-md text-sm bg-white">
-              <option value="atual44">Regra vigente — até 44h/semana</option>
-              <option value="transicao42">Simulação PEC 221/2019 — 1ª fase: 42h/semana</option>
-              <option value="definitivo40">Simulação PEC 221/2019 — 2ª fase: 40h/semana</option>
+              <option value="atual44">Antes da 1ª fase — até 44h/semana</option>
+              <option value="transicao42">1ª fase — 42h/semana · 2 meses após publicação</option>
+              <option value="definitivo40">2ª fase — 40h/semana · 14 meses após publicação</option>
             </select>
           </div>
           <div>
@@ -215,10 +215,14 @@
     <section id="sec-pec" class="scroll-mt-4 bg-white border border-slate-200 rounded-xl p-5 md:p-7 mb-5">
       <h2 class="font-display text-fintria-navy text-lg font-semibold mb-1">Transição e enquadramento da jornada</h2>
       <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 mb-5">
-        <div class="flex gap-2 items-start mb-2 text-sm"><span>ℹ️</span><div><b>PEC 221/2019:</b> em 22/09/2026, a proposta ainda está em tramitação no Senado. O texto aprovado pela Câmara prevê redução progressiva para 42h e depois 40h, com dois dias de repouso semanal remunerado. Portanto, as fases abaixo são <b>simulações</b>, não regras atualmente vigentes.</div></div>
+        <div class="flex gap-2 items-start mb-2 text-sm"><span>ℹ️</span><div><b>Redução da jornada — texto aprovado:</b> em 14/10/2026, o Senado aprovou a proposta em dois turnos, por 75 votos a 1 em cada turno, após aprovação da Câmara em maio. A emenda é promulgada pelas Mesas da Câmara e do Senado, sem sanção presidencial. <b>O marco dos prazos é a publicação no Diário Oficial da União, após a promulgação.</b></div></div>
+        <p class="text-sm mb-2">O texto altera os incisos XIII e XV do art. 7º da Constituição: até 8h diárias e 40h semanais como regra geral, admitidas compensação de horários e redução da jornada por acordo ou convenção coletiva; dois dias de repouso semanal remunerado, um preferencialmente aos domingos.</p>
+        <p class="text-sm mb-2">A mudança alcança contratos em vigor, sem redução salarial de qualquer espécie, inclusive dos pisos salariais. A escala 6×1 deixa de ser o modelo geral a partir da exigência do segundo repouso, ressalvada compensação excepcional dos dias de repouso por acordo ou convenção coletiva, nos limites do texto.</p>
+        <p class="text-sm mb-2"><b>Após 2 meses da publicação:</b> 42h semanais e segundo repouso remunerado. <b>Após 14 meses da publicação:</b> 40h semanais. Os demais dispositivos entram em vigor na data da publicação.</p>
+        <p class="text-xs text-slate-500">As datas de calendário das fases dependem da data de publicação no DOU. Selecione a etapa aplicável à competência; a ferramenta não altera o regime automaticamente.</p>
         <div class="flex items-center gap-2.5 mt-3.5 overflow-x-auto pb-1">
-          <div class="text-center shrink-0"><div class="w-14 h-14 rounded-full flex flex-col items-center justify-center text-white text-[11px] font-bold mx-auto" style="background:#0B2545">44h<br>Atual</div><div class="text-[11.5px] text-slate-500 mt-1.5 max-w-[90px]">Regra vigente</div></div>
-          <div class="text-[11px] text-slate-500 text-center shrink-0 min-w-[60px]">simulação →</div>
+          <div class="text-center shrink-0"><div class="w-14 h-14 rounded-full flex flex-col items-center justify-center text-white text-[11px] font-bold mx-auto" style="background:#0B2545">44h<br>Base</div><div class="text-[11.5px] text-slate-500 mt-1.5 max-w-[90px]">Antes da 1ª fase</div></div>
+          <div class="text-[11px] text-slate-500 text-center shrink-0 min-w-[60px]">+ 2 meses<br>da publicação →</div>
           <div class="text-center shrink-0"><div class="w-14 h-14 rounded-full flex flex-col items-center justify-center text-white text-[11px] font-bold mx-auto" style="background:#B9791C">42h<br>Fase 1</div><div class="text-[11.5px] text-slate-500 mt-1.5 max-w-[90px]">2 repousos semanais</div></div>
           <div class="text-[11px] text-slate-500 text-center shrink-0 min-w-[60px]">+ 12 meses<br>após 1ª fase →</div>
           <div class="text-center shrink-0"><div class="w-14 h-14 rounded-full flex flex-col items-center justify-center text-white text-[11px] font-bold mx-auto" style="background:#1F7A54">40h<br>Fase 2</div><div class="text-[11.5px] text-slate-500 mt-1.5 max-w-[90px]">2 repousos semanais</div></div>
@@ -226,7 +230,7 @@
       </div>
       <h2 class="font-display text-fintria-navy text-base font-semibold mb-1">Comparar as três referências</h2>
       <p class="text-slate-500 text-sm mb-3">O comparativo usa a jornada configurada e mostra uma distribuição matemática das horas. Ele não substitui a validação do instrumento coletivo, atividade econômica ou regime especial.</p>
-      <button id="btn-simular-pec" class="bg-white border border-slate-300 text-fintria-navy px-3.5 py-2 rounded-md font-semibold text-sm hover:border-fintria-navy no-print">Simular transição</button>
+      <button id="btn-simular-pec" class="bg-white border border-slate-300 text-fintria-navy px-3.5 py-2 rounded-md font-semibold text-sm hover:border-fintria-navy no-print">Comparar etapas</button>
       <div id="pec-resultado" class="mt-4"></div>
     </section>
 
@@ -248,19 +252,19 @@ const DIAS_SEMANA = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
 
 const REGIMES = {
   atual44: {
-    nome: 'Regra vigente — até 44h/semana',
+    nome: 'Antes da 1ª fase — até 44h/semana',
     horas: 44,
     folgas: 1,
     futuro: false
   },
   transicao42: {
-    nome: 'Simulação PEC 221/2019 — 42h/semana',
+    nome: '1ª fase — 42h/semana · 2 meses após publicação',
     horas: 42,
     folgas: 2,
     futuro: true
   },
   definitivo40: {
-    nome: 'Simulação PEC 221/2019 — 40h/semana',
+    nome: '2ª fase — 40h/semana · 14 meses após publicação',
     horas: 40,
     folgas: 2,
     futuro: true
@@ -268,7 +272,7 @@ const REGIMES = {
 };
 
 const TIPO_INFO = {
-  '6x1': 'Seis dias de trabalho e uma folga por ciclo semanal. Na regra vigente, a referência geral é até 44h/semana. Nas fases simuladas da PEC, duas folgas semanais passam a ser uma exigência do texto proposto, portanto 6×1 fica incompatível com o regime futuro salvo hipótese jurídica específica.',
+  '6x1': 'Seis dias de trabalho e uma folga por ciclo semanal. Antes da primeira fase, a referência geral é até 44h/semana. Dois meses após a publicação da emenda, passa a ser exigido o segundo repouso semanal remunerado. A escala 6×1 deixa de ser o modelo geral, ressalvada compensação excepcional por acordo ou convenção coletiva, nos limites do texto aprovado.',
   '5x2': 'Cinco dias de trabalho e dois dias de repouso. Se a empresa funcionar em 6 dias, configure os 6 dias operacionais e deixe a escala distribuir uma folga entre eles; o dia em que a empresa não funciona permanece como repouso.',
   '12x36': 'Doze horas consecutivas de trabalho por 36 horas de descanso. É um regime especial previsto no art. 59-A da CLT, com requisitos próprios; não deve ser tratado como uma simples variação de 5×2 ou 6×1.',
   'custom': 'Escala personalizada/cíclica. Não é uma categoria legal autônoma: a ferramenta verifica limites gerais e sinaliza os pontos que dependem de instrumento coletivo, compensação ou regime especial.'
@@ -277,8 +281,8 @@ const TIPO_INFO = {
 const TIPOS = [['6x1','6×1'],['5x2','5×2'],['12x36','12×36'],['custom','Personalizada']];
 
 const defaultState = {
-  mes: 8,
-  ano: 2026,
+  mes: new Date().getMonth(),
+  ano: new Date().getFullYear(),
   diaInicio: 1,
   colaboradores: [
     {id:1, nome:'Carla Martin', sexo:'feminino', cargo:'Analista DP', horasSemana:44},
@@ -602,12 +606,12 @@ function renderRegimeAlerta(){
   let msg = '';
 
   if(r.futuro){
-    msg = `Modo de simulação: ${r.horas}h/semana e ${r.folgas} dias de repouso semanal são parâmetros do texto da PEC 221/2019, não uma regra vigente em 22/09/2026.`;
+    msg = `Etapa selecionada: ${r.horas}h/semana e ${r.folgas} dias de repouso remunerado, aplicáveis ${r.horas===42?'2':'14'} meses após a publicação da emenda no DOU. A aprovação no Senado em 14/10/2026 não é o marco de contagem dos prazos.`;
     if(state.tipoEscala==='6x1'){
-      msg += ' A combinação 6×1 + regime futuro gera incompatibilidade objetiva com a previsão de dois dias de repouso semanal, salvo regime diferenciado que exija análise jurídica específica.';
+      msg += ' A escala 6×1 deixa de ser o modelo geral nesta etapa, pela exigência de dois repousos semanais; eventual compensação excepcional depende de acordo ou convenção coletiva, nos limites do texto aprovado.';
     }
   }else{
-    msg = 'Modo vigente: referência geral de até 44h semanais, sem presumir que toda escala 5×2 seja automaticamente válida. Compensações e regimes especiais devem ter a base jurídica adequada.';
+    msg = 'Etapa anterior à primeira fase: referência de até 44h semanais, até completar dois meses da publicação da emenda no DOU, sem presumir que toda escala 5×2 seja automaticamente válida. Compensações e regimes especiais devem ter a base jurídica adequada.';
   }
 
   if(state.instrumentoCompensacao==='nenhuma'){
@@ -1755,9 +1759,9 @@ function renderSimuladorPec(){
   const atualHoras=state.tipoEscala==='12x36'?42:44;
 
   const fases=[
-    {label:'Regra vigente',tag:'44h',horasSemana:44,diasSemana:state.tipoEscala==='5x2'?5:Math.min(6,atualDias),head:'#0B2545',obs:'Referência geral atual'},
-    {label:'1ª fase simulada',tag:'42h',horasSemana:42,diasSemana:5,head:'#B9791C',obs:'Texto da PEC'},
-    {label:'2ª fase simulada',tag:'40h',horasSemana:40,diasSemana:5,head:'#1F7A54',obs:'Texto da PEC'}
+    {label:'Antes da 1ª fase',tag:'44h',horasSemana:44,diasSemana:state.tipoEscala==='5x2'?5:Math.min(6,atualDias),head:'#0B2545',obs:'Até completar 2 meses da publicação no DOU'},
+    {label:'1ª fase da transição',tag:'42h',horasSemana:42,diasSemana:5,head:'#B9791C',obs:'2 meses após a publicação no DOU'},
+    {label:'2ª fase da transição',tag:'40h',horasSemana:40,diasSemana:5,head:'#1F7A54',obs:'14 meses após a publicação no DOU'}
   ];
 
   const cards=fases.map(f=>{
@@ -1781,15 +1785,15 @@ function renderSimuladorPec(){
     ['Dias de trabalho','5/6*','5','5'],
     ['Repousos semanais','1**','2','2'],
     ['Redução em relação a 44h','—','02:00','04:00'],
-    ['Salário','Sem alteração pela simulação','Sem redução prevista no texto','Sem redução prevista no texto'],
+    ['Salário e pisos','Proteção a partir da publicação','Sem redução salarial','Sem redução salarial'],
     ['Divisor de HE','Não presumir','Não presumir','Não presumir']
   ];
 
   const table=`<div class="overflow-x-auto"><table class="w-full border-collapse text-sm mt-4 min-w-[680px]">
-    <thead><tr>${['Métrica','Vigente','1ª fase','2ª fase'].map(x=>`<th class="px-2.5 py-2 border-b border-slate-200 text-left text-slate-500 text-xs">${x}</th>`).join('')}</tr></thead>
+    <thead><tr>${['Métrica','Antes da 1ª fase','1ª fase · +2 meses','2ª fase · +14 meses'].map(x=>`<th class="px-2.5 py-2 border-b border-slate-200 text-left text-slate-500 text-xs">${x}</th>`).join('')}</tr></thead>
     <tbody>${rows.map(r=>`<tr>${r.map(c=>`<td class="px-2.5 py-2 border-b border-slate-200">${c}</td>`).join('')}</tr>`).join('')}</tbody>
   </table></div>
-  <p class="text-xs text-slate-500 mt-2">* A escala efetiva depende do padrão configurado. ** Na regra vigente, o DSR é analisado pelas normas atuais; não confundir com a previsão futura de dois repousos semanais da PEC.</p>`;
+  <p class="text-xs text-slate-500 mt-2">* A escala efetiva depende do padrão configurado. ** O segundo repouso remunerado começa dois meses após a publicação no DOU, junto com a fase de 42h. A regra geral de 8h diárias admite compensação conforme o instrumento aplicável.</p>`;
 
   document.getElementById('pec-resultado').innerHTML=`<div class="grid grid-cols-1 md:grid-cols-3 gap-3.5">${cards}</div>${table}`;
 }
@@ -1825,7 +1829,15 @@ function init(){
   if(state.tipoEscala==='marshall') state.tipoEscala='custom';
   if(!Array.isArray(state.feriados)) state.feriados=[];
   state.feriados.forEach(f=>{if(f.tipo==='municipal'||f.tipo==='local'){f.mes ??= state.mes;f.ano ??= state.ano;}});
-  if(!state.feriados.length) inicializarFeriadosDoMes();
+  const hoje=new Date();
+  const mudouPeriodo=state.mes!==hoje.getMonth() || state.ano!==hoje.getFullYear();
+  if(mudouPeriodo){
+    state.mes=hoje.getMonth();
+    state.ano=hoje.getFullYear();
+    state.diaInicio=1;
+    invalidarEscala();
+    inicializarFeriadosDoMes();
+  }else if(!state.feriados.length) inicializarFeriadosDoMes();
   // Descartar resultados antigos sem horários efetivos calculados.
   if(state.escalaGerada?.resultado?.some(r=>r.dias.some(d=>!Number.isFinite(d.entradaMin)))) invalidarEscala();
 
@@ -1838,7 +1850,7 @@ function init(){
   renderResumo();
   renderRegimeControls();
   if(state.escalaGerada) renderEscalaGerada();
-  if(!carregou) saveState();
+  if(!carregou || mudouPeriodo) saveState();
 }
 
 init();

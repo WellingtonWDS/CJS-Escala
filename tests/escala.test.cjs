@@ -5,10 +5,11 @@ const vm=require('node:vm');
 const path=require('node:path');
 const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
 const script=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)].at(-1)[1];
-function app(){
+function app(now){
   const elements=new Map(),storage=new Map();
   const document={getElementById(id){if(!elements.has(id)) elements.set(id,{value:'',innerHTML:'',textContent:'',style:{},classList:{toggle(){}},querySelectorAll(){return []}});return elements.get(id)}};
-  const ctx=vm.createContext({document,console,localStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v)},alert(){},confirm(){return true},prompt(){return null}});
+  const Clock=now ? class extends Date {constructor(...args){super(...(args.length?args:[now]));}static now(){return new Date(now).getTime();}} : Date;
+  const ctx=vm.createContext({Date:Clock,document,console,localStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v)},alert(){},confirm(){return true},prompt(){return null}});
   vm.runInContext(script,ctx);
   return source=>vm.runInContext(source,ctx);
 }
@@ -56,4 +57,19 @@ test('cancelar a edição das horas preserva status e totais',()=>{
 });
 test('geração renderiza grade e validações usando os horários efetivos',()=>{
  const run=app();assert.equal(run(`gerarEscala();document.getElementById('resultado-gerar').innerHTML.includes('Escala mensal') && state.escalaGerada.resultado.every(r=>r.dias.every(d=>Number.isFinite(d.saidaMin)))`),true);
+});
+
+test('inicia no mês atual, inclusive outubro e virada de ano',()=>{
+ for(const [now,mes,ano] of [['2026-10-19T12:00:00',9,2026],['2027-01-03T12:00:00',0,2027]]){
+  const run=app(now);
+  assert.equal(run(`state.mes===${mes} && state.ano===${ano}`),true);
+ }
+});
+test('restauração abre no mês atual preservando equipe, horários e feriados antigos',()=>{
+ const run=app('2026-10-19T12:00:00');
+ assert.equal(run(`state.mes=8;state.ano=2026;state.diaInicio=30;state.colaboradores[0].nome='Pessoa salva';state.jornada.entrada='07:30';state.feriados=[{dia:15,nome:'Feriado setembro',tipo:'municipal'}];gerarEscala();saveState();init();state.mes===9 && state.ano===2026 && state.diaInicio===1 && state.escalaGerada===null && state.colaboradores[0].nome==='Pessoa salva' && document.getElementById('j-entrada').value==='07:30' && !state.feriados.some(f=>f.nome==='Feriado setembro') && state.feriadosLocais.some(f=>f.nome==='Feriado setembro'&&f.mes===8)`),true);
+});
+test('comparativo informa prazos relativos à publicação no DOU',()=>{
+ const run=app();assert.equal(run(`renderSimuladorPec();const texto=document.getElementById('pec-resultado').innerHTML;texto.includes('2 meses após a publicação no DOU') && texto.includes('14 meses após a publicação no DOU') && texto.includes('Sem redução salarial') && !texto.includes('fase simulada')`),true);
+ assert.ok(!html.includes('a proposta ainda está em tramitação no Senado'));
 });
