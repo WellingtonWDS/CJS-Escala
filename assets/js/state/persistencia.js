@@ -14,6 +14,11 @@ export function createPersistence({ state, initialState, storage }) {
       const raw = storage.getItem(STORAGE_KEY);
       if (!raw) return false;
       const parsed = JSON.parse(raw);
+      const acordoRemovido = parsed?.instrumentoCompensacao === "individual";
+      if (acordoRemovido) {
+        parsed.instrumentoCompensacao = "nenhuma";
+        parsed.escalaGerada = null;
+      }
       // As demandas anteriores já eram utilizadas, portanto continuam ativas.
       if (
         parsed &&
@@ -26,6 +31,7 @@ export function createPersistence({ state, initialState, storage }) {
         deepMerge(JSON.parse(JSON.stringify(initialState)), parsed),
       );
       atualizarNomesExemplo(state);
+      if (acordoRemovido) saveState();
       return true;
     } catch (e) {
       console.warn("Não foi possível ler o localStorage:", e);

@@ -208,6 +208,9 @@ export function createValidacao(state, jornada, feriados) {
         const obrigatorias = semana.filter(
           (d) =>
             !state.diasTrabalho.includes(d.weekday) ||
+            (state.tipoEscala === "5x2" &&
+              state.folgasFimSemana &&
+              [0, 6].includes(d.weekday)) ||
             (d.feriado && !d.feriado.trabalhado),
         );
         if (
@@ -218,7 +221,7 @@ export function createValidacao(state, jornada, feriados) {
             issue(
               "FOLGAS_OBRIGATORIAS",
               "info",
-              `${semana[0].data}: dias não operacionais e feriados não trabalhados totalizam ${obrigatorias.length} dias sem expediente, acima das ${alvoFolgas} folga(s) da escala ${state.tipoEscala}. Esses dias foram preservados; revise os dias operacionais ou marque o feriado como trabalhado se a empresa funcionar nessa data.`,
+              `${semana[0].data}: dias não operacionais, folgas fixas e feriados não trabalhados totalizam ${obrigatorias.length} dias sem expediente, acima das ${alvoFolgas} folga(s) da escala ${state.tipoEscala}. Esses dias foram preservados; revise os dias operacionais ou marque o feriado como trabalhado se a empresa funcionar nessa data.`,
               semana[0].data,
             ),
           );
@@ -337,7 +340,6 @@ export function createValidacao(state, jornada, feriados) {
         const excesso = total - referenciaLegal;
         const sev =
           state.instrumentoCompensacao === "act_cct" ||
-          state.instrumentoCompensacao === "individual" ||
           state.instrumentoCompensacao === "banco"
             ? "alerta"
             : "erro";

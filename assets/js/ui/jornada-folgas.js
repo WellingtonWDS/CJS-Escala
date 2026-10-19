@@ -116,6 +116,7 @@ export function createJornadaFolgasUI({
     if (state.horarioPorDia) renderJornadaPorDia();
     refreshDiasTrabalho();
     renderResumoTurnos();
+    renderFolgasSection();
     atualizarCargaSemanalMsg();
   }
 
@@ -155,10 +156,25 @@ export function createJornadaFolgasUI({
 
   function renderFolgasSection() {
     const tipo = document.getElementById("folga-tipo");
-    tipo.value = state.folgaTipo;
+    const fimSemana = state.tipoEscala === "5x2" && state.folgasFimSemana;
+    document.getElementById("folga-fim-semana-opcao").disabled =
+      state.tipoEscala !== "5x2";
+    tipo.value = fimSemana ? "fim_semana" : state.folgaTipo;
+    document.getElementById("folga-dias-wrap").hidden = fimSemana;
+    document.getElementById("folga-dias-label").textContent =
+      state.folgaTipo === "fixa"
+        ? "Dias para folgas fixas adicionais"
+        : "Dias permitidos para rotação";
+    document.getElementById("folga-modelo-explicacao").textContent = fimSemana
+      ? "Todos os colaboradores folgam aos sábados e domingos, em todas as semanas. Os dias operacionais da empresa permanecem como cadastrados. Um feriado não trabalhado durante a semana não desloca essas folgas fixas e pode resultar em um dia adicional sem expediente."
+      : state.folgaTipo === "fixa"
+        ? "Dias não operacionais já contam como folga. As folgas adicionais são escolhidas sempre nos primeiros dias permitidos selecionados, até completar a quantidade da escala. Para garantir sábado e domingo, use o modelo pronto do 5×2."
+        : "Dias não operacionais e feriados não trabalhados já contam como folga. As folgas restantes alternam entre os dias selecionados. O modelo de sábado e domingo está disponível na escala 5×2.";
     tipo.onchange = (e) => {
-      state.folgaTipo = e.target.value;
+      state.folgasFimSemana = e.target.value === "fim_semana";
+      if (!state.folgasFimSemana) state.folgaTipo = e.target.value;
       invalidarEscala();
+      renderFolgasSection();
       saveState();
     };
 

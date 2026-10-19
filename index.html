@@ -80,7 +80,6 @@
             <label class="block text-xs font-semibold text-fintria-navySoft mb-1.5">Base para compensação de jornada (se aplicável)</label>
             <select id="instrumento-compensacao" class="w-full px-2.5 py-2 border border-slate-300 rounded-md text-sm bg-white">
               <option value="nenhuma">Nenhuma compensação informada</option>
-              <option value="individual">Acordo individual de compensação — hipótese a validar</option>
               <option value="act_cct">ACT/CCT</option>
               <option value="banco">Banco de horas — hipótese a validar</option>
             </select>
@@ -148,16 +147,16 @@
     <!-- 5. FOLGAS -->
     <section id="sec-folgas" class="scroll-mt-4 bg-white border border-slate-200 rounded-xl p-5 md:p-7 mb-5">
       <h2 class="font-display text-fintria-navy text-lg font-semibold mb-1">Definição de folgas</h2>
-      <p class="text-slate-500 text-sm mb-4">Define como as folgas adicionais serão distribuídas. A ferramenta não presume que todo domingo trabalhado seja permitido: ela sinaliza regras que dependem da atividade, da legislação específica e de ACT/CCT.</p>
+      <p class="text-slate-500 text-sm mb-4">Escolha um modelo pronto ou personalize a distribuição das folgas. A ferramenta não presume que todo domingo trabalhado seja permitido: ela sinaliza regras que dependem da atividade, da legislação específica e de ACT/CCT.</p>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5">
         <div>
-          <label class="block text-xs font-semibold text-fintria-navySoft mb-1.5">Tipo de folga</label>
+          <label for="folga-tipo" class="block text-xs font-semibold text-fintria-navySoft mb-1.5">Modelo de folgas</label>
           <select id="folga-tipo" class="w-full px-2.5 py-2 border border-slate-300 rounded-md text-sm bg-white">
-            <option value="rotativa">Rotativa</option><option value="fixa">Fixa</option>
+            <option value="rotativa">Rotativas — personalizar dias</option><option value="fixa">Fixas — personalizar dias</option><option id="folga-fim-semana-opcao" value="fim_semana">Sábado e domingo — 5×2</option>
           </select>
         </div>
-        <div>
-          <label class="block text-xs font-semibold text-fintria-navySoft mb-1.5">Dias permitidos para rotação</label>
+        <div id="folga-dias-wrap">
+          <label id="folga-dias-label" class="block text-xs font-semibold text-fintria-navySoft mb-1.5">Dias permitidos para rotação</label>
           <div class="flex gap-1.5 flex-wrap" id="folga-dias-permitidos"></div>
         </div>
         <div>
@@ -168,6 +167,7 @@
           </select>
         </div>
       </div>
+      <p id="folga-modelo-explicacao" class="text-sm text-slate-500 mt-3" aria-live="polite"></p>
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4" id="resumo-grid"></div>
     </section>
 

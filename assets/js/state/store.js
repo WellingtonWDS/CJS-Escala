@@ -41,6 +41,7 @@ export function createDefaultState(now = new Date()) {
     ancora12x36: "2026-01-01",
     diasTrabalho: [1, 2, 3, 4, 5, 6],
     folgaTipo: "rotativa",
+    folgasFimSemana: false,
     folgaDiasPermitidos: [0, 2, 3, 4, 5, 6],
     folgaCobertura: "cobertura",
     escalaGerada: null,

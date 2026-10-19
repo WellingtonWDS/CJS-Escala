@@ -26,6 +26,9 @@ export function createGerador(state, jornada, feriados, validacao) {
       ...new Set((state.diasTrabalho || []).filter((d) => d >= 0 && d <= 6)),
     ].sort((a, b) => a - b);
     if (state.tipoEscala === "12x36") return [];
+    if (state.tipoEscala === "5x2" && state.folgasFimSemana) {
+      return operacionais.filter((d) => d === 0 || d === 6);
+    }
 
     const alvo =
       state.tipoEscala === "5x2"

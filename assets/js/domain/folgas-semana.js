@@ -24,6 +24,13 @@ export function createPlanejadorFolgas(
       if (!operacionais.includes(dia.getDay()) || (f && !f.trabalhado))
         obrigatorias.push(dia.getDay());
     }
+    if (state.tipoEscala === "5x2" && state.folgasFimSemana) {
+      return {
+        base,
+        opcionais: base,
+        obrigatorias: [...new Set([...obrigatorias, 0, 6])],
+      };
+    }
     if (!["5x2", "6x1"].includes(state.tipoEscala))
       return { base, opcionais: base, obrigatorias };
     const alvo = state.tipoEscala === "5x2" ? 2 : 1;
@@ -49,6 +56,7 @@ export function createPlanejadorFolgas(
     // Um dia fechado fixo já interrompe qualquer sequência semanal de trabalho.
     if (
       state.tipoEscala === "5x2" &&
+      !state.folgasFimSemana &&
       new Set(state.diasTrabalho).size === 7 &&
       plano.opcionais.length
     ) {
