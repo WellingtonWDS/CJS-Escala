@@ -99,6 +99,8 @@ export function analisarCobertura(config, resultado) {
     lacunas: [],
     avisos: [],
   };
+  if (config.coberturaAtiva === false)
+    return { ...relatorio, configurada: false };
   if (!demandas.length) return relatorio;
   const inicio = minutoData(isoDate(config.ano, config.mes, config.diaInicio));
   const fim =

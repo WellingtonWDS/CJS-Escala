@@ -75,7 +75,44 @@ const { chromium } = require("playwright");
     console.log(
       "OK: persistência compatível com a chave e o formato anteriores",
     );
+    await page.locator("#btn-gerar").click();
+    const horariosAntes = (await saved()).escalaGerada.resultado.map((r) =>
+      r.dias.map((d) => [d.data, d.status, d.horas]),
+    );
+    assert.equal(await page.locator("#turnos-config").isVisible(), false);
     await page.locator("#tg-turnos").check();
+    assert.equal(await page.locator("#turnos-config").isVisible(), true);
+    assert.match(await page.locator("#turnos-resumo").innerText(), /Turno B/);
+    assert.deepEqual(
+      (await saved()).escalaGerada.resultado.map((r) =>
+        r.dias.map((d) => [d.data, d.status, d.horas]),
+      ),
+      horariosAntes,
+    );
+    assert.ok(
+      (await saved()).escalaGerada.resultado.some((r) =>
+        r.dias.some((d) => d.turno === "B" && d.entradaMin === 840),
+      ),
+    );
+    await page.locator("#entrada-turno-b").fill("15:00");
+    await page.locator("#entrada-turno-b").dispatchEvent("change");
+    assert.ok(
+      (await saved()).escalaGerada.resultado.some((r) =>
+        r.dias.some((d) => d.turno === "B" && d.entradaMin === 900),
+      ),
+    );
+    await page.locator("#tg-turnos").uncheck();
+    assert.ok(
+      (await saved()).escalaGerada.resultado.every((r) =>
+        r.dias.every((d) => d.turno === "A" && d.entradaMin === 420),
+      ),
+    );
+    await page.locator("#tg-turnos").check();
+    await page.locator("#entrada-turno-b").fill("14:00");
+    await page.locator("#entrada-turno-b").dispatchEvent("change");
+    console.log(
+      "OK: toggle aplica turnos imediatamente, mostra grupos e preserva horas/folgas",
+    );
     await page.locator("#btn-gerar").click();
     assert.match(await page.locator("#resultado-gerar").innerText(), /14:00/);
     await page.locator("#btn-simular-pec").click();
@@ -92,6 +129,9 @@ const { chromium } = require("playwright");
         JSON.parse(localStorage.getItem("fintria-escala-dp-v2")).escalaGerada
           .resultado[0].dias[0].horas === 8.5,
     );
+    await page.locator("#tg-turnos").uncheck();
+    await page.locator("#tg-turnos").check();
+    assert.equal((await saved()).escalaGerada.resultado[0].dias[0].horas, 8.5);
     const before = (await saved()).escalaGerada.resultado[0].dias[0];
     answers = ["T", "08:99"];
     await page.locator('[data-ri="0"][data-di="0"]').click();

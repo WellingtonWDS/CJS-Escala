@@ -38,14 +38,29 @@ module.exports = async function testarCobertura({ browser, baseURL }) {
       await horas.dispatchEvent("change");
     }
     async function cadastrar(funcao, minimo, inicio = "09:00", fim = "18:00") {
-      await page.locator("#cobertura-funcao").fill(funcao);
+      await page.locator("#cobertura-funcao").selectOption(funcao);
       await page.locator("#cobertura-minimo").fill(String(minimo));
       await page.locator("#cobertura-inicio").fill(inicio);
       await page.locator("#cobertura-fim").fill(fim);
-      for (const checkbox of await page.locator("#cobertura-dias input").all())
-        await checkbox.setChecked((await checkbox.inputValue()) === "6");
+      for (const btn of await page.locator("#cobertura-dias button").all()) {
+        const selecionado = (await btn.getAttribute("aria-pressed")) === "true";
+        const desejado = (await btn.getAttribute("data-cobertura-dia")) === "6";
+        if (selecionado !== desejado) await btn.click();
+      }
       await page.locator("#cobertura-salvar").click();
     }
+    assert.equal(await page.locator("#cobertura-conteudo").isVisible(), false);
+    await page.locator("#tg-cobertura").check();
+    assert.equal(
+      await page.locator("#cobertura-funcao").evaluate((el) => el.tagName),
+      "SELECT",
+    );
+    assert.deepEqual(
+      await page
+        .locator("#cobertura-funcao option")
+        .evaluateAll((els) => els.map((e) => e.value)),
+      ["", "Atendente", "Supervisor"],
+    );
     await cadastrar("Atendente", 2);
     assert.equal((await saved()).demandasCobertura.length, 1);
     await page.locator("#btn-gerar").click();
@@ -78,8 +93,10 @@ module.exports = async function testarCobertura({ browser, baseURL }) {
     assert.equal((await saved()).demandasCobertura.length, 2);
     assert.deepEqual(
       await page
-        .locator("#cobertura-dias input:checked")
-        .evaluateAll((inputs) => inputs.map((input) => input.value)),
+        .locator('#cobertura-dias button[aria-pressed="true"]')
+        .evaluateAll((inputs) =>
+          inputs.map((input) => input.dataset.coberturaDia),
+        ),
       ["6"],
     );
     assert.equal(await page.locator("[data-cobertura-editar]").count(), 2);
@@ -109,15 +126,25 @@ module.exports = async function testarCobertura({ browser, baseURL }) {
     console.log(
       "OK: alteração de folga recalcula o relatório de cobertura imediatamente",
     );
-    await page.locator("#cobertura-funcao").fill("Atendente");
-    for (const cb of await page.locator("#cobertura-dias input").all())
-      await cb.uncheck();
+    await page.locator("#cobertura-funcao").selectOption("Atendente");
+    for (const cb of await page
+      .locator('#cobertura-dias button[aria-pressed="true"]')
+      .all())
+      await cb.click();
     await page.locator("#cobertura-salvar").click();
     assert.match(
       await page.locator("#cobertura-mensagem").innerText(),
       /Selecione/,
     );
     assert.equal((await saved()).demandasCobertura.length, 2);
+    await page.locator("#tg-cobertura").uncheck();
+    assert.equal((await saved()).demandasCobertura.length, 2);
+    assert.equal(await page.locator("#cobertura-conteudo").isVisible(), false);
+    assert.equal(await page.locator("#relatorio-cobertura").count(), 0);
+    await page.reload();
+    assert.equal(await page.locator("#tg-cobertura").isChecked(), false);
+    await page.locator("#tg-cobertura").check();
+    assert.equal(await page.locator("#cobertura-conteudo").isVisible(), true);
     for (const id of [1, 2])
       await page.locator(`[data-cobertura-remover="${id}"]`).click();
     assert.equal((await saved()).demandasCobertura.length, 0);
@@ -125,6 +152,25 @@ module.exports = async function testarCobertura({ browser, baseURL }) {
     assert.match(
       await page.locator("#relatorio-cobertura").innerText(),
       /ainda não avaliada/,
+    );
+    const cargo = page.locator('[data-field="cargo"]').first();
+    await cargo.fill("Caixa");
+    await cargo.dispatchEvent("change");
+    assert.deepEqual(
+      await page
+        .locator("#cobertura-funcao option")
+        .evaluateAll((els) => els.map((e) => e.value)),
+      ["", "Caixa", "Supervisor"],
+    );
+    for (const input of await page.locator('[data-field="cargo"]').all()) {
+      await input.fill("");
+      await input.dispatchEvent("change");
+    }
+    assert.equal(await page.locator("#cobertura-funcao").isDisabled(), true);
+    assert.equal(await page.locator("#cobertura-salvar").isDisabled(), true);
+    assert.match(
+      await page.locator("#cobertura-funcoes-aviso").innerText(),
+      /Cargo/,
     );
     assert.deepEqual(errors, []);
     console.log(

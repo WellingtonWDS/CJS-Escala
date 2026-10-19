@@ -31,13 +31,30 @@ export function createApplication({ env, now = () => new Date() }) {
   const deps = { state, domain, storage, env, invalidarEscala };
   const resumo = createResumoUI(deps);
   const feriados = createFeriadosUI(deps);
-  const cobertura = createCoberturaUI(deps);
+  const cobertura = createCoberturaUI({
+    ...deps,
+    onCoberturaChange: () => {
+      if (state.escalaGerada) {
+        state.escalaGerada.coberturaOperacional = domain.analisarCobertura(
+          state.escalaGerada.resultado,
+        );
+        calendario.renderEscalaGerada();
+      }
+    },
+  });
   const colaboradores = createColaboradoresUI({
     ...deps,
     ...resumo,
-    onFuncoesChange: cobertura.renderFuncoesCobertura,
+    onFuncoesChange: () => {
+      cobertura.renderFuncoesCobertura();
+      jornada.renderResumoTurnos();
+    },
   });
-  const jornada = createJornadaFolgasUI({ ...deps, ...resumo });
+  const jornada = createJornadaFolgasUI({
+    ...deps,
+    ...resumo,
+    onTurnosChange: () => calendario.atualizarTurnosEscala(),
+  });
   const configuracao = createConfiguracaoUI({
     ...deps,
     ...resumo,

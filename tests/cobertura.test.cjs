@@ -18,6 +18,7 @@ function config(demandas) {
     ...createDefaultState(new Date(2026, 9, 31)),
     diaInicio: 31,
     feriados: [],
+    coberturaAtiva: true,
     demandasCobertura: demandas,
   };
 }
@@ -339,4 +340,41 @@ test("pausa é antecipada quando a jornada individual termina antes do almoço p
   assert.deepEqual(lacunas(c, [pessoa(1, "Atendente", [d])]), [
     ["2026-10-31", "Atendente", 600, 660, 1, 0, 1],
   ]);
+});
+test("cobertura desativada ignora as demandas sem apagar as configurações", () => {
+  const c = config([demanda()]);
+  c.coberturaAtiva = false;
+  const antes = structuredClone(c.demandasCobertura);
+  assert.deepEqual(analisarCobertura(c, []).lacunas, []);
+  assert.equal(analisarCobertura(c, []).configurada, false);
+  assert.deepEqual(c.demandasCobertura, antes);
+  c.coberturaAtiva = true;
+  assert.equal(analisarCobertura(c, []).lacunas.length, 1);
+});
+test("migração mantém cobertura antiga ativa e respeita desativação explícita", () => {
+  for (const explicitamenteDesligada of [false, true]) {
+    const inicial = createDefaultState();
+    const state = structuredClone(inicial);
+    const antigo = { ...inicial, demandasCobertura: [demanda()] };
+    delete antigo.coberturaAtiva;
+    if (explicitamenteDesligada) antigo.coberturaAtiva = false;
+    const persistence = createPersistence({
+      state,
+      initialState: inicial,
+      storage: { getItem: () => JSON.stringify(antigo) },
+    });
+    assert.equal(persistence.loadState(), true);
+    assert.equal(state.coberturaAtiva, !explicitamenteDesligada);
+  }
+});
+test("revezamento mantém o grupo durante a semana e inverte na segunda-feira", () => {
+  const c = config([]);
+  c.turnosRevezamento = true;
+  const domain = createDomain(c);
+  const a = domain.obterTurno(new Date(2026, 9, 19), 0);
+  assert.equal(domain.obterTurno(new Date(2026, 9, 25), 0), a);
+  assert.notEqual(domain.obterTurno(new Date(2026, 9, 26), 0), a);
+  assert.notEqual(domain.obterTurno(new Date(2026, 9, 19), 1), a);
+  c.turnosRevezamento = false;
+  assert.equal(domain.obterTurno(new Date(2026, 9, 19), 0), "A");
 });

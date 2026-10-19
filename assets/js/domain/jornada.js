@@ -6,6 +6,22 @@ import {
 } from "./datas-horas.js";
 import { REGIMES } from "../config/regras-jornada.js";
 export function createJornada(state) {
+  function obterTurno(date, indice) {
+    if (!state.turnosRevezamento || state.tipoEscala === "12x36") return "A";
+    const segunda = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+    );
+    segunda.setDate(segunda.getDate() - ((segunda.getDay() + 6) % 7));
+    const semana = Math.floor(
+      (Date.UTC(segunda.getFullYear(), segunda.getMonth(), segunda.getDate()) -
+        Date.UTC(2026, 0, 5)) /
+        604800000,
+    );
+    return (((semana + indice) % 2) + 2) % 2 === 0 ? "A" : "B";
+  }
+
   function calcHorasDia(weekday) {
     let j = state.jornada;
     if (
@@ -63,6 +79,7 @@ export function createJornada(state) {
   }
 
   return {
+    obterTurno,
     calcHorasDia,
     obterJornadaDoDia,
     regimeAtual,

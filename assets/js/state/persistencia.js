@@ -14,6 +14,13 @@ export function createPersistence({ state, initialState, storage }) {
       const raw = storage.getItem(STORAGE_KEY);
       if (!raw) return false;
       const parsed = JSON.parse(raw);
+      // As demandas anteriores já eram utilizadas, portanto continuam ativas.
+      if (
+        parsed &&
+        !Object.hasOwn(parsed, "coberturaAtiva") &&
+        parsed.demandasCobertura?.length
+      )
+        parsed.coberturaAtiva = true;
       replaceState(
         state,
         deepMerge(JSON.parse(JSON.stringify(initialState)), parsed),

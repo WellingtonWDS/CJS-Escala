@@ -1,8 +1,11 @@
-import { timeToMin } from "../domain/datas-horas.js";
+import { escapeHtml } from "../shared/formatacao.js";
+import { timeToMin, addDays, formatDateBR } from "../domain/datas-horas.js";
 import { DIAS_SEMANA } from "../config/regras-jornada.js";
 
 export function createJornadaFolgasUI({
   state,
+  domain,
+  onTurnosChange,
   storage,
   env,
   invalidarEscala,
@@ -48,6 +51,36 @@ export function createJornadaFolgasUI({
     saveState();
   }
 
+  function renderResumoTurnos() {
+    const ativo = state.turnosRevezamento && state.tipoEscala !== "12x36";
+    document.getElementById("turnos-config").hidden = !ativo;
+    const resumo = document.getElementById("turnos-resumo");
+    if (!ativo) {
+      resumo.innerHTML = "";
+      return;
+    }
+    const inicio = new Date(state.ano, state.mes, state.diaInicio);
+    resumo.innerHTML = [inicio, addDays(inicio, 7)]
+      .map((data) => {
+        const grupos = ["A", "B"]
+          .map((turno) => {
+            const pessoas = state.colaboradores.filter(
+              (_, i) => domain.obterTurno(data, i) === turno,
+            );
+            return `<div class="rounded-lg border border-slate-200 bg-white px-3 py-2"><b>Turno ${turno} · entrada ${turno === "B" ? state.entradaTurnoB : state.horarioPorDia ? "por dia" : state.jornada.entrada}</b><div class="text-xs text-slate-500 mt-1">${pessoas.map((p) => escapeHtml(p.nome || "(sem nome)")).join(", ") || "Sem colaboradores neste grupo"}</div></div>`;
+          })
+          .join("");
+        return `<div><div class="text-xs font-semibold text-fintria-navySoft mb-2">Semana que contém ${formatDateBR(data)}</div><div class="grid grid-cols-1 md:grid-cols-2 gap-2">${grupos}</div></div>`;
+      })
+      .join("");
+  }
+  function aplicarTurnos() {
+    renderResumoTurnos();
+    if (state.escalaGerada) onTurnosChange();
+    else invalidarEscala();
+    saveState();
+  }
+
   function renderJornadaSection() {
     const oculta = ["12x36"].includes(state.tipoEscala);
     document.getElementById("dias-trabalho-wrap").style.display = oculta
@@ -81,6 +114,7 @@ export function createJornadaFolgasUI({
       );
     if (state.horarioPorDia) renderJornadaPorDia();
     refreshDiasTrabalho();
+    renderResumoTurnos();
     atualizarCargaSemanalMsg();
   }
 
@@ -145,6 +179,7 @@ export function createJornadaFolgasUI({
     "j-saida": "saida",
   };
   return {
+    renderResumoTurnos,
     renderPicker,
     refreshDiasTrabalho,
     refreshFolgaPermitidos,
@@ -174,15 +209,13 @@ export function createJornadaFolgasUI({
 
     document.getElementById("tg-turnos").onchange = (e) => {
       state.turnosRevezamento = e.target.checked;
-      invalidarEscala();
-      saveState();
+      aplicarTurnos();
     };
 
     document.getElementById("entrada-turno-b").onchange = (e) => {
       if (!Number.isFinite(timeToMin(e.target.value))) return;
       state.entradaTurnoB = e.target.value;
-      invalidarEscala();
-      saveState();
+      aplicarTurnos();
     };
     document.getElementById("ancora-12x36").onchange = (e) => {
       if (!/^\d{4}-\d{2}-\d{2}$/.test(e.target.value)) return;

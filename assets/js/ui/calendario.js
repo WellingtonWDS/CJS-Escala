@@ -98,6 +98,25 @@ export function createCalendarioUI({
     saveState();
   }
 
+  function atualizarTurnosEscala() {
+    if (!state.escalaGerada) return;
+    state.escalaGerada.resultado.forEach((r, indice) => {
+      for (const dia of [...(r.diasContexto ?? []), ...r.dias]) {
+        dia.turno = domain.obterTurno(dateFromKey(dia.data), indice);
+        atualizarHorarioEfetivo(dia);
+      }
+    });
+    state.escalaGerada.validacoes = state.escalaGerada.resultado.map((r) => ({
+      colaborador: r.colaborador,
+      issues: validarLegal(r.colaborador, r.dias),
+    }));
+    state.escalaGerada.coberturaOperacional = domain.analisarCobertura(
+      state.escalaGerada.resultado,
+    );
+    renderEscalaGerada();
+    saveState();
+  }
+
   function severityBadge(issueObj) {
     if (issueObj.severidade === "erro")
       return '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-fintria-vermelhoBg text-fintria-vermelho">ERRO</span>';
@@ -422,6 +441,7 @@ export function createCalendarioUI({
     saveState();
   }
   return {
+    atualizarTurnosEscala,
     gerarEscala,
     editarStatus,
     severityBadge,

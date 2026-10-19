@@ -11,7 +11,7 @@ import {
 } from "./datas-horas.js";
 
 export function createGerador(state, jornada, feriados, validacao) {
-  const { obterJornadaDoDia } = jornada;
+  const { obterJornadaDoDia, obterTurno } = jornada;
   const { feriadosNacionais } = feriados;
   const { validarCobertura, validarLegal } = validacao;
   function diasDaSemanaDaEscala(date, idx) {
@@ -128,24 +128,7 @@ export function createGerador(state, jornada, feriados, validacao) {
         feriado,
         previsto,
         repousoSeguranca,
-        turno:
-          state.turnosRevezamento && state.tipoEscala !== "12x36"
-            ? (((Math.floor(
-                (Date.UTC(
-                  ...[date.getFullYear(), date.getMonth(), date.getDate()],
-                ) -
-                  Date.UTC(2026, 0, 5)) /
-                  86400000 /
-                  7,
-              ) +
-                idx) %
-                2) +
-                2) %
-                2 ===
-              0
-              ? "A"
-              : "B"
-            : "A",
+        turno: obterTurno(date, idx),
       });
 
       cursor.setDate(cursor.getDate() + 1);

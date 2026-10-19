@@ -88,6 +88,7 @@ export function createConfiguracaoUI({
       inicializarFeriadosDoMes();
       renderFeriados();
       renderDiaInicioOptions();
+      renderJornadaSection();
       saveState();
     };
     selAno.onchange = (e) => {
@@ -96,6 +97,7 @@ export function createConfiguracaoUI({
       inicializarFeriadosDoMes();
       renderFeriados();
       renderDiaInicioOptions();
+      renderJornadaSection();
       saveState();
     };
     renderDiaInicioOptions();
@@ -112,6 +114,7 @@ export function createConfiguracaoUI({
     sel.innerHTML = opts;
     sel.onchange = (e) => {
       state.diaInicio = Number(e.target.value);
+      renderJornadaSection();
       invalidarEscala();
       saveState();
     };

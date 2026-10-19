@@ -20,6 +20,7 @@ export function createDefaultState(now = new Date()) {
       },
     ],
     proximoId: 3,
+    coberturaAtiva: false,
     demandasCobertura: [],
     proximaDemandaId: 1,
     tipoEscala: "6x1",
