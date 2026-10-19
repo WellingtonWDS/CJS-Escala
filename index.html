@@ -197,11 +197,14 @@
     <!-- 6. ESCALA GERADA -->
     <section id="sec-gerar" class="scroll-mt-4 bg-white border border-slate-200 rounded-xl p-5 md:p-7 mb-5">
       <h2 class="font-display text-fintria-navy text-lg font-semibold mb-1">Escala gerada</h2>
-      <p class="text-slate-500 text-sm mb-4">Clique em uma célula para abrir o ajuste de status. O sistema valida o impacto da alteração; use FC somente quando houver folga compensatória efetivamente prevista.</p>
-      <div class="flex gap-2.5 flex-wrap mt-2 no-print">
-        <button id="btn-gerar" class="bg-fintria-navy text-white px-4.5 py-2.5 rounded-md font-semibold text-sm hover:bg-fintria-navySoft">Gerar escala</button>
-        <button id="btn-exportar-csv" class="bg-white border border-slate-300 text-fintria-navy px-3.5 py-2 rounded-md font-semibold text-sm hover:border-fintria-navy">Exportar CSV</button>
-        <button id="btn-imprimir" class="bg-white border border-slate-300 text-fintria-navy px-3.5 py-2 rounded-md font-semibold text-sm hover:border-fintria-navy">Imprimir / PDF</button>
+      <p class="text-slate-500 text-sm mb-4 no-print">Concluiu o preenchimento? Use as configurações acima para criar a escala do período e conferir os resultados.</p>
+      <div class="mt-4 no-print">
+        <button id="btn-gerar" class="w-full bg-fintria-navy text-white px-6 py-4 rounded-lg font-display font-semibold text-lg shadow-md hover:bg-fintria-navySoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fintria-azul focus-visible:ring-offset-2 transition-colors">Gerar escala</button>
+        <div class="flex gap-2.5 flex-wrap mt-3">
+          <button id="btn-exportar-csv" class="bg-white border border-slate-300 text-fintria-navy px-3.5 py-2 rounded-md font-semibold text-sm hover:border-fintria-navy">Exportar CSV</button>
+          <button id="btn-imprimir" class="bg-white border border-slate-300 text-fintria-navy px-3.5 py-2 rounded-md font-semibold text-sm hover:border-fintria-navy">Imprimir / PDF</button>
+        </div>
+        <p class="text-slate-500 text-xs mt-3">Após gerar, clique nas células para ajustar trabalho e folgas. As validações e os totais acompanham cada alteração. Use FC somente quando houver folga compensatória efetivamente prevista.</p>
       </div>
       <div id="resultado-gerar" class="mt-4"></div>
     </section>
