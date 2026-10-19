@@ -1,3 +1,4 @@
+import { distribuirCargaPrevista } from "./distribuicao-horas.js";
 import { calcularPausaEfetiva, analisarCobertura } from "./cobertura.js";
 import {
   diasNoMes,
@@ -162,8 +163,7 @@ export function createGerador(state, jornada, feriados, validacao) {
     });
     porSemana.forEach((semana) => {
       // Feriado dispensado preserva sua parcela da carga semanal.
-      const previstos = semana.filter((d) => d.previsto).length;
-      const horas = Number(colab.horasSemana) / Math.max(1, previstos);
+      const cargaPrevista = distribuirCargaPrevista(colab, semana, state);
       semana.forEach((d) => {
         const trabalho = d.status === "T" || d.status === "FE";
         d.horasPrevistas = d.previsto
@@ -172,7 +172,7 @@ export function createGerador(state, jornada, feriados, validacao) {
                 0,
                 12 - Math.max(0, intervaloMin(state.jornada) || 0) / 60,
               )
-            : horas
+            : (cargaPrevista.get(d.data) ?? 0)
           : 0;
         d.horas = trabalho
           ? state.tipoEscala === "12x36"
@@ -180,7 +180,7 @@ export function createGerador(state, jornada, feriados, validacao) {
                 0,
                 12 - Math.max(0, intervaloMin(state.jornada) || 0) / 60,
               )
-            : horas
+            : (cargaPrevista.get(d.data) ?? 0)
           : 0;
         atualizarHorarioEfetivo(d);
       });

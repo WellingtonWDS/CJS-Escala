@@ -17,6 +17,9 @@ export function createResumoUI({ state, env }) {
     }
 
     msgEl.innerHTML = `<div class="rounded-lg px-3.5 py-2.5 text-sm bg-fintria-azulBg text-fintria-azul">Jornada padrão = <b>horário operacional da empresa</b>. O sistema não considera esta configuração, isoladamente, como carga horária contratual nem a compara com 40h/42h/44h. A jornada semanal de cada colaborador é definida na seção de colaboradores e será validada quando a escala for gerada.</div>`;
+    if (state.horarioPorDia)
+      msgEl.innerHTML +=
+        '<p class="text-xs text-slate-500 mt-2">A distribuição respeita os horários máximos de cada dia, inclusive sábados reduzidos. A carga restante é distribuída nos outros dias com disponibilidade; se não couber, o resumo semanal indica o déficit.</p>';
     renderResumo();
   }
 

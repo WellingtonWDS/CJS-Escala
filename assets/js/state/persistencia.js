@@ -37,6 +37,14 @@ export function createPersistence({ state, initialState, storage }) {
     if (!incoming || typeof incoming !== "object") return base;
     Object.keys(incoming).forEach((k) => {
       if (
+        k === "jornadaPorDia" &&
+        incoming[k] &&
+        typeof incoming[k] === "object" &&
+        !Array.isArray(incoming[k])
+      ) {
+        // Mapa dinâmico: os dias não existem no estado inicial vazio.
+        base[k] = { ...base[k], ...incoming[k] };
+      } else if (
         incoming[k] &&
         typeof incoming[k] === "object" &&
         !Array.isArray(incoming[k]) &&

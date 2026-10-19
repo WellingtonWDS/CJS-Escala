@@ -1,3 +1,4 @@
+import { limiteHorasDia } from "./distribuicao-horas.js";
 import { apurarSemana } from "./resumo-semanal.js";
 import {
   diasNoMes,
@@ -24,6 +25,16 @@ export function createValidacao(state, jornada, feriados) {
     const datas = dias.filter((x) => x.status === "T" || x.status === "FE");
     datas.forEach((d) => {
       const h = d.horas;
+      const limite = limiteHorasDia(state, d.weekday);
+      if (h > limite + 0.01)
+        out.push(
+          issue(
+            "HORARIO_DIA_EXCEDIDO",
+            "erro",
+            `${d.data}: ${fmtHoras(h)} de trabalho excedem a janela de ${fmtHoras(limite)} configurada para este dia. Revise o ajuste manual ou o horário por dia.`,
+            d.data,
+          ),
+        );
       if (
         state.tipoEscala === "12x36" &&
         Math.abs(d.saidaMin - d.entradaMin - 720) > 0.01

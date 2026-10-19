@@ -1,16 +1,15 @@
+import { distribuirCargaPrevista } from "./distribuicao-horas.js";
 import { intervaloMin } from "./datas-horas.js";
 
 /** Feriado dispensado abona apenas o trabalho originalmente previsto.
  * Crédito é separado de horas trabalhadas, presença e limites de trabalho. */
 export function apurarSemana(colaborador, dias, config = {}) {
-  const previstos = dias.filter((d) => d.previsto === true).length;
+  const cargaPrevista = distribuirCargaPrevista(colaborador, dias, config);
   const alvo = Number(colaborador.horasSemana);
   const horasPadrao =
     config.tipoEscala === "12x36"
       ? Math.max(0, 12 - Math.max(0, intervaloMin(config.jornada) || 0) / 60)
-      : Number.isFinite(alvo) && previstos
-        ? alvo / previstos
-        : 0;
+      : 0;
   const abonos = dias
     .filter(
       (d) =>
@@ -24,7 +23,9 @@ export function apurarSemana(colaborador, dias, config = {}) {
       nome: d.feriado.nome,
       horas: Number.isFinite(d.horasPrevistas)
         ? Math.max(0, d.horasPrevistas)
-        : horasPadrao,
+        : config.tipoEscala === "12x36"
+          ? horasPadrao
+          : (cargaPrevista.get(d.data) ?? 0),
     }))
     .filter((a) => a.horas > 0);
   const trabalhadas = dias
