@@ -61,7 +61,7 @@
     <a href="#sec-jornada" class="flex items-center gap-2 shrink-0 no-underline text-slate-500 hover:bg-slate-200 hover:text-fintria-navy px-2.5 py-2 rounded-md text-sm font-medium"><b class="w-5 h-5 rounded-full bg-slate-200 text-fintria-navy text-[11px] flex items-center justify-center shrink-0">4</b>Jornada</a>
     <a href="#sec-folgas" class="flex items-center gap-2 shrink-0 no-underline text-slate-500 hover:bg-slate-200 hover:text-fintria-navy px-2.5 py-2 rounded-md text-sm font-medium"><b class="w-5 h-5 rounded-full bg-slate-200 text-fintria-navy text-[11px] flex items-center justify-center shrink-0">5</b>Folgas</a>
     <a href="#sec-gerar" class="flex items-center gap-2 shrink-0 no-underline text-slate-500 hover:bg-slate-200 hover:text-fintria-navy px-2.5 py-2 rounded-md text-sm font-medium"><b class="w-5 h-5 rounded-full bg-slate-200 text-fintria-navy text-[11px] flex items-center justify-center shrink-0">6</b>Escala gerada</a>
-    <a href="#sec-pec" class="flex items-center gap-2 shrink-0 no-underline text-slate-500 hover:bg-slate-200 hover:text-fintria-navy px-2.5 py-2 rounded-md text-sm font-medium"><b class="w-5 h-5 rounded-full bg-slate-200 text-fintria-navy text-[11px] flex items-center justify-center shrink-0">7</b>Transição EC 141</a>
+    <a href="#sec-pec" class="flex items-center gap-2 shrink-0 no-underline text-slate-500 hover:bg-slate-200 hover:text-fintria-navy px-2.5 py-2 rounded-md text-sm font-medium"><b class="w-5 h-5 rounded-full bg-slate-200 text-fintria-navy text-[11px] flex items-center justify-center shrink-0">7</b>Emenda Constitucional</a>
   </nav>
 
   <main class="flex-1 px-3 md:px-8 pb-20 pt-7 min-w-0 w-full">
@@ -211,9 +211,9 @@
       <div id="resultado-gerar" class="mt-4"></div>
     </section>
 
-    <!-- 7. PEC -->
+    <!-- 7. EMENDA CONSTITUCIONAL Nº 141 -->
     <section id="sec-pec" class="scroll-mt-4 bg-white border border-slate-200 rounded-xl p-5 md:p-7 mb-5">
-      <h2 class="font-display text-fintria-navy text-lg font-semibold mb-1">Transição e enquadramento da jornada</h2>
+      <h2 class="font-display text-fintria-navy text-lg font-semibold mb-1">Transição — Emenda Constitucional nº 141</h2>
       <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 mb-5">
         <div class="flex gap-2 items-start mb-2 text-sm"><span>ℹ️</span><div><b>Emenda Constitucional nº 141, de 16 de outubro de 2026:</b> promulgada pelas Mesas da Câmara dos Deputados e do Senado Federal, sem sanção presidencial, e publicada no <b>DOU de 16/10/2026, edição extra</b>. Essa publicação é o marco dos prazos da transição. <a href="https://www.planalto.gov.br/ccivil_03/constituicao/emendas/emc/emc141.htm" target="_blank" rel="noopener noreferrer" class="underline">Consultar texto no Planalto</a></div></div>
         <p class="text-sm mb-2">A EC 141 altera os incisos XIII e XV do art. 7º da Constituição: até 8h diárias e 40h semanais como regra geral, admitidas compensação de horários e redução da jornada por acordo ou convenção coletiva; dois dias de repouso semanal remunerado, um preferencialmente aos domingos.</p>
@@ -1086,7 +1086,7 @@ function gerarEscalaColaborador(colab,idx,dataInicio,dataFim,feriadosMap){
  * funciona), não a carga de cada colaborador. Este passo distribui a
  * jornada semanal CONTRATUAL do colaborador (colab.horasSemana) de forma
  * uniforme entre os dias marcados como T/FE em cada semana civil — o
- * mesmo princípio de "horas/dia médio" já usado no Simulador PEC
+ * mesmo princípio de "horas/dia médio" já usado no comparativo da EC 141
  * (calcularSaidaSimulada), agora aplicado à escala real. Isso evita que
  * o gerador simplesmente copie blocos fixos de 8h/4h da jornada da
  * empresa para todo mundo, inclusive colaboradores com jornada menor.
@@ -1753,7 +1753,7 @@ document.getElementById('btn-exportar-csv').onclick=()=>{
 document.getElementById('btn-imprimir').onclick=()=>window.print();
 
 /* ---------------------------------------------------------
-   SIMULADOR PEC
+   COMPARATIVO DA EC 141
 --------------------------------------------------------- */
 function calcularSaidaSimulada(horasSemana,diasSemana){
   const horasDia=horasSemana/diasSemana;
