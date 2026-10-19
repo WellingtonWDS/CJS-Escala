@@ -69,7 +69,7 @@ test('restauração abre no mês atual preservando equipe, horários e feriados 
  const run=app('2026-10-19T12:00:00');
  assert.equal(run(`state.mes=8;state.ano=2026;state.diaInicio=30;state.colaboradores[0].nome='Pessoa salva';state.jornada.entrada='07:30';state.feriados=[{dia:15,nome:'Feriado setembro',tipo:'municipal'}];gerarEscala();saveState();init();state.mes===9 && state.ano===2026 && state.diaInicio===1 && state.escalaGerada===null && state.colaboradores[0].nome==='Pessoa salva' && document.getElementById('j-entrada').value==='07:30' && !state.feriados.some(f=>f.nome==='Feriado setembro') && state.feriadosLocais.some(f=>f.nome==='Feriado setembro'&&f.mes===8)`),true);
 });
-test('comparativo informa prazos relativos à publicação no DOU',()=>{
- const run=app();assert.equal(run(`renderSimuladorPec();const texto=document.getElementById('pec-resultado').innerHTML;texto.includes('2 meses após a publicação no DOU') && texto.includes('14 meses após a publicação no DOU') && texto.includes('Sem redução salarial') && !texto.includes('fase simulada')`),true);
+test('comparativo informa datas da EC 141 e prazos relativos à publicação no DOU',()=>{
+ const run=app();assert.equal(run(`renderSimuladorPec();const texto=document.getElementById('pec-resultado').innerHTML;texto.includes('2 meses após a publicação no DOU') && texto.includes('14 meses após a publicação no DOU') && texto.includes('Sem redução salarial') && texto.includes('16/12/2026') && texto.includes('16/12/2027') && !texto.includes('fase simulada')`),true);
  assert.ok(!html.includes('a proposta ainda está em tramitação no Senado'));
 });

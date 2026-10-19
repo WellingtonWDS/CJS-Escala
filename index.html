@@ -61,7 +61,7 @@
     <a href="#sec-jornada" class="flex items-center gap-2 shrink-0 no-underline text-slate-500 hover:bg-slate-200 hover:text-fintria-navy px-2.5 py-2 rounded-md text-sm font-medium"><b class="w-5 h-5 rounded-full bg-slate-200 text-fintria-navy text-[11px] flex items-center justify-center shrink-0">4</b>Jornada</a>
     <a href="#sec-folgas" class="flex items-center gap-2 shrink-0 no-underline text-slate-500 hover:bg-slate-200 hover:text-fintria-navy px-2.5 py-2 rounded-md text-sm font-medium"><b class="w-5 h-5 rounded-full bg-slate-200 text-fintria-navy text-[11px] flex items-center justify-center shrink-0">5</b>Folgas</a>
     <a href="#sec-gerar" class="flex items-center gap-2 shrink-0 no-underline text-slate-500 hover:bg-slate-200 hover:text-fintria-navy px-2.5 py-2 rounded-md text-sm font-medium"><b class="w-5 h-5 rounded-full bg-slate-200 text-fintria-navy text-[11px] flex items-center justify-center shrink-0">6</b>Escala gerada</a>
-    <a href="#sec-pec" class="flex items-center gap-2 shrink-0 no-underline text-slate-500 hover:bg-slate-200 hover:text-fintria-navy px-2.5 py-2 rounded-md text-sm font-medium"><b class="w-5 h-5 rounded-full bg-slate-200 text-fintria-navy text-[11px] flex items-center justify-center shrink-0">7</b>Transição PEC</a>
+    <a href="#sec-pec" class="flex items-center gap-2 shrink-0 no-underline text-slate-500 hover:bg-slate-200 hover:text-fintria-navy px-2.5 py-2 rounded-md text-sm font-medium"><b class="w-5 h-5 rounded-full bg-slate-200 text-fintria-navy text-[11px] flex items-center justify-center shrink-0">7</b>Transição EC 141</a>
   </nav>
 
   <main class="flex-1 px-3 md:px-8 pb-20 pt-7 min-w-0 w-full">
@@ -94,7 +94,7 @@
     <!-- 2. TIPO DE ESCALA -->
     <section id="sec-tipo" class="scroll-mt-4 bg-white border border-slate-200 rounded-xl p-5 md:p-7 mb-5">
       <h2 class="font-display text-fintria-navy text-lg font-semibold mb-1">Tipo de escala</h2>
-      <p class="text-slate-500 text-sm mb-4">Escolha o regime base. Compare as etapas da redução de jornada aprovada pelo Senado em 14/10/2026. Os prazos contam da publicação da emenda no DOU.</p>
+      <p class="text-slate-500 text-sm mb-4">Escolha o regime base. Compare as etapas da EC 141, de 16/10/2026, publicada no DOU da mesma data, edição extra: 42h a partir de 16/12/2026 e 40h a partir de 16/12/2027.</p>
       <div class="flex gap-2 flex-wrap mb-4" id="tabs-tipo"></div>
       <div id="tipo-desc" class="rounded-lg px-3.5 py-2.5 text-sm bg-fintria-azulBg text-fintria-azul mb-4"></div>
 
@@ -104,8 +104,8 @@
             <label class="block text-xs font-semibold text-fintria-navySoft mb-1.5">Referência legal usada na validação</label>
             <select id="regime-jornada" class="w-full px-2.5 py-2 border border-slate-300 rounded-md text-sm bg-white">
               <option value="atual44">Antes da 1ª fase — até 44h/semana</option>
-              <option value="transicao42">1ª fase — 42h/semana · 2 meses após publicação</option>
-              <option value="definitivo40">2ª fase — 40h/semana · 14 meses após publicação</option>
+              <option value="transicao42">1ª fase — 42h/semana · a partir de 16/12/2026</option>
+              <option value="definitivo40">2ª fase — 40h/semana · a partir de 16/12/2027</option>
             </select>
           </div>
           <div>
@@ -215,16 +215,27 @@
     <section id="sec-pec" class="scroll-mt-4 bg-white border border-slate-200 rounded-xl p-5 md:p-7 mb-5">
       <h2 class="font-display text-fintria-navy text-lg font-semibold mb-1">Transição e enquadramento da jornada</h2>
       <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 mb-5">
-        <div class="flex gap-2 items-start mb-2 text-sm"><span>ℹ️</span><div><b>Redução da jornada — texto aprovado:</b> em 14/10/2026, o Senado aprovou a proposta em dois turnos, por 75 votos a 1 em cada turno, após aprovação da Câmara em maio. A emenda é promulgada pelas Mesas da Câmara e do Senado, sem sanção presidencial. <b>O marco dos prazos é a publicação no Diário Oficial da União, após a promulgação.</b></div></div>
-        <p class="text-sm mb-2">O texto altera os incisos XIII e XV do art. 7º da Constituição: até 8h diárias e 40h semanais como regra geral, admitidas compensação de horários e redução da jornada por acordo ou convenção coletiva; dois dias de repouso semanal remunerado, um preferencialmente aos domingos.</p>
+        <div class="flex gap-2 items-start mb-2 text-sm"><span>ℹ️</span><div><b>Emenda Constitucional nº 141, de 16 de outubro de 2026:</b> promulgada pelas Mesas da Câmara dos Deputados e do Senado Federal, sem sanção presidencial, e publicada no <b>DOU de 16/10/2026, edição extra</b>. Essa publicação é o marco dos prazos da transição. <a href="https://www.planalto.gov.br/ccivil_03/constituicao/emendas/emc/emc141.htm" target="_blank" rel="noopener noreferrer" class="underline">Consultar texto no Planalto</a></div></div>
+        <p class="text-sm mb-2">A EC 141 altera os incisos XIII e XV do art. 7º da Constituição: até 8h diárias e 40h semanais como regra geral, admitidas compensação de horários e redução da jornada por acordo ou convenção coletiva; dois dias de repouso semanal remunerado, um preferencialmente aos domingos.</p>
         <p class="text-sm mb-2">A mudança alcança contratos em vigor, sem redução salarial de qualquer espécie, inclusive dos pisos salariais. A escala 6×1 deixa de ser o modelo geral a partir da exigência do segundo repouso, ressalvada compensação excepcional dos dias de repouso por acordo ou convenção coletiva, nos limites do texto.</p>
-        <p class="text-sm mb-2"><b>Após 2 meses da publicação:</b> 42h semanais e segundo repouso remunerado. <b>Após 14 meses da publicação:</b> 40h semanais. Os demais dispositivos entram em vigor na data da publicação.</p>
-        <p class="text-xs text-slate-500">As datas de calendário das fases dependem da data de publicação no DOU. Selecione a etapa aplicável à competência; a ferramenta não altera o regime automaticamente.</p>
+        <p class="text-sm mb-2"><b>16/12/2026 — primeira fase:</b> limite de 42h semanais e início do segundo repouso remunerado. <b>16/12/2027 — segunda fase:</b> limite de 40h semanais. Os demais dispositivos entram em vigor em 16/10/2026, observados os prazos específicos dos arts. 3º, 6º e 9º.</p>
+        <p class="text-xs text-slate-500">Selecione a etapa aplicável ao período; a ferramenta não altera o regime automaticamente. Em dezembro de 2026 e de 2027, a mudança ocorre no dia 16: a validação de um único regime para o mês inteiro não representa os dois períodos.</p>
+        <details class="text-sm mt-3 border-t border-slate-200 pt-3">
+          <summary class="cursor-pointer font-semibold">Condições e exceções da EC 141</summary>
+          <ul class="list-disc pl-5 mt-2 space-y-2">
+            <li><b>Compensação do repouso (art. 7º, § 2º, da Constituição):</b> excepcionalmente, ACT/CCT pode assegurar, na média, dois dias de repouso semanal remunerado dentro do mês-calendário, garantido ao menos um dentro do período máximo de uma semana de trabalho. A ferramenta não homologa automaticamente essa compensação.</li>
+            <li><b>Cláusulas coletivas (art. 3º):</b> as incompatíveis com a emenda ficam sem efeito em 16/12/2026. Durante a transição prevista no art. 7º da emenda, a ampliação da jornada diária para distribuir as 42h depende de ACT/CCT e deve respeitar o repouso.</li>
+            <li><b>Jornadas de até 40h (art. 4º):</b> não sofrem redução proporcional automática; aplica-se o segundo repouso. Medidas transitórias para MEI, microempresas e pequenas empresas dependem de lei complementar e manutenção dos níveis de emprego (art. 5º).</li>
+            <li><b>Regimes específicos (art. 8º):</b> a exceção de duração e controle de jornada exige diploma superior e remuneração de ao menos 2,5 vezes o teto do RGPS, ressalvadas as condições do artigo. O repouso continua protegido; a exceção não alcança empregados públicos da administração direta e indireta.</li>
+            <li><b>Contratos públicos com emprego direto de mão de obra (art. 9º):</b> a redução da jornada depende do aditamento para reequilíbrio, limitado a 16/10/2027. Os empregados são abrangidos na formalização ou, independentemente dela, ao término desse prazo. Aditamentos realizados em até dois meses da publicação observam os inícios das vigências de cada etapa, conforme o § 3º.</li>
+          </ul>
+          <p class="mt-2 text-xs text-slate-500">Os cálculos desta ferramenta seguem a referência geral selecionada. As exceções e os regimes diferenciados exigem enquadramento específico e não são aplicados automaticamente.</p>
+        </details>
         <div class="flex items-center gap-2.5 mt-3.5 overflow-x-auto pb-1">
           <div class="text-center shrink-0"><div class="w-14 h-14 rounded-full flex flex-col items-center justify-center text-white text-[11px] font-bold mx-auto" style="background:#0B2545">44h<br>Base</div><div class="text-[11.5px] text-slate-500 mt-1.5 max-w-[90px]">Antes da 1ª fase</div></div>
-          <div class="text-[11px] text-slate-500 text-center shrink-0 min-w-[60px]">+ 2 meses<br>da publicação →</div>
+          <div class="text-[11px] text-slate-500 text-center shrink-0 min-w-[60px]">16/12/2026<br>+ 2 meses →</div>
           <div class="text-center shrink-0"><div class="w-14 h-14 rounded-full flex flex-col items-center justify-center text-white text-[11px] font-bold mx-auto" style="background:#B9791C">42h<br>Fase 1</div><div class="text-[11.5px] text-slate-500 mt-1.5 max-w-[90px]">2 repousos semanais</div></div>
-          <div class="text-[11px] text-slate-500 text-center shrink-0 min-w-[60px]">+ 12 meses<br>após 1ª fase →</div>
+          <div class="text-[11px] text-slate-500 text-center shrink-0 min-w-[60px]">16/12/2027<br>+ 14 meses →</div>
           <div class="text-center shrink-0"><div class="w-14 h-14 rounded-full flex flex-col items-center justify-center text-white text-[11px] font-bold mx-auto" style="background:#1F7A54">40h<br>Fase 2</div><div class="text-[11.5px] text-slate-500 mt-1.5 max-w-[90px]">2 repousos semanais</div></div>
         </div>
       </div>
@@ -258,13 +269,13 @@ const REGIMES = {
     futuro: false
   },
   transicao42: {
-    nome: '1ª fase — 42h/semana · 2 meses após publicação',
+    nome: '1ª fase — 42h/semana · a partir de 16/12/2026',
     horas: 42,
     folgas: 2,
     futuro: true
   },
   definitivo40: {
-    nome: '2ª fase — 40h/semana · 14 meses após publicação',
+    nome: '2ª fase — 40h/semana · a partir de 16/12/2027',
     horas: 40,
     folgas: 2,
     futuro: true
@@ -272,7 +283,7 @@ const REGIMES = {
 };
 
 const TIPO_INFO = {
-  '6x1': 'Seis dias de trabalho e uma folga por ciclo semanal. Antes da primeira fase, a referência geral é até 44h/semana. Dois meses após a publicação da emenda, passa a ser exigido o segundo repouso semanal remunerado. A escala 6×1 deixa de ser o modelo geral, ressalvada compensação excepcional por acordo ou convenção coletiva, nos limites do texto aprovado.',
+  '6x1': 'Seis dias de trabalho e uma folga por ciclo semanal. Antes da primeira fase, a referência geral é até 44h/semana. A partir de 16/12/2026, a EC 141 exige o segundo repouso semanal remunerado. A escala 6×1 deixa de ser o modelo geral, ressalvada compensação excepcional por acordo ou convenção coletiva, nos limites da EC 141.',
   '5x2': 'Cinco dias de trabalho e dois dias de repouso. Se a empresa funcionar em 6 dias, configure os 6 dias operacionais e deixe a escala distribuir uma folga entre eles; o dia em que a empresa não funciona permanece como repouso.',
   '12x36': 'Doze horas consecutivas de trabalho por 36 horas de descanso. É um regime especial previsto no art. 59-A da CLT, com requisitos próprios; não deve ser tratado como uma simples variação de 5×2 ou 6×1.',
   'custom': 'Escala personalizada/cíclica. Não é uma categoria legal autônoma: a ferramenta verifica limites gerais e sinaliza os pontos que dependem de instrumento coletivo, compensação ou regime especial.'
@@ -606,12 +617,12 @@ function renderRegimeAlerta(){
   let msg = '';
 
   if(r.futuro){
-    msg = `Etapa selecionada: ${r.horas}h/semana e ${r.folgas} dias de repouso remunerado, aplicáveis ${r.horas===42?'2':'14'} meses após a publicação da emenda no DOU. A aprovação no Senado em 14/10/2026 não é o marco de contagem dos prazos.`;
+    msg = `Etapa selecionada: ${r.horas}h/semana e ${r.folgas} dias de repouso remunerado, aplicáveis a partir de ${r.horas===42?'16/12/2026':'16/12/2027'}, conforme a EC 141, publicada no DOU de 16/10/2026, edição extra.`;
     if(state.tipoEscala==='6x1'){
-      msg += ' A escala 6×1 deixa de ser o modelo geral nesta etapa, pela exigência de dois repousos semanais; eventual compensação excepcional depende de acordo ou convenção coletiva, nos limites do texto aprovado.';
+      msg += ' A escala 6×1 deixa de ser o modelo geral nesta etapa, pela exigência de dois repousos semanais; eventual compensação excepcional depende de acordo ou convenção coletiva, nos limites da EC 141.';
     }
   }else{
-    msg = 'Etapa anterior à primeira fase: referência de até 44h semanais, até completar dois meses da publicação da emenda no DOU, sem presumir que toda escala 5×2 seja automaticamente válida. Compensações e regimes especiais devem ter a base jurídica adequada.';
+    msg = 'Etapa anterior à primeira fase: referência de até 44h semanais, até 15/12/2026, conforme a transição da EC 141, sem presumir que toda escala 5×2 seja automaticamente válida. Compensações e regimes especiais devem ter a base jurídica adequada.';
   }
 
   if(state.instrumentoCompensacao==='nenhuma'){
@@ -1759,9 +1770,9 @@ function renderSimuladorPec(){
   const atualHoras=state.tipoEscala==='12x36'?42:44;
 
   const fases=[
-    {label:'Antes da 1ª fase',tag:'44h',horasSemana:44,diasSemana:state.tipoEscala==='5x2'?5:Math.min(6,atualDias),head:'#0B2545',obs:'Até completar 2 meses da publicação no DOU'},
-    {label:'1ª fase da transição',tag:'42h',horasSemana:42,diasSemana:5,head:'#B9791C',obs:'2 meses após a publicação no DOU'},
-    {label:'2ª fase da transição',tag:'40h',horasSemana:40,diasSemana:5,head:'#1F7A54',obs:'14 meses após a publicação no DOU'}
+    {label:'Antes da 1ª fase',tag:'44h',horasSemana:44,diasSemana:state.tipoEscala==='5x2'?5:Math.min(6,atualDias),head:'#0B2545',obs:'Até 15/12/2026 · EC 141'},
+    {label:'1ª fase da transição',tag:'42h',horasSemana:42,diasSemana:5,head:'#B9791C',obs:'A partir de 16/12/2026 · 2 meses após a publicação no DOU'},
+    {label:'2ª fase da transição',tag:'40h',horasSemana:40,diasSemana:5,head:'#1F7A54',obs:'A partir de 16/12/2027 · 14 meses após a publicação no DOU'}
   ];
 
   const cards=fases.map(f=>{
@@ -1793,7 +1804,7 @@ function renderSimuladorPec(){
     <thead><tr>${['Métrica','Antes da 1ª fase','1ª fase · +2 meses','2ª fase · +14 meses'].map(x=>`<th class="px-2.5 py-2 border-b border-slate-200 text-left text-slate-500 text-xs">${x}</th>`).join('')}</tr></thead>
     <tbody>${rows.map(r=>`<tr>${r.map(c=>`<td class="px-2.5 py-2 border-b border-slate-200">${c}</td>`).join('')}</tr>`).join('')}</tbody>
   </table></div>
-  <p class="text-xs text-slate-500 mt-2">* A escala efetiva depende do padrão configurado. ** O segundo repouso remunerado começa dois meses após a publicação no DOU, junto com a fase de 42h. A regra geral de 8h diárias admite compensação conforme o instrumento aplicável.</p>`;
+  <p class="text-xs text-slate-500 mt-2">* A escala efetiva depende do padrão configurado. ** O segundo repouso remunerado começa em 16/12/2026, junto com a fase de 42h da EC 141. A regra geral de 8h diárias admite compensação conforme o instrumento aplicável.</p>`;
 
   document.getElementById('pec-resultado').innerHTML=`<div class="grid grid-cols-1 md:grid-cols-3 gap-3.5">${cards}</div>${table}`;
 }
