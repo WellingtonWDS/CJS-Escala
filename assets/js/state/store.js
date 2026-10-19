@@ -20,6 +20,8 @@ export function createDefaultState(now = new Date()) {
       },
     ],
     proximoId: 3,
+    demandasCobertura: [],
+    proximaDemandaId: 1,
     tipoEscala: "6x1",
     regimeJornada: "atual44",
     instrumentoCompensacao: "nenhuma",

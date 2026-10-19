@@ -117,6 +117,10 @@ const { chromium } = require("playwright");
     console.log(
       "OK: invalidação da escala e ausência de erros JavaScript/arquivos locais",
     );
+    await require("./browser-cobertura.cjs")({
+      browser,
+      baseURL: `http://127.0.0.1:${server.address().port}/`,
+    });
   } finally {
     if (browser) await browser.close();
     await new Promise((resolve) => server.close(resolve));

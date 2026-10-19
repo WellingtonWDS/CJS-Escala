@@ -10,7 +10,13 @@ import {
 import { MESES, DIAS_SEMANA } from "../config/regras-jornada.js";
 import { escapeHtml } from "../shared/formatacao.js";
 
-export function createCalendarioUI({ state, domain, storage, env }) {
+export function createCalendarioUI({
+  state,
+  domain,
+  storage,
+  env,
+  renderRelatorioCobertura,
+}) {
   const {
     calcHorasDia,
     calcularSaidaSimulada,
@@ -85,6 +91,9 @@ export function createCalendarioUI({ state, domain, storage, env }) {
     state.escalaGerada.avisosCobertura = validarCobertura(
       state.escalaGerada.resultado,
     );
+    state.escalaGerada.coberturaOperacional = domain.analisarCobertura(
+      state.escalaGerada.resultado,
+    );
     renderEscalaGerada();
     saveState();
   }
@@ -101,7 +110,7 @@ export function createCalendarioUI({ state, domain, storage, env }) {
     if (!state.escalaGerada) return;
     const { resultado } = state.escalaGerada;
     const container = document.getElementById("resultado-gerar");
-    let html = "";
+    let html = renderRelatorioCobertura(resultado);
 
     // As validações são recalculadas a cada renderização. Assim, qualquer alteração
     // manual em um dia repercute imediatamente nos indicadores semanais e mensais.
@@ -342,7 +351,7 @@ export function createCalendarioUI({ state, domain, storage, env }) {
                     : x.obj.status === "FC"
                       ? "FC"
                       : x.obj.status;
-                return `<button data-ri="${x.ri}" data-di="${x.r.dias.indexOf(x.obj)}" class="w-full text-left mb-1 last:mb-0 px-1.5 py-1 rounded border ${cls} hover:opacity-80" title="${trabalho ? "Trabalho" : "Folga"} — clique para alterar">
+                return `<button data-ri="${x.ri}" data-di="${x.r.dias.indexOf(x.obj)}" class="w-full text-left mb-1 last:mb-0 px-1.5 py-1 rounded border ${cls} hover:opacity-80" title="${trabalho ? "Trabalho" : "Folga"}${trabalho && x.obj.intervaloInicioMin != null ? ` · Intervalo ${minToTime(x.obj.intervaloInicioMin)}–${minToTime(x.obj.intervaloFimMin)}` : ""} — clique para alterar">
               <div class="font-semibold truncate">${escapeHtml(x.r.colaborador.nome || "(sem nome)")}</div>
               <div class="text-[9px] opacity-80">${status}${state.turnosRevezamento ? ` · ${x.obj.turno}` : ""}${x.obj.horas ? ` · ${fmtHoras(x.obj.horas)} · ${minToTime(x.obj.entradaMin)}–${minToTime(x.obj.saidaMin)}` : ""}</div>
             </button>`;

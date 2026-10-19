@@ -44,6 +44,16 @@ Para manutenção:
 - Novos eventos devem invalidar a escala quando a configuração mudar e salvar as alterações pela persistência.
 - Preserve a chave de armazenamento; mudanças no formato exigem migração dos dados existentes.
 
+## Cobertura operacional
+
+Cadastre faixas recorrentes em **Cobertura operacional**, informando função, horário, mínimo de pessoas, dias da semana e aplicação em feriados. Use **Cargo / função** nos colaboradores para associar as pessoas. Nomes de função ignoram acentos, maiúsculas e espaços extras; cada pessoa exerce uma única função nesta versão.
+
+Ao gerar a escala, o relatório mostra data, função, período descoberto, mínimo, presentes e faltantes. A análise usa os horários individuais, exclui intervalos e folgas e considera plantões iniciados no dia anterior. Horários noturnos têm término no dia seguinte. Faixas sobrepostas da mesma função usam o maior mínimo, sem somar demandas duplicadas. Os dias/feriados escolhidos referem-se ao início da faixa, independentemente dos dias operacionais da empresa.
+
+A pausa mantém sua distância da entrada configurada, inclusive no Turno B; em jornadas menores, é antecipada para caber no plantão. O intervalo efetivo aparece na descrição do dia na grade. A análise ocorre em minutos e se limita ao período selecionado. O total de horas-pessoa faltantes soma a duração de cada lacuna multiplicada pela quantidade de pessoas que faltam.
+
+O módulo `domain/cobertura.js` é independente da interface e não modifica a configuração ou a escala. As demandas ficam em `demandasCobertura`, preservando a chave existente do armazenamento. Sem demandas, a cobertura por função é identificada como não avaliada. Alterar demandas ou cargos invalida a escala; editar um status diário recalcula a cobertura. A funcionalidade diagnostica lacunas, mas não redistribui automaticamente a equipe.
+
 ## Testes
 
 ```sh

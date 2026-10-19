@@ -1,3 +1,4 @@
+import { createCoberturaUI } from "./ui/cobertura.js";
 import { createDefaultState } from "./state/store.js";
 import { createPersistence } from "./state/persistencia.js";
 import { createDomain } from "./domain/index.js";
@@ -30,7 +31,12 @@ export function createApplication({ env, now = () => new Date() }) {
   const deps = { state, domain, storage, env, invalidarEscala };
   const resumo = createResumoUI(deps);
   const feriados = createFeriadosUI(deps);
-  const colaboradores = createColaboradoresUI({ ...deps, ...resumo });
+  const cobertura = createCoberturaUI(deps);
+  const colaboradores = createColaboradoresUI({
+    ...deps,
+    ...resumo,
+    onFuncoesChange: cobertura.renderFuncoesCobertura,
+  });
   const jornada = createJornadaFolgasUI({ ...deps, ...resumo });
   const configuracao = createConfiguracaoUI({
     ...deps,
@@ -38,7 +44,10 @@ export function createApplication({ env, now = () => new Date() }) {
     ...feriados,
     ...jornada,
   });
-  const calendario = createCalendarioUI(deps);
+  const calendario = createCalendarioUI({
+    ...deps,
+    renderRelatorioCobertura: cobertura.renderRelatorioCobertura,
+  });
   const transicao = createTransicaoUI(deps);
   const { renderResumo } = resumo;
   const { renderFeriados } = feriados;
@@ -48,7 +57,14 @@ export function createApplication({ env, now = () => new Date() }) {
     configuracao;
   const { renderEscalaGerada } = calendario;
   function bindEvents() {
-    for (const ui of [feriados, colaboradores, jornada, calendario, transicao])
+    for (const ui of [
+      feriados,
+      colaboradores,
+      jornada,
+      calendario,
+      transicao,
+      cobertura,
+    ])
       ui.bindEvents();
     bindExportEvents(state, env);
     document.getElementById("btn-limpar-dados").onclick = () => {
@@ -98,6 +114,8 @@ export function createApplication({ env, now = () => new Date() }) {
     )
       invalidarEscala();
 
+    if (!Array.isArray(state.demandasCobertura)) state.demandasCobertura = [];
+    cobertura.renderCoberturaConfig();
     renderConfigSelects();
     renderColaboradores();
     renderFeriados();
@@ -123,6 +141,7 @@ export function createApplication({ env, now = () => new Date() }) {
     ...configuracao,
     ...calendario,
     ...transicao,
+    ...cobertura,
     bindEvents,
   };
 }

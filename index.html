@@ -27,6 +27,7 @@
     <a href="#sec-feriados" class="flex items-center gap-2 shrink-0 no-underline text-slate-500 hover:bg-slate-200 hover:text-fintria-navy px-2.5 py-2 rounded-md text-sm font-medium"><b class="w-5 h-5 rounded-full bg-slate-200 text-fintria-navy text-[11px] flex items-center justify-center shrink-0">3</b>Feriados</a>
     <a href="#sec-jornada" class="flex items-center gap-2 shrink-0 no-underline text-slate-500 hover:bg-slate-200 hover:text-fintria-navy px-2.5 py-2 rounded-md text-sm font-medium"><b class="w-5 h-5 rounded-full bg-slate-200 text-fintria-navy text-[11px] flex items-center justify-center shrink-0">4</b>Jornada</a>
     <a href="#sec-folgas" class="flex items-center gap-2 shrink-0 no-underline text-slate-500 hover:bg-slate-200 hover:text-fintria-navy px-2.5 py-2 rounded-md text-sm font-medium"><b class="w-5 h-5 rounded-full bg-slate-200 text-fintria-navy text-[11px] flex items-center justify-center shrink-0">5</b>Folgas</a>
+    <a href="#sec-cobertura" class="flex items-center gap-2 shrink-0 no-underline text-slate-500 hover:bg-slate-200 hover:text-fintria-navy px-2.5 py-2 rounded-md text-sm font-medium"><b class="w-5 h-5 rounded-full bg-slate-200 text-fintria-navy text-[10px] flex items-center justify-center shrink-0">5A</b>Cobertura</a>
     <a href="#sec-gerar" class="flex items-center gap-2 shrink-0 no-underline text-slate-500 hover:bg-slate-200 hover:text-fintria-navy px-2.5 py-2 rounded-md text-sm font-medium"><b class="w-5 h-5 rounded-full bg-slate-200 text-fintria-navy text-[11px] flex items-center justify-center shrink-0">6</b>Escala gerada</a>
     <a href="#sec-pec" class="flex items-center gap-2 shrink-0 no-underline text-slate-500 hover:bg-slate-200 hover:text-fintria-navy px-2.5 py-2 rounded-md text-sm font-medium"><b class="w-5 h-5 rounded-full bg-slate-200 text-fintria-navy text-[11px] flex items-center justify-center shrink-0">7</b>Emenda Constitucional</a>
   </nav>
@@ -164,6 +165,26 @@
         </div>
       </div>
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4" id="resumo-grid"></div>
+    </section>
+
+    <section id="sec-cobertura" class="scroll-mt-4 bg-white border border-slate-200 rounded-xl p-5 md:p-7 mb-5">
+      <h2 class="font-display text-fintria-navy text-lg font-semibold mb-1">Cobertura operacional</h2>
+      <p class="text-slate-500 text-sm mb-4">Defina quantas pessoas de cada função precisam estar trabalhando em cada faixa. Exemplo: dois atendentes e um supervisor das 09:00 às 18:00. Use o campo Cargo / função dos colaboradores para fazer a associação.</p>
+      <datalist id="funcoes-cobertura"></datalist>
+      <div id="cobertura-lista"></div>
+      <form id="cobertura-form" class="border border-slate-200 rounded-lg p-3 mt-3">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div><label for="cobertura-funcao" class="block text-xs font-semibold mb-1">Função</label><input id="cobertura-funcao" list="funcoes-cobertura" required maxlength="100" class="w-full border rounded-md p-2" placeholder="Ex.: Atendente"></div>
+          <div><label for="cobertura-inicio" class="block text-xs font-semibold mb-1">Início</label><input id="cobertura-inicio" type="time" required class="w-full border rounded-md p-2"></div>
+          <div><label for="cobertura-fim" class="block text-xs font-semibold mb-1">Fim</label><input id="cobertura-fim" type="time" required class="w-full border rounded-md p-2"></div>
+          <div><label for="cobertura-minimo" class="block text-xs font-semibold mb-1">Mínimo de pessoas</label><input id="cobertura-minimo" type="number" min="1" max="999" step="1" required class="w-full border rounded-md p-2"></div>
+        </div>
+        <fieldset class="mt-3"><legend class="text-xs font-semibold mb-2">Dias em que esta faixa é necessária</legend><div id="cobertura-dias" class="text-sm"></div></fieldset>
+        <label class="inline-flex gap-2 items-center text-sm mt-2"><input id="cobertura-feriados" type="checkbox">Também exigir em feriados cadastrados</label>
+        <p id="cobertura-mensagem" role="alert" class="text-sm text-fintria-vermelho mt-2"></p>
+        <div class="flex gap-2 mt-3"><button id="cobertura-salvar" type="submit" class="bg-fintria-navy text-white px-3 py-2 rounded-md text-sm font-semibold">+ Adicionar faixa</button><button id="cobertura-cancelar" type="button" hidden class="border px-3 py-2 rounded-md text-sm">Cancelar edição</button></div>
+      </form>
+      <details class="mt-3 text-xs text-slate-500"><summary class="cursor-pointer">Como a cobertura é calculada</summary><p class="mt-2">A demanda vale nos dias escolhidos, mesmo que não sejam dias operacionais da empresa. Horário final anterior ao inicial termina no dia seguinte; os dias e feriados se referem ao início da faixa. Faixas sobrepostas da mesma função usam o maior mínimo, sem somar. A função corresponde ao cargo, ignorando acentos, maiúsculas e espaços extras. Cada pessoa atende somente à função cadastrada.</p><p class="mt-2">Intervalos são descontados. No Turno B, mantêm a mesma distância da entrada do Turno A; em jornadas menores, são antecipados para caber no plantão. A geração identifica lacunas, sem contratar pessoas ou alterar automaticamente a escala para preenchê-las.</p></details>
     </section>
 
     <!-- 6. ESCALA GERADA -->

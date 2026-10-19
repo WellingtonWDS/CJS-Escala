@@ -1,3 +1,4 @@
+import { calcularPausaEfetiva, analisarCobertura } from "./cobertura.js";
 import {
   diasNoMes,
   isoDate,
@@ -164,6 +165,9 @@ export function createGerador(state, jornada, feriados, validacao) {
     d.entradaMin = timeToMin(d.turno === "B" ? state.entradaTurnoB : j.entrada);
     d.intervaloMin = pausa;
     d.saidaMin = d.entradaMin + d.horas * 60 + pausa;
+    const intervalo = calcularPausaEfetiva(d, j);
+    d.intervaloInicioMin = intervalo?.inicio ?? null;
+    d.intervaloFimMin = intervalo?.fim ?? null;
   }
 
   function distribuirHorasIndividuais(colab, dias) {
@@ -226,6 +230,12 @@ export function createGerador(state, jornada, feriados, validacao) {
       );
       feriadosMap[key] = { ...f, dia: f.data.getDate(), trabalhado: false };
     });
+    // Também respeitar feriados locais anteriores em plantões que cruzam o mês.
+    (state.feriadosLocais ?? []).forEach((f) => {
+      if (Number.isInteger(f.ano) && Number.isInteger(f.mes)) {
+        feriadosMap[isoDate(f.ano, f.mes, Number(f.dia))] = { ...f };
+      }
+    });
     state.feriados.forEach((f) => {
       const key = isoDate(state.ano, state.mes, Number(f.dia));
       feriadosMap[key] = { ...f };
@@ -233,6 +243,13 @@ export function createGerador(state, jornada, feriados, validacao) {
 
     const resultado = state.colaboradores.map((c, idx) => ({
       colaborador: { ...c },
+      diasContexto: gerarEscalaColaborador(
+        c,
+        idx,
+        addDays(dataInicio, -7),
+        addDays(dataInicio, -1),
+        feriadosMap,
+      ),
       dias: gerarEscalaColaborador(c, idx, dataInicio, dataFim, feriadosMap),
     }));
 
@@ -256,6 +273,7 @@ export function createGerador(state, jornada, feriados, validacao) {
       ),
       resultado,
       avisosCobertura: cobertura,
+      coberturaOperacional: analisarCobertura(state, resultado),
       validacoes,
       geradoEm: new Date().toISOString(),
     };
