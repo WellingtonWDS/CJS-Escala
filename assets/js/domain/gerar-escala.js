@@ -51,13 +51,37 @@ export function createGerador(state, jornada, feriados, validacao) {
     }
 
     const monday = getMonday(date);
-    const weekSeed = Math.abs(Math.floor(monday.getTime() / 86400000)) + idx;
-    const rotacionados = [...candidatos];
-    const desloc = weekSeed % rotacionados.length;
-    const ordenados = rotacionados
-      .slice(desloc)
-      .concat(rotacionados.slice(0, desloc));
-    return ordenados.slice(0, quantidadeFolgasOperacionais);
+    const rotacionar = (segunda) => {
+      const serial =
+        Date.UTC(segunda.getFullYear(), segunda.getMonth(), segunda.getDate()) /
+        86400000;
+      const desloc = (Math.abs(Math.floor(serial)) + idx) % candidatos.length;
+      return candidatos
+        .slice(desloc)
+        .concat(candidatos.slice(0, desloc))
+        .slice(0, quantidadeFolgasOperacionais);
+    };
+    const folgas = rotacionar(monday);
+    if (
+      state.tipoEscala === "5x2" &&
+      quantidadeFolgasOperacionais === 2 &&
+      folgas.length === 2
+    ) {
+      // Segunda=0 ... domingo=6. Preservar a última folga nominal torna a
+      // decisão estável entre meses, sem depender do início da geração.
+      const ordem = (dia) => (dia + 6) % 7;
+      const anteriores = rotacionar(addDays(monday, -7));
+      const ultimaAnterior = anteriores.reduce((a, b) =>
+        ordem(a) > ordem(b) ? a : b,
+      );
+      const primeira = ordem(folgas[0]) < ordem(folgas[1]) ? 0 : 1;
+      if (ordem(folgas[primeira]) > ordem(ultimaAnterior)) {
+        // Antecipar uma das duas folgas evita sete dias consecutivos sem
+        // acrescentar um terceiro repouso. O dia já pertence aos permitidos.
+        folgas[primeira] = ultimaAnterior;
+      }
+    }
+    return folgas;
   }
 
   function escolherFolgasSemana(date, idx) {
