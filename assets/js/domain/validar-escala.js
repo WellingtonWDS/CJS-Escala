@@ -1,3 +1,4 @@
+import { apurarSemana } from "./resumo-semanal.js";
 import {
   diasNoMes,
   isoDate,
@@ -278,39 +279,26 @@ export function createValidacao(state, jornada, feriados) {
     const referenciaLegal = regimeAtual().horas;
 
     for (const [key, semana] of porSemana.entries()) {
-      const trabalhadas = semana.filter(
-        (x) => x.status === "T" || x.status === "FE",
-      );
-      const total = trabalhadas.reduce((s, x) => s + x.horas, 0);
+      const apuracao = apurarSemana(colab, semana, state);
+      const total = apuracao.trabalhadas;
       const primeiraData = semana
         .slice()
         .sort((a, b) => a.data.localeCompare(b.data))[0]?.data;
-
-      const semanaCompleta = semana.length === 7;
-      const feriadoNaoTrabalhado = semana.some(
-        (x) => x.feriado && !x.feriado.trabalhado,
-      );
-
       if (
-        semanaCompleta &&
+        apuracao.completa &&
         Number.isFinite(jornadaContratual) &&
-        Math.abs(total - jornadaContratual) > 0.01
+        Math.abs(apuracao.computadas - jornadaContratual) > 0.01
       ) {
-        const diferenca = total - jornadaContratual;
-        /* Feriado não trabalhado pode reduzir naturalmente a carga da
-         semana. Nesse cenário, não gerar aviso de jornada abaixo do alvo. */
-        const suprimirAvisoPorFeriado = diferenca < 0 && feriadoNaoTrabalhado;
-        if (!suprimirAvisoPorFeriado) {
-          const verbo = diferenca > 0 ? "acima" : "abaixo";
-          out.push(
-            issue(
-              "JORNADA_CONTRATUAL",
-              diferenca > 0 ? "erro" : "alerta",
-              `${primeiraData}: ${fmtHoras(total)} trabalhadas na semana, ${fmtHoras(Math.abs(diferenca))} ${verbo} da jornada semanal contratual de ${fmtHoras(jornadaContratual)} do colaborador.`,
-              primeiraData,
-            ),
-          );
-        }
+        const diferenca = apuracao.computadas - jornadaContratual;
+        const verbo = diferenca > 0 ? "acima" : "abaixo";
+        out.push(
+          issue(
+            "JORNADA_CONTRATUAL",
+            diferenca > 0 ? "erro" : "alerta",
+            `${primeiraData}: ${fmtHoras(total)} trabalhadas + ${fmtHoras(apuracao.abonadas)} abonadas por feriado = ${fmtHoras(apuracao.computadas)} computadas na semana, ${fmtHoras(Math.abs(diferenca))} ${verbo} da jornada semanal contratual de ${fmtHoras(jornadaContratual)} do colaborador.`,
+            primeiraData,
+          ),
+        );
       }
 
       if (total > referenciaLegal) {

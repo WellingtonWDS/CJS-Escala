@@ -166,6 +166,14 @@ export function createGerador(state, jornada, feriados, validacao) {
       const horas = Number(colab.horasSemana) / Math.max(1, previstos);
       semana.forEach((d) => {
         const trabalho = d.status === "T" || d.status === "FE";
+        d.horasPrevistas = d.previsto
+          ? state.tipoEscala === "12x36"
+            ? Math.max(
+                0,
+                12 - Math.max(0, intervaloMin(state.jornada) || 0) / 60,
+              )
+            : horas
+          : 0;
         d.horas = trabalho
           ? state.tipoEscala === "12x36"
             ? Math.max(

@@ -1,3 +1,4 @@
+import { apurarSemana } from "../domain/resumo-semanal.js";
 import {
   isoDate,
   dateFromKey,
@@ -216,8 +217,9 @@ export function createCalendarioUI({
         <div><div class="font-display font-bold text-base">Escala mensal</div><div class="text-xs opacity-85">Dias na horizontal · semanas do mês na vertical · resumo da semana na última coluna</div></div>
         <div class="text-xs opacity-85">Clique em um colaborador para alterar o status</div>
       </div>
-      <div class="w-full overflow-hidden">
-        <table class="border-collapse w-full table-fixed text-[11px] leading-tight">
+      <p class="text-xs text-slate-500 px-3 py-2 no-print 2xl:hidden">Deslize a tabela horizontalmente para ver todos os dias e o resumo da semana.</p>
+      <div class="w-full overflow-x-auto">
+        <table class="escala-mensal border-collapse w-full table-fixed text-[11px] leading-tight">
           <colgroup>
             <col style="width:7%">
             <col style="width:11%"><col style="width:11%"><col style="width:11%"><col style="width:11%">
@@ -282,33 +284,11 @@ export function createCalendarioUI({
           const semana = r.dias.filter((d) =>
             semanaDatas.some((x) => x.key === d.data),
           );
-          const horas = semana.reduce((s, d) => s + d.horas, 0);
+          const apuracao = apurarSemana(r.colaborador, semana, state);
           const folgas = semana.filter(
             (d) => d.status === "F" || d.status === "FC",
           );
-          const trabalhados = semana.filter(
-            (d) => d.status === "T" || d.status === "FE",
-          );
-          const alvo = Number(r.colaborador.horasSemana);
-          const semanaCompleta = semana.length === 7;
-          let estado = "parcial";
-          if (semanaCompleta && Number.isFinite(alvo)) {
-            estado =
-              Math.abs(horas - alvo) < 0.01
-                ? "ok"
-                : horas > alvo
-                  ? "acima"
-                  : "abaixo";
-          }
-          return {
-            r,
-            horas,
-            folgas,
-            trabalhados,
-            alvo,
-            semanaCompleta,
-            estado,
-          };
+          return { r, ...apuracao, folgas };
         });
 
         const resumoHtml = semanaPorColaborador
@@ -329,9 +309,10 @@ export function createCalendarioUI({
                   : d.data;
               })
               .join(", ");
-            return `<div class="pb-2 mb-2 border-b border-slate-200 last:border-0 last:mb-0 last:pb-0">
+            return `<div data-resumo-semanal data-colaborador="${x.r.colaborador.id}" data-semana="${isoDate(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate())}" class="pb-2 mb-2 border-b border-slate-200 last:border-0 last:mb-0 last:pb-0">
           <div class="flex items-start justify-between gap-1"><b class="text-fintria-navy">${escapeHtml(x.r.colaborador.nome || "(sem nome)")}</b>${badge}</div>
-          <div class="text-slate-600 mt-0.5">${fmtHoras(x.horas)} trabalhadas${Number.isFinite(x.alvo) ? ` · alvo ${fmtHoras(x.alvo)}` : ""}</div>
+          <div class="text-slate-600 mt-0.5">${fmtHoras(x.trabalhadas)} trabalhadas${x.abonadas ? ` + ${fmtHoras(x.abonadas)} abonadas` : ""}${Number.isFinite(x.alvo) ? ` · total ${fmtHoras(x.computadas)} / alvo ${fmtHoras(x.alvo)}` : ""}</div>
+          ${x.abonos.map((a) => `<div class="text-fintria-azul mt-1">Abono de feriado: ${formatDateBR(dateFromKey(a.data))} — ${escapeHtml(a.nome)} (${fmtHoras(a.horas)}).</div>`).join("")}
           <div class="text-slate-500">Folgas: ${folgas || "nenhuma"}</div>
         </div>`;
           })
@@ -406,7 +387,7 @@ export function createCalendarioUI({
         html += `<div class="border border-slate-200 rounded-lg p-3">
         <div class="font-semibold text-fintria-navy">${escapeHtml(x.r.colaborador.nome || "(sem nome)")}</div>
         <div class="grid grid-cols-3 gap-2 mt-2 text-xs">
-          <div><div class="font-bold text-fintria-navy">${fmtHoras(x.horas)}</div><div class="text-slate-500">Horas no mês</div></div>
+          <div><div class="font-bold text-fintria-navy">${fmtHoras(x.horas)}</div><div class="text-slate-500">Horas trabalhadas</div></div>
           <div><div class="font-bold text-fintria-navy">${x.diasTrabalho}</div><div class="text-slate-500">Dias trabalhados</div></div>
           <div><div class="font-bold text-fintria-navy">${x.diasFolga}</div><div class="text-slate-500">Dias de folga</div></div>
         </div>

@@ -4,7 +4,13 @@ body {
 .font-display {
   font-family: "Space Grotesk", sans-serif;
 }
+.escala-mensal {
+  min-width: 1100px;
+}
 @media print {
+  .escala-mensal {
+    min-width: 0;
+  }
   .no-print {
     display: none !important;
   }

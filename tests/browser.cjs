@@ -50,7 +50,10 @@ const { chromium } = require("playwright");
     assert.equal(await page.locator("#ciclo-12x36-config").isVisible(), false);
     for (const type of ["6x1", "5x2", "12x36", "custom"]) {
       await page.locator(`[data-tipo="${type}"]`).click();
-      assert.equal(await page.locator("#ciclo-12x36-config").isVisible(), type === "12x36");
+      assert.equal(
+        await page.locator("#ciclo-12x36-config").isVisible(),
+        type === "12x36",
+      );
       await page.locator("#btn-gerar").click();
       assert.match(
         await page.locator("#resultado-gerar").innerText(),
@@ -159,6 +162,10 @@ const { chromium } = require("playwright");
     console.log(
       "OK: invalidação da escala e ausência de erros JavaScript/arquivos locais",
     );
+    await require("./browser-feriados.cjs")({
+      browser,
+      baseURL: `http://127.0.0.1:${server.address().port}/`,
+    });
     await require("./browser-cobertura.cjs")({
       browser,
       baseURL: `http://127.0.0.1:${server.address().port}/`,

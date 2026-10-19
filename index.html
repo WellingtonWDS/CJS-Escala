@@ -20,7 +20,7 @@
   <button id="btn-limpar-dados" class="no-print text-slate-300 hover:text-white text-xs border border-white/25 hover:border-white/50 rounded-md px-3 py-1.5">Limpar dados salvos</button>
 </header>
 
-<div class="flex flex-col md:flex-row max-w-6xl mx-auto items-start">
+<div class="flex flex-col md:flex-row w-full max-w-[1920px] mx-auto items-start px-2 lg:px-4">
   <nav class="md:sticky md:top-0 w-full md:w-52 shrink-0 flex md:flex-col gap-1 overflow-x-auto md:overflow-visible px-3 py-3 md:py-7 no-print">
     <a href="#sec-config" class="flex items-center gap-2 shrink-0 no-underline text-slate-500 hover:bg-slate-200 hover:text-fintria-navy px-2.5 py-2 rounded-md text-sm font-medium"><b class="w-5 h-5 rounded-full bg-slate-200 text-fintria-navy text-[11px] flex items-center justify-center shrink-0">1</b>Configuração</a>
     <a href="#sec-tipo" class="flex items-center gap-2 shrink-0 no-underline text-slate-500 hover:bg-slate-200 hover:text-fintria-navy px-2.5 py-2 rounded-md text-sm font-medium"><b class="w-5 h-5 rounded-full bg-slate-200 text-fintria-navy text-[11px] flex items-center justify-center shrink-0">2</b>Tipo de escala</a>
@@ -98,7 +98,7 @@
       <p id="feriado-contexto" class="text-xs text-slate-500 mb-1.5"></p>
       <div class="flex gap-2">
         <input type="number" id="fer-dia" placeholder="Dia (1-31)" min="1" max="31" class="w-24 shrink-0 px-2.5 py-2 border border-slate-300 rounded-md text-sm">
-        <input type="text" id="fer-nome" placeholder="Ex: Aniversário da cidade" class="flex-1 px-2.5 py-2 border border-slate-300 rounded-md text-sm">
+        <input type="text" id="fer-nome" placeholder="Ex: Aniversário da cidade" class="min-w-0 flex-1 px-2.5 py-2 border border-slate-300 rounded-md text-sm">
         <button id="btn-add-feriado" class="border border-slate-300 text-fintria-navy bg-white px-3.5 py-2 rounded-md text-sm font-semibold hover:border-fintria-navy shrink-0">+ Adicionar</button>
       </div>
     </section>

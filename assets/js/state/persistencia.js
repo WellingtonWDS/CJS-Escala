@@ -1,5 +1,5 @@
 import { STORAGE_KEY } from "../config/regras-jornada.js";
-import { replaceState } from "./store.js";
+import { replaceState, atualizarNomesExemplo } from "./store.js";
 export function createPersistence({ state, initialState, storage }) {
   function saveState() {
     try {
@@ -25,6 +25,7 @@ export function createPersistence({ state, initialState, storage }) {
         state,
         deepMerge(JSON.parse(JSON.stringify(initialState)), parsed),
       );
+      atualizarNomesExemplo(state);
       return true;
     } catch (e) {
       console.warn("Não foi possível ler o localStorage:", e);

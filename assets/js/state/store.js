@@ -6,14 +6,14 @@ export function createDefaultState(now = new Date()) {
     colaboradores: [
       {
         id: 1,
-        nome: "Carla Martin",
+        nome: "Colaborador 1",
         sexo: "feminino",
         cargo: "Analista DP",
         horasSemana: 44,
       },
       {
         id: 2,
-        nome: "Mateus Silva",
+        nome: "Colaborador 2",
         sexo: "masculino",
         cargo: "Auxiliar de DP",
         horasSemana: 44,
@@ -52,4 +52,38 @@ export function createDefaultState(now = new Date()) {
 export function replaceState(state, next) {
   for (const key of Object.keys(state)) delete state[key];
   Object.assign(state, next);
+}
+
+// Migra somente os registros de demonstração originais intactos.
+export function atualizarNomesExemplo(state) {
+  const exemplos = [
+    {
+      id: 1,
+      nome: "Carla Martin",
+      cargo: "Analista DP",
+      sexo: "feminino",
+      horasSemana: 44,
+    },
+    {
+      id: 2,
+      nome: "Mateus Silva",
+      cargo: "Auxiliar de DP",
+      sexo: "masculino",
+      horasSemana: 44,
+    },
+  ];
+  const pessoas = [
+    ...(state.colaboradores ?? []),
+    ...(state.escalaGerada?.resultado ?? []).map((r) => r.colaborador),
+    ...(state.escalaGerada?.validacoes ?? []).map((v) => v.colaborador),
+  ];
+  for (const pessoa of pessoas) {
+    if (
+      pessoa &&
+      exemplos.some((exemplo) =>
+        Object.entries(exemplo).every(([k, v]) => pessoa[k] === v),
+      )
+    )
+      pessoa.nome = `Colaborador ${pessoa.id}`;
+  }
 }
