@@ -163,6 +163,8 @@
         </label>
       </div>
 
+      <div class="mt-3"><label class="block text-xs font-semibold">Entrada do Turno B</label><input type="time" id="entrada-turno-b" value="14:00" class="border rounded p-2"><p class="text-xs text-slate-500">O Turno A usa a entrada padrão. Os grupos trocam de turno toda segunda-feira; ambos usam o intervalo e a carga individuais.</p></div>
+      <div class="mt-3"><label class="block text-xs font-semibold">Data de referência do ciclo 12×36 (grupo A trabalha)</label><input type="date" id="ancora-12x36" value="2026-01-01" class="border rounded p-2"><p class="text-xs text-slate-500">Plantão de 12h de permanência, com intervalo descontado das horas efetivas, seguido de 36h de descanso. O grupo B inicia no dia seguinte.</p></div>
       <div id="dias-trabalho-wrap" class="mt-4">
         <label class="block text-xs font-semibold text-fintria-navySoft mb-1.5">Dias operacionais da empresa</label>
         <div class="text-[11px] text-slate-500 mb-2">Selecione os dias em que a empresa/operação funciona. Esses dias definem a disponibilidade operacional; a escala determina quais deles cada colaborador efetivamente trabalhará.</div>
@@ -287,10 +289,13 @@ const defaultState = {
   regimeJornada: 'atual44',
   instrumentoCompensacao: 'nenhuma',
   feriados: [],
+  feriadosLocais: [],
   jornada: {entrada:'08:00', intInicio:'12:00', intFim:'13:00', saida:'18:00'},
   jornadaPorDia: {},
   horarioPorDia: false,
   turnosRevezamento: false,
+  entradaTurnoB: '14:00',
+  ancora12x36: '2026-01-01',
   diasTrabalho: [1,2,3,4,5,6],
   folgaTipo: 'rotativa',
   folgaDiasPermitidos: [0,2,3,4,5,6],
@@ -306,6 +311,12 @@ let state = JSON.parse(JSON.stringify(defaultState));
 /* ---------------------------------------------------------
    PERSISTÊNCIA
 --------------------------------------------------------- */
+function invalidarEscala(){
+  state.escalaGerada=null;
+  document.getElementById('resultado-gerar').innerHTML='Configuração alterada. Gere a escala para atualizar os resultados.';
+  document.getElementById('pec-resultado').innerHTML='';
+}
+
 function saveState(){
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
   catch(e){ console.warn('Não foi possível salvar:', e); }
@@ -501,7 +512,10 @@ function feriadosNacionais(ano){
 function inicializarFeriadosDoMes(){
   const nacionais = feriadosNacionais(state.ano);
   const existentes = Array.isArray(state.feriados) ? state.feriados : [];
-  const municipais = existentes.filter(f=>f.tipo==='municipal' || f.tipo==='local');
+  const arquivo=new Map((state.feriadosLocais||[]).map(f=>[`${f.ano}-${f.mes}-${f.dia}`,f]));
+  existentes.filter(f=>f.tipo==='municipal'||f.tipo==='local').forEach(f=>arquivo.set(`${f.ano}-${f.mes}-${f.dia}`,f));
+  state.feriadosLocais=[...arquivo.values()];
+  const municipais=state.feriadosLocais.filter(f=>f.mes===state.mes && f.ano===state.ano);
   const novos = nacionais
     .filter(f=>f.data.getMonth()===state.mes)
     .map(f=>({dia:f.data.getDate(),nome:f.nome,tipo:f.tipo,trabalhado:false}));
@@ -562,6 +576,7 @@ function renderRegimeControls(){
   sel.value = state.regimeJornada;
   sel.onchange = e=>{
     state.regimeJornada = e.target.value;
+    invalidarEscala();
     renderTipoEscala();
     renderJornadaSection();
     renderResumo();
@@ -573,6 +588,7 @@ function renderRegimeControls(){
   comp.value = state.instrumentoCompensacao;
   comp.onchange = e=>{
     state.instrumentoCompensacao = e.target.value;
+    invalidarEscala();
     renderRegimeAlerta();
     atualizarCargaSemanalMsg();
     saveState();
@@ -615,7 +631,7 @@ function renderConfigSelects(){
 
   selMes.onchange=e=>{
     state.mes=Number(e.target.value);
-    state.escalaGerada=null;
+    invalidarEscala();
     inicializarFeriadosDoMes();
     renderFeriados();
     renderDiaInicioOptions();
@@ -623,7 +639,7 @@ function renderConfigSelects(){
   };
   selAno.onchange=e=>{
     state.ano=Number(e.target.value);
-    state.escalaGerada=null;
+    invalidarEscala();
     inicializarFeriadosDoMes();
     renderFeriados();
     renderDiaInicioOptions();
@@ -643,7 +659,7 @@ function renderDiaInicioOptions(){
   sel.innerHTML=opts;
   sel.onchange=e=>{
     state.diaInicio=Number(e.target.value);
-    state.escalaGerada=null;
+    invalidarEscala();
     saveState();
   };
 }
@@ -674,7 +690,7 @@ function renderColaboradores(){
       if(c){
         c[e.target.dataset.field]=e.target.dataset.field==='horasSemana' ? Number(e.target.value) : e.target.value;
         if(c.horasSemana<=0) c.horasSemana=44;
-        state.escalaGerada=null;
+        invalidarEscala();
         saveState();
       }
     };
@@ -682,7 +698,7 @@ function renderColaboradores(){
   list.querySelectorAll('[data-remove]').forEach(btn=>{
     btn.onclick=()=>{
       state.colaboradores=state.colaboradores.filter(c=>c.id!==Number(btn.dataset.remove));
-      state.escalaGerada=null;
+      invalidarEscala();
       renderColaboradores(); renderResumo(); saveState();
     };
   });
@@ -690,7 +706,7 @@ function renderColaboradores(){
 
 document.getElementById('btn-add-colab').onclick=()=>{
   state.colaboradores.push({id:state.proximoId++,nome:'',sexo:'feminino',cargo:'',horasSemana:44});
-  state.escalaGerada=null;
+  invalidarEscala();
   renderColaboradores(); saveState();
 };
 
@@ -711,7 +727,7 @@ function renderTipoEscala(){
         state.diasTrabalho=state.tipoEscala==='6x1' ? [1,2,3,4,5,6] : [1,2,3,4,5];
       }
       if(state.tipoEscala==='custom' && state.diasTrabalho.length===0) state.diasTrabalho=[1,2,3,4,5];
-      state.escalaGerada=null;
+      invalidarEscala();
       renderTipoEscala(); renderJornadaSection(); renderResumo(); renderRegimeAlerta(); saveState();
     };
   });
@@ -750,13 +766,15 @@ function renderFeriados(){
   wrap.querySelectorAll('select').forEach(sel=>{
     sel.onchange=e=>{
       state.feriados[Number(e.target.dataset.idx)].trabalhado=e.target.value==='1';
-      state.escalaGerada=null; saveState();
+      invalidarEscala(); saveState();
     };
   });
   wrap.querySelectorAll('[data-remove-feriado]').forEach(btn=>{
     btn.onclick=()=>{
+      const removido=state.feriados[Number(btn.dataset.removeFeriado)];
+      state.feriadosLocais=(state.feriadosLocais||[]).filter(f=>!(f.ano===removido.ano&&f.mes===removido.mes&&f.dia===removido.dia));
       state.feriados.splice(Number(btn.dataset.removeFeriado),1);
-      state.escalaGerada=null; renderFeriados(); saveState();
+      invalidarEscala(); renderFeriados(); saveState();
     };
   });
 }
@@ -773,11 +791,11 @@ document.getElementById('btn-add-feriado').onclick=()=>{
     alert('Já existe um feriado cadastrado neste dia.');
     return;
   }
-  state.feriados.push({dia,nome,tipo:'municipal',trabalhado:false});
+  state.feriados.push({dia,nome,tipo:'municipal',mes:state.mes,ano:state.ano,trabalhado:false});
   state.feriados.sort((a,b)=>a.dia-b.dia);
   document.getElementById('fer-dia').value='';
   document.getElementById('fer-nome').value='';
-  state.escalaGerada=null; renderFeriados(); saveState();
+  invalidarEscala(); renderFeriados(); saveState();
 };
 
 /* ---------------------------------------------------------
@@ -795,7 +813,7 @@ function renderPicker(containerId,arr,onChange){
       const i=arr.indexOf(day);
       if(i>=0) arr.splice(i,1); else arr.push(day);
       arr.sort((a,b)=>a-b);
-      state.escalaGerada=null;
+      invalidarEscala();
       onChange();
     };
   });
@@ -825,10 +843,15 @@ function refreshFolgaPermitidos(){
 function renderJornadaSection(){
   const oculta=['12x36'].includes(state.tipoEscala);
   document.getElementById('dias-trabalho-wrap').style.display=oculta?'none':'block';
-  document.getElementById('tg-horario-dia').checked=state.horarioPorDia;
-  document.getElementById('tg-turnos').checked=state.turnosRevezamento;
-  document.getElementById('jornada-padrao-grid').classList.toggle('hidden',state.horarioPorDia);
-  document.getElementById('jornada-por-dia-wrap').classList.toggle('hidden',!state.horarioPorDia);
+  document.getElementById('tg-horario-dia').checked=state.horarioPorDia && state.tipoEscala!=='12x36';
+  document.getElementById('tg-horario-dia').disabled=state.tipoEscala==='12x36';
+  document.getElementById('tg-turnos').checked=state.turnosRevezamento && state.tipoEscala!=='12x36';
+  document.getElementById('tg-turnos').disabled=state.tipoEscala==='12x36';
+  Object.entries(JMAP).forEach(([id,field])=>document.getElementById(id).value=state.jornada[field]);
+  document.getElementById('entrada-turno-b').value=state.entradaTurnoB;
+  document.getElementById('ancora-12x36').value=state.ancora12x36;
+  document.getElementById('jornada-padrao-grid').classList.toggle('hidden',state.horarioPorDia && state.tipoEscala!=='12x36');
+  document.getElementById('jornada-por-dia-wrap').classList.toggle('hidden',!state.horarioPorDia || state.tipoEscala==='12x36');
   if(state.horarioPorDia) renderJornadaPorDia();
   refreshDiasTrabalho();
   atualizarCargaSemanalMsg();
@@ -856,7 +879,7 @@ function renderJornadaPorDia(){
       const day=Number(e.target.dataset.day), field=e.target.dataset.field;
       if(!state.jornadaPorDia[day]) state.jornadaPorDia[day]={...state.jornada};
       state.jornadaPorDia[day][field]=e.target.value;
-      state.escalaGerada=null;
+      invalidarEscala();
       atualizarCargaSemanalMsg(); saveState();
     };
   });
@@ -868,21 +891,30 @@ Object.entries(JMAP).forEach(([id,field])=>{
   el.value=state.jornada[field];
   el.onchange=e=>{
     state.jornada[field]=e.target.value;
-    state.escalaGerada=null;
+    invalidarEscala();
     atualizarCargaSemanalMsg(); saveState();
   };
 });
 
 document.getElementById('tg-horario-dia').onchange=e=>{
   state.horarioPorDia=e.target.checked;
-  state.escalaGerada=null;
+  invalidarEscala();
   renderJornadaSection(); saveState();
 };
 
 document.getElementById('tg-turnos').onchange=e=>{
   state.turnosRevezamento=e.target.checked;
-  state.escalaGerada=null;
+  invalidarEscala();
   saveState();
+};
+
+document.getElementById('entrada-turno-b').onchange=e=>{
+  if(!Number.isFinite(timeToMin(e.target.value))) return;
+  state.entradaTurnoB=e.target.value; invalidarEscala(); saveState();
+};
+document.getElementById('ancora-12x36').onchange=e=>{
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(e.target.value)) return;
+  state.ancora12x36=e.target.value; invalidarEscala(); saveState();
 };
 
 function atualizarCargaSemanalMsg(){
@@ -906,11 +938,11 @@ function atualizarCargaSemanalMsg(){
 function renderFolgasSection(){
   const tipo=document.getElementById('folga-tipo');
   tipo.value=state.folgaTipo;
-  tipo.onchange=e=>{state.folgaTipo=e.target.value;state.escalaGerada=null;saveState();};
+  tipo.onchange=e=>{state.folgaTipo=e.target.value;invalidarEscala();saveState();};
 
   const cobertura=document.getElementById('folga-cobertura');
   cobertura.value=state.folgaCobertura;
-  cobertura.onchange=e=>{state.folgaCobertura=e.target.value;state.escalaGerada=null;saveState();};
+  cobertura.onchange=e=>{state.folgaCobertura=e.target.value;invalidarEscala();saveState();};
 
   refreshFolgaPermitidos();
 }
@@ -975,7 +1007,8 @@ function escolherFolgasSemana(date,idx){
 
 function gerarEscalaColaborador(colab,idx,dataInicio,dataFim,feriadosMap){
   const dias=[];
-  let cursor=new Date(dataInicio.getTime());
+  // Contexto anterior mantém as folgas consistentes ao gerar meses adjacentes.
+  let cursor=addDays(dataInicio,-14);
 
   while(cursor<=dataFim){
     const date=new Date(cursor.getTime());
@@ -984,9 +1017,11 @@ function gerarEscalaColaborador(colab,idx,dataInicio,dataFim,feriadosMap){
 
     if(state.tipoEscala==='12x36'){
       const grupo=idx%2;
-      /* O protótipo mantém a alternância por dia do mês, agora
-         aplicada também aos dias de contexto das semanas de borda. */
-      status=(date.getDate()%2===grupo)?'T':'F';
+      // Alternância contínua, independente das viradas de mês e ano.
+      const anchor=dateFromKey(state.ancora12x36);
+      const serial=d=>Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/86400000;
+      const offset=serial(date)-serial(anchor);
+      status=((offset%2+2)%2===grupo)?'T':'F';
     }else{
       const operacional=state.diasTrabalho.includes(weekday);
       if(!operacional){
@@ -999,6 +1034,13 @@ function gerarEscalaColaborador(colab,idx,dataInicio,dataFim,feriadosMap){
 
     const key=isoDate(date.getFullYear(),date.getMonth(),date.getDate());
     const feriado=feriadosMap[key] || null;
+    let repousoSeguranca=false;
+    if(state.tipoEscala!=='12x36' && status==='T'){
+      let seguidos=0;
+      for(let i=dias.length-1;i>=0 && ['T','FE'].includes(dias[i].status);i--) seguidos++;
+      if(seguidos>=6){status='F';repousoSeguranca=true;}
+    }
+    const previsto=status==='T';
     if(feriado){
       if(feriado.trabalhado && status==='T') status='FE';
       else if(!feriado.trabalhado) status='F';
@@ -1010,14 +1052,18 @@ function gerarEscalaColaborador(colab,idx,dataInicio,dataFim,feriadosMap){
       weekday,
       status,
       horas:0,
-      feriado
+      feriado,
+      previsto,
+      repousoSeguranca,
+      turno: state.turnosRevezamento && state.tipoEscala!=='12x36' ? (((Math.floor((Date.UTC(...[date.getFullYear(),date.getMonth(),date.getDate()])-Date.UTC(2026,0,5))/86400000/7)+idx)%2+2)%2===0?'A':'B') : 'A'
     });
 
     cursor.setDate(cursor.getDate()+1);
   }
 
-  distribuirHorasIndividuais(colab,dias);
-  return dias;
+  const periodo=dias.filter(d=>dateFromKey(d.data)>=dataInicio);
+  distribuirHorasIndividuais(colab,periodo);
+  return periodo;
 }
 
 /*
@@ -1030,51 +1076,53 @@ function gerarEscalaColaborador(colab,idx,dataInicio,dataFim,feriadosMap){
  * o gerador simplesmente copie blocos fixos de 8h/4h da jornada da
  * empresa para todo mundo, inclusive colaboradores com jornada menor.
  */
+function atualizarHorarioEfetivo(d){
+  const j=state.tipoEscala==='12x36'?state.jornada:obterJornadaDoDia(d.weekday);
+  const pausa=Math.max(0,intervaloMin(j)||0);
+  d.entradaMin=timeToMin(d.turno==='B'?state.entradaTurnoB:j.entrada);
+  d.intervaloMin=pausa;
+  d.saidaMin=d.entradaMin + d.horas*60 + pausa;
+}
+
 function distribuirHorasIndividuais(colab,dias){
-  if(state.tipoEscala==='12x36'){
-    dias.forEach(d=>{
-      if(d.status==='T'||d.status==='FE') d.horas=calcHorasDia(d.weekday);
-    });
-    return;
-  }
   const porSemana=new Map();
   dias.forEach(d=>{
     const key=weekKey(dateFromKey(d.data));
     if(!porSemana.has(key)) porSemana.set(key,[]);
     porSemana.get(key).push(d);
   });
-  const horasSemanaAlvo=Number(colab.horasSemana);
   porSemana.forEach(semana=>{
-    const trabalho=semana.filter(d=>d.status==='T'||d.status==='FE');
-    if(!trabalho.length) return;
-    const horasDia=Number.isFinite(horasSemanaAlvo) && horasSemanaAlvo>0
-      ? horasSemanaAlvo/trabalho.length
-      : calcHorasDia(trabalho[0].weekday);
-    trabalho.forEach(d=>{ d.horas=horasDia; });
+    // Feriado dispensado preserva sua parcela da carga semanal.
+    const previstos=semana.filter(d=>d.previsto).length;
+    const horas=Number(colab.horasSemana)/Math.max(1,previstos);
+    semana.forEach(d=>{
+      const trabalho=d.status==='T'||d.status==='FE';
+      d.horas=trabalho ? (state.tipoEscala==='12x36'
+        ? Math.max(0,12-Math.max(0,intervaloMin(state.jornada)||0)/60)
+        : horas) : 0;
+      atualizarHorarioEfetivo(d);
+    });
   });
 }
 
-/* ---------------------------------------------------------
-   VALIDAÇÃO JURÍDICO-OPERACIONAL
---------------------------------------------------------- */
 function issue(tipo,severidade,mensagem,data=null){
   return {tipo,severidade,mensagem,data};
 }
 
 function validarJornadaDiaria(colab,dias){
   const out=[];
-  if(state.tipoEscala==='12x36') return out;
   const datas=dias.filter(x=>x.status==='T'||x.status==='FE');
   datas.forEach(d=>{
-    const h=calcHorasDia(d.weekday);
-    if(h>8){
+    const h=d.horas;
+    if(state.tipoEscala==='12x36' && Math.abs((d.saidaMin-d.entradaMin)-720)>0.01) out.push(issue('PLANTAO_12X36','erro',`${d.data}: o plantão deve ter 12h de permanência, incluindo o intervalo.`,d.data));
+    if(h>(state.tipoEscala==='12x36'?12:8)){
       const fundamento=state.instrumentoCompensacao==='act_cct'
         ? 'Há ACT/CCT informado; confirme que a cláusula efetivamente autoriza a distribuição utilizada.'
         : 'Não foi indicada base suficiente para presumir a compensação. Verifique ACT/CCT ou outra hipótese legal aplicável.';
       out.push(issue('JORNADA_DIARIA','alerta',
-        `${d.data}: ${fmtHoras(h)} de trabalho efetivo no dia, acima de 8h. ${fundamento}`,d.data));
+        `${d.data}: ${fmtHoras(h)} de trabalho efetivo no dia, acima de ${state.tipoEscala==='12x36'?12:8}h. ${fundamento}`,d.data));
     }
-    if(!jornadaValidaEstrutural(state.horarioPorDia && state.jornadaPorDia[d.weekday] ? state.jornadaPorDia[d.weekday] : state.jornada)){
+    if(!jornadaValidaEstrutural(obterJornadaDoDia(d.weekday))){
       out.push(issue('HORARIO_INVALIDO','erro',`${d.data}: horários de entrada, intervalo e saída estão inconsistentes.`,d.data));
     }
   });
@@ -1086,8 +1134,8 @@ function validarIntervalosIntrajornada(colab,dias){
   const diasTrabalho=dias.filter(x=>x.status==='T'||x.status==='FE');
   diasTrabalho.forEach(d=>{
     const j=state.horarioPorDia && state.jornadaPorDia[d.weekday] ? state.jornadaPorDia[d.weekday] : state.jornada;
-    const h=calcHorasDia(d.weekday);
-    const int=intervaloMin(j);
+    const h=d.horas;
+    const int=d.intervaloMin ?? intervaloMin(j);
     if(h>6 && int<60){
       out.push(issue('INTRAJORNADA','erro',
         `${d.data}: jornada superior a 6h com intervalo configurado de ${fmtHoras(int/60)}. A regra geral do art. 71 da CLT exige mínimo de 1h, ressalvadas hipóteses legais/coletivas específicas.`,d.data));
@@ -1100,7 +1148,7 @@ function validarIntervalosIntrajornada(colab,dias){
 }
 
 function obterJornadaDoDia(weekday){
-  return (state.horarioPorDia && state.jornadaPorDia[weekday])
+  return (state.tipoEscala!=='12x36' && state.horarioPorDia && state.jornadaPorDia[weekday])
     ? state.jornadaPorDia[weekday]
     : state.jornada;
 }
@@ -1120,12 +1168,12 @@ function validarInterjornada(dias){
     const atualDate=dateFromKey(atual.data);
     const diffDias=Math.round((atualDate-anteriorDate)/86400000);
 
-    let diff=(jAtual.entrada-jPrev.saida)+(diffDias*1440);
-    if(diff<0) diff+=1440;
+    const diff=(atual.entradaMin ?? jAtual.entrada)-(anterior.saidaMin ?? jPrev.saida)+(diffDias*1440);
 
-    if(diff<660){
+    const minimo=state.tipoEscala==='12x36'?2160:660;
+    if(diff<minimo){
       out.push(issue('INTERJORNADA','erro',
-        `${atual.data}: intervalo entre a saída anterior e a próxima entrada é de ${fmtHoras(diff/60)}, abaixo das 11h do art. 66 da CLT.`,atual.data));
+        `${atual.data}: intervalo entre a saída anterior e a próxima entrada é de ${fmtHoras(diff/60)}, abaixo de ${state.tipoEscala==='12x36'?'36h do ciclo 12×36':'11h do art. 66 da CLT'}.`,atual.data));
     }
   }
   return out;
@@ -1134,8 +1182,14 @@ function validarInterjornada(dias){
 function validarRepousoSemanal(colab,dias){
   const out=[];
   const regime=regimeAtual();
+  dias.filter(d=>d.repousoSeguranca).forEach(d=>out.push(issue('REPOUSO_AJUSTADO','alerta',`${d.data}: folga adicional inserida para evitar sete dias seguidos de trabalho; revise a distribuição e a cobertura.`,d.data)));
+  let seguidos=0;
+  dias.forEach(d=>{
+    seguidos=['T','FE'].includes(d.status)?seguidos+1:0;
+    if(seguidos===7) out.push(issue('DIAS_CONSECUTIVOS','erro',`${d.data}: sete dias consecutivos de trabalho sem repouso.`,d.data));
+  });
   if(state.tipoEscala==='12x36'){
-    return [issue('REGIME_ESPECIAL','info','12×36: o descanso é analisado pelo ciclo de 36h e pelas regras do art. 59-A, não pelo simples contador de folgas semanais.')];
+    return [...out,issue('REGIME_ESPECIAL','info','12×36: o descanso é analisado pelo ciclo de 36h e pelas regras do art. 59-A, não pelo simples contador de folgas semanais.')];
   }
 
   const inicio=new Date(state.ano,state.mes,state.diaInicio);
@@ -1368,6 +1422,14 @@ document.getElementById('btn-gerar').onclick=gerarEscala;
 /* ---------------------------------------------------------
    EDIÇÃO MANUAL — modal/dropdown em vez de ciclo cego
 --------------------------------------------------------- */
+function parseHorasTrabalhadas(value){
+  const text=value.trim();
+  const match=/^(\d{1,2}):([0-5]\d)$/.exec(text);
+  const hours=match ? Number(match[1])+Number(match[2])/60
+    : /^\d+(?:[.,]\d+)?$/.test(text) ? Number(text.replace(',','.')) : NaN;
+  return Number.isFinite(hours)&&hours>=0&&hours<=24 ? hours : null;
+}
+
 function editarStatus(ri,di){
   const obj=state.escalaGerada.resultado[ri].dias[di];
   const atual=obj.status;
@@ -1397,23 +1459,16 @@ function editarStatus(ri,di){
     if(!confirm('FC representa folga compensatória. Confirme que existe fundamento para a compensação antes de usar este status.')) return;
   }
 
-  obj.status=status;
+  let novasHoras=0;
   if(status==='T'||status==='FE'){
-    const horasAtuais=obj.horas || calcHorasDia(obj.weekday);
-    const horasStr=prompt(`Horas trabalhadas neste dia (HH:MM):`, fmtHoras(horasAtuais));
-    if(horasStr!==null){
-      const m=/^(\d{1,2}):(\d{2})$/.exec(horasStr.trim());
-      if(m){
-        obj.horas=Number(m[1])+Number(m[2])/60;
-      }else{
-        const num=parseFloat(horasStr.replace(',','.'));
-        if(!isNaN(num) && num>=0) obj.horas=num;
-        else alert('Valor de horas não reconhecido — mantendo o valor anterior.');
-      }
-    }
-  }else{
-    obj.horas=0;
+    const horasStr=prompt('Horas trabalhadas neste dia (HH:MM ou decimal):',fmtHoras(obj.horas||calcHorasDia(obj.weekday)));
+    if(horasStr===null) return;
+    novasHoras=parseHorasTrabalhadas(horasStr);
+    if(novasHoras===null){alert('Informe horas válidas, entre 0 e 24, com minutos de 00 a 59.');return;}
   }
+  obj.status=status;
+  obj.horas=novasHoras;
+  atualizarHorarioEfetivo(obj);
   state.escalaGerada.validacoes=state.escalaGerada.resultado.map(r=>({
     colaborador:r.colaborador,
     issues:validarLegal(r.colaborador,r.dias)
@@ -1478,7 +1533,7 @@ function renderEscalaGerada(){
         <div><b>${escapeHtml(r.colaborador.nome||'(sem nome)')}</b> <span class="text-slate-500">— ${escapeHtml(r.colaborador.cargo||'')}</span> <span class="text-xs text-slate-500">· ${fmtHoras(Number(r.colaborador.horasSemana)||0)}/semana</span></div>
         <span class="text-[10px] font-bold px-2.5 py-1 rounded-full ${cls}">${label}</span>
       </div>
-      ${jIndividual?`<div class="text-xs text-slate-500 mt-1">Jornada individual estimada (uniforme): entrada ${state.jornada.entrada} · ${fmtHoras(jIndividual.horasDia)}/dia médio em ${diasAlvo} dia(s) · saída ${jIndividual.saida}. É essa distribuição que a escala abaixo usa; ajuste dia a dia clicando na célula, se precisar de horários diferentes.</div>`:''}
+      ${jIndividual?`<div class="text-xs text-slate-500 mt-1">Jornada individual estimada (uniforme): entrada ${state.jornada.entrada} · ${fmtHoras(jIndividual.horasDia)}/dia médio em ${diasAlvo} dia(s) · saída ${jIndividual.saida}. Esta é apenas a referência média; os horários efetivos de cada dia aparecem na grade e consideram folgas, feriados e ajustes manuais.</div>`:''}
       ${issues.length?`<div class="mt-2 space-y-1">${issues.map(x=>`<div class="text-xs flex gap-2 items-start">${severityBadge(x)}<span>${escapeHtml(x.mensagem)}</span></div>`).join('')}</div>`:''}
     </div>`;
   });
@@ -1600,7 +1655,7 @@ function renderEscalaGerada(){
             const status=x.obj.status==='FE'?'FE':x.obj.status==='FC'?'FC':x.obj.status;
             return `<button data-ri="${x.ri}" data-di="${x.r.dias.indexOf(x.obj)}" class="w-full text-left mb-1 last:mb-0 px-1.5 py-1 rounded border ${cls} hover:opacity-80" title="${trabalho?'Trabalho':'Folga'} — clique para alterar">
               <div class="font-semibold truncate">${escapeHtml(x.r.colaborador.nome||'(sem nome)')}</div>
-              <div class="text-[9px] opacity-80">${status}${x.obj.horas?` · ${fmtHoras(x.obj.horas)}`:''}</div>
+              <div class="text-[9px] opacity-80">${status}${state.turnosRevezamento?` · ${x.obj.turno}`:''}${x.obj.horas?` · ${fmtHoras(x.obj.horas)} · ${minToTime(x.obj.entradaMin)}–${minToTime(x.obj.saidaMin)}`:''}</div>
             </button>`;
           }).join('');
           if(fer) celula+=`<div class="mt-1 text-[9px] text-fintria-ambar font-semibold truncate" title="${escapeHtml(fer.nome)}">⚑ ${escapeHtml(fer.nome)}</div>`;
@@ -1769,7 +1824,10 @@ function init(){
   if(!state.instrumentoCompensacao) state.instrumentoCompensacao='nenhuma';
   if(state.tipoEscala==='marshall') state.tipoEscala='custom';
   if(!Array.isArray(state.feriados)) state.feriados=[];
+  state.feriados.forEach(f=>{if(f.tipo==='municipal'||f.tipo==='local'){f.mes ??= state.mes;f.ano ??= state.ano;}});
   if(!state.feriados.length) inicializarFeriadosDoMes();
+  // Descartar resultados antigos sem horários efetivos calculados.
+  if(state.escalaGerada?.resultado?.some(r=>r.dias.some(d=>!Number.isFinite(d.entradaMin)))) invalidarEscala();
 
   renderConfigSelects();
   renderColaboradores();
