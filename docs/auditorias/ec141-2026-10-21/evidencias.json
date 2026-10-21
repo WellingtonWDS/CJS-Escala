@@ -1,0 +1,241 @@
+[
+  {
+    "nome": "A: fevereiro/2028 usa padrão 44h/1 repouso sem incompatibilidade",
+    "periodo": ["2028-02-07", "2028-02-13"],
+    "regimeSelecionado": "atual44",
+    "escala": "6x1",
+    "instrumento": "nenhuma",
+    "horasContratuais": 44,
+    "trabalhadas": 44,
+    "folgas": 1,
+    "horasDias": [
+      7.333333333333333, 7.333333333333333, 7.333333333333333,
+      7.333333333333333, 7.333333333333333, 7.333333333333333, 0
+    ],
+    "issues": []
+  },
+  {
+    "nome": "B: 40h selecionadas ainda gera contrato de 44h; ACT/CCT rebaixa excesso para alerta",
+    "periodo": ["2028-02-07", "2028-02-13"],
+    "regimeSelecionado": "definitivo40",
+    "escala": "5x2",
+    "instrumento": "act_cct",
+    "horasContratuais": 44,
+    "trabalhadas": 44,
+    "folgas": 2,
+    "horasDias": [8.8, 8.8, 0, 8.8, 8.8, 8.8, 0],
+    "issues": [
+      {
+        "tipo": "JORNADA_DIARIA",
+        "severidade": "alerta",
+        "mensagem": "2028-02-07: 08:48 de trabalho efetivo no dia, acima de 8h. Há ACT/CCT informado; confirme que a cláusula efetivamente autoriza a distribuição utilizada.",
+        "data": "2028-02-07"
+      },
+      {
+        "tipo": "JORNADA_DIARIA",
+        "severidade": "alerta",
+        "mensagem": "2028-02-08: 08:48 de trabalho efetivo no dia, acima de 8h. Há ACT/CCT informado; confirme que a cláusula efetivamente autoriza a distribuição utilizada.",
+        "data": "2028-02-08"
+      },
+      {
+        "tipo": "JORNADA_DIARIA",
+        "severidade": "alerta",
+        "mensagem": "2028-02-10: 08:48 de trabalho efetivo no dia, acima de 8h. Há ACT/CCT informado; confirme que a cláusula efetivamente autoriza a distribuição utilizada.",
+        "data": "2028-02-10"
+      },
+      {
+        "tipo": "JORNADA_DIARIA",
+        "severidade": "alerta",
+        "mensagem": "2028-02-11: 08:48 de trabalho efetivo no dia, acima de 8h. Há ACT/CCT informado; confirme que a cláusula efetivamente autoriza a distribuição utilizada.",
+        "data": "2028-02-11"
+      },
+      {
+        "tipo": "JORNADA_DIARIA",
+        "severidade": "alerta",
+        "mensagem": "2028-02-12: 08:48 de trabalho efetivo no dia, acima de 8h. Há ACT/CCT informado; confirme que a cláusula efetivamente autoriza a distribuição utilizada.",
+        "data": "2028-02-12"
+      },
+      {
+        "tipo": "LIMITE_SEMANAL",
+        "severidade": "alerta",
+        "mensagem": "2028-02-07: 44:00 trabalhadas na semana, 04:00 acima da referência de 40:00 do regime selecionado. O excedente não é classificado automaticamente como hora extra; verifique o regime de compensação e a base jurídica aplicável.",
+        "data": "2028-02-07"
+      }
+    ]
+  },
+  {
+    "nome": "C: fase 42h, sem compensação, gera 8h24 por dia e classifica apenas como alerta",
+    "periodo": ["2027-02-01", "2027-02-07"],
+    "regimeSelecionado": "transicao42",
+    "escala": "5x2",
+    "instrumento": "nenhuma",
+    "horasContratuais": 42,
+    "trabalhadas": 42,
+    "folgas": 2,
+    "horasDias": [8.4, 0, 8.4, 8.4, 8.4, 8.4, 0],
+    "issues": [
+      {
+        "tipo": "JORNADA_DIARIA",
+        "severidade": "alerta",
+        "mensagem": "2027-02-01: 08:24 de trabalho efetivo no dia, acima de 8h. Não foi indicada base suficiente para presumir a compensação. Verifique ACT/CCT ou outra hipótese legal aplicável.",
+        "data": "2027-02-01"
+      },
+      {
+        "tipo": "JORNADA_DIARIA",
+        "severidade": "alerta",
+        "mensagem": "2027-02-03: 08:24 de trabalho efetivo no dia, acima de 8h. Não foi indicada base suficiente para presumir a compensação. Verifique ACT/CCT ou outra hipótese legal aplicável.",
+        "data": "2027-02-03"
+      },
+      {
+        "tipo": "JORNADA_DIARIA",
+        "severidade": "alerta",
+        "mensagem": "2027-02-04: 08:24 de trabalho efetivo no dia, acima de 8h. Não foi indicada base suficiente para presumir a compensação. Verifique ACT/CCT ou outra hipótese legal aplicável.",
+        "data": "2027-02-04"
+      },
+      {
+        "tipo": "JORNADA_DIARIA",
+        "severidade": "alerta",
+        "mensagem": "2027-02-05: 08:24 de trabalho efetivo no dia, acima de 8h. Não foi indicada base suficiente para presumir a compensação. Verifique ACT/CCT ou outra hipótese legal aplicável.",
+        "data": "2027-02-05"
+      },
+      {
+        "tipo": "JORNADA_DIARIA",
+        "severidade": "alerta",
+        "mensagem": "2027-02-06: 08:24 de trabalho efetivo no dia, acima de 8h. Não foi indicada base suficiente para presumir a compensação. Verifique ACT/CCT ou outra hipótese legal aplicável.",
+        "data": "2027-02-06"
+      }
+    ]
+  },
+  {
+    "nome": "D: 12x36 na fase 40h soma 44h na semana sem validar limite semanal",
+    "periodo": ["2028-02-07", "2028-02-13"],
+    "regimeSelecionado": "definitivo40",
+    "escala": "12x36",
+    "instrumento": "nenhuma",
+    "horasContratuais": 44,
+    "trabalhadas": 44,
+    "folgas": 3,
+    "horasDias": [11, 0, 11, 0, 11, 0, 11],
+    "issues": [
+      {
+        "tipo": "12X36",
+        "severidade": "info",
+        "mensagem": "A escala 12×36 exige conferência do instrumento de constituição do regime, intervalo intrajornada e demais condições do art. 59-A da CLT.",
+        "data": null
+      },
+      {
+        "tipo": "REGIME_ESPECIAL",
+        "severidade": "info",
+        "mensagem": "12×36: o descanso é analisado pelo ciclo de 36h e pelas regras do art. 59-A, não pelo simples contador de folgas semanais.",
+        "data": null
+      },
+      {
+        "tipo": "DOMINGO",
+        "severidade": "info",
+        "mensagem": "Há domingo(s) trabalhado(s). O repouso semanal deve observar a legislação aplicável; para comércio, a Lei 10.101/2000 traz regra específica de coincidência com domingo e a legislação/negociação coletiva também deve ser verificada.",
+        "data": null
+      },
+      {
+        "tipo": "DOMINGO",
+        "severidade": "alerta",
+        "mensagem": "Nenhum domingo de folga aparece no período exibido. A ferramenta não considera isso automaticamente ilegal para toda atividade, mas exige conferência da regra setorial aplicável.",
+        "data": null
+      }
+    ]
+  },
+  {
+    "nome": "E: contrato de 30h mantido na fase 40h quando o operador escolhe 5x2",
+    "periodo": ["2028-02-07", "2028-02-13"],
+    "regimeSelecionado": "definitivo40",
+    "escala": "5x2",
+    "instrumento": "nenhuma",
+    "horasContratuais": 30,
+    "trabalhadas": 30,
+    "folgas": 2,
+    "horasDias": [6, 6, 0, 6, 6, 6, 0],
+    "issues": []
+  },
+  {
+    "nome": "F: dezembro/2026 inteiro na fase 42h aplica segundo repouso antes de 16/12",
+    "periodo": ["2026-12-07", "2026-12-13"],
+    "regimeSelecionado": "transicao42",
+    "escala": "6x1",
+    "instrumento": "nenhuma",
+    "horasContratuais": 42,
+    "trabalhadas": 42,
+    "folgas": 1,
+    "horasDias": [7, 7, 7, 7, 7, 7, 0],
+    "issues": [
+      {
+        "tipo": "REPOUSO_SEMANAL",
+        "severidade": "erro",
+        "mensagem": "2026-12-07: a semana civil contém 1 dia(s) de repouso na escala; referência configurada: 2.",
+        "data": "2026-12-07"
+      }
+    ]
+  },
+  {
+    "nome": "G: dezembro/2026 inteiro na fase 44h não exige segundo repouso após 16/12",
+    "periodo": ["2026-12-21", "2026-12-27"],
+    "regimeSelecionado": "atual44",
+    "escala": "6x1",
+    "instrumento": "nenhuma",
+    "horasContratuais": 44,
+    "trabalhadas": 44,
+    "folgas": 1,
+    "horasDias": [
+      7.333333333333333, 7.333333333333333, 7.333333333333333,
+      7.333333333333333, 7.333333333333333, 7.333333333333333, 0
+    ],
+    "issues": []
+  },
+  {
+    "nome": "H: primeira jornada perde validação de descanso em relação à semana anterior",
+    "primeiraData": "2028-01-31",
+    "anterior": {
+      "dia": 30,
+      "data": "2028-01-30",
+      "weekday": 0,
+      "status": "T",
+      "horas": 7.333333333333333,
+      "feriado": null,
+      "previsto": true,
+      "previstoOriginal": true,
+      "repousoSeguranca": false,
+      "turno": "B",
+      "horasPrevistas": 7.333333333333333,
+      "entradaMin": 840,
+      "intervaloMin": 60,
+      "saidaMin": 1340,
+      "intervaloInicioMin": 1080,
+      "intervaloFimMin": 1140
+    },
+    "atual": {
+      "dia": 31,
+      "data": "2028-01-31",
+      "weekday": 1,
+      "status": "T",
+      "horas": 7.333333333333333,
+      "feriado": null,
+      "previsto": true,
+      "previstoOriginal": true,
+      "repousoSeguranca": false,
+      "turno": "A",
+      "horasPrevistas": 7.333333333333333,
+      "entradaMin": 480,
+      "intervaloMin": 60,
+      "saidaMin": 980,
+      "intervaloInicioMin": 720,
+      "intervaloFimMin": 780
+    },
+    "semContexto": [],
+    "comContexto": [
+      {
+        "tipo": "INTERJORNADA",
+        "severidade": "erro",
+        "mensagem": "2028-01-31: intervalo entre a saída anterior e a próxima entrada é de 09:40, abaixo de 11h do art. 66 da CLT.",
+        "data": "2028-01-31"
+      }
+    ]
+  }
+]
