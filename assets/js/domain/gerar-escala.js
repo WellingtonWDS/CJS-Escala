@@ -54,6 +54,12 @@ export function createGerador(state, jornada, feriados, validacao) {
       0,
       operacionais.length - alvo,
     );
+    const planoConversao =
+      state.planoFolgasConversao?.[state.colaboradores[idx]?.id];
+    if (Array.isArray(planoConversao))
+      return planoConversao
+        .filter((d) => operacionais.includes(d))
+        .slice(0, quantidadeFolgasOperacionais);
     if (quantidadeFolgasOperacionais === 0) return [];
 
     const permitidos = (state.folgaDiasPermitidos || []).filter((d) =>

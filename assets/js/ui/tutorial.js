@@ -2,7 +2,7 @@ const ETAPAS = [
   [
     "config-periodo",
     "Escolha o período",
-    "Selecione o mês e o ano da escala. O sistema inicia no mês atual; use o dia de início se quiser gerar apenas parte do mês.",
+    "Informe o mês e o ano da escala atual 6×1. O sistema inicia no mês atual. Preencha as próximas seções como a empresa funciona hoje; o mês de destino da proposta 5×2 será escolhido ao final.",
   ],
   [
     "config-colaboradores",
@@ -12,7 +12,7 @@ const ETAPAS = [
   [
     "sec-tipo",
     "Defina o tipo de escala",
-    "Escolha 6×1, 5×2, 12×36 ou um modelo personalizado. A referência automática considera a vigência nas datas da escala; as outras referências simulam cenários. Preencha os dados do ACT/CCT quando houver compensação coletiva aplicável.",
+    "Para converter, mantenha 6×1 como modelo atual. Informe o ACT/CCT quando houver compensação coletiva aplicável. Os demais modelos e a referência desta seção continuam disponíveis para escalas avulsas; a fase da conversão será escolhida no destino.",
   ],
   [
     "sec-feriados",
@@ -27,12 +27,12 @@ const ETAPAS = [
   [
     "sec-folgas",
     "Organize as folgas",
-    "Escolha folgas fixas ou rotativas e os dias permitidos. Na escala 5×2, você também pode escolher sábado e domingo. Confira se as regras individuais, os dias de funcionamento e os feriados combinam com essa escolha.",
+    "Informe as folgas atuais e os dias permitidos para distribuição. A conversão respeita os dias de funcionamento e busca distribuir as folgas da equipe. Se quiser sábado e domingo fixos na proposta, escolha essa opção no destino, ao final.",
   ],
   [
     "sec-cobertura",
     "Cobertura operacional (opcional)",
-    "Ative esta opção se quiser conferir o atendimento por horário e função. Escolha uma função cadastrada, a faixa de horário, o mínimo de pessoas e os dias necessários. A análise apontará períodos descobertos; ela não redistribui a equipe automaticamente.",
+    "Ative esta opção e informe o mínimo de pessoas por função, horário e dia para avaliar se o quadro atende à empresa. A conversão buscará distribuir folgas para reduzir lacunas. Sem essa demanda, o sistema pode gerar a proposta, mas não pode concluir se a equipe é suficiente.",
   ],
   [
     "sec-pec",
@@ -41,8 +41,8 @@ const ETAPAS = [
   ],
   [
     "sec-gerar",
-    "Gere e confira a escala",
-    "Depois de preencher as seções, clique em Gerar escala. Confira os horários, as folgas, o resumo semanal, os alertas e a cobertura. Você pode ajustar uma célula e exportar o CSV ou imprimir. Encerrar este tutorial não gera nem altera sua escala.",
+    "Converta e compare",
+    "Escolha o mês da proposta, a fase automática ou simulada e como distribuir as folgas. Clique em Gerar proposta 5×2 e comparar. Confira a suficiência da equipe, os horários descobertos e as mudanças por pessoa. A escala original fica preservada; ajustes na proposta recalculam a comparação. Depois, exporte o CSV da proposta ou imprima.",
   ],
 ];
 

@@ -31,7 +31,7 @@
     <a href="#sec-jornada" class="flex items-center gap-2 shrink-0 no-underline text-slate-500 hover:bg-slate-200 hover:text-fintria-navy px-2.5 py-2 rounded-md text-sm font-medium"><b class="w-5 h-5 rounded-full bg-slate-200 text-fintria-navy text-[11px] flex items-center justify-center shrink-0">4</b>Jornada</a>
     <a href="#sec-folgas" class="flex items-center gap-2 shrink-0 no-underline text-slate-500 hover:bg-slate-200 hover:text-fintria-navy px-2.5 py-2 rounded-md text-sm font-medium"><b class="w-5 h-5 rounded-full bg-slate-200 text-fintria-navy text-[11px] flex items-center justify-center shrink-0">5</b>Folgas</a>
     <a href="#sec-cobertura" class="flex items-center gap-2 shrink-0 no-underline text-slate-500 hover:bg-slate-200 hover:text-fintria-navy px-2.5 py-2 rounded-md text-sm font-medium"><b class="w-5 h-5 rounded-full bg-slate-200 text-fintria-navy text-[10px] flex items-center justify-center shrink-0">5A</b>Cobertura</a>
-    <a href="#sec-gerar" class="flex items-center gap-2 shrink-0 no-underline text-slate-500 hover:bg-slate-200 hover:text-fintria-navy px-2.5 py-2 rounded-md text-sm font-medium"><b class="w-5 h-5 rounded-full bg-slate-200 text-fintria-navy text-[11px] flex items-center justify-center shrink-0">6</b>Escala gerada</a>
+    <a href="#sec-gerar" class="flex items-center gap-2 shrink-0 no-underline text-slate-500 hover:bg-slate-200 hover:text-fintria-navy px-2.5 py-2 rounded-md text-sm font-medium"><b class="w-5 h-5 rounded-full bg-slate-200 text-fintria-navy text-[11px] flex items-center justify-center shrink-0">6</b>Conversão e comparação</a>
     <a href="#sec-pec" class="flex items-center gap-2 shrink-0 no-underline text-slate-500 hover:bg-slate-200 hover:text-fintria-navy px-2.5 py-2 rounded-md text-sm font-medium"><b class="w-5 h-5 rounded-full bg-slate-200 text-fintria-navy text-[11px] flex items-center justify-center shrink-0">7</b>Emenda Constitucional</a>
   </nav>
 
@@ -40,7 +40,7 @@
     <!-- 1. CONFIGURAÇÃO -->
     <section id="sec-config" class="scroll-mt-4 bg-white border border-slate-200 rounded-xl p-5 md:p-7 mb-5">
       <h2 class="font-display text-fintria-navy text-lg font-semibold mb-1">Configuração</h2>
-      <p class="text-slate-500 text-sm mb-4">Mês, ano e colaboradores que farão parte desta escala.</p>
+      <p class="text-slate-500 text-sm mb-4">1. Informe como a empresa funciona hoje: período da escala atual, colaboradores, horários e folgas no modelo 6×1. A proposta 5×2 terá um período de destino separado.</p>
       <div id="config-periodo" class="grid grid-cols-1 md:grid-cols-3 gap-3.5">
         <div>
           <label class="block text-xs font-semibold text-fintria-navySoft mb-1.5">Mês</label>
@@ -88,7 +88,7 @@
     <!-- 2. TIPO DE ESCALA -->
     <section id="sec-tipo" class="scroll-mt-4 bg-white border border-slate-200 rounded-xl p-5 md:p-7 mb-5">
       <h2 class="font-display text-fintria-navy text-lg font-semibold mb-1">Tipo de escala</h2>
-      <p class="text-slate-500 text-sm mb-4">Escolha o regime base. Compare as etapas da EC 141, de 16/10/2026, publicada no DOU da mesma data, edição extra: 42h a partir de 16/12/2026 e 40h a partir de 16/12/2027.</p>
+      <p class="text-slate-500 text-sm mb-4">Para converter, mantenha o modelo atual 6×1. Os demais modelos continuam disponíveis para gerar escalas avulsas. A fase da proposta será definida no destino da conversão; esta referência controla a prévia avulsa.</p>
       <div class="flex gap-2 flex-wrap mb-4" id="tabs-tipo"></div>
       <div id="tipo-desc" class="rounded-lg px-3.5 py-2.5 text-sm bg-fintria-azulBg text-fintria-azul mb-4"></div>
 
@@ -151,7 +151,7 @@
     <!-- 4. JORNADA -->
     <section id="sec-jornada" class="scroll-mt-4 bg-white border border-slate-200 rounded-xl p-5 md:p-7 mb-5">
       <h2 class="font-display text-fintria-navy text-lg font-semibold mb-1">Jornada padrão</h2>
-      <p class="text-slate-500 text-sm mb-4">Configure o horário padrão de trabalho e os dias que devem seguir esse horário.</p>
+      <p class="text-slate-500 text-sm mb-4">Informe os horários atuais e os dias de funcionamento da empresa, incluindo diferenças como o sábado. Na conversão, essas janelas limitam a disponibilidade da equipe.</p>
 
       <div id="jornada-padrao-grid" class="grid grid-cols-2 md:grid-cols-4 gap-3.5">
         <div><label class="block text-xs font-semibold text-fintria-navySoft mb-1.5">Entrada</label><input type="time" id="j-entrada" value="08:00" class="w-full px-2.5 py-2 border border-slate-300 rounded-md text-sm"></div>
@@ -219,7 +219,7 @@
 
     <section id="sec-cobertura" class="scroll-mt-4 bg-white border border-slate-200 rounded-xl p-5 md:p-7 mb-5">
       <div class="flex items-start justify-between gap-4">
-        <div><h2 class="font-display text-fintria-navy text-lg font-semibold mb-1">Cobertura operacional</h2><p class="text-slate-500 text-sm">Opcional: ative para definir o mínimo de pessoas por função e horário e identificar períodos descobertos na escala.</p></div>
+        <div><h2 class="font-display text-fintria-navy text-lg font-semibold mb-1">Cobertura operacional</h2><p class="text-slate-500 text-sm">Ative para definir o mínimo de pessoas por função, horário e dia. É opcional para gerar a proposta, mas necessário para concluir se o quadro atual atende à operação.</p></div>
         <label class="relative inline-flex items-center cursor-pointer shrink-0 mt-1"><input id="tg-cobertura" aria-label="Ativar cobertura operacional" aria-controls="cobertura-conteudo" type="checkbox" class="sr-only peer"><span class="w-10 h-6 bg-slate-300 rounded-full peer-checked:bg-fintria-verde transition-colors relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:w-5 after:h-5 after:rounded-full after:transition-transform peer-checked:after:translate-x-4"></span></label>
       </div>
       <div id="cobertura-conteudo" hidden class="mt-5 border-t border-slate-200 pt-4">
@@ -236,23 +236,37 @@
         <p id="cobertura-mensagem" role="alert" class="text-sm text-fintria-vermelho mt-2"></p>
         <div class="flex gap-2 mt-3"><button id="cobertura-salvar" type="submit" class="bg-fintria-navy text-white px-3 py-2 rounded-md text-sm font-semibold">+ Adicionar faixa</button><button id="cobertura-cancelar" type="button" hidden class="border px-3 py-2 rounded-md text-sm">Cancelar edição</button></div>
       </form>
-      <details class="mt-3 text-xs text-slate-500"><summary class="cursor-pointer">Como a cobertura é calculada</summary><p class="mt-2">A demanda vale nos dias escolhidos, mesmo que não sejam dias operacionais da empresa. Horário final anterior ao inicial termina no dia seguinte; os dias e feriados se referem ao início da faixa. Faixas sobrepostas da mesma função usam o maior mínimo, sem somar. A função corresponde ao cargo, ignorando acentos, maiúsculas e espaços extras. Cada pessoa atende somente à função cadastrada.</p><p class="mt-2">Intervalos são descontados. No Turno B, mantêm a mesma distância da entrada do Turno A; em jornadas menores, são antecipados para caber no plantão. A geração identifica lacunas, sem contratar pessoas ou alterar automaticamente a escala para preenchê-las.</p></details>
+      <details class="mt-3 text-xs text-slate-500"><summary class="cursor-pointer">Como a cobertura é calculada</summary><p class="mt-2">A demanda vale nos dias escolhidos, mesmo que não sejam dias operacionais da empresa. Horário final anterior ao inicial termina no dia seguinte; os dias e feriados se referem ao início da faixa. Faixas sobrepostas da mesma função usam o maior mínimo, sem somar. A função corresponde ao cargo, ignorando acentos, maiúsculas e espaços extras. Cada pessoa atende somente à função cadastrada.</p><p class="mt-2">Intervalos são descontados. No Turno B, mantêm a mesma distância da entrada do Turno A; em jornadas menores, são antecipados para caber no plantão. A prévia avulsa identifica lacunas. A conversão 5×2 também busca distribuir folgas para reduzir as lacunas, sem mudar funções, grupos de turno ou ampliar a disponibilidade cadastrada.</p></details>
       </div>
     </section>
 
     <!-- 6. ESCALA GERADA -->
     <section id="sec-gerar" class="scroll-mt-4 bg-white border border-slate-200 rounded-xl p-5 md:p-7 mb-5">
-      <h2 class="font-display text-fintria-navy text-lg font-semibold mb-1">Escala gerada</h2>
-      <p class="text-slate-500 text-sm mb-4 no-print">Concluiu o preenchimento? Use as configurações acima para criar a escala do período e conferir os resultados.</p>
+      <h2 class="font-display text-fintria-navy text-lg font-semibold mb-1">Converter escala 6×1 para 5×2</h2>
+      <p class="text-slate-500 text-sm mb-4 no-print">2. Escolha o destino. A escala atual será preservada e a proposta manterá os dias de funcionamento da empresa. Cadastre a cobertura por função para avaliar se a equipe atende à operação.</p>
       <div class="mt-4 no-print">
-        <button id="btn-gerar" class="w-full bg-fintria-navy text-white px-6 py-4 rounded-lg font-display font-semibold text-lg shadow-md hover:bg-fintria-navySoft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fintria-azul focus-visible:ring-offset-2 transition-colors">Gerar escala</button>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+          <div><label for="conversao-periodo" class="block text-xs font-semibold mb-1.5">Mês da proposta 5×2</label><input id="conversao-periodo" type="month" min="2026-01" max="2100-12" class="w-full border border-slate-300 rounded-md p-2 bg-white"></div>
+          <div><label for="conversao-fase" class="block text-xs font-semibold mb-1.5">Referência da mudança</label><select id="conversao-fase" class="w-full border border-slate-300 rounded-md p-2 bg-white"><option value="automatico">Automática — vigência nas datas</option><option value="transicao42">Simular fase de 42h</option><option value="definitivo40">Simular fase de 40h</option></select></div>
+          <div><label for="conversao-folgas" class="block text-xs font-semibold mb-1.5">Folgas da proposta</label><select id="conversao-folgas" class="w-full border border-slate-300 rounded-md p-2 bg-white"><option value="distribuir">Distribuir para buscar cobertura</option><option value="fim_semana">Fixar sábado e domingo</option></select></div>
+        </div>
+        <p class="text-xs text-slate-500 mb-3">As entradas, grupos de turno e janelas de horário atuais serão preservados. A conversão busca folgas entre os dias permitidos e respeita folgas fixas atuais. Não amplia saídas nem presume compensação coletiva. O 5×2 não fecha a empresa aos sábados.</p>
+        <button id="btn-converter" type="button" class="w-full bg-fintria-navy text-white px-6 py-4 rounded-lg font-display font-semibold text-lg shadow-md hover:bg-fintria-navySoft">Gerar proposta 5×2 e comparar</button>
+        <p id="conversao-mensagem" role="alert" class="text-sm text-fintria-vermelho mt-3"></p>
+        <button id="btn-gerar" class="w-full mt-3 border border-slate-300 bg-white text-fintria-navy px-4 py-2 rounded-lg font-semibold text-sm">Pré-visualizar escala atual / gerar escala avulsa</button>
         <div class="flex gap-2.5 flex-wrap mt-3">
-          <button id="btn-exportar-csv" class="bg-white border border-slate-300 text-fintria-navy px-3.5 py-2 rounded-md font-semibold text-sm hover:border-fintria-navy">Exportar CSV</button>
+          <button id="btn-exportar-csv" class="bg-white border border-slate-300 text-fintria-navy px-3.5 py-2 rounded-md font-semibold text-sm hover:border-fintria-navy">Exportar escala atual CSV</button>
           <button id="btn-imprimir" class="bg-white border border-slate-300 text-fintria-navy px-3.5 py-2 rounded-md font-semibold text-sm hover:border-fintria-navy">Imprimir / PDF</button>
         </div>
         <p class="text-slate-500 text-xs mt-3">Após gerar, clique nas células para ajustar trabalho e folgas. As validações e os totais acompanham cada alteração. Use FC somente quando houver folga compensatória efetivamente prevista.</p>
       </div>
-      <div id="resultado-gerar" class="mt-4"></div>
+      <div id="conversao-resultados" hidden class="mt-5">
+        <h3 class="font-display text-fintria-navy text-lg font-semibold mb-3">3. Compare a operação atual com a proposta</h3>
+        <div id="conversao-comparacao"></div>
+        <button id="btn-exportar-proposta" type="button" class="no-print bg-fintria-navy text-white px-4 py-2 rounded-md font-semibold mb-4 disabled:opacity-50">Exportar proposta 5×2 CSV</button>
+        <details class="border border-slate-200 rounded-lg p-3 mb-4" open><summary class="cursor-pointer font-semibold text-fintria-navy">Escala proposta 5×2 — clique nas células para ajustar</summary><div id="resultado-proposta" class="mt-4"></div></details>
+      </div>
+      <details class="mt-4" open><summary class="cursor-pointer font-semibold text-fintria-navy">Escala atual / prévia avulsa</summary><div id="resultado-gerar" class="mt-4"></div></details>
     </section>
 
     <!-- 7. EMENDA CONSTITUCIONAL Nº 141 -->

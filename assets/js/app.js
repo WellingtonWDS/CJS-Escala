@@ -12,6 +12,7 @@ import { createTransicaoUI } from "./ui/transicao.js";
 import { bindExportEvents } from "./export/download.js";
 import { createTutorialUI } from "./ui/tutorial.js";
 import { createImportarColaboradoresUI } from "./ui/importar-colaboradores.js";
+import { createConversaoUI } from "./ui/conversao.js";
 export function createApplication({ env, now = () => new Date() }) {
   const initialState = createDefaultState(now());
   const state = structuredClone(initialState);
@@ -24,11 +25,13 @@ export function createApplication({ env, now = () => new Date() }) {
   const domain = createDomain(state);
   const { inicializarFeriadosDoMes } = domain;
   const { document, confirm, location } = env;
+  let conversaoUI;
   function invalidarEscala() {
     state.escalaGerada = null;
     document.getElementById("resultado-gerar").innerHTML =
       "Configuração alterada. Gere a escala para atualizar os resultados.";
     document.getElementById("pec-resultado").innerHTML = "";
+    conversaoUI?.marcarDesatualizada();
   }
   const deps = { state, domain, storage, env, invalidarEscala };
   const resumo = createResumoUI(deps);
@@ -66,6 +69,11 @@ export function createApplication({ env, now = () => new Date() }) {
   const calendario = createCalendarioUI({
     ...deps,
     renderRelatorioCobertura: cobertura.renderRelatorioCobertura,
+    onEscalaChange: () => conversaoUI?.marcarDesatualizada(),
+  });
+  conversaoUI = createConversaoUI({
+    ...deps,
+    renderEscalaGerada: calendario.renderEscalaGerada,
   });
   const transicao = createTransicaoUI(deps);
   const tutorial = createTutorialUI(env);
@@ -91,6 +99,7 @@ export function createApplication({ env, now = () => new Date() }) {
       cobertura,
       tutorial,
       importacao,
+      conversaoUI,
     ])
       ui.bindEvents();
     bindExportEvents(state, env);
@@ -150,6 +159,7 @@ export function createApplication({ env, now = () => new Date() }) {
     renderResumo();
     renderRegimeControls();
     if (state.escalaGerada) renderEscalaGerada();
+    conversaoUI.initConversao();
     if (!carregou || mudouPeriodo) saveState();
   }
   return {

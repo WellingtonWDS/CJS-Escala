@@ -64,6 +64,8 @@ export function createDefaultState(now = new Date()) {
     folgaDiasPermitidos: [0, 2, 3, 4, 5, 6],
     folgaCobertura: "cobertura",
     escalaGerada: null,
+    conversao: null,
+    destinoConversao: null,
     atividadeComercio: false,
     domingosPermitidos: false,
     feriadosPermitidos: false,

@@ -5,8 +5,10 @@ export function createPersistence({ state, initialState, storage }) {
   function saveState() {
     try {
       storage.setItem(STORAGE_KEY, JSON.stringify(state));
+      return true;
     } catch (e) {
       console.warn("Não foi possível salvar:", e);
+      return false;
     }
   }
 
@@ -19,6 +21,8 @@ export function createPersistence({ state, initialState, storage }) {
         parsed?.escalaGerada &&
         parsed.escalaGerada.versaoRegras !== VERSAO_REGRAS;
       if (regrasAntigas) parsed.escalaGerada = null;
+      if (parsed?.conversao && parsed.conversao.versaoRegras !== VERSAO_REGRAS)
+        parsed.conversao.desatualizada = true;
       const acordoRemovido = parsed?.instrumentoCompensacao === "individual";
       if (acordoRemovido) {
         parsed.instrumentoCompensacao = "nenhuma";

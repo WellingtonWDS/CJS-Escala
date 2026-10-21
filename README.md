@@ -2,6 +2,28 @@
 
 Ferramenta estática para configurar, gerar e revisar escalas de trabalho. Usa HTML, CSS e módulos JavaScript nativos. Não exige backend nem compilação do JavaScript.
 
+## Conversão da escala atual 6×1 para uma proposta 5×2
+
+1. Preencha o período, colaboradores, jornadas, dias de funcionamento, folgas e feriados **como estão atualmente no 6×1**. Para avaliar suficiência, ative a cobertura e informe a demanda por função, horário e dia.
+2. Em **Conversão e comparação**, escolha o mês de destino, a vigência automática ou uma simulação explícita de 42h/40h e a distribuição de folgas. Clique em **Gerar proposta 5×2 e comparar**.
+3. Confira a comparação, os horários descobertos e a nova grade. A proposta pode ser ajustada nas células e exportada pelo botão próprio. A prévia avulsa e a exportação da escala atual continuam disponíveis separadamente.
+
+A origem e a proposta são configurações e resultados distintos. A conversão não troca o modelo, período ou cadastro da origem. O snapshot original preserva uma grade já gerada, incluindo seus ajustes manuais; sem grade anterior, a referência usa os horários atuais informados, sem reduzir a duração para limites futuros. Para comparar períodos de comprimentos diferentes, o relatório projeta o padrão original 6×1 também no mês de destino. Ajustes pontuais datados da grade original não são transpostos automaticamente para outras datas.
+
+Os dias de funcionamento são preservados: uma loja aberta de segunda a sábado continua aberta aos sábados. A proposta distribui até cinco dias de trabalho, preserva contratos, funções, entradas/grupos de turno e usa as janelas atuais como limites. Respeita dias permitidos e folgas fixas atuais; sábado e domingo fixos são uma escolha explícita no destino. Não estende saídas nem presume ACT/CCT. Sem fundamento coletivo aplicável, mantém até 8h diárias: a distribuição de 42h em cinco dias pode exigir revisão, registrada nos déficits/alertas.
+
+A busca de folgas é determinística, limitada a 120 avaliações em até duas rodadas e prioriza reduzir incompatibilidades antes das lacunas. Não é uma prova de otimização global. Os diagnósticos distinguem:
+
+- **Suficiente:** a proposta cobre as demandas informadas, sem incompatibilidades objetivas ou déficit do alvo de horas. Pendências documentais continuam indicadas separadamente.
+- **Insuficiente:** há lacunas e uma insuficiência demonstrável de capacidade por função, por horas ou dias-pessoa. A comparação explica os limites e os períodos descobertos.
+- **Ajustes necessários:** persistem lacunas de distribuição/disponibilidade ou déficit de jornada, sem prova de que contratar seja obrigatório.
+- **Incompatível:** a cobertura foi atendida, mas a proposta ainda contém erros de jornada/repouso.
+- **Não avaliada:** faltam demandas ativas/válidas no período ou existem avisos que impedem a conclusão.
+
+O pico de faltantes é ausência simultânea, não uma estimativa exata de contratações. Demandas sobrepostas continuam usando o maior mínimo, com intervalos descontados e trabalho noturno tratado pelo motor existente. Feriados nacionais são recalculados para o destino; feriados locais permanecem nas datas cadastradas e devem ser revisados para o novo período.
+
+Mudanças na origem ou no destino suspendem a conclusão anterior e bloqueiam sua exportação até gerar uma nova proposta. Ajustes na grade proposta recalculam a comparação sem alterar a referência original. A conversão fica no armazenamento local, sujeita ao espaço disponível no navegador; se o salvamento falhar, a interface avisa para exportar antes de sair. Módulos: `domain/conversao.js` e `ui/conversao.js`. Regressões: `tests/conversao.test.cjs` e `tests/browser-conversao.cjs`.
+
 ## Desenvolvimento
 
 Requer Node.js 22 ou superior.
@@ -82,7 +104,7 @@ Ao gerar a escala, o relatório mostra data, função, período descoberto, mín
 
 A pausa mantém sua distância da entrada configurada, inclusive no Turno B; em jornadas menores, é antecipada para caber no plantão. O intervalo efetivo aparece na descrição do dia na grade. A análise ocorre em minutos e se limita ao período selecionado. O total de horas-pessoa faltantes soma a duração de cada lacuna multiplicada pela quantidade de pessoas que faltam.
 
-O módulo `domain/cobertura.js` é independente da interface e não modifica a configuração ou a escala. As demandas ficam em `demandasCobertura`, preservando a chave existente do armazenamento. Sem demandas, a cobertura por função é identificada como não avaliada. Alterar demandas ou cargos invalida a escala; editar um status diário recalcula a cobertura. A funcionalidade diagnostica lacunas, mas não redistribui automaticamente a equipe.
+O módulo `domain/cobertura.js` é independente da interface e não modifica a configuração ou a escala. As demandas ficam em `demandasCobertura`, preservando a chave existente do armazenamento. Sem demandas, a cobertura por função é identificada como não avaliada. Alterar demandas ou cargos invalida a escala; editar um status diário recalcula a cobertura. A análise isolada diagnostica lacunas; o fluxo de conversão usa essa análise para buscar uma distribuição das folgas.
 
 ## Cadastro por planilha
 

@@ -17,6 +17,8 @@ export function createCalendarioUI({
   storage,
   env,
   renderRelatorioCobertura,
+  containerId = "resultado-gerar",
+  onEscalaChange = () => {},
 }) {
   const {
     calcHorasDia,
@@ -101,6 +103,7 @@ export function createCalendarioUI({
       state.escalaGerada.resultado,
     );
     renderEscalaGerada();
+    onEscalaChange();
     saveState();
   }
 
@@ -125,6 +128,7 @@ export function createCalendarioUI({
       state.escalaGerada.resultado,
     );
     renderEscalaGerada();
+    onEscalaChange();
     saveState();
   }
 
@@ -141,7 +145,7 @@ export function createCalendarioUI({
   function renderEscalaGerada() {
     if (!state.escalaGerada) return;
     const { resultado } = state.escalaGerada;
-    const container = document.getElementById("resultado-gerar");
+    const container = document.getElementById(containerId);
     let html = renderRelatorioCobertura(resultado);
 
     // As validações são recalculadas a cada renderização. Assim, qualquer alteração
@@ -441,6 +445,7 @@ export function createCalendarioUI({
     }
     state.escalaGerada = gerarDadosEscala();
     renderEscalaGerada();
+    onEscalaChange();
     saveState();
   }
   return {
