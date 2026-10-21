@@ -7,7 +7,7 @@ const ETAPAS = [
   [
     "config-colaboradores",
     "Cadastre os colaboradores",
-    "Escolha Preencher colaboradores por planilha para baixar o modelo CSV, preencher e importar com prévia. Ou abra Preencher colaboradores manualmente para adicionar ou revisar cada pessoa, sua função e carga contratual. As duas áreas abrem ao clicar no título. Confira também os dados individuais de enquadramento e proteção salarial no cadastro manual.",
+    "Escolha Preencher colaboradores por planilha para baixar o modelo CSV, preencher e importar com prévia. Ou abra Preencher colaboradores manualmente para adicionar ou revisar cada pessoa, sua função e carga contratual. As duas áreas abrem ao clicar no título.",
   ],
   [
     "sec-tipo",

@@ -3,6 +3,7 @@ export function createDefaultState(now = new Date()) {
     mes: now.getMonth(),
     ano: now.getFullYear(),
     diaInicio: 1,
+    analiseEnquadramentoAtiva: false,
     colaboradores: [
       {
         id: 1,

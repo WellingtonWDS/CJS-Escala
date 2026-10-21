@@ -89,8 +89,12 @@ export function gerarCsv(state) {
         referenciaDia(state, d.data, r.colaborador).semLimiteJornada
           ? "Duração dispensada conforme declaração do art. 8º"
           : fmtHoras(referenciaDia(state, d.data, r.colaborador).horas),
-        r.colaborador.ec141?.tipo || "geral",
-        r.colaborador.ec141?.dataAditamento || "",
+        state.analiseEnquadramentoAtiva === true
+          ? r.colaborador.ec141?.tipo || "geral"
+          : "geral",
+        state.analiseEnquadramentoAtiva === true
+          ? r.colaborador.ec141?.dataAditamento || ""
+          : "",
         trabalha
           ? (() => {
               const saida = addDays(dt, Math.floor(d.saidaMin / 1440));

@@ -31,6 +31,8 @@ before(async () => {
 function exemplo(data = "2028-02-07") {
   const date = new Date(data + "T00:00:00");
   const state = createDefaultState(date);
+  // Exercita também a análise avançada preservada, desativada no produto padrão.
+  state.analiseEnquadramentoAtiva = true;
   state.colaboradores = [
     {
       id: 1,
@@ -382,6 +384,55 @@ test("irredutibilidade: salário e piso menores são erros e campos ausentes sã
         ].includes(i.tipo),
       ),
   );
+});
+test("cadastro padrão não exige salário/piso e ignora enquadramentos antigos ocultos", () => {
+  const e = exemplo();
+  e.state.analiseEnquadramentoAtiva = false;
+  assert.equal(createDefaultState().analiseEnquadramentoAtiva, false);
+  const tipos = [
+    "PROTECAO_SALARIAL",
+    "PROTECAO_PISO",
+    "REDUCAO_SALARIAL",
+    "REDUCAO_PISO",
+    "ART8_ENQUADRAMENTO",
+    "ART8_REQUISITOS",
+    "ART9_ENQUADRAMENTO",
+    "ART9_REQUISITOS",
+  ];
+  for (const ec141 of [
+    undefined,
+    {
+      tipo: "art8",
+      diplomaSuperior: true,
+      remuneracao: 25000,
+      tetoRgps: 10000,
+      salarioAnterior: 3000,
+      salarioAtual: 2000,
+    },
+    {
+      tipo: "contrato_publico",
+      contratoVigente: true,
+      maoDeObraDireta: true,
+      dataAditamento: "2027-06-01",
+    },
+  ]) {
+    e.c.ec141 = ec141;
+    const anterior = structuredClone(e.c);
+    const dias = e.gerar();
+    assert.ok(
+      !e.domain.validarLegal(e.c, dias).some((i) => tipos.includes(i.tipo)),
+    );
+    assert.equal(
+      referenciaDia(e.state, "2028-02-07", e.c).semLimiteJornada,
+      false,
+    );
+    assert.equal(referenciaDia(e.state, "2027-02-01", e.c).horas, 42);
+    assert.equal(
+      dias.reduce((sum, d) => sum + d.horas, 0),
+      40,
+    );
+    assert.deepEqual(e.c, anterior);
+  }
 });
 test("compensação mensal: média em meses de28,29,30,31 dias e repouso emsete dias são independentes", () => {
   for (const [ano, mes, n, minimo] of [

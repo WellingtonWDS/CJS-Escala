@@ -22,6 +22,23 @@ module.exports = async function testarEc141({ browser, baseURL }) {
       page.evaluate(() =>
         JSON.parse(localStorage.getItem("fintria-escala-dp-v2")),
       );
+    assert.equal(await page.locator("[data-ec141]").count(), 0);
+    await page.locator("#btn-gerar").click();
+    assert.ok(
+      !(await saved()).escalaGerada.validacoes.some((v) =>
+        v.issues.some((i) =>
+          ["PROTECAO_SALARIAL", "PROTECAO_PISO"].includes(i.tipo),
+        ),
+      ),
+    );
+    // Reativa somente nesta fixture a análise avançada preservada no código.
+    await page.evaluate(() => {
+      const s = JSON.parse(localStorage.getItem("fintria-escala-dp-v2"));
+      s.analiseEnquadramentoAtiva = true;
+      s.escalaGerada = null;
+      localStorage.setItem("fintria-escala-dp-v2", JSON.stringify(s));
+    });
+    await page.reload();
     assert.equal(
       await page.locator("#regime-jornada").inputValue(),
       "automatico",

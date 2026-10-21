@@ -1,6 +1,6 @@
 import { REGIMES } from "../config/regras-jornada.js";
 import { dateFromKey, isoDate } from "./datas-horas.js";
-export const VERSAO_REGRAS = "ec141-2026-10-21-2";
+export const VERSAO_REGRAS = "ec141-2026-10-21-3";
 export const PUBLICACAO = "2026-10-16";
 export const PRIMEIRA_FASE = "2026-12-16";
 export const SEGUNDA_FASE = "2027-12-16";
@@ -48,7 +48,7 @@ export function referenciaDia(state, value, c = {}) {
           chave: state.regimeJornada,
         }
       : regimeNaData(data);
-  const e = c.ec141 || {};
+  const e = state.analiseEnquadramentoAtiva === true ? c.ec141 || {} : {};
   let horas = r.horas;
   if (
     state.modoRegime !== "simulacao" &&
@@ -67,7 +67,10 @@ export function referenciaDia(state, value, c = {}) {
     ...r,
     horas,
     data,
-    semLimiteJornada: data >= PUBLICACAO && excecaoArt8(c),
+    semLimiteJornada:
+      state.analiseEnquadramentoAtiva === true &&
+      data >= PUBLICACAO &&
+      excecaoArt8(c),
   };
 }
 export function referenciaSemana(state, dias, c = {}) {

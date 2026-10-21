@@ -15,7 +15,8 @@ const issue = (tipo, severidade, mensagem, data = null) => ({
 });
 export function validarEnquadramento(state, c, dias) {
   const out = [];
-  const e = c.ec141 || {};
+  const analiseAtiva = state.analiseEnquadramentoAtiva === true;
+  const e = analiseAtiva ? c.ec141 || {} : {};
   const vigentes = dias.filter((d) => d.data >= PUBLICACAO);
   if (!vigentes.length) return out;
   if (state.modoRegime === "simulacao")
@@ -28,94 +29,96 @@ export function validarEnquadramento(state, c, dias) {
     );
   const informado = (v) =>
     v !== "" && v != null && Number.isFinite(Number(v)) && Number(v) >= 0;
-  if (!informado(e.salarioAnterior) || !informado(e.salarioAtual))
-    out.push(
-      issue(
-        "PROTECAO_SALARIAL",
-        "pendencia",
-        "Proteção salarial não avaliada: informe remuneração anterior e atual. Não há alteração automática de salários.",
-      ),
-    );
-  else if (Number(e.salarioAtual) < Number(e.salarioAnterior))
-    out.push(
-      issue(
-        "REDUCAO_SALARIAL",
-        "erro",
-        "Remuneração atual inferior à anterior: incompatível com a proteção salarial da EC 141.",
-      ),
-    );
-  if (informado(e.pisoAnterior) && informado(e.pisoAtual)) {
-    if (Number(e.pisoAtual) < Number(e.pisoAnterior))
+  if (analiseAtiva) {
+    if (!informado(e.salarioAnterior) || !informado(e.salarioAtual))
       out.push(
         issue(
-          "REDUCAO_PISO",
-          "erro",
-          "Piso salarial atual inferior ao anterior.",
-        ),
-      );
-  } else
-    out.push(
-      issue(
-        "PROTECAO_PISO",
-        "pendencia",
-        "Proteção do piso não avaliada: informe os pisos anterior e atual, inclusive zero quando não houver piso específico.",
-      ),
-    );
-  if (e.tipo === "art8") {
-    if (e.empregadoPublico)
-      out.push(
-        issue(
-          "ART8_EMPREGADO_PUBLICO",
-          "erro",
-          "A exceção do art. 8º não se aplica a empregado público. Aplicados os limites gerais.",
-        ),
-      );
-    else if (!excecaoArt8(c) && !e.jornadaMantida)
-      out.push(
-        issue(
-          "ART8_REQUISITOS",
-          "erro",
-          "Art. 8º sem requisitos demonstrados: diploma superior e remuneração de pelo menos 2,5 vezes o teto RGPS do período são obrigatórios. Aplicados os limites gerais.",
-        ),
-      );
-    if (excecaoArt8(c))
-      out.push(
-        issue(
-          "ART8_ENQUADRAMENTO",
+          "PROTECAO_SALARIAL",
           "pendencia",
-          "Exceção de duração/controle aplicada aos dados declarados do art. 8º. Confira diploma, remuneração, teto RGPS do período e ausência de previsão coletiva ou liberalidade que mantenha a jornada. O repouso continua protegido.",
+          "Proteção salarial não avaliada: informe remuneração anterior e atual. Não há alteração automática de salários.",
         ),
       );
-  }
-  if (e.tipo === "contrato_publico") {
-    if (!e.contratoVigente || !e.maoDeObraDireta)
+    else if (Number(e.salarioAtual) < Number(e.salarioAnterior))
       out.push(
         issue(
-          "ART9_REQUISITOS",
+          "REDUCAO_SALARIAL",
           "erro",
-          "Diferimento do art. 9º exige contrato vigente na publicação e execução com emprego direto de mão de obra. Aplicados os prazos gerais.",
+          "Remuneração atual inferior à anterior: incompatível com a proteção salarial da EC 141.",
         ),
       );
-    if (
-      e.dataAditamento &&
-      (!dataValida(e.dataAditamento) ||
-        e.dataAditamento < PUBLICACAO ||
-        e.dataAditamento > PRAZO_PUBLICO)
-    )
+    if (informado(e.pisoAnterior) && informado(e.pisoAtual)) {
+      if (Number(e.pisoAtual) < Number(e.pisoAnterior))
+        out.push(
+          issue(
+            "REDUCAO_PISO",
+            "erro",
+            "Piso salarial atual inferior ao anterior.",
+          ),
+        );
+    } else
       out.push(
         issue(
-          "ART9_ADITAMENTO",
-          "erro",
-          "Data do aditamento inválida ou fora de 16/10/2026 a 16/10/2027. O limite máximo não é prorrogado.",
+          "PROTECAO_PISO",
+          "pendencia",
+          "Proteção do piso não avaliada: informe os pisos anterior e atual, inclusive zero quando não houver piso específico.",
         ),
       );
-    out.push(
-      issue(
-        "ART9_ENQUADRAMENTO",
-        "pendencia",
-        "Art. 9º calculado conforme declaração do contrato e aditamento, sujeito à conferência do instrumento. Sem aditamento, a redução é aplicada no prazo máximo de 16/10/2027; o segundo repouso segue a vigência geral.",
-      ),
-    );
+    if (e.tipo === "art8") {
+      if (e.empregadoPublico)
+        out.push(
+          issue(
+            "ART8_EMPREGADO_PUBLICO",
+            "erro",
+            "A exceção do art. 8º não se aplica a empregado público. Aplicados os limites gerais.",
+          ),
+        );
+      else if (!excecaoArt8(c) && !e.jornadaMantida)
+        out.push(
+          issue(
+            "ART8_REQUISITOS",
+            "erro",
+            "Art. 8º sem requisitos demonstrados: diploma superior e remuneração de pelo menos 2,5 vezes o teto RGPS do período são obrigatórios. Aplicados os limites gerais.",
+          ),
+        );
+      if (excecaoArt8(c))
+        out.push(
+          issue(
+            "ART8_ENQUADRAMENTO",
+            "pendencia",
+            "Exceção de duração/controle aplicada aos dados declarados do art. 8º. Confira diploma, remuneração, teto RGPS do período e ausência de previsão coletiva ou liberalidade que mantenha a jornada. O repouso continua protegido.",
+          ),
+        );
+    }
+    if (e.tipo === "contrato_publico") {
+      if (!e.contratoVigente || !e.maoDeObraDireta)
+        out.push(
+          issue(
+            "ART9_REQUISITOS",
+            "erro",
+            "Diferimento do art. 9º exige contrato vigente na publicação e execução com emprego direto de mão de obra. Aplicados os prazos gerais.",
+          ),
+        );
+      if (
+        e.dataAditamento &&
+        (!dataValida(e.dataAditamento) ||
+          e.dataAditamento < PUBLICACAO ||
+          e.dataAditamento > PRAZO_PUBLICO)
+      )
+        out.push(
+          issue(
+            "ART9_ADITAMENTO",
+            "erro",
+            "Data do aditamento inválida ou fora de 16/10/2026 a 16/10/2027. O limite máximo não é prorrogado.",
+          ),
+        );
+      out.push(
+        issue(
+          "ART9_ENQUADRAMENTO",
+          "pendencia",
+          "Art. 9º calculado conforme declaração do contrato e aditamento, sujeito à conferência do instrumento. Sem aditamento, a redução é aplicada no prazo máximo de 16/10/2027; o segundo repouso segue a vigência geral.",
+        ),
+      );
+    }
   }
   if (state.tipoEscala === "12x36")
     out.push(

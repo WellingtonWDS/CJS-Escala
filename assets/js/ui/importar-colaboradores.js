@@ -35,7 +35,7 @@ export function createImportarColaboradoresUI({
     const total =
       (substituir ? 0 : state.colaboradores.length) + pendentes.length;
     el("importacao-resumo").textContent =
-      `${pendentes.length} colaborador(es) no arquivo. O cadastro ficará com ${total} pessoa(s). ${substituir ? "Os colaboradores atuais serão removidos, incluindo seus dados de enquadramento e proteção salarial. As demais configurações e demandas de cobertura serão mantidas; revise as funções após importar." : "Os colaboradores atuais e seus dados serão preservados. Nomes repetidos serão adicionados como pessoas distintas; não há atualização automática por nome."} A escala anterior precisará ser gerada novamente.`;
+      `${pendentes.length} colaborador(es) no arquivo. O cadastro ficará com ${total} pessoa(s). ${substituir ? "Os colaboradores atuais serão removidos, incluindo seus dados individuais. As demais configurações e demandas de cobertura serão mantidas; revise as funções após importar." : "Os colaboradores atuais e seus dados serão preservados. Nomes repetidos serão adicionados como pessoas distintas; não há atualização automática por nome."} A escala anterior precisará ser gerada novamente.`;
   }
   async function lerArquivo() {
     const file = el("importacao-arquivo").files?.[0];
@@ -111,7 +111,7 @@ export function createImportarColaboradoresUI({
       storage.saveState();
       limpar();
       mensagem(
-        `${count} colaborador(es) importado(s). Confira os dados individuais de enquadramento e proteção salarial, revise a cobertura e clique em Gerar escala.`,
+        `${count} colaborador(es) importado(s). Confira o cadastro, revise a cobertura e clique em Gerar escala.`,
       );
     } catch (error) {
       mensagem(error.message);
