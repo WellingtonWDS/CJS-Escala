@@ -1,4 +1,4 @@
-import { diasNoMes } from "../domain/datas-horas.js";
+import { diasNoMes, isoDate } from "../domain/datas-horas.js";
 import { MESES, DIAS_SEMANA } from "../config/regras-jornada.js";
 import { escapeHtml } from "../shared/formatacao.js";
 
@@ -56,6 +56,13 @@ export function createFeriadosUI({ state, storage, env, invalidarEscala }) {
     wrap.querySelectorAll("[data-remove-feriado]").forEach((btn) => {
       btn.onclick = () => {
         const removido = state.feriados[Number(btn.dataset.removeFeriado)];
+        const chave = isoDate(state.ano, state.mes, Number(removido.dia));
+        state.feriadosExcluidos = [
+          ...new Set([...(state.feriadosExcluidos || []), chave]),
+        ];
+        state.feriadosConfigurados = (state.feriadosConfigurados || []).filter(
+          (f) => isoDate(f.ano, f.mes, Number(f.dia)) !== chave,
+        );
         state.feriadosLocais = (state.feriadosLocais || []).filter(
           (f) =>
             !(
@@ -86,6 +93,10 @@ export function createFeriadosUI({ state, storage, env, invalidarEscala }) {
         alert("Já existe um feriado cadastrado neste dia.");
         return;
       }
+      const chave = isoDate(state.ano, state.mes, dia);
+      state.feriadosExcluidos = (state.feriadosExcluidos || []).filter(
+        (d) => d !== chave,
+      );
       state.feriados.push({
         dia,
         nome,

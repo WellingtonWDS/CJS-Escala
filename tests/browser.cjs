@@ -162,6 +162,14 @@ const { chromium } = require("playwright");
     console.log(
       "OK: invalidação da escala e ausência de erros JavaScript/arquivos locais",
     );
+    await require("./browser-tutorial.cjs")({
+      browser,
+      baseURL: `http://127.0.0.1:${server.address().port}/`,
+    });
+    await require("./browser-setores.cjs")({
+      browser,
+      baseURL: `http://127.0.0.1:${server.address().port}/`,
+    });
     await require("./browser-ec141.cjs")({
       browser,
       baseURL: `http://127.0.0.1:${server.address().port}/`,

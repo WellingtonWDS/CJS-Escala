@@ -84,6 +84,8 @@ O módulo `domain/cobertura.js` é independente da interface e não modifica a c
 
 ## Testes
 
+O botão **Tutorial guiado**, ao lado de **Limpar dados salvos**, inicia nove etapas com destaque da área correspondente, instruções e contador. É possível avançar, voltar, concluir ou encerrar com **Esc**. O tutorial não altera o cadastro nem gera uma escala; a cobertura continua opcional. A implementação fica em `assets/js/ui/tutorial.js`, com regressões em `tests/browser-tutorial.cjs` para desktop e celular, navegação por teclado e preservação dos dados.
+
 ```sh
 npm test
 npx playwright install chromium

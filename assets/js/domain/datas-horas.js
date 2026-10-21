@@ -26,45 +26,40 @@ export function minToTime(totalMin) {
 }
 
 export function timeToMin(value) {
-  if (!value || !/^\d{2}:\d{2}$/.test(value)) return NaN;
+  if (typeof value !== "string" || !/^([01]\d|2[0-3]):[0-5]\d$/.test(value))
+    return NaN;
   const [h, m] = value.split(":").map(Number);
   return h * 60 + m;
 }
 
 export function normalizarJornada(j) {
-  const entrada = timeToMin(j.entrada);
-  const intInicio = timeToMin(j.intInicio);
-  const intFim = timeToMin(j.intFim);
-  const saida = timeToMin(j.saida);
-
-  if ([entrada, intInicio, intFim, saida].some((x) => !Number.isFinite(x)))
-    return null;
-
-  /* Turno único: int. início = int. fim = saída. */
-  if (intInicio === intFim && intFim === saida) {
+  if (!j) return null;
+  const entrada = timeToMin(j.entrada),
+    inicio = timeToMin(j.intInicio),
+    fim = timeToMin(j.intFim),
+    saidaRelogio = timeToMin(j.saida);
+  if (![entrada, inicio, fim, saidaRelogio].every(Number.isFinite)) return null;
+  const depois = (valor, anterior) => {
+    while (valor < anterior) valor += 1440;
+    return valor;
+  };
+  const legado = fim === 0 && saidaRelogio === 0 && inicio !== entrada;
+  if ((inicio === fim && fim === saidaRelogio) || legado) {
+    const saida = depois(legado ? inicio : saidaRelogio, entrada);
     return {
       entrada,
-      intInicio,
-      intFim,
+      intInicio: saida,
+      intFim: saida,
       saida,
       intervalo: 0,
       turnoUnico: true,
+      ...(legado ? { legado: true } : {}),
     };
   }
-
-  /* Compatibilidade com o preenchimento legado 08:00/12:00/00:00/00:00. */
-  if (intFim === 0 && saida === 0 && intInicio > entrada) {
-    return {
-      entrada,
-      intInicio,
-      intFim: intInicio,
-      saida: intInicio,
-      intervalo: 0,
-      turnoUnico: true,
-      legado: true,
-    };
-  }
-
+  const intInicio = depois(inicio, entrada);
+  const intFim = depois(fim, intInicio);
+  const saida = depois(saidaRelogio, intFim);
+  if (saida - entrada > 1440) return null;
   return {
     entrada,
     intInicio,
@@ -73,6 +68,11 @@ export function normalizarJornada(j) {
     intervalo: intFim - intInicio,
     turnoUnico: false,
   };
+}
+
+export function horarioComDia(totalMin) {
+  const dias = Math.floor(totalMin / 1440);
+  return minToTime(totalMin) + (dias > 0 ? ` (+${dias}d)` : "");
 }
 
 export function intervaloMin(j) {

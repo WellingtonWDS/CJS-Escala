@@ -12,7 +12,7 @@ export function createConfiguracaoUI({
   atualizarCargaSemanalMsg,
   renderFeriados,
 }) {
-  const { regimeAtual, inicializarFeriadosDoMes } = domain;
+  const { regimeAtual, inicializarFeriadosDoMes, arquivarFeriados } = domain;
   const { saveState } = storage;
   const { document } = env;
 
@@ -126,6 +126,7 @@ export function createConfiguracaoUI({
       .join("");
 
     selMes.onchange = (e) => {
+      arquivarFeriados();
       state.mes = Number(e.target.value);
       invalidarEscala();
       inicializarFeriadosDoMes();
@@ -135,6 +136,7 @@ export function createConfiguracaoUI({
       saveState();
     };
     selAno.onchange = (e) => {
+      arquivarFeriados();
       state.ano = Number(e.target.value);
       invalidarEscala();
       inicializarFeriadosDoMes();

@@ -47,66 +47,91 @@ export function feriadosNacionais(ano) {
 }
 
 export function createFeriados(state) {
-  function inicializarFeriadosDoMes() {
-    const nacionais = feriadosNacionais(state.ano);
-    const existentes = Array.isArray(state.feriados) ? state.feriados : [];
+  const chave = (f) => isoDate(f.ano, f.mes, Number(f.dia));
+  function arquivarFeriados() {
     const arquivo = new Map(
-      (state.feriadosLocais || []).map((f) => [
-        `${f.ano}-${f.mes}-${f.dia}`,
-        f,
-      ]),
+      (state.feriadosConfigurados || []).map((f) => [chave(f), f]),
     );
-    existentes
-      .filter((f) => f.tipo === "municipal" || f.tipo === "local")
-      .forEach((f) => arquivo.set(`${f.ano}-${f.mes}-${f.dia}`, f));
-    state.feriadosLocais = [...arquivo.values()];
-    const municipais = state.feriadosLocais.filter(
-      (f) => f.mes === state.mes && f.ano === state.ano,
+    for (const f of state.feriados || []) {
+      f.ano ??= state.ano;
+      f.mes ??= state.mes;
+      const registro = { ...f };
+      arquivo.set(chave(registro), registro);
+    }
+    state.feriadosConfigurados = [...arquivo.values()];
+    const locais = new Map(
+      (state.feriadosLocais || []).map((f) => [chave(f), f]),
     );
-    const novos = nacionais
-      .filter((f) => f.data.getMonth() === state.mes)
-      .map((f) => ({
-        dia: f.data.getDate(),
-        nome: f.nome,
-        tipo: f.tipo,
-        trabalhado: false,
-      }));
-    state.feriados = [
-      ...novos,
-      ...municipais.filter((f) => f.dia <= diasNoMes(state.mes, state.ano)),
-    ].sort((a, b) => a.dia - b.dia);
+    for (const f of arquivo.values())
+      if (["municipal", "local"].includes(f.tipo)) locais.set(chave(f), f);
+    state.feriadosLocais = [...locais.values()];
   }
-
+  function inicializarFeriadosDoMes() {
+    arquivarFeriados();
+    const arquivo = new Map(
+      (state.feriadosConfigurados || []).map((f) => [chave(f), f]),
+    );
+    const calendario = new Map(
+      feriadosNacionais(state.ano)
+        .filter((f) => f.data.getMonth() === state.mes)
+        .map((f) => {
+          const registro = {
+            ...f,
+            dia: f.data.getDate(),
+            mes: state.mes,
+            ano: state.ano,
+            trabalhado: false,
+          };
+          return [chave(registro), registro];
+        }),
+    );
+    for (const f of [...(state.feriadosLocais || []), ...arquivo.values()])
+      if (
+        f.ano === state.ano &&
+        f.mes === state.mes &&
+        Number(f.dia) <= diasNoMes(state.mes, state.ano)
+      )
+        calendario.set(chave(f), f);
+    const excluidos = new Set(state.feriadosExcluidos || []);
+    state.feriados = [...calendario.values()]
+      .filter((f) => !excluidos.has(chave(f)))
+      .sort((a, b) => a.dia - b.dia);
+  }
   function feriadoDoDia(dia) {
-    return state.feriados.find((f) => Number(f.dia) === Number(dia)) || null;
+    return feriadoDaData(isoDate(state.ano, state.mes, Number(dia)));
   }
-
   function feriadoDaData(data) {
     const date = dateFromKey(data);
-    if (!date) return null;
-    const key = isoDate(date.getFullYear(), date.getMonth(), date.getDate());
-    const atual = state.feriados.find((f) => {
-      const fd = isoDate(state.ano, state.mes, Number(f.dia));
-      return fd === key;
-    });
+    if (!date || Number.isNaN(date.getTime())) return null;
+    const atual = (state.feriados || []).find(
+      (f) =>
+        isoDate(f.ano ?? state.ano, f.mes ?? state.mes, Number(f.dia)) === data,
+    );
     if (atual) return atual;
-
-    /* Para as semanas de borda, a grade pode mostrar dias do mês
-     anterior/posterior. Nesses dias usamos apenas os feriados
-     nacionais/religiosos do calendário; feriados municipais
-     permanecem limitados ao mês configurado. */
+    if ((state.feriadosExcluidos || []).includes(data)) return null;
+    const salvo = [
+      ...(state.feriadosConfigurados || []),
+      ...(state.feriadosLocais || []),
+    ].find((f) => chave(f) === data);
+    if (salvo) return salvo;
     const nacional = feriadosNacionais(date.getFullYear()).find(
       (f) =>
         isoDate(f.data.getFullYear(), f.data.getMonth(), f.data.getDate()) ===
-        key,
+        data,
     );
     return nacional
-      ? { ...nacional, dia: date.getDate(), trabalhado: false }
+      ? {
+          ...nacional,
+          dia: date.getDate(),
+          mes: date.getMonth(),
+          ano: date.getFullYear(),
+          trabalhado: false,
+        }
       : null;
   }
-
   return {
     inicializarFeriadosDoMes,
+    arquivarFeriados,
     feriadoDoDia,
     feriadoDaData,
     feriadosNacionais,

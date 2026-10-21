@@ -1,4 +1,10 @@
-import { dateFromKey, minToTime, fmtHoras } from "../domain/datas-horas.js";
+import {
+  dateFromKey,
+  minToTime,
+  fmtHoras,
+  addDays,
+  isoDate,
+} from "../domain/datas-horas.js";
 import { referenciaDia, VERSAO_REGRAS } from "../domain/ec141.js";
 import { createDomain } from "../domain/index.js";
 import { csvCell } from "../shared/formatacao.js";
@@ -54,6 +60,7 @@ export function gerarCsv(state) {
       "Limite semanal aplicado",
       "Enquadramento",
       "Aditamento informado",
+      "Data da saída",
     ],
   ];
   for (const { r } of validacoes)
@@ -84,6 +91,16 @@ export function gerarCsv(state) {
           : fmtHoras(referenciaDia(state, d.data, r.colaborador).horas),
         r.colaborador.ec141?.tipo || "geral",
         r.colaborador.ec141?.dataAditamento || "",
+        trabalha
+          ? (() => {
+              const saida = addDays(dt, Math.floor(d.saidaMin / 1440));
+              return isoDate(
+                saida.getFullYear(),
+                saida.getMonth(),
+                saida.getDate(),
+              );
+            })()
+          : "",
       ]);
     }
   linhas.push(

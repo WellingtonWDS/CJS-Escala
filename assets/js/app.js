@@ -10,6 +10,7 @@ import { createConfiguracaoUI } from "./ui/configuracao.js";
 import { createCalendarioUI } from "./ui/calendario.js";
 import { createTransicaoUI } from "./ui/transicao.js";
 import { bindExportEvents } from "./export/download.js";
+import { createTutorialUI } from "./ui/tutorial.js";
 export function createApplication({ env, now = () => new Date() }) {
   const initialState = createDefaultState(now());
   const state = structuredClone(initialState);
@@ -66,6 +67,7 @@ export function createApplication({ env, now = () => new Date() }) {
     renderRelatorioCobertura: cobertura.renderRelatorioCobertura,
   });
   const transicao = createTransicaoUI(deps);
+  const tutorial = createTutorialUI(env);
   const { renderResumo } = resumo;
   const { renderFeriados } = feriados;
   const { renderColaboradores } = colaboradores;
@@ -81,6 +83,7 @@ export function createApplication({ env, now = () => new Date() }) {
       calendario,
       transicao,
       cobertura,
+      tutorial,
     ])
       ui.bindEvents();
     bindExportEvents(state, env);
@@ -108,10 +111,8 @@ export function createApplication({ env, now = () => new Date() }) {
     if (state.tipoEscala === "marshall") state.tipoEscala = "custom";
     if (!Array.isArray(state.feriados)) state.feriados = [];
     state.feriados.forEach((f) => {
-      if (f.tipo === "municipal" || f.tipo === "local") {
-        f.mes ??= state.mes;
-        f.ano ??= state.ano;
-      }
+      f.mes ??= state.mes;
+      f.ano ??= state.ano;
     });
     const hoje = now();
     const mudouPeriodo =

@@ -3,7 +3,7 @@ import {
   isoDate,
   dateFromKey,
   fmtHoras,
-  minToTime,
+  horarioComDia,
   getMonday,
   formatDateBR,
   parseHorasTrabalhadas,
@@ -373,9 +373,9 @@ export function createCalendarioUI({
                     : x.obj.status === "FC"
                       ? "FC"
                       : x.obj.status;
-                return `<button data-ri="${x.ri}" data-di="${x.r.dias.indexOf(x.obj)}" class="w-full text-left mb-1 last:mb-0 px-1.5 py-1 rounded border ${cls} hover:opacity-80" title="${trabalho ? "Trabalho" : "Folga"}${trabalho && x.obj.intervaloInicioMin != null ? ` · Intervalo ${minToTime(x.obj.intervaloInicioMin)}–${minToTime(x.obj.intervaloFimMin)}` : ""} — clique para alterar">
+                return `<button data-ri="${x.ri}" data-di="${x.r.dias.indexOf(x.obj)}" class="w-full text-left mb-1 last:mb-0 px-1.5 py-1 rounded border ${cls} hover:opacity-80" title="${trabalho ? "Trabalho" : "Folga"}${trabalho && x.obj.intervaloInicioMin != null ? ` · Intervalo ${horarioComDia(x.obj.intervaloInicioMin)}–${horarioComDia(x.obj.intervaloFimMin)}` : ""} — clique para alterar">
               <div class="font-semibold truncate">${escapeHtml(x.r.colaborador.nome || "(sem nome)")}</div>
-              <div class="text-[9px] opacity-80">${status}${state.turnosRevezamento ? ` · ${x.obj.turno}` : ""}${x.obj.horas ? ` · ${fmtHoras(x.obj.horas)} · ${minToTime(x.obj.entradaMin)}–${minToTime(x.obj.saidaMin)}` : ""}</div>
+              <div class="text-[9px] opacity-80">${status}${state.turnosRevezamento ? ` · ${x.obj.turno}` : ""}${x.obj.horas ? ` · ${fmtHoras(x.obj.horas)} · ${horarioComDia(x.obj.entradaMin)}–${horarioComDia(x.obj.saidaMin)}` : ""}</div>
             </button>`;
               })
               .join("");

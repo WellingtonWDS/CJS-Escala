@@ -108,6 +108,16 @@ export function createGerador(state, jornada, feriados, validacao) {
     dataFim,
     feriadosMap,
   ) {
+    dataInicio = new Date(
+      dataInicio.getFullYear(),
+      dataInicio.getMonth(),
+      dataInicio.getDate(),
+    );
+    dataFim = new Date(
+      dataFim.getFullYear(),
+      dataFim.getMonth(),
+      dataFim.getDate(),
+    );
     const dias = [];
     const planejarFolgas = createPlanejadorFolgas(
       state,
@@ -288,11 +298,15 @@ export function createGerador(state, jornada, feriados, validacao) {
       feriadosMap[key] = { ...f, dia: f.data.getDate(), trabalhado: false };
     });
     // Também respeitar feriados locais anteriores em plantões que cruzam o mês.
-    (state.feriadosLocais ?? []).forEach((f) => {
+    [
+      ...(state.feriadosConfigurados ?? []),
+      ...(state.feriadosLocais ?? []),
+    ].forEach((f) => {
       if (Number.isInteger(f.ano) && Number.isInteger(f.mes)) {
         feriadosMap[isoDate(f.ano, f.mes, Number(f.dia))] = { ...f };
       }
     });
+    (state.feriadosExcluidos || []).forEach((key) => delete feriadosMap[key]);
     state.feriados.forEach((f) => {
       const key = isoDate(state.ano, state.mes, Number(f.dia));
       feriadosMap[key] = { ...f };

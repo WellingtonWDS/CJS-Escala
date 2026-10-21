@@ -1,5 +1,5 @@
 import { diasNoMes, isoDate, timeToMin } from "./datas-horas.js";
-import { feriadosNacionais } from "./feriados.js";
+import { createFeriados } from "./feriados.js";
 
 const DIA = 1440;
 const minutoData = (key) => {
@@ -92,6 +92,7 @@ function segmentosTrabalho(dia, jornada) {
  * estiver configurada como fechada. Sobreposições da mesma função usam o maior
  * mínimo, e não somam a mesma necessidade duas vezes. Intervalos são [início, fim). */
 export function analisarCobertura(config, resultado) {
+  const { feriadoDaData } = createFeriados(config);
   const demandas = config.demandasCobertura ?? [];
   const relatorio = {
     configurada: demandas.length > 0,
@@ -123,26 +124,7 @@ export function analisarCobertura(config, resultado) {
     const g = grupo(demanda.funcao);
     for (let data = inicio - DIA; data < fim; data += DIA) {
       const date = new Date(data * 60000);
-      const feriado =
-        date.getUTCMonth() === config.mes &&
-        date.getUTCFullYear() === config.ano
-          ? (config.feriados ?? []).find(
-              (f) => Number(f.dia) === date.getUTCDate(),
-            )
-          : [
-              ...feriadosNacionais(date.getUTCFullYear()).map((f) => ({
-                ...f,
-                dia: f.data.getDate(),
-                mes: f.data.getMonth(),
-                ano: f.data.getFullYear(),
-              })),
-              ...(config.feriadosLocais ?? []),
-            ].find(
-              (f) =>
-                f.dia === date.getUTCDate() &&
-                f.mes === date.getUTCMonth() &&
-                f.ano === date.getUTCFullYear(),
-            );
+      const feriado = feriadoDaData(chaveData(data));
       if (
         !demanda.diasSemana.includes(date.getUTCDay()) ||
         (feriado && !demanda.incluirFeriados)

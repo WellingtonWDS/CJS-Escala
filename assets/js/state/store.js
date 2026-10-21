@@ -44,6 +44,8 @@ export function createDefaultState(now = new Date()) {
     instrumentoCompensacao: "nenhuma",
     feriados: [],
     feriadosLocais: [],
+    feriadosConfigurados: [],
+    feriadosExcluidos: [],
     jornada: {
       entrada: "08:00",
       intInicio: "12:00",

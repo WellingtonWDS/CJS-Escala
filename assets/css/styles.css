@@ -7,6 +7,96 @@ body {
 .escala-mensal {
   min-width: 1100px;
 }
+.tutorial-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+}
+.tutorial-highlight {
+  position: fixed;
+  border: 3px solid #60a5fa;
+  border-radius: 14px;
+  box-shadow: 0 0 0 9999px rgb(11 37 69 / 72%);
+  pointer-events: none;
+  box-sizing: border-box;
+}
+.tutorial-card {
+  position: fixed;
+  box-sizing: border-box;
+  width: min(380px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  padding: 20px;
+  border: 1px solid #cbd5e1;
+  border-radius: 14px;
+  background: #fff;
+  color: #334155;
+  box-shadow: 0 12px 40px rgb(0 0 0 / 25%);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.tutorial-card:focus {
+  outline: none;
+}
+.tutorial-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  color: #64748b;
+  font-size: 12px;
+}
+.tutorial-card h2 {
+  margin: 12px 0 8px;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 19px;
+  font-weight: 600;
+  color: #0b2545;
+}
+.tutorial-card p {
+  margin: 0;
+}
+.tutorial-card .tutorial-dica {
+  margin-top: 12px;
+  color: #64748b;
+  font-size: 12px;
+}
+.tutorial-card button {
+  cursor: pointer;
+  font: inherit;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 7px 12px;
+  background: white;
+  color: #0b2545;
+}
+.tutorial-top button {
+  padding: 3px 7px;
+  border-color: transparent;
+}
+.tutorial-acoes {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 18px;
+}
+.tutorial-card #tutorial-proximo {
+  background: #0b2545;
+  color: #fff;
+  border-color: #0b2545;
+  font-weight: 600;
+}
+.tutorial-card button:hover {
+  filter: brightness(0.93);
+}
+.tutorial-card button:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 3px;
+}
+.tutorial-card button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
 @media print {
   .escala-mensal {
     min-width: 0;

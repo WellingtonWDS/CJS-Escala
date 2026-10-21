@@ -37,6 +37,42 @@ export function createValidacao(state, jornada, feriados) {
     const datas = dias.filter((x) => x.status === "T" || x.status === "FE");
     datas.forEach((d) => {
       const h = d.horas;
+      const partes =
+        Number.isFinite(d.intervaloInicioMin) &&
+        Number.isFinite(d.intervaloFimMin)
+          ? [
+              [d.entradaMin, d.intervaloInicioMin],
+              [d.intervaloFimMin, d.saidaMin],
+            ]
+          : [[d.entradaMin, d.saidaMin]];
+      const noturno = partes.some(
+        ([a, b]) =>
+          Number.isFinite(a) &&
+          Number.isFinite(b) &&
+          [0, 1440, 2880].some(
+            (base) =>
+              Math.min(b, base + 300) > Math.max(a, base) ||
+              Math.min(b, base + 1440) > Math.max(a, base + 1320),
+          ),
+      );
+      if (h > 0 && noturno)
+        out.push(
+          issue(
+            "TRABALHO_NOTURNO",
+            "pendencia",
+            `${d.data}: há trabalho na faixa noturna urbana de referência (22h–5h). A grade usa horas de relógio e a data de início do turno; confira hora noturna reduzida, adicional, prorrogações e apuração na virada da semana conforme a categoria. Esses efeitos não são homologados automaticamente.`,
+            d.data,
+          ),
+        );
+      if (!Number.isFinite(h) || h <= 0)
+        out.push(
+          issue(
+            "TRABALHO_SEM_HORAS",
+            "erro",
+            `${d.data}: dia marcado como trabalho sem uma duração positiva válida. Informe horas ou altere o status para folga.`,
+            d.data,
+          ),
+        );
       const limite = limiteHorasDia(state, d.weekday);
       if (h > limite + 0.01)
         out.push(
