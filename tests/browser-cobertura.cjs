@@ -26,6 +26,7 @@ module.exports = async function testarCobertura({ browser, baseURL }) {
     await page.locator('[data-tipo="custom"]').click();
     for (const day of [1, 2, 3, 4, 5])
       await page.locator(`#weekday-picker [data-day="${day}"]`).click();
+    await page.locator("#cadastro-manual-colaboradores > summary").click();
     for (const [i, funcao] of [
       [0, "Atendente"],
       [1, "Supervisor"],
@@ -153,6 +154,7 @@ module.exports = async function testarCobertura({ browser, baseURL }) {
       await page.locator("#relatorio-cobertura").innerText(),
       /ainda não avaliada/,
     );
+    await page.locator("#cadastro-manual-colaboradores > summary").click();
     const cargo = page.locator('[data-field="cargo"]').first();
     await cargo.fill("Caixa");
     await cargo.dispatchEvent("change");

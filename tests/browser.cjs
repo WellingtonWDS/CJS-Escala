@@ -64,6 +64,21 @@ const { chromium } = require("playwright");
       "OK: modelos de escala e carregamento dos módulos na saída de produção",
     );
     await page.locator('[data-tipo="5x2"]').click();
+    assert.equal(
+      await page.locator("#importacao-colaboradores").getAttribute("open"),
+      null,
+    );
+    assert.equal(
+      await page.locator("#cadastro-manual-colaboradores").getAttribute("open"),
+      null,
+    );
+    assert.deepEqual(
+      await page
+        .locator("#config-colaboradores > details")
+        .evaluateAll((els) => els.map((el) => el.id)),
+      ["importacao-colaboradores", "cadastro-manual-colaboradores"],
+    );
+    await page.locator("#cadastro-manual-colaboradores > summary").click();
     await page.locator("#btn-add-colab").click();
     const name = page.locator('[data-field="nome"]').last();
     await name.fill('Pessoa; "Teste"');

@@ -58,9 +58,7 @@
 
       <div id="config-colaboradores">
       <h3 class="font-display text-fintria-navy text-sm font-semibold mt-6">Colaboradores</h3>
-      <p class="text-slate-500 text-sm mb-3">Cadastre cada pessoa e defina as folgas individuais — a escala respeita essas regras.</p>
-      <div id="colab-list"></div>
-      <button id="btn-add-colab" class="border border-slate-300 text-fintria-navy bg-white px-3.5 py-2 rounded-md text-sm font-semibold hover:border-fintria-navy">+ Adicionar colaborador</button>
+      <p class="text-slate-500 text-sm mb-3">Escolha o cadastro por planilha ou o cadastro manual para preencher e revisar os colaboradores.</p>
       <details class="mt-4 border border-slate-200 rounded-lg p-4 bg-slate-50 no-print" id="importacao-colaboradores">
         <summary class="cursor-pointer font-semibold text-fintria-navy text-sm">Preencher colaboradores por planilha</summary>
         <p class="text-sm text-slate-500 mt-3">Baixe o modelo CSV e abra no Excel ou LibreOffice. Preencha a partir da segunda linha, mantendo os títulos das quatro colunas, e salve como CSV (preferencialmente UTF-8). O arquivo é lido apenas neste navegador.</p>
@@ -77,6 +75,12 @@
           <div class="overflow-x-auto"><table class="w-full text-sm bg-white border border-slate-200 rounded-lg"><caption class="text-left font-semibold pb-2">Prévia dos colaboradores — até 20 linhas</caption><thead><tr><th scope="col" class="text-left p-2">Nome</th><th scope="col" class="text-left p-2">Sexo</th><th scope="col" class="text-left p-2">Cargo / função</th><th scope="col" class="text-left p-2">Horas semanais</th></tr></thead><tbody id="importacao-linhas"></tbody></table></div>
         </div>
         <div class="flex flex-wrap gap-2 mt-3"><button id="importacao-confirmar" type="button" disabled class="bg-fintria-navy text-white px-3.5 py-2 rounded-md text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed">Confirmar importação</button><button id="importacao-cancelar" type="button" class="bg-white border border-slate-300 text-fintria-navy px-3.5 py-2 rounded-md text-sm">Cancelar importação</button></div>
+      </details>
+      <details class="mt-4 border border-slate-200 rounded-lg p-4 bg-slate-50" id="cadastro-manual-colaboradores">
+        <summary class="cursor-pointer font-semibold text-fintria-navy text-sm">Preencher colaboradores manualmente</summary>
+        <p class="text-sm text-slate-500 mt-3 mb-3">Adicione ou revise cada pessoa, sua função, carga contratual e dados individuais. Os colaboradores importados por planilha também aparecem aqui.</p>
+        <div id="colab-list"></div>
+        <button id="btn-add-colab" class="border border-slate-300 text-fintria-navy bg-white px-3.5 py-2 rounded-md text-sm font-semibold hover:border-fintria-navy">+ Adicionar colaborador</button>
       </details>
       </div>
     </section>

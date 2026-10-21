@@ -54,6 +54,7 @@ module.exports = async function testarSabado({ browser, baseURL }) {
     await verificar();
     await page.locator("#btn-gerar").click();
     await verificar();
+    await page.locator("#cadastro-manual-colaboradores > summary").click();
     const horas = page.locator('[data-field="horasSemana"]').first();
     await horas.fill("60");
     await horas.dispatchEvent("change");

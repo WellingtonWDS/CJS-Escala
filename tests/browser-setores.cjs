@@ -45,6 +45,7 @@ module.exports = async function testarSetores({ browser, baseURL }) {
       await page.locator(`#${id}`).fill(value);
       await page.locator(`#${id}`).dispatchEvent("change");
     }
+    await page.locator("#cadastro-manual-colaboradores > summary").click();
     const horas = page.locator('[data-field="horasSemana"]').first();
     await horas.fill("40");
     await horas.dispatchEvent("change");

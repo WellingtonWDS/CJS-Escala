@@ -49,6 +49,7 @@ module.exports = async function testarEc141({ browser, baseURL }) {
       await page.locator("#resultado-gerar").innerText(),
       /PENDENTE/,
     );
+    await page.locator("#cadastro-manual-colaboradores > summary").click();
     const details = page.locator("#colab-list details").first();
     await details.locator("summary").click();
     for (const [field, value] of Object.entries({

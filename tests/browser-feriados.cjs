@@ -24,6 +24,7 @@ module.exports = async function testarFeriados({ browser, baseURL }) {
     );
     await page.locator('[data-tipo="5x2"]').click();
     await page.locator('#weekday-picker [data-day="6"]').click();
+    await page.locator("#cadastro-manual-colaboradores > summary").click();
     const horas = page.locator('[data-field="horasSemana"]').first();
     await horas.fill("40");
     await horas.dispatchEvent("change");
