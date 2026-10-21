@@ -87,7 +87,12 @@ export function createCalendarioUI({
     atualizarHorarioEfetivo(obj);
     state.escalaGerada.validacoes = state.escalaGerada.resultado.map((r) => ({
       colaborador: r.colaborador,
-      issues: validarLegal(r.colaborador, r.dias),
+      issues: validarLegal(
+        r.colaborador,
+        r.dias,
+        r.diasContexto,
+        r.diasApuracao,
+      ),
     }));
     state.escalaGerada.avisosCobertura = validarCobertura(
       state.escalaGerada.resultado,
@@ -109,7 +114,12 @@ export function createCalendarioUI({
     });
     state.escalaGerada.validacoes = state.escalaGerada.resultado.map((r) => ({
       colaborador: r.colaborador,
-      issues: validarLegal(r.colaborador, r.dias),
+      issues: validarLegal(
+        r.colaborador,
+        r.dias,
+        r.diasContexto,
+        r.diasApuracao,
+      ),
     }));
     state.escalaGerada.coberturaOperacional = domain.analisarCobertura(
       state.escalaGerada.resultado,
@@ -119,6 +129,8 @@ export function createCalendarioUI({
   }
 
   function severityBadge(issueObj) {
+    if (issueObj.severidade === "pendencia")
+      return '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-fintria-azulBg text-fintria-azul">PENDENTE</span>';
     if (issueObj.severidade === "erro")
       return '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-fintria-vermelhoBg text-fintria-vermelho">ERRO</span>';
     if (issueObj.severidade === "alerta")
@@ -135,17 +147,19 @@ export function createCalendarioUI({
     // As validações são recalculadas a cada renderização. Assim, qualquer alteração
     // manual em um dia repercute imediatamente nos indicadores semanais e mensais.
     const allIssues = resultado.flatMap((r) =>
-      validarLegal(r.colaborador, r.dias),
+      validarLegal(r.colaborador, r.dias, r.diasContexto, r.diasApuracao),
     );
     const cobertura = validarCobertura(resultado);
     const erros = allIssues.filter((x) => x.severidade === "erro");
-    const alertas = allIssues.filter((x) => x.severidade === "alerta");
+    const alertas = allIssues.filter(
+      (x) => x.severidade === "alerta" || x.severidade === "pendencia",
+    );
     const infos = allIssues.filter((x) => x.severidade === "info");
 
     if (erros.length) {
       html += `<div class="rounded-lg px-3.5 py-2.5 text-sm bg-fintria-vermelhoBg text-fintria-vermelho mb-2"><b>${erros.length} incompatibilidade(s) objetiva(s).</b> Revise os itens abaixo antes de tratar a escala como válida.</div>`;
     } else if (alertas.length) {
-      html += `<div class="rounded-lg px-3.5 py-2.5 text-sm bg-fintria-ambarBg text-fintria-ambar mb-2"><b>${alertas.length} ponto(s) dependem de análise.</b> A ferramenta não os converte automaticamente em ilegalidade.</div>`;
+      html += `<div class="rounded-lg px-3.5 py-2.5 text-sm bg-fintria-ambarBg text-fintria-ambar mb-2"><b>${alertas.length} ponto(s) dependem de análise.</b> Verificações documentais ou de enquadramento pendentes não equivalem à aprovação de adequação à EC 141.</div>`;
     } else {
       html += `<div class="rounded-lg px-3.5 py-2.5 text-sm bg-fintria-verdeBg text-fintria-verde mb-2"><b>Nenhuma incompatibilidade objetiva detectada</b> nas regras modeladas. Isso não substitui a conferência do caso concreto.</div>`;
     }
@@ -165,9 +179,16 @@ export function createCalendarioUI({
     // PAINEL POR COLABORADOR
     // ---------------------------------------------------------
     resultado.forEach((r) => {
-      const issues = validarLegal(r.colaborador, r.dias);
+      const issues = validarLegal(
+        r.colaborador,
+        r.dias,
+        r.diasContexto,
+        r.diasApuracao,
+      );
       const hasError = issues.some((x) => x.severidade === "erro");
-      const hasAlert = issues.some((x) => x.severidade === "alerta");
+      const hasAlert = issues.some(
+        (x) => x.severidade === "alerta" || x.severidade === "pendencia",
+      );
       const label = hasError
         ? "INCOMPATÍVEL"
         : hasAlert
@@ -295,7 +316,7 @@ export function createCalendarioUI({
           .map((x) => {
             const badge =
               x.estado === "ok"
-                ? '<span class="px-1.5 py-0.5 rounded bg-fintria-verdeBg text-fintria-verde font-bold">OK</span>'
+                ? '<span class="px-1.5 py-0.5 rounded bg-fintria-verdeBg text-fintria-verde font-bold">HORAS OK</span>'
                 : x.estado === "acima"
                   ? '<span class="px-1.5 py-0.5 rounded bg-fintria-vermelhoBg text-fintria-vermelho font-bold">ACIMA</span>'
                   : x.estado === "abaixo"
@@ -311,8 +332,9 @@ export function createCalendarioUI({
               .join(", ");
             return `<div data-resumo-semanal data-colaborador="${x.r.colaborador.id}" data-semana="${isoDate(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate())}" class="pb-2 mb-2 border-b border-slate-200 last:border-0 last:mb-0 last:pb-0">
           <div class="flex items-start justify-between gap-1"><b class="text-fintria-navy">${escapeHtml(x.r.colaborador.nome || "(sem nome)")}</b>${badge}</div>
-          <div class="text-slate-600 mt-0.5">${fmtHoras(x.trabalhadas)} trabalhadas${x.abonadas ? ` + ${fmtHoras(x.abonadas)} abonadas` : ""}${Number.isFinite(x.alvo) ? ` · total ${fmtHoras(x.computadas)} / alvo ${fmtHoras(x.alvo)}` : ""}</div>
+          <div class="text-slate-600 mt-0.5" title="O fechamento de horas não substitui as validações de jornada e enquadramento">${fmtHoras(x.trabalhadas)} trabalhadas${x.abonadas ? ` + ${fmtHoras(x.abonadas)} abonadas` : ""}${Number.isFinite(x.alvo) ? ` · total ${fmtHoras(x.computadas)} / alvo ${fmtHoras(x.alvo)}` : ""}</div>
           ${x.abonos.map((a) => `<div class="text-fintria-azul mt-1">Abono de feriado: ${formatDateBR(dateFromKey(a.data))} — ${escapeHtml(a.nome)} (${fmtHoras(a.horas)}).</div>`).join("")}
+          ${x.contrato !== x.alvo ? `<div class="text-slate-500">Contrato de referência: ${fmtHoras(x.contrato)}. Alvo ajustado à fase, sem alteração salarial.</div>` : ""}
           <div class="text-slate-500">Folgas: ${folgas || "nenhuma"}</div>
         </div>`;
           })

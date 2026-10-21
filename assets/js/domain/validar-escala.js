@@ -1,3 +1,15 @@
+import { apurarCompensacaoHoras } from "./compensacao-horas.js";
+import {
+  referenciaDia,
+  referenciaSemana,
+  instrumentoValido,
+  limiteDiario,
+  unirDias,
+} from "./ec141.js";
+import {
+  validarEnquadramento,
+  validarRepousoMensal,
+} from "./enquadramento-ec141.js";
 import { limiteHorasDia } from "./distribuicao-horas.js";
 import { apurarSemana } from "./resumo-semanal.js";
 import {
@@ -47,7 +59,12 @@ export function createValidacao(state, jornada, feriados) {
             d.data,
           ),
         );
-      if (h > (state.tipoEscala === "12x36" ? 12 : 8)) {
+      if (
+        !referenciaDia(state, d.data, colab).semLimiteJornada &&
+        h >
+          (state.tipoEscala === "12x36" ? 12 : limiteDiario(state, d.data)) +
+            0.001
+      ) {
         const fundamento =
           state.instrumentoCompensacao === "act_cct"
             ? "Há ACT/CCT informado; confirme que a cláusula efetivamente autoriza a distribuição utilizada."
@@ -55,8 +72,8 @@ export function createValidacao(state, jornada, feriados) {
         out.push(
           issue(
             "JORNADA_DIARIA",
-            "alerta",
-            `${d.data}: ${fmtHoras(h)} de trabalho efetivo no dia, acima de ${state.tipoEscala === "12x36" ? 12 : 8}h. ${fundamento}`,
+            "erro",
+            `${d.data}: ${fmtHoras(h)} de trabalho efetivo no dia, acima de ${state.tipoEscala === "12x36" ? 12 : limiteDiario(state, d.data)}h. ${fundamento}`,
             d.data,
           ),
         );
@@ -149,7 +166,7 @@ export function createValidacao(state, jornada, feriados) {
 
   function validarRepousoSemanal(colab, dias) {
     const out = [];
-    const regime = regimeAtual();
+
     dias
       .filter((d) => d.repousoSeguranca)
       .forEach((d) =>
@@ -175,16 +192,6 @@ export function createValidacao(state, jornada, feriados) {
           ),
         );
     });
-    if (state.tipoEscala === "12x36") {
-      return [
-        ...out,
-        issue(
-          "REGIME_ESPECIAL",
-          "info",
-          "12×36: o descanso é analisado pelo ciclo de 36h e pelas regras do art. 59-A, não pelo simples contador de folgas semanais.",
-        ),
-      ];
-    }
 
     const inicio = new Date(state.ano, state.mes, state.diaInicio);
     const fim = new Date(state.ano, state.mes, diasNoMes(state.mes, state.ano));
@@ -200,6 +207,10 @@ export function createValidacao(state, jornada, feriados) {
         );
         if (obj) semana.push(obj);
       }
+      const regime = referenciaSemana(state, semana, colab);
+      const mensal =
+        semana.length &&
+        semana.every((d) => instrumentoValido(state, d.data, "repousoMensal"));
       const folgas = semana.filter(
         (x) => x.status === "F" || x.status === "FC",
       );
@@ -227,11 +238,14 @@ export function createValidacao(state, jornada, feriados) {
           );
         }
       }
-      if (semana.length >= 7 && folgas.length < regime.folgas) {
+      if (semana.length >= 7 && folgas.length < (mensal ? 1 : regime.folgas)) {
         out.push(
           issue(
             "REPOUSO_SEMANAL",
-            regime.futuro ? "erro" : "alerta",
+            regime.mista &&
+              folgas.length >= Math.min(...regime.refs.map((r) => r.folgas))
+              ? "pendencia"
+              : "erro",
             `${isoDate(monday.getFullYear(), monday.getMonth(), monday.getDate())}: a semana civil contém ${folgas.length} dia(s) de repouso na escala; referência configurada: ${regime.folgas}.`,
             isoDate(monday.getFullYear(), monday.getMonth(), monday.getDate()),
           ),
@@ -298,9 +312,12 @@ export function createValidacao(state, jornada, feriados) {
     return out;
   }
 
-  function validarJornadaSemanal(colab, dias) {
+  function validarJornadaSemanal(
+    colab,
+    dias,
+    compensacao = { situacao: "nao_declarada" },
+  ) {
     const out = [];
-    if (state.tipoEscala === "12x36") return out;
 
     const porSemana = new Map();
     dias.forEach((d) => {
@@ -311,37 +328,62 @@ export function createValidacao(state, jornada, feriados) {
     });
 
     const jornadaContratual = Number(colab.horasSemana);
-    const referenciaLegal = regimeAtual().horas;
 
     for (const [key, semana] of porSemana.entries()) {
       const apuracao = apurarSemana(colab, semana, state);
+      const referencia = referenciaSemana(state, semana, colab);
+      const referenciaLegal = referencia.horas;
       const total = apuracao.trabalhadas;
+      const especialDeclarado =
+        state.tipoEscala === "12x36" &&
+        semana.every((d) => instrumentoValido(state, d.data, "regime12x36"));
+      const compensada =
+        compensacao.situacao === "apurada" &&
+        semana.every(
+          (d) => d.data >= compensacao.inicio && d.data <= compensacao.fim,
+        ) &&
+        total <= compensacao.pico + 0.001;
       const primeiraData = semana
         .slice()
         .sort((a, b) => a.data.localeCompare(b.data))[0]?.data;
       if (
         apuracao.completa &&
         Number.isFinite(jornadaContratual) &&
-        Math.abs(apuracao.computadas - jornadaContratual) > 0.01
+        Math.abs(apuracao.computadas - referencia.alvo) > 0.01
       ) {
-        const diferenca = apuracao.computadas - jornadaContratual;
+        const diferenca = apuracao.computadas - referencia.alvo;
         const verbo = diferenca > 0 ? "acima" : "abaixo";
         out.push(
           issue(
             "JORNADA_CONTRATUAL",
-            diferenca > 0 ? "erro" : "alerta",
-            `${primeiraData}: ${fmtHoras(total)} trabalhadas + ${fmtHoras(apuracao.abonadas)} abonadas por feriado = ${fmtHoras(apuracao.computadas)} computadas na semana, ${fmtHoras(Math.abs(diferenca))} ${verbo} da jornada semanal contratual de ${fmtHoras(jornadaContratual)} do colaborador.`,
+            especialDeclarado || compensada || referencia.mista
+              ? "pendencia"
+              : diferenca > 0
+                ? "erro"
+                : "alerta",
+            `${primeiraData}: ${fmtHoras(total)} trabalhadas + ${fmtHoras(apuracao.abonadas)} abonadas por feriado = ${fmtHoras(apuracao.computadas)} computadas na semana, ${fmtHoras(Math.abs(diferenca))} ${verbo} do alvo programado de ${fmtHoras(referencia.alvo)}; contrato de referência ${fmtHoras(jornadaContratual)} preservado.`,
             primeiraData,
           ),
         );
       }
 
-      if (total > referenciaLegal) {
+      if (referencia.mista)
+        out.push(
+          issue(
+            "SEMANA_TRANSICAO",
+            "pendencia",
+            `${primeiraData}: a semana atravessa uma mudança de vigência. Programação conservadora pelo menor limite (${Number.isFinite(referenciaLegal) ? fmtHoras(referenciaLegal) : "dispensa de duração declarada"}), sem presumir rateio legal; confira o enquadramento da semana.`,
+            primeiraData,
+          ),
+        );
+      if (total > referenciaLegal + 0.001) {
         const excesso = total - referenciaLegal;
+        const transicaoIndeterminada =
+          referencia.mista &&
+          total <= Math.max(...referencia.refs.map((r) => r.horas)) + 0.001;
         const sev =
-          state.instrumentoCompensacao === "act_cct" ||
-          state.instrumentoCompensacao === "banco"
-            ? "alerta"
+          especialDeclarado || compensada || transicaoIndeterminada
+            ? "pendencia"
             : "erro";
         out.push(
           issue(
@@ -358,6 +400,17 @@ export function createValidacao(state, jornada, feriados) {
 
   function validarRegimeEscala(dias) {
     const out = [];
+    if (
+      state.tipoEscala === "6x1" &&
+      dias.some((d) => referenciaDia(state, d.data).folgas === 2)
+    )
+      out.push(
+        issue(
+          "ESCALA_FASE",
+          "info",
+          "Padrão 6×1 ajustado à exigência de dois repousos. Para manter uma semana com apenas um repouso é necessária a modalidade coletiva de compensação mensal, com apuração própria.",
+        ),
+      );
     const r = regimeAtual();
     const operacionais = [...new Set(state.diasTrabalho)];
 
@@ -454,14 +507,28 @@ export function createValidacao(state, jornada, feriados) {
     return out;
   }
 
-  function validarLegal(colab, dias) {
+  function validarLegal(colab, dias, contexto = [], apuracao = []) {
+    const completos = unirDias(contexto, dias);
+    const datas = new Set(dias.map((d) => d.data));
+    const compensacao = apurarCompensacaoHoras(
+      state,
+      colab,
+      unirDias(apuracao, contexto, dias),
+    );
     return [
+      ...validarEnquadramento(state, colab, dias),
+      ...compensacao.issues,
+      ...validarRepousoMensal(state, colab, unirDias(apuracao, contexto, dias)),
       ...validarRegimeEscala(dias),
       ...validarJornadaDiaria(colab, dias),
       ...validarIntervalosIntrajornada(colab, dias),
-      ...validarInterjornada(dias),
-      ...validarJornadaSemanal(colab, dias),
-      ...validarRepousoSemanal(colab, dias),
+      ...validarInterjornada(completos).filter(
+        (i) => !i.data || datas.has(i.data),
+      ),
+      ...validarJornadaSemanal(colab, dias, compensacao),
+      ...validarRepousoSemanal(colab, completos).filter(
+        (i) => !i.data || datas.has(i.data),
+      ),
       ...validarDomingos(colab, dias),
       ...validarFeriados(dias),
     ];

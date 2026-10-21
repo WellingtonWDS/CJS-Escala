@@ -1,11 +1,19 @@
+import { referenciaSemana } from "./ec141.js";
 import { distribuirCargaComAbonos } from "./distribuicao-horas.js";
 import { intervaloMin } from "./datas-horas.js";
 
 /** Feriado dispensado abona apenas o trabalho originalmente previsto.
  * Crédito é separado de horas trabalhadas, presença e limites de trabalho. */
 export function apurarSemana(colaborador, dias, config = {}) {
-  const cargaPrevista = distribuirCargaComAbonos(colaborador, dias, config);
-  const alvo = Number(colaborador.horasSemana);
+  const contrato = Number(colaborador.horasSemana);
+  const alvo = config.ano
+    ? referenciaSemana(config, dias, colaborador).alvo
+    : contrato;
+  const cargaPrevista = distribuirCargaComAbonos(
+    { ...colaborador, horasSemana: alvo },
+    dias,
+    config,
+  );
   const horasPadrao =
     config.tipoEscala === "12x36"
       ? Math.max(0, 12 - Math.max(0, intervaloMin(config.jornada) || 0) / 60)
@@ -42,5 +50,14 @@ export function apurarSemana(colaborador, dias, config = {}) {
         : computadas > alvo
           ? "acima"
           : "abaixo";
-  return { trabalhadas, abonadas, computadas, abonos, alvo, completa, estado };
+  return {
+    trabalhadas,
+    abonadas,
+    computadas,
+    abonos,
+    alvo,
+    contrato,
+    completa,
+    estado,
+  };
 }

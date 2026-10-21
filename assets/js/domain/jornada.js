@@ -4,7 +4,7 @@ import {
   normalizarJornada,
   intervaloMin,
 } from "./datas-horas.js";
-import { REGIMES } from "../config/regras-jornada.js";
+import { referenciaDia } from "./ec141.js";
 export function createJornada(state) {
   function obterTurno(date, indice) {
     if (!state.turnosRevezamento || state.tipoEscala === "12x36") return "A";
@@ -47,8 +47,8 @@ export function createJornada(state) {
       : state.jornada;
   }
 
-  function regimeAtual() {
-    return REGIMES[state.regimeJornada] || REGIMES.atual44;
+  function regimeAtual(data = new Date(state.ano, state.mes, state.diaInicio)) {
+    return referenciaDia(state, data);
   }
 
   function limiteSemanal() {
@@ -56,7 +56,6 @@ export function createJornada(state) {
   }
 
   function folgasMinimas() {
-    if (state.tipoEscala === "12x36") return null;
     return regimeAtual().folgas;
   }
 

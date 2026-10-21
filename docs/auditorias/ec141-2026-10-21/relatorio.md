@@ -1,5 +1,7 @@
 # Auditoria da adaptação à EC 141 — 21/10/2026
 
+**Registro histórico do commit auditado.** As correções posteriores estão documentadas em [correcoes.md](correcoes.md), e os cenários atuais integram `tests/ec141.test.cjs`. O script de reprodução abaixo deve ser executado contra o código do commit auditado, pois suas asserções registram as falhas antigas.
+
 O sistema está **parcialmente adaptado** ao texto fornecido da EC 141. Ele compara cenários e sinaliza parte das incompatibilidades, mas ainda não determina a regra aplicável pela data, nem cobre todas as exceções. Não deve ser apresentado como uma validação completa de adequação à emenda.
 
 A revisão considerou o commit `b02e1fa1c6f5793f4ab97b2471f8c5511e051c23`, o código de domínio, geração, formulários, persistência, comparativo, exportação e testes. Esta auditoria não altera as regras da aplicação.

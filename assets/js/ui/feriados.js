@@ -8,10 +8,17 @@ export function createFeriadosUI({ state, storage, env, invalidarEscala }) {
 
   function renderFeriadoContexto() {
     document.getElementById("feriado-contexto").textContent =
-      `O dia informado é relativo a ${MESES[state.mes]}/${state.ano}. No 5×2 e 6×1, feriados não trabalhados contam entre as folgas da semana; só são escolhidas as folgas restantes. Se dias fechados e feriados já ultrapassarem o total, todos são preservados e o relatório informa o motivo. Marque “Trabalhar neste feriado” se a empresa funcionar nessa data (o colaborador ainda pode estar de folga). Carnaval e Corpus Christi não são adicionados automaticamente como feriados nacionais.`;
+      `O dia informado é relativo a ${MESES[state.mes]}/${state.ano}. No 5×2 e 6×1, a distribuição de feriados segue a política selecionada; contar um feriado entre as folgas exige conferir o fundamento aplicável. Se dias fechados e feriados já ultrapassarem o total, todos são preservados e o relatório informa o motivo. Marque “Trabalhar neste feriado” se a empresa funcionar nessa data (o colaborador ainda pode estar de folga). Carnaval e Corpus Christi não são adicionados automaticamente como feriados nacionais.`;
   }
 
   function renderFeriados() {
+    const politica = document.getElementById("politica-feriados");
+    politica.value = state.politicaFeriados;
+    politica.onchange = (e) => {
+      state.politicaFeriados = e.target.value;
+      invalidarEscala();
+      saveState();
+    };
     const wrap = document.getElementById("feriados-list");
     renderFeriadoContexto();
     if (!state.feriados.length) {

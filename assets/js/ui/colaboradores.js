@@ -1,3 +1,4 @@
+import { camposEnquadramento } from "./enquadramento-ec141.js";
 import { escapeHtml } from "../shared/formatacao.js";
 
 export function createColaboradoresUI({
@@ -28,8 +29,9 @@ export function createColaboradoresUI({
         </select>
       </div>
       <div><label class="block text-xs font-semibold text-fintria-navySoft mb-1.5">Cargo / função</label><input data-id="${c.id}" data-field="cargo" value="${escapeHtml(c.cargo)}" class="w-full px-2.5 py-2 border border-slate-300 rounded-md text-sm bg-white"></div>
-      <div><label class="block text-xs font-semibold text-fintria-navySoft mb-1.5">Jornada semanal</label><div class="relative"><input type="number" min="1" max="60" step="0.5" data-id="${c.id}" data-field="horasSemana" value="${Number(c.horasSemana) || 44}" class="w-full px-2.5 py-2 pr-8 border border-slate-300 rounded-md text-sm bg-white"><span class="absolute right-2.5 top-2.5 text-xs text-slate-400">h</span></div></div>
+      <div><label class="block text-xs font-semibold text-fintria-navySoft mb-1.5">Jornada contratual de referência</label><div class="relative"><input type="number" min="1" max="60" step="0.5" data-id="${c.id}" data-field="horasSemana" value="${Number(c.horasSemana) || 44}" class="w-full px-2.5 py-2 pr-8 border border-slate-300 rounded-md text-sm bg-white"><span class="absolute right-2.5 top-2.5 text-xs text-slate-400">h</span></div></div>
       <button data-remove="${c.id}" title="Remover" class="text-fintria-vermelho bg-transparent text-base px-2 py-2 rounded hover:bg-red-50">✕</button>
+      ${camposEnquadramento(c)}
     </div>`;
         })
         .join("") ||
@@ -39,7 +41,20 @@ export function createColaboradoresUI({
       el.onchange = (e) => {
         const id = Number(e.target.dataset.id);
         const c = state.colaboradores.find((x) => x.id === id);
-        if (c) {
+        if (c && e.target.dataset.ec141) {
+          c.ec141 ??= {};
+          c.ec141[e.target.dataset.ec141] =
+            e.target.type === "checkbox"
+              ? e.target.checked
+              : e.target.type === "number"
+                ? e.target.value === ""
+                  ? null
+                  : Number(e.target.value)
+                : e.target.value;
+          invalidarEscala();
+          saveState();
+          if (e.target.dataset.ec141 === "tipo") renderColaboradores();
+        } else if (c) {
           c[e.target.dataset.field] =
             e.target.dataset.field === "horasSemana"
               ? Number(e.target.value)

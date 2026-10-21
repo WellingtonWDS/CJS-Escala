@@ -1,3 +1,4 @@
+import { VERSAO_REGRAS } from "../domain/ec141.js";
 import { STORAGE_KEY } from "../config/regras-jornada.js";
 import { replaceState, atualizarNomesExemplo } from "./store.js";
 export function createPersistence({ state, initialState, storage }) {
@@ -14,6 +15,10 @@ export function createPersistence({ state, initialState, storage }) {
       const raw = storage.getItem(STORAGE_KEY);
       if (!raw) return false;
       const parsed = JSON.parse(raw);
+      const regrasAntigas =
+        parsed?.escalaGerada &&
+        parsed.escalaGerada.versaoRegras !== VERSAO_REGRAS;
+      if (regrasAntigas) parsed.escalaGerada = null;
       const acordoRemovido = parsed?.instrumentoCompensacao === "individual";
       if (acordoRemovido) {
         parsed.instrumentoCompensacao = "nenhuma";
@@ -31,7 +36,7 @@ export function createPersistence({ state, initialState, storage }) {
         deepMerge(JSON.parse(JSON.stringify(initialState)), parsed),
       );
       atualizarNomesExemplo(state);
-      if (acordoRemovido) saveState();
+      if (acordoRemovido || regrasAntigas) saveState();
       return true;
     } catch (e) {
       console.warn("Não foi possível ler o localStorage:", e);

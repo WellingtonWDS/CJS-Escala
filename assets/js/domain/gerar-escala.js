@@ -1,3 +1,9 @@
+import {
+  referenciaDia,
+  referenciaSemana,
+  instrumentoValido,
+  VERSAO_REGRAS,
+} from "./ec141.js";
 import { createPlanejadorFolgas } from "./folgas-semana.js";
 import { distribuirCargaComAbonos } from "./distribuicao-horas.js";
 import { calcularPausaEfetiva, analisarCobertura } from "./cobertura.js";
@@ -34,7 +40,14 @@ export function createGerador(state, jornada, feriados, validacao) {
       state.tipoEscala === "5x2"
         ? 5
         : state.tipoEscala === "6x1"
-          ? 6
+          ? referenciaDia(state, addDays(getMonday(date), 6)).folgas === 2 &&
+            !instrumentoValido(
+              state,
+              isoDate(date.getFullYear(), date.getMonth(), date.getDate()),
+              "repousoMensal",
+            )
+            ? 5
+            : 6
           : operacionais.length;
 
     const quantidadeFolgasOperacionais = Math.max(
@@ -66,11 +79,7 @@ export function createGerador(state, jornada, feriados, validacao) {
         .slice(0, quantidadeFolgasOperacionais);
     };
     const folgas = rotacionar(monday);
-    if (
-      state.tipoEscala === "5x2" &&
-      quantidadeFolgasOperacionais === 2 &&
-      folgas.length === 2
-    ) {
+    if (quantidadeFolgasOperacionais === 2 && folgas.length === 2) {
       // Segunda=0 ... domingo=6. Preservar a última folga nominal torna a
       // decisão estável entre meses, sem depender do início da geração.
       const ordem = (dia) => (dia + 6) % 7;
@@ -211,8 +220,17 @@ export function createGerador(state, jornada, feriados, validacao) {
     });
     porSemana.forEach((semana) => {
       // Feriado dispensado preserva sua parcela da carga semanal.
-      const cargaPrevista = distribuirCargaComAbonos(colab, semana, state);
+      const referencia = referenciaSemana(state, semana, colab);
+      const cargaPrevista = distribuirCargaComAbonos(
+        { ...colab, horasSemana: referencia.alvo },
+        semana,
+        state,
+      );
       semana.forEach((d) => {
+        d.alvoSemana = referencia.alvo;
+        d.limiteSemanal =
+          referencia.horas === Infinity ? null : referencia.horas;
+        d.regimeAplicado = referenciaDia(state, d.data, colab).chave;
         const trabalho = d.status === "T" || d.status === "FE";
         d.horasPrevistas = d.previsto
           ? state.tipoEscala === "12x36"
@@ -280,25 +298,39 @@ export function createGerador(state, jornada, feriados, validacao) {
       feriadosMap[key] = { ...f };
     });
 
-    const resultado = state.colaboradores.map((c, idx) => ({
-      colaborador: { ...c },
-      diasContexto: gerarEscalaColaborador(
+    const resultado = state.colaboradores.map((c, idx) => {
+      const inicioMes = getMonday(new Date(state.ano, state.mes, 1));
+      const todos = gerarEscalaColaborador(
         c,
         idx,
-        addDays(dataInicio, -7),
-        addDays(dataInicio, -1),
+        addDays(inicioMes, -7),
+        dataFim,
         feriadosMap,
-      ),
-      dias: gerarEscalaColaborador(c, idx, dataInicio, dataFim, feriadosMap),
-    }));
+      );
+      return {
+        colaborador: { ...c },
+        diasContexto: todos
+          .filter((d) => dateFromKey(d.data) < dataInicio)
+          .slice(-7),
+        diasApuracao: todos.filter((d) => dateFromKey(d.data) >= inicioMes),
+        dias: todos.filter((d) => dateFromKey(d.data) >= dataInicio),
+      };
+    });
 
     const cobertura = validarCobertura(resultado);
     const validacoes = resultado.map((r) => ({
       colaborador: r.colaborador,
-      issues: validarLegal(r.colaborador, r.dias),
+      issues: validarLegal(
+        r.colaborador,
+        r.dias,
+        r.diasContexto,
+        r.diasApuracao,
+      ),
     }));
 
     return {
+      versaoRegras: VERSAO_REGRAS,
+      modoRegime: state.modoRegime,
       diasMes,
       dataInicio: isoDate(
         dataInicio.getFullYear(),

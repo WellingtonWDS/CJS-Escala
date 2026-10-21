@@ -1,3 +1,4 @@
+import { referenciaDia, instrumentoValido, chaveData } from "./ec141.js";
 import { getMonday, addDays, isoDate } from "./datas-horas.js";
 
 /** Feriados dispensados ocupam as vagas de repouso antes das folgas opcionais.
@@ -20,8 +21,12 @@ export function createPlanejadorFolgas(
     for (let i = 0; i < 7; i++) {
       const dia = addDays(segunda, i);
       const f = feriadosMap[chave(dia)];
-      if (f && !f.trabalhado) feriados.push(dia.getDay());
-      if (!operacionais.includes(dia.getDay()) || (f && !f.trabalhado))
+      if (f && !f.trabalhado && state.politicaFeriados !== "adicional")
+        feriados.push(dia.getDay());
+      if (
+        !operacionais.includes(dia.getDay()) ||
+        (f && !f.trabalhado && state.politicaFeriados !== "adicional")
+      )
         obrigatorias.push(dia.getDay());
     }
     if (state.tipoEscala === "5x2" && state.folgasFimSemana) {
@@ -33,7 +38,16 @@ export function createPlanejadorFolgas(
     }
     if (!["5x2", "6x1"].includes(state.tipoEscala))
       return { base, opcionais: base, obrigatorias };
-    const alvo = state.tipoEscala === "5x2" ? 2 : 1;
+    const alvo = instrumentoValido(state, chaveData(segunda), "repousoMensal")
+      ? state.tipoEscala === "5x2"
+        ? 2
+        : 1
+      : Math.max(
+          state.tipoEscala === "5x2" ? 2 : 1,
+          referenciaDia(state, addDays(segunda, 6)).folgas,
+        );
+    if (state.politicaFeriados === "adicional")
+      return { base, opcionais: base, obrigatorias };
     const quantidade = Math.max(0, alvo - obrigatorias.length);
     const restantes = base.filter((d) => !obrigatorias.includes(d));
     // Manter a última folga nominal ajuda a proteger a passagem entre semanas.
@@ -55,7 +69,10 @@ export function createPlanejadorFolgas(
     const plano = bruto(segunda);
     // Um dia fechado fixo já interrompe qualquer sequência semanal de trabalho.
     if (
-      state.tipoEscala === "5x2" &&
+      (state.tipoEscala === "5x2" ||
+        (state.tipoEscala === "6x1" &&
+          referenciaDia(state, addDays(segunda, 6)).folgas === 2 &&
+          !instrumentoValido(state, chaveData(segunda), "repousoMensal"))) &&
       !state.folgasFimSemana &&
       new Set(state.diasTrabalho).size === 7 &&
       plano.opcionais.length

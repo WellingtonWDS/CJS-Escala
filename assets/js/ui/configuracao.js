@@ -18,9 +18,13 @@ export function createConfiguracaoUI({
 
   function renderRegimeControls() {
     const sel = document.getElementById("regime-jornada");
-    sel.value = state.regimeJornada;
+    sel.value =
+      state.modoRegime === "simulacao" ? state.regimeJornada : "automatico";
     sel.onchange = (e) => {
-      state.regimeJornada = e.target.value;
+      state.modoRegime =
+        e.target.value === "automatico" ? "automatico" : "simulacao";
+      if (state.modoRegime === "simulacao")
+        state.regimeJornada = e.target.value;
       invalidarEscala();
       renderTipoEscala();
       renderJornadaSection();
@@ -38,6 +42,35 @@ export function createConfiguracaoUI({
       atualizarCargaSemanalMsg();
       saveState();
     };
+    const campos = {
+      "act-identificacao": "identificacao",
+      "act-inicio": "inicio",
+      "act-fim": "fim",
+      "act-compativel": "compativelEC141",
+      "act-diaria": "compensacaoDiaria",
+      "act-limite": "limiteDiario",
+      "act-mensal": "repousoMensal",
+      "act-12x36": "regime12x36",
+      "act-horas": "compensacaoHoras",
+      "act-apuracao-inicio": "apuracaoInicio",
+      "act-apuracao-fim": "apuracaoFim",
+      "act-pico": "limiteSemanalCompensado",
+    };
+    for (const [id, campo] of Object.entries(campos)) {
+      const input = document.getElementById(id);
+      input.value = state.instrumentoColetivo[campo];
+      input.checked = state.instrumentoColetivo[campo] === true;
+      input.onchange = (e) => {
+        state.instrumentoColetivo[campo] =
+          e.target.type === "checkbox"
+            ? e.target.checked
+            : ["limiteDiario", "limiteSemanalCompensado"].includes(campo)
+              ? Number(e.target.value)
+              : e.target.value;
+        invalidarEscala();
+        saveState();
+      };
+    }
     renderRegimeAlerta();
   }
 
@@ -61,7 +94,17 @@ export function createConfiguracaoUI({
       msg +=
         " Se a programação ultrapassar 8h/dia ou exigir compensação, o sistema marcará a necessidade de análise do fundamento aplicável.";
     }
-    el.textContent = msg;
+    const fim = regimeAtual(
+      new Date(state.ano, state.mes, diasNoMes(state.mes, state.ano)),
+    );
+    el.textContent =
+      (state.modoRegime === "simulacao"
+        ? "SIMULAÇÃO: fase escolhida manualmente; não equivale à adequação nas datas da escala. "
+        : "Vigência automática nas datas da escala. ") +
+      msg +
+      (r.chave !== fim.chave
+        ? " Este mês atravessa uma mudança de fase; as semanas de transição serão sinalizadas."
+        : "");
   }
 
   function renderConfigSelects() {

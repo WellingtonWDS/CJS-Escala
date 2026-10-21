@@ -70,11 +70,11 @@ module.exports = async function testarSabado({ browser, baseURL }) {
           '[data-resumo-semanal][data-colaborador="1"][data-semana="2026-10-26"]',
         )
         .innerText(),
-      /ABAIXO/,
+      /Contrato de referência: 60:00/,
     );
     assert.deepEqual(errors, []);
     console.log(
-      "OK: sábado até meio-dia, fechamento de 44h, restauração e déficit sem prolongar o horário",
+      "OK: sábado até meio-dia, fechamento de 44h, restauração e limite da fase sem prolongar o horário",
     );
   } finally {
     await context.close();

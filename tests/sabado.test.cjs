@@ -69,18 +69,15 @@ test("dias úteis com janela de 9h absorvem o restante sem estender sábado", ()
     [8, 8, 8, 8, 8, 4, 0],
   );
 });
-test("carga maior que a capacidade fica abaixo do alvo sem ultrapassar janelas", () => {
+test("contrato acima do limite mantém referência e programa somente o teto da fase", () => {
   const e = exemplo(60, (c) => (c.jornada.saida = "18:00"));
   assert.deepEqual(
     e.dias.map((d) => d.horas),
-    [9, 9, 9, 9, 9, 4, 0],
+    [8, 8, 8, 8, 8, 4, 0],
   );
-  assert.equal(e.apuracao.estado, "abaixo");
-  assert.ok(
-    e.domain
-      .validarJornadaSemanal(e.pessoa, e.dias)
-      .some((i) => i.tipo === "JORNADA_CONTRATUAL"),
-  );
+  assert.equal(e.apuracao.estado, "ok");
+  assert.equal(e.apuracao.contrato, 60);
+  assert.equal(e.apuracao.alvo, 44);
   assert.equal(e.dias[5].saidaMin, 720);
 });
 test("carga menor fecha no minuto sem exceder os limites", () => {
