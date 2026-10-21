@@ -7,7 +7,7 @@ const ETAPAS = [
   [
     "config-colaboradores",
     "Cadastre os colaboradores",
-    "Adicione cada pessoa, sua função, carga contratual e regras individuais de folga. As funções cadastradas serão usadas na cobertura operacional. Confira também os dados de enquadramento e proteção salarial, quando aplicáveis.",
+    "Adicione cada pessoa, sua função e carga contratual. Para cadastrar em lote, abra Preencher colaboradores por planilha: baixe o modelo CSV, preencha, selecione o arquivo e confira a prévia antes de confirmar. As funções serão usadas na cobertura. Confira também os dados individuais de enquadramento e proteção salarial.",
   ],
   [
     "sec-tipo",

@@ -82,9 +82,21 @@ A pausa mantém sua distância da entrada configurada, inclusive no Turno B; em 
 
 O módulo `domain/cobertura.js` é independente da interface e não modifica a configuração ou a escala. As demandas ficam em `demandasCobertura`, preservando a chave existente do armazenamento. Sem demandas, a cobertura por função é identificada como não avaliada. Alterar demandas ou cargos invalida a escala; editar um status diário recalcula a cobertura. A funcionalidade diagnostica lacunas, mas não redistribui automaticamente a equipe.
 
-## Testes
+## Cadastro por planilha
+
+Em **Colaboradores → Preencher colaboradores por planilha**, baixe **modelo-colaboradores.csv**, abra no Excel ou LibreOffice e preencha a partir da segunda linha. Mantenha as quatro colunas: **Nome**, **Sexo** (Feminino/Masculino ou F/M), **Cargo / função** e **Horas semanais** (1 a 60 em múltiplos de 0,5). Salve como CSV, preferencialmente UTF-8; arquivos `.xlsx` devem ser salvos como CSV antes de importar. O modelo contém somente o cabeçalho, sem pessoas fictícias para importar por engano.
+
+A leitura aceita delimitadores ponto e vírgula, vírgula ou tabulação, campos entre aspas, decimais com vírgula e codificações UTF-8, UTF-16 com BOM ou Windows-1252. Limites: 1 MB por arquivo e 500 colaboradores no cadastro resultante. Todos os registros precisam ser válidos; erros são informados por linha e nenhum cadastro muda antes da confirmação. A prévia mostra até 20 pessoas.
+
+O padrão **Adicionar** preserva os registros atuais. **Substituir** remove os colaboradores anteriores, incluindo seus dados individuais de enquadramento e proteção salarial, e mantém as demais configurações. A prévia explica o efeito de cada modo. Nomes repetidos são pessoas distintas: não há atualização automática por nome. Os IDs são gerados pelo sistema. A importação atualiza as funções disponíveis na cobertura, invalida a escala anterior e persiste o cadastro. Confira os dados individuais e a cobertura antes de gerar novamente. O arquivo é processado apenas no navegador.
+
+Parser e validação: `assets/js/import/colaboradores.js`. Interface: `assets/js/ui/importar-colaboradores.js`. Regressões: `tests/importacao-colaboradores.test.cjs` e `tests/browser-importacao.cjs`.
+
+## Tutorial guiado
 
 O botão **Tutorial guiado**, ao lado de **Limpar dados salvos**, inicia nove etapas com destaque da área correspondente, instruções e contador. É possível avançar, voltar, concluir ou encerrar com **Esc**. O tutorial não altera o cadastro nem gera uma escala; a cobertura continua opcional. A implementação fica em `assets/js/ui/tutorial.js`, com regressões em `tests/browser-tutorial.cjs` para desktop e celular, navegação por teclado e preservação dos dados.
+
+## Testes
 
 ```sh
 npm test

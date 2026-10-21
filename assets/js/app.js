@@ -11,6 +11,7 @@ import { createCalendarioUI } from "./ui/calendario.js";
 import { createTransicaoUI } from "./ui/transicao.js";
 import { bindExportEvents } from "./export/download.js";
 import { createTutorialUI } from "./ui/tutorial.js";
+import { createImportarColaboradoresUI } from "./ui/importar-colaboradores.js";
 export function createApplication({ env, now = () => new Date() }) {
   const initialState = createDefaultState(now());
   const state = structuredClone(initialState);
@@ -68,6 +69,11 @@ export function createApplication({ env, now = () => new Date() }) {
   });
   const transicao = createTransicaoUI(deps);
   const tutorial = createTutorialUI(env);
+  const importacao = createImportarColaboradoresUI({
+    ...deps,
+    renderColaboradores: colaboradores.renderColaboradores,
+    renderResumo: resumo.renderResumo,
+  });
   const { renderResumo } = resumo;
   const { renderFeriados } = feriados;
   const { renderColaboradores } = colaboradores;
@@ -84,6 +90,7 @@ export function createApplication({ env, now = () => new Date() }) {
       transicao,
       cobertura,
       tutorial,
+      importacao,
     ])
       ui.bindEvents();
     bindExportEvents(state, env);
