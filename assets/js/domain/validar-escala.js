@@ -1,3 +1,4 @@
+import { politicaPlantaoDeclarada, temTrabalhoNoturno } from "./computo-cct.js";
 import { apurarCompensacaoHoras } from "./compensacao-horas.js";
 import { createDomain } from "./index.js";
 import { configDoPerfil } from "./perfil-dominio.js";
@@ -39,30 +40,13 @@ export function createValidacao(state, jornada, feriados) {
     const datas = dias.filter((x) => x.status === "T" || x.status === "FE");
     datas.forEach((d) => {
       const h = d.horas;
-      const partes =
-        Number.isFinite(d.intervaloInicioMin) &&
-        Number.isFinite(d.intervaloFimMin)
-          ? [
-              [d.entradaMin, d.intervaloInicioMin],
-              [d.intervaloFimMin, d.saidaMin],
-            ]
-          : [[d.entradaMin, d.saidaMin]];
-      const noturno = partes.some(
-        ([a, b]) =>
-          Number.isFinite(a) &&
-          Number.isFinite(b) &&
-          [0, 1440, 2880].some(
-            (base) =>
-              Math.min(b, base + 300) > Math.max(a, base) ||
-              Math.min(b, base + 1440) > Math.max(a, base + 1320),
-          ),
-      );
+      const noturno = temTrabalhoNoturno(d);
       if (h > 0 && noturno)
         out.push(
           issue(
             "TRABALHO_NOTURNO",
             "pendencia",
-            `${d.data}: há trabalho na faixa noturna urbana de referência (22h–5h). A grade usa horas de relógio e a data de início do turno; confira hora noturna reduzida, adicional, prorrogações e apuração na virada da semana conforme a categoria. Esses efeitos não são homologados automaticamente.`,
+            `${d.data}: ${d.creditoNoturnoCCT ? "Crédito fixo de 1h por plantão noturno computado conforme a CCT declarada. " : ""}Há trabalho na faixa noturna urbana de referência (22h–5h). A presença usa horas de relógio e a data de início do turno; confira hora noturna reduzida, adicional, prorrogações e apuração na virada da semana conforme a categoria. Esses efeitos não são homologados automaticamente.`,
             d.data,
           ),
         );
@@ -72,6 +56,15 @@ export function createValidacao(state, jornada, feriados) {
             "TRABALHO_SEM_HORAS",
             "erro",
             `${d.data}: dia marcado como trabalho sem uma duração positiva válida. Informe horas ou altere o status para folga.`,
+            d.data,
+          ),
+        );
+      if (state.tipoEscala === "12x36" && (d.horasComputadasCCT || h) > 12.001)
+        out.push(
+          issue(
+            "COMPUTO_12X36",
+            "erro",
+            `${d.data}: as horas trabalhadas e os créditos declarados somam ${fmtHoras(d.horasComputadasCCT)}, acima das 12h do plantão. Confira os horários e a cláusula da CCT.`,
             d.data,
           ),
         );
@@ -87,13 +80,19 @@ export function createValidacao(state, jornada, feriados) {
         );
       if (
         state.tipoEscala === "12x36" &&
-        Math.abs(d.saidaMin - d.entradaMin - 720) > 0.01
+        Math.abs(d.saidaMin - d.entradaMin - 720) > 0.01 &&
+        !(
+          politicaPlantaoDeclarada(state) &&
+          instrumentoValido(state, d.data, "regime12x36") &&
+          Math.abs((d.horasComputadasCCT || 0) - 12) < 0.001 &&
+          d.saidaMin - d.entradaMin <= 720
+        )
       )
         out.push(
           issue(
             "PLANTAO_12X36",
             "erro",
-            `${d.data}: o plantão deve ter 12h de permanência, incluindo o intervalo.`,
+            `${d.data}: o plantão deve ter 12h de permanência ou 12h computadas segundo as condições declaradas de CCT vigente.`,
             d.data,
           ),
         );
@@ -379,7 +378,10 @@ export function createValidacao(state, jornada, feriados) {
       const apuracao = apurarSemana(colab, semana, state);
       const referencia = referenciaSemana(state, semana, colab);
       const referenciaLegal = referencia.horas;
-      const total = apuracao.trabalhadas;
+      const total =
+        apuracao.trabalhadas +
+        apuracao.creditosIntervalo +
+        apuracao.creditosNoturnos;
       const especialDeclarado =
         state.tipoEscala === "12x36" &&
         semana.every((d) => instrumentoValido(state, d.data, "regime12x36"));

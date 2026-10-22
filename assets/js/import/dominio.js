@@ -1,4 +1,9 @@
 import {
+  ciclo12x36,
+  computoDaJornada,
+  politicaPlantaoDeclarada,
+} from "../domain/computo-cct.js";
+import {
   normalizarJornada,
   jornadaValidaEstrutural,
   timeToMin,
@@ -118,7 +123,7 @@ export function interpretarHorario(entrada, intervalo, saida, situacao) {
   };
 }
 
-export function atualizarPerfilDominio(c) {
+export function atualizarPerfilDominio(c, config) {
   const p = c.quadroDominio;
   if (!p) return;
   const entradas = Object.values(p.tipo === "ciclo" ? p.ciclo : p.semana);
@@ -173,7 +178,32 @@ export function atualizarPerfilDominio(c) {
           100,
       ) / 100
     : null;
-  if (!p.cargaConfirmada) c.horasSemana = p.horasCalculadas;
+  p.horasComputadasCalculadas =
+    config &&
+    completos &&
+    politicaPlantaoDeclarada(config) &&
+    ciclo12x36(config, p)
+      ? Math.round(
+          ((entradas.reduce(
+            (s, h) =>
+              s +
+              (h.status === "trabalho"
+                ? computoDaJornada(
+                    { ...config, tipoEscala: "12x36" },
+                    h.jornada,
+                    "",
+                    true,
+                  ).horasComputadasCCT
+                : 0),
+            0,
+          ) *
+            7) /
+            entradas.length) *
+            100,
+        ) / 100
+      : null;
+  if (!p.cargaConfirmada)
+    c.horasSemana = p.horasComputadasCalculadas ?? p.horasCalculadas;
   const dias = Object.entries(p.semana)
     .filter(([, h]) => h.status === "trabalho")
     .map(([d]) => Number(d));

@@ -174,3 +174,18 @@ O tutorial abre a etapa de cada destaque e restaura a etapa anterior ao encerrar
 As etapas mostram uma bolinha vermelha piscando quando o usuário sai de uma etapa com dados obrigatórios pendentes. Corrigir os dados remove a indicação; navegar pelo tutorial não registra visitas. A etapa aberta diretamente ao recarregar não presume visitas às demais: esse acompanhamento vale durante a navegação atual. O indicador inclui texto acessível, descrição das pendências e atalhos para os campos; com movimento reduzido, a bolinha fica estática.
 
 A geração da **nova proposta 5×2** exige completar os dados obrigatórios de todas as etapas, mesmo das ainda não visitadas. A tentativa incompleta mostra uma lista de correções e mantém os dados existentes. A prévia avulsa continua disponível para diagnóstico. Cadastro manual e importações sem confirmação não são novos registros obrigatórios; cobertura desativada não exige faixas, e a seção de consulta da Emenda não exige preenchimento. Identificação/vigência do ACT/CCT só são exigidas quando essa base é selecionada; referências de ciclos e horários individuais são verificados quando utilizados. Alertas de mérito legal continuam nas validações da escala. Regras de preenchimento: `domain/preenchimento.js`; testes: `tests/preenchimento.test.cjs` e `tests/browser-pendencias.cjs`.
+
+## Plantões 12×36 com condições específicas de CCT
+
+Em **Tipo de escala → Condições do ACT/CCT**, selecione a base ACT/CCT, preencha identificação e vigência, marque o instrumento para o regime 12×36 e configure as cláusulas aplicáveis:
+
+- **Computar o intervalo intrajornada como jornada**: mantém a pausa real, mas credita sua duração no cômputo.
+- **Acrescentar crédito fixo de 1h por plantão com trabalho entre 22h e 5h**: aplica a regra específica declarada pelo usuário. Não é um cálculo universal do fator legal da hora noturna reduzida, adicional ou prorrogações.
+
+Exemplo: 19h–6h com pausa 22h–23h preserva **10h efetivas**, soma **1h de intervalo computado + 1h de crédito noturno**, totalizando **12h computadas**. O ciclo importado com primeiro dia de trabalho e segundo de folga é identificado como 12×36 sob essas condições declaradas. A data individual de plantão continua necessária. A saída permanece às 6h e o descanso até o próximo plantão às 19h é de 37h reais. O modelo global 12×36 também preserva a janela real quando essas condições são usadas.
+
+Os créditos só são concedidos aos plantões 12×36 com instrumento ACT/CCT válido na data, incluindo a compatibilidade da nova fase quando exigida. Sem vigência ou fundamento configurado, não são computados. Jornada diurna não recebe o crédito noturno. A cobertura usa a pausa individual importada e os horários de presença, sem contar créditos como disponibilidade. A soma acima de 12h computadas é apontada para revisão.
+
+O resumo semanal e o CSV separam horas efetivas, intervalo computado e crédito noturno. Feriado dispensado abona as horas computadas originalmente previstas, sem duplicar créditos de trabalho. A média do ciclo do exemplo passa de 35h de relógio para 42h computadas; a carga contratual já confirmada pelo usuário é preservada, enquanto a referência ainda não confirmada acompanha essa estimativa declarada. A vigência é conferida em cada dia na geração. A configuração é salva no navegador; resultados antigos são invalidados pela nova versão das regras.
+
+Módulo: `domain/computo-cct.js`. Regressões: `tests/computo-cct.test.cjs` e `tests/browser-computo-cct.cjs`, usando exclusivamente registros fictícios.

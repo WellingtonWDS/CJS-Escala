@@ -37,6 +37,8 @@ export function createDefaultState(now = new Date()) {
       limiteDiario: 10,
       repousoMensal: false,
       regime12x36: false,
+      intervaloComputado: false,
+      creditoNoturnoUmaHora: false,
       compensacaoHoras: false,
       apuracaoInicio: "",
       apuracaoFim: "",

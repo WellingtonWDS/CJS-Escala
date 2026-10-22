@@ -65,6 +65,10 @@ export function createApplication({ env, now = () => new Date() }) {
   });
   const configuracao = createConfiguracaoUI({
     ...deps,
+    onInstrumentoChange() {
+      colaboradores.renderColaboradores({ preservarEnquadramento: true });
+      resumo.renderResumo();
+    },
     ...resumo,
     ...feriados,
     ...jornada,

@@ -81,11 +81,21 @@ export function apurarCompensacaoHoras(state, c, dias) {
         ),
       ],
     };
-  const trabalhadas =
+  const computadas =
     [...mapa.values()]
       .filter((d) => ["T", "FE"].includes(d.status))
-      .reduce((s, d) => s + Math.round(d.horas * 60), 0) / 60;
-  const media = (trabalhadas * 7) / quantidade;
+      .reduce(
+        (s, d) =>
+          s +
+          Math.round(
+            (d.horas +
+              (d.creditoIntervaloCCT || 0) +
+              (d.creditoNoturnoCCT || 0)) *
+              60,
+          ),
+        0,
+      ) / 60;
+  const media = (computadas * 7) / quantidade;
   const suficiente = media <= limite + 0.001;
   return {
     situacao: suficiente ? "apurada" : "excedida",
@@ -97,7 +107,7 @@ export function apurarCompensacaoHoras(state, c, dias) {
       issue(
         "COMPENSACAO_HORAS",
         suficiente ? "pendencia" : "erro",
-        `Compensação de horas: ${trabalhadas.toFixed(2)}h trabalhadas em ${quantidade} dias; média semanal ${media.toFixed(2)}h / referência ${limite}h. ${suficiente ? "Média atingida; a autorização e a quitação efetiva da compensação dependem da conferência da cláusula." : "Média acima do limite: o excedente não foi compensado no período informado."}`,
+        `Compensação de horas: ${computadas.toFixed(2)}h computadas em ${quantidade} dias; média semanal ${media.toFixed(2)}h / referência ${limite}h. ${suficiente ? "Média atingida; a autorização e a quitação efetiva da compensação dependem da conferência da cláusula." : "Média acima do limite: o excedente não foi compensado no período informado."}`,
       ),
     ],
   };

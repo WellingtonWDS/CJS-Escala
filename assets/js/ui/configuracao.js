@@ -11,6 +11,7 @@ export function createConfiguracaoUI({
   renderResumo,
   atualizarCargaSemanalMsg,
   renderFeriados,
+  onInstrumentoChange = () => {},
 }) {
   const { regimeAtual, inicializarFeriadosDoMes, arquivarFeriados } = domain;
   const { saveState } = storage;
@@ -37,6 +38,7 @@ export function createConfiguracaoUI({
     comp.value = state.instrumentoCompensacao;
     comp.onchange = (e) => {
       state.instrumentoCompensacao = e.target.value;
+      onInstrumentoChange();
       invalidarEscala();
       renderRegimeAlerta();
       atualizarCargaSemanalMsg();
@@ -51,6 +53,8 @@ export function createConfiguracaoUI({
       "act-limite": "limiteDiario",
       "act-mensal": "repousoMensal",
       "act-12x36": "regime12x36",
+      "act-intervalo-computado": "intervaloComputado",
+      "act-credito-noturno": "creditoNoturnoUmaHora",
       "act-horas": "compensacaoHoras",
       "act-apuracao-inicio": "apuracaoInicio",
       "act-apuracao-fim": "apuracaoFim",
@@ -67,6 +71,7 @@ export function createConfiguracaoUI({
             : ["limiteDiario", "limiteSemanalCompensado"].includes(campo)
               ? Number(e.target.value)
               : e.target.value;
+        onInstrumentoChange();
         invalidarEscala();
         saveState();
       };

@@ -1,3 +1,4 @@
+import { ciclo12x36 } from "./computo-cct.js";
 import { normalizarJornada, minToTime, dateFromKey } from "./datas-horas.js";
 import { limiteDiario, dataValida } from "./ec141.js";
 export function perfilAtivo(c) {
@@ -46,13 +47,7 @@ export function configDoPerfil(state, c) {
     Object.values(p.tipo === "ciclo" ? p.ciclo : p.semana).find(
       (h) => h.status === "trabalho",
     )?.jornada || state.jornada;
-  const normal = normalizarJornada(fonte);
-  const plantao12 =
-    p.tipo === "ciclo" &&
-    Object.keys(p.ciclo).length === 2 &&
-    p.ciclo[1]?.status === "trabalho" &&
-    p.ciclo[2]?.status === "folga" &&
-    normal?.saida - normal?.entrada === 720;
+  const plantao12 = ciclo12x36(state, p);
   const tipo = proposta
     ? "5x2"
     : p.tipo === "ciclo"

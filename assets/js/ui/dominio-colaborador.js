@@ -1,3 +1,4 @@
+import { ciclo12x36, politicaPlantaoDeclarada } from "../domain/computo-cct.js";
 import { escapeHtml as esc } from "../shared/formatacao.js";
 const DIAS = [
   "Domingo",
@@ -8,7 +9,12 @@ const DIAS = [
   "Sexta",
   "Sábado",
 ];
-export function camposDominio(c) {
+export function resumoComputoDominio(c, state = {}) {
+  const p = c.quadroDominio;
+  return `${ciclo12x36(state, p) ? `<p class="text-sm mt-2 font-semibold text-fintria-navy">Ciclo 12×36 identificado${politicaPlantaoDeclarada(state) ? " conforme as condições declaradas de cômputo da CCT" : ""}.</p>` : ""}
+    ${Number.isFinite(p.horasComputadasCalculadas) ? `<p class="text-xs mt-2">Referência computada pela CCT: ${p.horasComputadasCalculadas}h/semana (média do ciclo, sujeita à vigência). Confira a carga contratual.</p>` : ""}`;
+}
+export function camposDominio(c, state = {}) {
   const p = c.quadroDominio;
   if (!p) return "";
   const input = (field, value, type = "text") =>
@@ -16,7 +22,8 @@ export function camposDominio(c) {
   const horarios = p.tipo === "ciclo" ? p.ciclo : p.semana;
   return `<details data-perfil-dominio="${c.id}" class="col-span-full border-t border-slate-200 pt-2"><summary class="cursor-pointer text-sm font-semibold text-fintria-navy">Horário individual importado da Domínio — ${esc(p.codigo)}</summary>
     <p class="text-xs mt-2">Código: ${esc(p.codigo)} · Admissão no relatório: ${esc(p.admissao || "Não informada")} · CTPS: ${esc(p.ctps || "Não informada")} · Série: ${esc(p.serie || "Não informada")} · Visto fiscal: ${esc(p.vistoFiscal || "Não informado")}</p>
-    <p class="text-xs text-slate-500 mt-2">${esc(p.arquivo)} · aba ${esc(p.aba)} · linha ${p.linha}. Horas calculadas: <span data-horas-dominio="${c.id}">${p.horasCalculadas ?? "indeterminadas"}</span>h/semana${p.tipo === "ciclo" ? " (média do ciclo)" : ""}. O relatório não informa a carga contratual nem o sexo; confira esses campos.</p>
+    <p class="text-xs text-slate-500 mt-2">${esc(p.arquivo)} · aba ${esc(p.aba)} · linha ${p.linha}. Horas de relógio calculadas: <span data-horas-dominio="${c.id}">${p.horasCalculadas ?? "indeterminadas"}</span>h/semana${p.tipo === "ciclo" ? " (média do ciclo)" : ""}. O relatório não informa a carga contratual nem o sexo; confira esses campos.</p>
+    <div data-resumo-computo-dominio="${c.id}">${resumoComputoDominio(c, state)}</div>
     <label class="text-sm flex gap-2 items-center mt-3"><input type="checkbox" data-id="${c.id}" data-dominio="ativo" ${p.ativo !== false ? "checked" : ""}>Usar este horário individual na geração e cobertura</label>
     <label class="text-sm flex gap-2 items-center mt-2"><input type="checkbox" data-id="${c.id}" data-dominio="cargaConfirmada" ${p.cargaConfirmada ? "checked" : ""}>Conferi a carga contratual de referência preenchida acima</label>
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3"><label class="text-xs">Padrão<select data-id="${c.id}" data-dominio="tipo" class="border rounded p-2 w-full bg-white"><option value="semanal" ${p.tipo === "semanal" ? "selected" : ""}>Dias da semana</option><option value="ciclo" ${p.tipo === "ciclo" ? "selected" : ""}>Ciclo de dias / plantões</option></select></label><label class="text-xs">Admissão considerada na escala${input("admissaoIso", p.admissaoIso, "date")}</label></div>

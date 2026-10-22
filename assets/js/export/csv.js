@@ -27,6 +27,9 @@ export function gerarCsv(state) {
   const pendentes = validacoes.some((v) =>
     v.issues.some((i) => ["alerta", "pendencia"].includes(i.severidade)),
   );
+  const computoCct =
+    state.instrumentoColetivo?.intervaloComputado ||
+    state.instrumentoColetivo?.creditoNoturnoUmaHora;
   const linhas = [
     [
       "Situação",
@@ -63,6 +66,14 @@ export function gerarCsv(state) {
       "Aditamento informado",
       "Data da saída",
       ...(dominio ? ["Código Domínio", "Admissão", "CTPS", "Série"] : []),
+      ...(computoCct
+        ? [
+            "Intervalo computado CCT",
+            "Crédito noturno CCT",
+            "Horas computadas com CCT",
+            "Instrumento coletivo",
+          ]
+        : []),
     ],
   ];
   if (state.empresaDominio)
@@ -121,6 +132,14 @@ export function gerarCsv(state) {
               r.colaborador.quadroDominio?.admissaoIso || "",
               r.colaborador.quadroDominio?.ctps || "",
               r.colaborador.quadroDominio?.serie || "",
+            ]
+          : []),
+        ...(computoCct
+          ? [
+              fmtHoras(d.creditoIntervaloCCT || 0),
+              fmtHoras(d.creditoNoturnoCCT || 0),
+              fmtHoras(d.horasComputadasCCT ?? d.horas),
+              state.instrumentoColetivo?.identificacao || "",
             ]
           : []),
       ]);

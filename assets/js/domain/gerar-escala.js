@@ -1,4 +1,9 @@
 import {
+  apurarComputoCCT,
+  politicaPlantaoDeclarada,
+  computoDaJornada,
+} from "./computo-cct.js";
+import {
   referenciaDia,
   referenciaSemana,
   instrumentoValido,
@@ -264,6 +269,7 @@ export function createGerador(state, jornada, feriados, validacao) {
     const intervalo = calcularPausaEfetiva(d, j);
     d.intervaloInicioMin = intervalo?.inicio ?? null;
     d.intervaloFimMin = intervalo?.fim ?? null;
+    Object.assign(d, apurarComputoCCT(state, d));
   }
 
   function distribuirHorasIndividuais(colab, dias) {
@@ -274,10 +280,13 @@ export function createGerador(state, jornada, feriados, validacao) {
       porSemana.get(key).push(d);
     });
     porSemana.forEach((semana) => {
-      if (state.usarHorasQuadro) {
+      if (
+        state.usarHorasQuadro ||
+        (state.tipoEscala === "12x36" && politicaPlantaoDeclarada(state))
+      ) {
         const ref = referenciaSemana(state, semana, colab);
         for (const d of semana) {
-          const j = d.jornadaAplicada;
+          const j = d.jornadaAplicada || obterJornadaDoDia(d.weekday);
           const h = j ? jornada.calcHorasDia(d.weekday) : 0;
           const normal = j ? normalizarJornada(j) : null;
           const horas = normal
@@ -289,6 +298,9 @@ export function createGerador(state, jornada, feriados, validacao) {
           d.limiteSemanal = ref.horas;
           d.regimeAplicado = referenciaDia(state, d.data, colab).chave;
           atualizarHorarioEfetivo(d);
+          if (d.previstoOriginal && politicaPlantaoDeclarada(state))
+            d.horasPrevistas =
+              computoDaJornada(state, j, d.data)?.horasComputadasCCT ?? horas;
         }
         return;
       }

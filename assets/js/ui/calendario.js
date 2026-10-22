@@ -343,7 +343,7 @@ export function createCalendarioUI({
               .join(", ");
             return `<div data-resumo-semanal data-colaborador="${x.r.colaborador.id}" data-semana="${isoDate(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate())}" class="pb-2 mb-2 border-b border-slate-200 last:border-0 last:mb-0 last:pb-0">
           <div class="flex items-start justify-between gap-1"><b class="text-fintria-navy">${escapeHtml(x.r.colaborador.nome || "(sem nome)")}</b>${badge}</div>
-          <div class="text-slate-600 mt-0.5" title="O fechamento de horas não substitui as validações de jornada e enquadramento">${fmtHoras(x.trabalhadas)} trabalhadas${x.abonadas ? ` + ${fmtHoras(x.abonadas)} abonadas` : ""}${Number.isFinite(x.alvo) ? ` · total ${fmtHoras(x.computadas)} / alvo ${fmtHoras(x.alvo)}` : ""}</div>
+          <div class="text-slate-600 mt-0.5" title="O fechamento de horas não substitui as validações de jornada e enquadramento">${fmtHoras(x.trabalhadas)} trabalhadas${x.abonadas ? ` + ${fmtHoras(x.abonadas)} abonadas` : ""}${x.creditosIntervalo ? ` + ${fmtHoras(x.creditosIntervalo)} de intervalo computado (CCT)` : ""}${x.creditosNoturnos ? ` + ${fmtHoras(x.creditosNoturnos)} de crédito noturno (CCT)` : ""}${Number.isFinite(x.alvo) ? ` · total ${fmtHoras(x.computadas)} / alvo ${fmtHoras(x.alvo)}` : ""}</div>
           ${x.abonos.map((a) => `<div class="text-fintria-azul mt-1">Abono de feriado: ${formatDateBR(dateFromKey(a.data))} — ${escapeHtml(a.nome)} (${fmtHoras(a.horas)}).</div>`).join("")}
           ${x.contrato !== x.alvo ? `<div class="text-slate-500">Contrato de referência: ${fmtHoras(x.contrato)}. Alvo ajustado à fase, sem alteração salarial.</div>` : ""}
           <div class="text-slate-500">Folgas: ${folgas || "nenhuma"}</div>
@@ -387,6 +387,7 @@ export function createCalendarioUI({
                 return `<button data-ri="${x.ri}" data-di="${x.r.dias.indexOf(x.obj)}" class="w-full text-left mb-1 last:mb-0 px-1.5 py-1 rounded border ${cls} hover:opacity-80" title="${trabalho ? "Trabalho" : x.obj.status === "NC" ? "Anterior à admissão" : "Folga"}${trabalho && x.obj.intervaloInicioMin != null ? ` · Intervalo ${horarioComDia(x.obj.intervaloInicioMin)}–${horarioComDia(x.obj.intervaloFimMin)}` : ""} — clique para alterar">
               <div class="font-semibold truncate">${escapeHtml(x.r.colaborador.nome || "(sem nome)")}</div>
               <div class="text-[9px] opacity-80">${status}${state.turnosRevezamento ? ` · ${x.obj.turno}` : ""}${x.obj.horas ? ` · ${fmtHoras(x.obj.horas)} · ${horarioComDia(x.obj.entradaMin)}–${horarioComDia(x.obj.saidaMin)}` : ""}</div>
+              ${(x.obj.creditoIntervaloCCT || 0) + (x.obj.creditoNoturnoCCT || 0) > 0 ? `<div class="text-[9px] font-semibold">${fmtHoras(x.obj.horasComputadasCCT)} computadas (CCT)</div>` : ""}
             </button>`;
               })
               .join("");

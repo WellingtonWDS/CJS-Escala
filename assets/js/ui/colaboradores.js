@@ -2,7 +2,7 @@ import { mostrarColaboradores } from "./lista-colaboradores.js";
 import { prepararImportacao } from "../import/colaboradores.js";
 import { camposEnquadramento } from "./enquadramento-ec141.js";
 import { escapeHtml } from "../shared/formatacao.js";
-import { camposDominio } from "./dominio-colaborador.js";
+import { camposDominio, resumoComputoDominio } from "./dominio-colaborador.js";
 import { atualizarPerfilDominio } from "../import/dominio.js";
 
 export function createColaboradoresUI({
@@ -16,15 +16,21 @@ export function createColaboradoresUI({
   const { saveState } = storage;
   const { document } = env;
 
-  function renderColaboradores() {
+  function renderColaboradores({ preservarEnquadramento = false } = {}) {
     onFuncoesChange();
     const list = document.getElementById("colab-list");
     const abertos = [
       ...list.querySelectorAll("details[data-perfil-dominio][open]"),
     ].map((el) => el.dataset.perfilDominio);
+    const enquadramentosAbertos = preservarEnquadramento
+      ? [...list.querySelectorAll("details[open]")]
+          .map((el) => el.querySelector("[data-ec141]")?.dataset.id)
+          .filter(Boolean)
+      : [];
     list.innerHTML =
       state.colaboradores
         .map((c, idx) => {
+          if (c.quadroDominio) atualizarPerfilDominio(c, state);
           if (!c.quadroDominio && !Number.isFinite(Number(c.horasSemana)))
             c.horasSemana = 44;
           return `<div class="relative grid grid-cols-1 md:grid-cols-[1.7fr_0.9fr_1.2fr_0.9fr_auto] gap-2.5 items-end border border-slate-200 rounded-lg p-3 mb-2.5 bg-slate-50">
@@ -41,7 +47,7 @@ export function createColaboradoresUI({
       <div><label class="block text-xs font-semibold text-fintria-navySoft mb-1.5">Jornada contratual de referência</label><div class="relative"><input type="number" min="1" max="60" step="0.5" data-id="${c.id}" data-field="horasSemana" value="${c.quadroDominio ? (c.horasSemana ?? "") : Number(c.horasSemana) || 44}" placeholder="Conferir" class="w-full px-2.5 py-2 pr-8 border border-slate-300 rounded-md text-sm bg-white"><span class="absolute right-2.5 top-2.5 text-xs text-slate-400">h</span></div></div>
       <button data-remove="${c.id}" title="Remover" class="text-fintria-vermelho bg-transparent text-base px-2 py-2 rounded hover:bg-red-50">✕</button>
       ${state.analiseEnquadramentoAtiva === true ? camposEnquadramento(c) : ""}
-      ${camposDominio(c)}
+      ${camposDominio(c, state)}
     </div>`;
         })
         .join("") ||
@@ -88,7 +94,7 @@ export function createColaboradoresUI({
           } else
             p[key] =
               e.target.type === "checkbox" ? e.target.checked : e.target.value;
-          atualizarPerfilDominio(c);
+          atualizarPerfilDominio(c, state);
           invalidarEscala();
           saveState();
           if (key !== "horario") renderColaboradores();
@@ -102,6 +108,10 @@ export function createColaboradoresUI({
             );
             if (calculadas)
               calculadas.textContent = p.horasCalculadas ?? "indeterminadas";
+            const computo = list.querySelector(
+              `[data-resumo-computo-dominio="${c.id}"]`,
+            );
+            if (computo) computo.innerHTML = resumoComputoDominio(c, state);
             const avisos = list.querySelector(
               `[data-pendencias-dominio="${c.id}"]`,
             );
@@ -135,7 +145,7 @@ export function createColaboradoresUI({
           if (c.quadroDominio) {
             if (e.target.dataset.field === "horasSemana")
               c.quadroDominio.cargaConfirmada = true;
-            atualizarPerfilDominio(c);
+            atualizarPerfilDominio(c, state);
             const avisos = list.querySelector(
               `[data-pendencias-dominio="${c.id}"]`,
             );
@@ -167,6 +177,10 @@ export function createColaboradoresUI({
     });
     for (const el of list.querySelectorAll("details[data-perfil-dominio]"))
       if (abertos.includes(el.dataset.perfilDominio)) el.open = true;
+    for (const id of enquadramentosAbertos) {
+      const campo = list.querySelector(`[data-id="${id}"][data-ec141]`);
+      if (campo) campo.closest("details").open = true;
+    }
   }
 
   return { renderColaboradores, bindEvents };

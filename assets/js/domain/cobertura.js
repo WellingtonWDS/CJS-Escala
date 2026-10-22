@@ -159,7 +159,7 @@ export function analisarCobertura(config, resultado) {
         config.jornadaPorDia?.[d.weekday]
           ? config.jornadaPorDia[d.weekday]
           : config.jornada;
-      const partes = segmentosTrabalho(d, jornada);
+      const partes = segmentosTrabalho(d, d.jornadaAplicada || jornada);
       if (partes === null) {
         relatorio.avisos.push(
           `${r.colaborador.nome || "(sem nome)"} · ${d.data}: horário incompleto ou inválido; não contabilizado na cobertura.`,

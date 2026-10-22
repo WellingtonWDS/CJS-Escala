@@ -131,6 +131,21 @@ export function pendenciasPreenchimento(state, destino) {
     )
       add("sec-jornada", "#entrada-turno-b", "Informe a entrada do Turno B.");
   }
+  const clausula = state.instrumentoColetivo || {};
+  if (clausula.intervaloComputado || clausula.creditoNoturnoUmaHora) {
+    if (state.instrumentoCompensacao !== "act_cct")
+      add(
+        "sec-tipo",
+        "#instrumento-compensacao",
+        "Selecione ACT/CCT para utilizar as condições especiais de cômputo dos plantões.",
+      );
+    if (!clausula.regime12x36)
+      add(
+        "sec-tipo",
+        "#act-12x36",
+        "Informe o instrumento para o regime 12×36 ao utilizar as condições especiais de cômputo.",
+      );
+  }
   if (
     state.instrumentoCompensacao &&
     state.instrumentoCompensacao !== "nenhuma"

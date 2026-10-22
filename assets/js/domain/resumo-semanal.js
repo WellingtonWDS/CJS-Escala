@@ -49,7 +49,18 @@ export function apurarSemana(colaborador, dias, config = {}) {
     .filter((d) => d.status === "T" || d.status === "FE")
     .reduce((s, d) => s + d.horas, 0);
   const abonadas = abonos.reduce((s, a) => s + a.horas, 0);
-  const computadas = trabalhadas + abonadas;
+  const creditosIntervalo = dias.reduce(
+    (s, d) =>
+      s + (["T", "FE"].includes(d.status) ? d.creditoIntervaloCCT || 0 : 0),
+    0,
+  );
+  const creditosNoturnos = dias.reduce(
+    (s, d) =>
+      s + (["T", "FE"].includes(d.status) ? d.creditoNoturnoCCT || 0 : 0),
+    0,
+  );
+  const computadas =
+    trabalhadas + abonadas + creditosIntervalo + creditosNoturnos;
   const completa = dias.length === 7;
   const estado =
     !completa || !Number.isFinite(alvo)
@@ -61,6 +72,8 @@ export function apurarSemana(colaborador, dias, config = {}) {
           : "abaixo";
   return {
     trabalhadas,
+    creditosIntervalo,
+    creditosNoturnos,
     abonadas,
     computadas,
     abonos,
