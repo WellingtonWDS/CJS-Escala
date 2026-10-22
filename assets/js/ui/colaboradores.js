@@ -1,3 +1,5 @@
+import { mostrarColaboradores } from "./lista-colaboradores.js";
+import { prepararImportacao } from "../import/colaboradores.js";
 import { camposEnquadramento } from "./enquadramento-ec141.js";
 import { escapeHtml } from "../shared/formatacao.js";
 import { camposDominio } from "./dominio-colaborador.js";
@@ -169,17 +171,51 @@ export function createColaboradoresUI({
 
   return { renderColaboradores, bindEvents };
   function bindEvents() {
-    document.getElementById("btn-add-colab").onclick = () => {
-      state.colaboradores.push({
-        id: state.proximoId++,
-        nome: "",
-        sexo: "feminino",
-        cargo: "",
-        horasSemana: 44,
-      });
+    const form = document.getElementById("colab-form");
+    form.onsubmit = (event) => {
+      event.preventDefault();
+      const mensagem = document.getElementById("colab-form-mensagem");
+      mensagem.textContent = "";
+      if (!form.reportValidity()) return;
+      const nome = document.getElementById("colab-nome").value.trim();
+      const cargo = document.getElementById("colab-cargo").value.trim();
+      if (!nome || !cargo) {
+        mensagem.textContent = "Preencha nome e cargo / função.";
+        return;
+      }
+      try {
+        Object.assign(
+          state,
+          prepararImportacao(
+            state,
+            [
+              {
+                nome,
+                cargo,
+                sexo: document.getElementById("colab-sexo").value,
+                horasSemana: Number(
+                  document.getElementById("colab-horas").value,
+                ),
+              },
+            ],
+            "adicionar",
+          ),
+        );
+      } catch (error) {
+        mensagem.textContent = error.message;
+        return;
+      }
       invalidarEscala();
       renderColaboradores();
-      saveState();
+      renderResumo();
+      const salvo = saveState();
+      form.reset();
+      mostrarColaboradores(
+        document,
+        salvo === false
+          ? "Colaborador cadastrado nesta aba, mas não foi possível salvar no navegador. Exporte os dados antes de sair."
+          : "Colaborador cadastrado. Confira seus dados na lista abaixo.",
+      );
     };
   }
 }

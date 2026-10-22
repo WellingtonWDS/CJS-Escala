@@ -1,3 +1,4 @@
+import { mostrarColaboradores } from "./lista-colaboradores.js";
 import {
   analisarPlanilhaColaboradores,
   decodificarPlanilha,
@@ -108,11 +109,14 @@ export function createImportarColaboradoresUI({
       invalidarEscala();
       renderColaboradores();
       renderResumo();
-      storage.saveState();
+      const salvo = storage.saveState();
       limpar();
-      mensagem(
-        `${count} colaborador(es) importado(s). Confira o cadastro, revise a cobertura e clique em Gerar escala.`,
-      );
+      const feedback =
+        salvo === false
+          ? "Importação aplicada nesta aba, mas não foi possível salvar no navegador. Exporte os dados antes de sair."
+          : `${count} colaborador(es) importado(s). Confira o cadastro, revise a cobertura e clique em Gerar escala.`;
+      mensagem(feedback);
+      mostrarColaboradores(document, feedback);
     } catch (error) {
       mensagem(error.message);
     }

@@ -36,13 +36,11 @@ module.exports = async function testarImportacao({ browser, baseURL }) {
       template.startsWith("\uFEFFNome;Sexo;Cargo / função;Horas semanais\r\n"),
     );
     const upload = (body, name = "equipe.csv") =>
-      page
-        .locator("#importacao-arquivo")
-        .setInputFiles({
-          name,
-          mimeType: "text/csv",
-          buffer: Buffer.from(body),
-        });
+      page.locator("#importacao-arquivo").setInputFiles({
+        name,
+        mimeType: "text/csv",
+        buffer: Buffer.from(body),
+      });
     const header = "Nome;Sexo;Cargo / função;Horas semanais\r\n";
     await upload(header + "Pessoa inválida;F;Caixa;erro");
     await page.waitForFunction(() =>
@@ -60,13 +58,11 @@ module.exports = async function testarImportacao({ browser, baseURL }) {
       await page.locator("#importacao-mensagem").innerText(),
       /arquivo .csv/,
     );
-    await page
-      .locator("#importacao-arquivo")
-      .setInputFiles({
-        name: "grande.csv",
-        mimeType: "text/csv",
-        buffer: Buffer.alloc(1024 * 1024 + 1),
-      });
+    await page.locator("#importacao-arquivo").setInputFiles({
+      name: "grande.csv",
+      mimeType: "text/csv",
+      buffer: Buffer.alloc(1024 * 1024 + 1),
+    });
     assert.match(
       await page.locator("#importacao-mensagem").innerText(),
       /1 MB/,
@@ -93,6 +89,18 @@ module.exports = async function testarImportacao({ browser, baseURL }) {
       () => !document.getElementById("importacao-confirmar").disabled,
     );
     await page.locator("#importacao-confirmar").click();
+    assert.equal(
+      await page.locator("#importacao-colaboradores").getAttribute("open"),
+      null,
+    );
+    assert.equal(
+      await page.evaluate(() => document.activeElement.id),
+      "colaboradores-cadastrados",
+    );
+    assert.match(
+      await page.locator("#colaboradores-mensagem").innerText(),
+      /2 colaborador/,
+    );
     const added = await saved();
     assert.equal(added.colaboradores.length, 4);
     assert.deepEqual(added.colaboradores.slice(0, 2), original.colaboradores);

@@ -1,3 +1,4 @@
+import { mostrarColaboradores } from "./lista-colaboradores.js";
 import {
   lerArquivoDominio,
   MAX_DOMINIO_BYTES,
@@ -85,7 +86,7 @@ export function createImportarDominioUI({
           el("previa").hidden = false;
           el("confirmar").disabled = false;
           mensagem(
-            "Confira a empresa, as pessoas e as pendências. A importação preserva dados incompletos para correção no cadastro manual; eles não serão substituídos por horários presumidos.",
+            "Confira a empresa, as pessoas e as pendências. A importação preserva dados incompletos para correção na lista de colaboradores cadastrados/importados; eles não serão substituídos por horários presumidos.",
           );
         } catch (error) {
           if (atual === token)
@@ -116,8 +117,9 @@ export function createImportarDominioUI({
           mensagem(
             salvo === false
               ? "Importação aplicada nesta aba, mas não foi possível salvar no navegador. Exporte os dados antes de sair."
-              : "Quadro importado. Abra o cadastro manual para conferir carga contratual, sexo, dias não informados e datas de início dos ciclos. Os horários individuais serão usados na geração e na cobertura.",
+              : "Quadro importado. Confira na lista de colaboradores cadastrados/importados carga contratual, sexo, dias não informados e datas de início dos ciclos. Os horários individuais serão usados na geração e na cobertura.",
           );
+          mostrarColaboradores(env.document, el("mensagem").textContent);
         } catch (error) {
           mensagem(error.message);
         }

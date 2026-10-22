@@ -83,7 +83,33 @@ const { chromium } = require("playwright");
       ],
     );
     await page.locator("#cadastro-manual-colaboradores > summary").click();
+    assert.equal(
+      await page.locator("#cadastro-manual-colaboradores #colab-list").count(),
+      0,
+    );
+    const beforeManual = (await saved()).colaboradores.length;
     await page.locator("#btn-add-colab").click();
+    assert.equal((await saved()).colaboradores.length, beforeManual);
+    await page.locator("#colab-nome").fill("Pessoa cadastrada");
+    await page.locator("#colab-sexo").selectOption("masculino");
+    await page.locator("#colab-cargo").fill("Atendente");
+    await page.locator("#colab-horas").fill("40");
+    assert.equal((await saved()).colaboradores.length, beforeManual);
+    await page.locator("#btn-add-colab").click();
+    assert.equal((await saved()).colaboradores.length, beforeManual + 1);
+    assert.equal(await page.locator("#colab-nome").inputValue(), "");
+    assert.equal(await page.locator("#colab-horas").inputValue(), "44");
+    assert.equal(
+      await page.evaluate(() => document.activeElement.id),
+      "colaboradores-cadastrados",
+    );
+    assert.equal(
+      await page
+        .locator('#colab-list [data-field="cargo"]')
+        .last()
+        .inputValue(),
+      "Atendente",
+    );
     const name = page.locator('[data-field="nome"]').last();
     await name.fill('Pessoa; "Teste"');
     await name.dispatchEvent("change");

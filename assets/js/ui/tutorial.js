@@ -7,7 +7,7 @@ const ETAPAS = [
   [
     "config-colaboradores",
     "Cadastre os colaboradores",
-    "Escolha o modelo CSV, o cadastro manual ou Importar planilha da Domínio — Quadro de Horário de Trabalho. Confira a prévia antes de importar. Na Domínio, os horários são individuais; revise campos ausentes e datas iniciais de ciclos no cadastro manual. As três áreas abrem ao clicar no título.",
+    "Escolha o modelo CSV, o cadastro manual ou Importar planilha da Domínio — Quadro de Horário de Trabalho. Confira a prévia antes de importar. Na Domínio, os horários são individuais; revise campos ausentes e datas iniciais de ciclos na lista Colaboradores cadastrados/importados, ao final da seção. As três áreas abrem ao clicar no título.",
   ],
   [
     "sec-tipo",

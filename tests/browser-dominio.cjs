@@ -28,10 +28,14 @@ module.exports = async function testarDominio({ browser, baseURL }) {
       page.evaluate(() =>
         JSON.parse(localStorage.getItem("fintria-escala-dp-v2")),
       );
-    const upload = (tipo) =>
-      page
+    const upload = async (tipo) => {
+      await page.locator("#importacao-dominio").evaluate((el) => {
+        el.open = true;
+      });
+      await page
         .locator("#dominio-arquivo")
         .setInputFiles(path.join(__dirname, "fixtures/dominio", tipo + ".xls"));
+    };
     const ready = () =>
       page.waitForFunction(
         () => !document.getElementById("dominio-confirmar").disabled,
@@ -53,17 +57,27 @@ module.exports = async function testarDominio({ browser, baseURL }) {
     assert.deepEqual(await saved(), original);
     await page.locator("#dominio-cancelar").click();
     assert.deepEqual(await saved(), original);
-    await page
-      .locator("#dominio-arquivo")
-      .setInputFiles({
-        name: "arquivo.csv",
-        mimeType: "text/csv",
-        buffer: Buffer.from("qualquer coisa"),
-      });
+    await page.locator("#dominio-arquivo").setInputFiles({
+      name: "arquivo.csv",
+      mimeType: "text/csv",
+      buffer: Buffer.from("qualquer coisa"),
+    });
     assert.match(await page.locator("#dominio-mensagem").innerText(), /\.xls/);
     await upload("drogaria");
     await ready();
     await page.locator("#dominio-confirmar").click();
+    assert.equal(
+      await page.locator("#importacao-dominio").getAttribute("open"),
+      null,
+    );
+    assert.equal(
+      await page.evaluate(() => document.activeElement.id),
+      "colaboradores-cadastrados",
+    );
+    assert.match(
+      await page.locator("#colaboradores-mensagem").innerText(),
+      /Quadro importado/,
+    );
     let s = await saved();
     assert.equal(s.colaboradores.length, 6);
     assert.equal(s.escalaGerada, null);
