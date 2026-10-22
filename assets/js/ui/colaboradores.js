@@ -1,3 +1,4 @@
+import { preencherSexoPorNome } from "../domain/sexo-por-nome.js";
 import { mostrarColaboradores } from "./lista-colaboradores.js";
 import { prepararImportacao } from "../import/colaboradores.js";
 import { camposEnquadramento } from "./enquadramento-ec141.js";
@@ -15,6 +16,11 @@ export function createColaboradoresUI({
 }) {
   const { saveState } = storage;
   const { document } = env;
+  function descricaoSexo(c) {
+    return c.sexoInferencia
+      ? `Preenchido automaticamente pelo prenome ${c.sexoInferencia.prenome}: ${(c.sexoInferencia.predominancia * 100).toFixed(2).replace(".", ",")}% de predominância na base IBGE/Censo 2010. Confira e corrija se necessário.`
+      : "";
+  }
 
   function renderColaboradores({ preservarEnquadramento = false } = {}) {
     onFuncoesChange();
@@ -37,11 +43,12 @@ export function createColaboradoresUI({
       <span class="absolute -top-2.5 -left-2.5 w-5 h-5 rounded-full bg-fintria-verde text-white text-[11px] flex items-center justify-center">${idx + 1}</span>
       <div><label class="block text-xs font-semibold text-fintria-navySoft mb-1.5">Nome</label><input data-id="${c.id}" data-field="nome" value="${escapeHtml(c.nome)}" class="w-full px-2.5 py-2 border border-slate-300 rounded-md text-sm bg-white"></div>
       <div><label class="block text-xs font-semibold text-fintria-navySoft mb-1.5">Sexo</label>
-        <select data-id="${c.id}" data-field="sexo" class="w-full px-2.5 py-2 border border-slate-300 rounded-md text-sm bg-white">
-          ${c.sexo === "nao_informado" ? '<option value="nao_informado" selected>Não informado</option>' : ""}
+        <select aria-describedby="sexo-estimativa-${c.id}" data-id="${c.id}" data-field="sexo" class="w-full px-2.5 py-2 border border-slate-300 rounded-md text-sm bg-white">
+          <option value="nao_informado" ${c.sexo === "nao_informado" ? "selected" : ""}>Não informado</option>
           <option value="feminino" ${c.sexo === "feminino" ? "selected" : ""}>Feminino</option>
           <option value="masculino" ${c.sexo === "masculino" ? "selected" : ""}>Masculino</option>
         </select>
+        <p id="sexo-estimativa-${c.id}" data-sexo-estimativa="${c.id}" class="text-[11px] text-slate-500 mt-1">${escapeHtml(descricaoSexo(c))}</p>
       </div>
       <div><label class="block text-xs font-semibold text-fintria-navySoft mb-1.5">Cargo / função</label><input data-id="${c.id}" data-field="cargo" value="${escapeHtml(c.cargo)}" class="w-full px-2.5 py-2 border border-slate-300 rounded-md text-sm bg-white"></div>
       <div><label class="block text-xs font-semibold text-fintria-navySoft mb-1.5">Jornada contratual de referência</label><div class="relative"><input type="number" min="1" max="60" step="0.5" data-id="${c.id}" data-field="horasSemana" value="${c.quadroDominio ? (c.horasSemana ?? "") : Number(c.horasSemana) || 44}" placeholder="Conferir" class="w-full px-2.5 py-2 pr-8 border border-slate-300 rounded-md text-sm bg-white"><span class="absolute right-2.5 top-2.5 text-xs text-slate-400">h</span></div></div>
@@ -142,6 +149,20 @@ export function createColaboradoresUI({
               ? Number(e.target.value)
               : e.target.value;
           if (c.horasSemana <= 0 && !c.quadroDominio) c.horasSemana = 44;
+          if (e.target.dataset.field === "sexo") {
+            c.sexoOrigem = "usuario";
+            delete c.sexoInferencia;
+          }
+          if (c.quadroDominio && e.target.dataset.field === "nome")
+            preencherSexoPorNome(c);
+          const sexo = list.querySelector(
+            `[data-id="${c.id}"][data-field="sexo"]`,
+          );
+          if (sexo) sexo.value = c.sexo;
+          const estimativa = list.querySelector(
+            `[data-sexo-estimativa="${c.id}"]`,
+          );
+          if (estimativa) estimativa.textContent = descricaoSexo(c);
           if (c.quadroDominio) {
             if (e.target.dataset.field === "horasSemana")
               c.quadroDominio.cargaConfirmada = true;
@@ -185,6 +206,21 @@ export function createColaboradoresUI({
 
   return { renderColaboradores, bindEvents };
   function bindEvents() {
+    document.getElementById("btn-sugerir-sexos").onclick = () => {
+      let preenchidos = 0;
+      for (const c of state.colaboradores)
+        if (c.quadroDominio && preencherSexoPorNome(c)) preenchidos++;
+      if (preenchidos) {
+        invalidarEscala();
+        renderColaboradores();
+        renderResumo();
+        saveState();
+      }
+      document.getElementById("colaboradores-mensagem").textContent =
+        preenchidos
+          ? `${preenchidos} campo(s) de sexo preenchido(s) por alta predominância na base. Confira as indicações abaixo; os demais continuam não informados.`
+          : "Nenhum campo foi alterado. Os nomes sem dados suficientes ou abaixo de 99,5% de predominância continuam não informados; escolhas manuais foram preservadas.";
+    };
     const form = document.getElementById("colab-form");
     form.onsubmit = (event) => {
       event.preventDefault();

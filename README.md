@@ -118,7 +118,7 @@ Os horários individuais são usados na geração, validação, cobertura e conv
 
 Informações não disponíveis no relatório não são inventadas:
 
-- Sexo fica **Não informado**. A carga semanal é calculada dos horários completos, identificada como estimativa até confirmação do contrato; não é presumida como 44h.
+- Sexo ausente pode ser preenchido automaticamente por alta predominância na base local de prenomes, com origem e porcentagem identificadas; os demais casos ficam **Não informado**. A carga semanal é calculada dos horários completos, identificada como estimativa até confirmação do contrato; não é presumida como 44h.
 - Horários `00:00–00:00` sem indicação de folga, intervalos fora da jornada e dias conflitantes ficam pendentes de revisão. A geração exige horários completos. Dias não listados só viram folga mediante confirmação explícita na prévia ou revisão individual.
 - Ciclos `1º Dia/2º Dia` exigem a data de referência de cada pessoa. Não é presumido grupo A/B pela ordem do cadastro nem pela data de admissão. Jornadas semanais alternadas permanecem semanais até confirmação do usuário; o nome do arquivo não torna toda a equipe 12×36. Um ciclo de dois dias com plantão de 12h de permanência e segundo dia livre é reconhecido como 12×36, sujeito às validações do regime.
 - Intervalo vazio permanece vazio, sem inserção automática de pausa. Cobertura mínima, tratamento de feriados e instrumento coletivo precisam ser conferidos na operação. Não se conclui suficiência com dados individuais pendentes.
@@ -189,3 +189,14 @@ Os créditos só são concedidos aos plantões 12×36 com instrumento ACT/CCT v�
 O resumo semanal e o CSV separam horas efetivas, intervalo computado e crédito noturno. Feriado dispensado abona as horas computadas originalmente previstas, sem duplicar créditos de trabalho. A média do ciclo do exemplo passa de 35h de relógio para 42h computadas; a carga contratual já confirmada pelo usuário é preservada, enquanto a referência ainda não confirmada acompanha essa estimativa declarada. A vigência é conferida em cada dia na geração. A configuração é salva no navegador; resultados antigos são invalidados pela nova versão das regras.
 
 Módulo: `domain/computo-cct.js`. Regressões: `tests/computo-cct.test.cjs` e `tests/browser-computo-cct.cjs`, usando exclusivamente registros fictícios.
+
+
+## Preenchimento conservador de sexo por prenome
+
+A importação da Domínio consulta uma base local de frequências agregadas do **IBGE/Censo 2010**, obtidas do espelho **MedidaSP/nomes-brasileiros-ibge** de 2017. Só preenche quando a predominância observada é **≥ 99,5%**, com **≥ 1.000 registros** e frequências positivas disponíveis em ambas as listas. A comparação usa os valores originais antes de arredondar. Ausência no ranking não é considerada zero nem certeza de 100%. A derivação preserva 1.040 nomes presentes nas duas listas, dos quais 216 passam pelos critérios atuais.
+
+A prévia e o cadastro identificam a estimativa, o prenome e a predominância; a porcentagem descreve a base histórica, sem garantir o sexo de uma pessoa específica. A consulta não utiliza terminações de nomes, não decide por sobrenomes e não envia nomes a serviços externos. Nomes fora da base, iniciais, nomes com dados insuficientes ou evidências divergentes ficam não informados. Por exemplo, João e Maria atendem ao limiar; Adair, Ariel, Alex e Miguel não atendem. Combinações iniciais com sugestões conflitantes também são recusadas por cautela.
+
+O botão **Preencher sexos por nome nos importados**, na lista de cadastrados/importados, atende registros antigos. Valores já informados e escolhas manuais são preservados, inclusive a escolha explícita de Não informado. Alterar o nome de um registro estimado reavalia a sugestão e a retira quando os critérios deixam de ser atendidos. A aplicação não altera automaticamente registros antigos ao carregar a página. CSV com registros estimados inclui origem e predominância; as informações também persistem no navegador. O modelo CSV e o formulário manual continuam respeitando o sexo preenchido pelo usuário.
+
+Fonte, revisão fixa, hashes e limites: `assets/js/data/FONTES-NOMES.md`. Reprodução da base: `node scripts/gerar-base-nomes.js`. Regra: `domain/sexo-por-nome.js`. Testes: `tests/sexo-por-nome.test.cjs` e `tests/browser-sexo-nomes.cjs`.

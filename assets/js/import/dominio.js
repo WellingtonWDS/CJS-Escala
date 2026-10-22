@@ -1,3 +1,4 @@
+import { preencherSexoPorNome } from "../domain/sexo-por-nome.js";
 import {
   ciclo12x36,
   computoDaJornada,
@@ -445,6 +446,7 @@ export function prepararDominio(state, quadro, modo, ausentesFolga = false) {
   );
   const novos = structuredClone(quadro.colaboradores).map((c) => {
     c.id = id++;
+    preencherSexoPorNome(c);
     if (ausentesFolga)
       for (const h of Object.values(c.quadroDominio.semana))
         if (h.ausente) {

@@ -30,6 +30,7 @@ export function gerarCsv(state) {
   const computoCct =
     state.instrumentoColetivo?.intervaloComputado ||
     state.instrumentoColetivo?.creditoNoturnoUmaHora;
+  const sexoEstimado = state.colaboradores.some((c) => c.sexoInferencia);
   const linhas = [
     [
       "Situação",
@@ -66,6 +67,13 @@ export function gerarCsv(state) {
       "Aditamento informado",
       "Data da saída",
       ...(dominio ? ["Código Domínio", "Admissão", "CTPS", "Série"] : []),
+      ...(sexoEstimado
+        ? [
+            "Sexo cadastrado",
+            "Origem do sexo",
+            "Predominância na base de nomes",
+          ]
+        : []),
       ...(computoCct
         ? [
             "Intervalo computado CCT",
@@ -132,6 +140,17 @@ export function gerarCsv(state) {
               r.colaborador.quadroDominio?.admissaoIso || "",
               r.colaborador.quadroDominio?.ctps || "",
               r.colaborador.quadroDominio?.serie || "",
+            ]
+          : []),
+        ...(sexoEstimado
+          ? [
+              r.colaborador.sexo,
+              r.colaborador.sexoInferencia
+                ? "Estimado pelo prenome — IBGE/Censo 2010, espelho MedidaSP"
+                : "Informado",
+              r.colaborador.sexoInferencia
+                ? `${(r.colaborador.sexoInferencia.predominancia * 100).toFixed(2)}%`
+                : "",
             ]
           : []),
         ...(computoCct

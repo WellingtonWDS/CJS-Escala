@@ -40,15 +40,16 @@ export function createImportarDominioUI({
       el("ausentes-folga").checked,
     );
     const novos = snapshot.colaboradores;
+    const estimados = novos.filter((c) => c.sexoInferencia).length;
     el("empresa").innerHTML = empresaHtml(quadro.empresa);
     el("linhas").innerHTML = novos
       .map(
         (c) =>
-          `<tr>${[c.quadroDominio.codigo, c.nome, c.cargo, c.quadroDominio.admissao, c.quadroDominio.ctps, c.quadroDominio.serie, c.quadroDominio.tipo === "ciclo" ? `Ciclo de ${Object.keys(c.quadroDominio.ciclo).length} dias` : c.quadroDominio.modelo, c.horasSemana == null ? "Não calculável" : `${c.horasSemana}h (calculadas)`, c.quadroDominio.pendencias.join(" ")].map((v) => `<td class="p-2 border-b align-top">${esc(v)}</td>`).join("")}</tr>`,
+          `<tr>${[c.quadroDominio.codigo, c.nome, c.cargo, c.sexoInferencia ? `${c.sexo} — ${(c.sexoInferencia.predominancia * 100).toFixed(2).replace(".", ",")}% na base (estimado pelo nome)` : "Não informado", c.quadroDominio.admissao, c.quadroDominio.ctps, c.quadroDominio.serie, c.quadroDominio.tipo === "ciclo" ? `Ciclo de ${Object.keys(c.quadroDominio.ciclo).length} dias` : c.quadroDominio.modelo, c.horasSemana == null ? "Não calculável" : `${c.horasSemana}h (calculadas)`, c.quadroDominio.pendencias.join(" ")].map((v) => `<td class="p-2 border-b align-top">${esc(v)}</td>`).join("")}</tr>`,
       )
       .join("");
     el("resumo").textContent =
-      `${novos.length} colaboradores. ${el("modo").value === "substituir" ? "Os colaboradores atuais serão substituídos; as demais configurações serão mantidas, e os dias operacionais serão preenchidos pela união dos horários importados." : "Os colaboradores serão adicionados e os dias operacionais serão ampliados pela união dos horários."} Horários individuais, folgas, ciclos, admissão, código, CTPS e série serão preservados. A cobertura mínima da empresa não consta no relatório e não será inventada. Escalas e comparações anteriores precisarão ser geradas novamente.`;
+      `${novos.length} colaboradores. ${estimados} campo(s) de sexo serão preenchidos automaticamente por predominância de pelo menos 99,5% na base de nomes. ${el("modo").value === "substituir" ? "Os colaboradores atuais serão substituídos; as demais configurações serão mantidas, e os dias operacionais serão preenchidos pela união dos horários importados." : "Os colaboradores serão adicionados e os dias operacionais serão ampliados pela união dos horários."} Horários individuais, folgas, ciclos, admissão, código, CTPS e série serão preservados. A cobertura mínima da empresa não consta no relatório e não será inventada. Escalas e comparações anteriores precisarão ser geradas novamente.`;
     if (
       state.empresaDominio?.cnpj &&
       state.empresaDominio.cnpj !== quadro.empresa.cnpj
