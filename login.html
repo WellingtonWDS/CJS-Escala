@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Entrar · Escala DP</title>
+    <link rel="stylesheet" href="/assets/css/login.css" />
+  </head>
+  <body>
+    <main class="login-card">
+      <div class="brand">Escala DP</div>
+      <h1>Acesse o sistema</h1>
+      <p>Informe a senha de acesso para continuar. Sua sessão dura 12 horas.</p>
+      <form id="login-form">
+        <label for="password">Senha</label
+        ><input
+          id="password"
+          name="password"
+          type="password"
+          autocomplete="current-password"
+          required
+          autofocus
+          maxlength="256"
+        /><button type="submit">Entrar</button>
+        <p id="login-message" role="status" aria-live="polite"></p>
+      </form>
+    </main>
+    <script type="module" src="/assets/js/login.js"></script>
+  </body>
+</html>

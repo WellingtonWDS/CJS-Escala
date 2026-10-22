@@ -123,6 +123,9 @@ module.exports = async function testarSexoNomes({ browser, baseURL }) {
     await campo("nome").dispatchEvent("change");
     assert.equal((await saved()).colaboradores[0].sexo, "masculino");
     await page.reload();
+    await page.waitForFunction(
+      () => document.documentElement.dataset.ready === "true",
+    );
     assert.equal((await saved()).colaboradores[0].sexo, "masculino");
     // Cadastros antigos são preenchidos pelo botão; escolhas manuais ficam preservadas.
     await page.evaluate(() => {
@@ -131,6 +134,9 @@ module.exports = async function testarSexoNomes({ browser, baseURL }) {
       localStorage.setItem("fintria-escala-dp-v2", JSON.stringify(s));
     });
     await page.reload();
+    await page.waitForFunction(
+      () => document.documentElement.dataset.ready === "true",
+    );
     await page.locator("#btn-sugerir-sexos").click();
     assert.equal((await saved()).colaboradores[2].sexo, "feminino");
     assert.equal((await saved()).colaboradores[0].sexo, "masculino");
@@ -146,6 +152,9 @@ module.exports = async function testarSexoNomes({ browser, baseURL }) {
       localStorage.setItem("fintria-escala-dp-v2", JSON.stringify(s));
     });
     await page.reload();
+    await page.waitForFunction(
+      () => document.documentElement.dataset.ready === "true",
+    );
     await page.locator("#btn-sugerir-sexos").click();
     assert.match(
       (await saved()).colaboradores[3].sexoInferencia.versao,

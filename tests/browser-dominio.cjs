@@ -149,6 +149,9 @@ module.exports = async function testarDominio({ browser, baseURL }) {
       /001;2020-01-01;00012345;0001/,
     );
     await page.reload();
+    await page.waitForFunction(
+      () => document.documentElement.dataset.ready === "true",
+    );
     s = await saved();
     assert.equal(s.colaboradores.length, 6);
     assert.equal(s.colaboradores[0].quadroDominio.ctps, "00012345");
@@ -258,6 +261,9 @@ module.exports = async function testarDominio({ browser, baseURL }) {
     assert.equal(dia(s.escalaGerada.resultado[0], "2026-10-01").saidaMin, 1800);
     assert.equal(dia(s.escalaGerada.resultado[7], "2026-10-01").horas, 11);
     await page.reload();
+    await page.waitForFunction(
+      () => document.documentElement.dataset.ready === "true",
+    );
     assert.equal((await saved()).escalaGerada.resultado.length, 17);
     assert.ok(assets.length && assets.every((s) => s === 200));
     assert.deepEqual(errors, []);

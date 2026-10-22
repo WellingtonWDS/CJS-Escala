@@ -61,6 +61,9 @@ module.exports = async function testarFeriados({ browser, baseURL }) {
     assert.match(await resumo.innerText(), /total 32:00 \/ alvo 40:00/);
     assert.match(await resumo.innerText(), /Abono de feriado/);
     await page.reload();
+    await page.waitForFunction(
+      () => document.documentElement.dataset.ready === "true",
+    );
     assert.match(await resumo.innerText(), /ABAIXO/);
     assert.match(await resumo.innerText(), /08:00 abonadas/);
     assert.deepEqual(errors, []);

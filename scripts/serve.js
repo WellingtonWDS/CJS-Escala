@@ -1,3 +1,5 @@
+import { randomBytes } from "node:crypto";
+import { guard, authResponse, SESSION_MS } from "../server/auth.js";
 import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
 import { resolve, extname, sep } from "node:path";
@@ -11,12 +13,67 @@ const types = {
   ".css": "text/css; charset=utf-8",
   ".json": "application/json",
 };
-export function createDevServer({ root = projectRoot } = {}) {
+const developmentEnv = {
+  ...process.env,
+  AUTH_SESSION_SECRET:
+    process.env.AUTH_SESSION_SECRET || randomBytes(32).toString("hex"),
+};
+export function createDevServer({
+  root = projectRoot,
+  auth = true,
+  env = developmentEnv,
+  now = Date.now,
+} = {}) {
   return createServer(async (req, res) => {
     try {
       const pathname = decodeURIComponent(
         new URL(req.url, "http://localhost").pathname,
       );
+      const requestUrl = new URL(req.url, `http://${req.headers.host}`);
+      const webRequest = new Request(requestUrl, {
+        method: req.method,
+        headers: req.headers,
+        ...(req.method === "POST"
+          ? {
+              body: await new Promise((resolve, reject) => {
+                let body = "";
+                req.on("data", (chunk) => {
+                  body += chunk;
+                  if (body.length > 2048) {
+                    reject(new Error("Body too large"));
+                    req.destroy();
+                  }
+                });
+                req.on("end", () => resolve(body));
+                req.on("error", reject);
+              }),
+            }
+          : {}),
+      });
+      let response;
+      if (pathname === "/api/auth") {
+        response = auth
+          ? await authResponse(webRequest, env, now())
+          : new Response(
+              JSON.stringify({
+                expiresAt: now() + SESSION_MS,
+                serverNow: now(),
+              }),
+              { headers: { "Content-Type": "application/json" } },
+            );
+      } else if (auth) response = await guard(webRequest, env, now());
+      if (response) {
+        res.writeHead(response.status, Object.fromEntries(response.headers));
+        res.end(await response.text());
+        return;
+      }
+      if (
+        !["/", "/index.html", "/login.html"].includes(pathname) &&
+        !pathname.startsWith("/assets/")
+      ) {
+        res.writeHead(404).end("Not found");
+        return;
+      }
       let file = resolve(
         root,
         "." + (pathname === "/" ? "/index.html" : pathname),

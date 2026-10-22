@@ -41,6 +41,9 @@ module.exports = async function testarEc141({ browser, baseURL }) {
       localStorage.setItem("fintria-escala-dp-v2", JSON.stringify(s));
     });
     await page.reload();
+    await page.waitForFunction(
+      () => document.documentElement.dataset.ready === "true",
+    );
     assert.equal(
       await page.locator("#regime-jornada").inputValue(),
       "automatico",
@@ -232,6 +235,9 @@ module.exports = async function testarEc141({ browser, baseURL }) {
       ),
     );
     await page.reload();
+    await page.waitForFunction(
+      () => document.documentElement.dataset.ready === "true",
+    );
     // A abertura continua no mês atual; dados de enquadramento e instrumento são preservados.
     assert.equal((await saved()).colaboradores[0].ec141.diplomaSuperior, true);
     assert.equal(

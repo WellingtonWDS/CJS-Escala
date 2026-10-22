@@ -86,6 +86,9 @@ module.exports = async function testarEtapas({ browser, baseURL }) {
     await page.goForward();
     await conferir(2);
     await page.reload();
+    await page.waitForFunction(
+      () => document.documentElement.dataset.ready === "true",
+    );
     await conferir(2);
     await page.locator('[data-etapa-link="sec-feriados"]').focus();
     await page.keyboard.press("End");

@@ -109,6 +109,9 @@ module.exports = async function testarCobertura({ browser, baseURL }) {
     assert.equal(await page.locator("[data-cobertura-lacuna]").count(), 2);
     await cadastrar("Supervisor", 1, "09:00", "12:00");
     await page.reload();
+    await page.waitForFunction(
+      () => document.documentElement.dataset.ready === "true",
+    );
     assert.equal((await saved()).demandasCobertura.length, 2);
     assert.deepEqual(
       await page
@@ -169,6 +172,9 @@ module.exports = async function testarCobertura({ browser, baseURL }) {
     assert.equal(await page.locator("#cobertura-conteudo").isVisible(), false);
     assert.equal(await page.locator("#relatorio-cobertura").count(), 0);
     await page.reload();
+    await page.waitForFunction(
+      () => document.documentElement.dataset.ready === "true",
+    );
     assert.equal(await page.locator("#tg-cobertura").isChecked(), false);
     await irParaEtapa(page, "#tg-cobertura");
     await page.locator("#tg-cobertura").check();

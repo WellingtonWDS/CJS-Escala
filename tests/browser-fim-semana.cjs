@@ -77,6 +77,9 @@ module.exports = async function testarFimSemana({ browser, baseURL }) {
     };
     await conferir();
     await page.reload();
+    await page.waitForFunction(
+      () => document.documentElement.dataset.ready === "true",
+    );
     assert.equal(await page.locator("#folga-tipo").inputValue(), "fim_semana");
     await irParaEtapa(page, "#folga-dias-wrap");
     assert.equal(await page.locator("#folga-dias-wrap").isVisible(), false);

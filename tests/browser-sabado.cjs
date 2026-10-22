@@ -54,6 +54,9 @@ module.exports = async function testarSabado({ browser, baseURL }) {
     await page.locator("#btn-gerar").click();
     await verificar();
     await page.reload();
+    await page.waitForFunction(
+      () => document.documentElement.dataset.ready === "true",
+    );
     await verificar();
     await irParaEtapa(page, "#btn-gerar");
     await page.locator("#btn-gerar").click();

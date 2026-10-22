@@ -129,6 +129,9 @@ module.exports = async function testarImportacao({ browser, baseURL }) {
       true,
     );
     await page.reload();
+    await page.waitForFunction(
+      () => document.documentElement.dataset.ready === "true",
+    );
     assert.equal((await saved()).colaboradores.length, 4);
     await irParaEtapa(page, "#importacao-colaboradores summary");
     await page.locator("#importacao-colaboradores summary").click();
@@ -160,6 +163,9 @@ module.exports = async function testarImportacao({ browser, baseURL }) {
       "Pessoa final",
     );
     await page.reload();
+    await page.waitForFunction(
+      () => document.documentElement.dataset.ready === "true",
+    );
     assert.equal(
       await page.locator("#importacao-confirmar").isDisabled(),
       true,

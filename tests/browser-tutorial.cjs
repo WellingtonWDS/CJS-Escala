@@ -168,6 +168,9 @@ module.exports = async function testarTutorial({ browser, baseURL }) {
     await irParaEtapa(page, "#tutorial-fechar");
     await page.locator("#tutorial-fechar").click();
     await page.reload();
+    await page.waitForFunction(
+      () => document.documentElement.dataset.ready === "true",
+    );
     assert.equal(await page.locator("#tutorial-guiado").count(), 0);
     assert.deepEqual(errors, []);
     console.log(

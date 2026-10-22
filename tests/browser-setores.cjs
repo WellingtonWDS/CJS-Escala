@@ -34,6 +34,9 @@ module.exports = async function testarSetores({ browser, baseURL }) {
       true,
     );
     await page.reload();
+    await page.waitForFunction(
+      () => document.documentElement.dataset.ready === "true",
+    );
     assert.equal(
       await page.locator('#feriados-list input[type="checkbox"]').isChecked(),
       true,

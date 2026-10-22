@@ -52,6 +52,9 @@ module.exports = async function testarConversao({ browser, baseURL }) {
       localStorage.setItem("fintria-escala-dp-v2", JSON.stringify(s));
     });
     await page.reload();
+    await page.waitForFunction(
+      () => document.documentElement.dataset.ready === "true",
+    );
     await irParaEtapa(page, "#conversao-resultados");
     assert.equal(
       await page.locator("#conversao-resultados").isVisible(),
@@ -96,6 +99,9 @@ module.exports = async function testarConversao({ browser, baseURL }) {
     const csv = await readFile(await download.path(), "utf8");
     assert.match(csv, /2028-02/);
     await page.reload();
+    await page.waitForFunction(
+      () => document.documentElement.dataset.ready === "true",
+    );
     assert.equal((await saved()).conversao.comparacao.status, "suficiente");
     await irParaEtapa(page, "#conversao-resultados");
     assert.equal(await page.locator("#conversao-resultados").isVisible(), true);

@@ -69,6 +69,9 @@ module.exports = async function testarFolgas({ browser, baseURL }) {
     };
     await conferir();
     await page.reload();
+    await page.waitForFunction(
+      () => document.documentElement.dataset.ready === "true",
+    );
     await irParaEtapa(page, "#btn-gerar");
     await page.locator("#btn-gerar").click();
     await conferir();

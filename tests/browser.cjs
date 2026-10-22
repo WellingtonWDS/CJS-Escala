@@ -7,7 +7,10 @@ const { chromium } = require("playwright");
 (async () => {
   const { createDevServer } = await import("../scripts/serve.js");
   const { gerarCsv } = await import("../assets/js/export/csv.js");
-  const server = createDevServer({ root: path.resolve(__dirname, "../dist") });
+  const server = createDevServer({
+    root: path.resolve(__dirname, "../dist"),
+    auth: false,
+  });
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
   let browser;
   try {
@@ -131,6 +134,9 @@ const { chromium } = require("playwright");
     await page.locator("#j-entrada").fill("07:00");
     await page.locator("#j-entrada").dispatchEvent("change");
     await page.reload();
+    await page.waitForFunction(
+      () => document.documentElement.dataset.ready === "true",
+    );
     assert.equal(await page.locator("#j-entrada").inputValue(), "07:00");
     assert.equal(
       await page.locator('[data-field="nome"]').last().inputValue(),

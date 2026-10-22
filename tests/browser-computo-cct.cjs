@@ -40,6 +40,9 @@ module.exports = async function testarComputoCct({ browser, baseURL }) {
       localStorage.setItem("fintria-escala-dp-v2", JSON.stringify(s));
     });
     await page.reload();
+    await page.waitForFunction(
+      () => document.documentElement.dataset.ready === "true",
+    );
     const id = (await saved()).colaboradores[0].id;
     await irParaEtapa(page, "#instrumento-compensacao");
     await page.locator("#instrumento-compensacao").selectOption("act_cct");
@@ -104,6 +107,9 @@ module.exports = async function testarComputoCct({ browser, baseURL }) {
     const csv = await fs.readFile(await (await download).path(), "utf8");
     assert.match(csv, /01:00;01:00;12:00/);
     await page.reload();
+    await page.waitForFunction(
+      () => document.documentElement.dataset.ready === "true",
+    );
     assert.equal(
       (await saved()).instrumentoColetivo.creditoNoturnoUmaHora,
       true,

@@ -137,6 +137,9 @@ module.exports = async function testarPendencias({ browser, baseURL }) {
       localStorage.setItem("fintria-escala-dp-v2", JSON.stringify(s));
     });
     await page.reload();
+    await page.waitForFunction(
+      () => document.documentElement.dataset.ready === "true",
+    );
     assert.deepEqual(await marcadas(), []);
     await page.locator("#btn-tutorial").click();
     for (let i = 0; i < 9; i++) await page.locator("#tutorial-proximo").click();

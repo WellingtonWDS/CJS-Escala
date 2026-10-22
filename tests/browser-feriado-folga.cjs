@@ -82,6 +82,9 @@ module.exports = async function testarFeriadoFolga({ browser, baseURL }) {
     await page.locator("#btn-gerar").click();
     await conferir();
     await page.reload();
+    await page.waitForFunction(
+      () => document.documentElement.dataset.ready === "true",
+    );
     await irParaEtapa(page, "#btn-gerar");
     await page.locator("#btn-gerar").click();
     await conferir();
@@ -104,6 +107,9 @@ module.exports = async function testarFeriadoFolga({ browser, baseURL }) {
       );
     }
     await page.reload();
+    await page.waitForFunction(
+      () => document.documentElement.dataset.ready === "true",
+    );
     assert.equal(await checkbox.isChecked(), true);
     await irParaEtapa(page, "#sec-feriados");
     await checkbox.uncheck();
