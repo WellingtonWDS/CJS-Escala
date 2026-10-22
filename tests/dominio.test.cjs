@@ -44,9 +44,9 @@ async function quadro(nome) {
     nome + ".xls",
   );
 }
-async function estado(nome, ausentes = true) {
+async function estado(nome) {
   const s = base(new Date(2026, 9, 22));
-  Object.assign(s, preparar(s, await quadro(nome), "substituir", ausentes));
+  Object.assign(s, preparar(s, await quadro(nome), "substituir"));
   return s;
 }
 for (const [tipo, quantidade, ciclos] of [
@@ -157,15 +157,11 @@ test("cobertura usa intervalos individuais em vez do horário padrão global", a
   assert.equal(l.presentes, 2);
   assert.equal(l.faltantes, 1);
 });
-test("dias ausentes exigem confirmação e não se confundem com horários zerados", async () => {
+test("dias da semana ausentes são folga automaticamente, sem confundir horários zerados", async () => {
   const q = await quadro("comercio"),
     s = base(new Date(2026, 9, 22));
-  const a = preparar(s, q, "substituir", false),
-    b = preparar(s, q, "substituir", true);
-  assert.equal(
-    a.colaboradores[0].quadroDominio.semana[0].status,
-    "nao_informado",
-  );
+  assert.equal(q.colaboradores[0].quadroDominio.semana[0].status, "folga");
+  const b = preparar(s, q, "substituir");
   assert.equal(b.colaboradores[0].quadroDominio.semana[0].status, "folga");
   assert.equal(b.colaboradores[0].horasSemana, 44);
   assert.equal(b.colaboradores[1].horasSemana, null);
@@ -176,6 +172,7 @@ test("dias ausentes exigem confirmação e não se confundem com horários zerad
   Object.assign(s, b);
   assert.throws(() => domain(s).gerarDadosEscala(), /revise/);
 });
+
 test("intervalo fora da jornada permanece como pendência, preservando o original", async () => {
   const s = await estado("misto"),
     c = s.colaboradores[6],
@@ -303,8 +300,8 @@ test("preparação é atômica, evita duplicatas e separa configurações de emp
   s.instrumentoCompensacao = "act_cct";
   s.feriadosLocais = [{ nome: "Local anterior" }];
   const before = structuredClone(s);
-  assert.throws(() => preparar(s, q, "adicionar", true), /outra empresa/);
-  const next = preparar(s, q, "substituir", true);
+  assert.throws(() => preparar(s, q, "adicionar"), /outra empresa/);
+  const next = preparar(s, q, "substituir");
   assert.deepEqual(s, before);
   assert.equal(next.coberturaAtiva, false);
   assert.deepEqual(next.demandasCobertura, []);

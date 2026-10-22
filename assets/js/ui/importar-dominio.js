@@ -37,7 +37,6 @@ export function createImportarDominioUI({
       { ...state, colaboradores: [], proximoId: 1, empresaDominio: null },
       quadro,
       "substituir",
-      el("ausentes-folga").checked,
     );
     const novos = snapshot.colaboradores;
     const estimados = novos.filter((c) => c.sexoInferencia).length;
@@ -66,7 +65,6 @@ export function createImportarDominioUI({
         quadro = null;
         el("previa").hidden = true;
         el("confirmar").disabled = true;
-        el("ausentes-folga").checked = false;
         if (!file) return;
         if (!/\.xlsx?$/i.test(file.name)) {
           mensagem(
@@ -95,7 +93,6 @@ export function createImportarDominioUI({
         }
       };
       el("modo").onchange = previa;
-      el("ausentes-folga").onchange = previa;
       el("cancelar").onclick = () => {
         limpar();
         mensagem("Importação cancelada. Nenhum dado alterado.");
@@ -103,12 +100,7 @@ export function createImportarDominioUI({
       el("confirmar").onclick = () => {
         if (!quadro) return;
         try {
-          const next = prepararDominio(
-            state,
-            quadro,
-            el("modo").value,
-            el("ausentes-folga").checked,
-          );
+          const next = prepararDominio(state, quadro, el("modo").value);
           Object.assign(state, next);
           invalidarEscala();
           atualizarInterface();

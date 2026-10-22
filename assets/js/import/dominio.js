@@ -403,9 +403,9 @@ export function analisarQuadroDominio(abas, arquivo = "") {
     if (p.tipo === "semanal")
       for (let d = 0; d < 7; d++)
         p.semana[d] ??= {
-          status: "nao_informado",
+          status: "folga",
           ausente: true,
-          motivo: "Dia não listado no relatório; confirme trabalho ou folga.",
+          motivo: "Dia da semana não listado no relatório; considerado folga.",
         };
     else
       for (let d = 1; d <= Math.max(...Object.keys(p.ciclo).map(Number)); d++)
@@ -419,7 +419,7 @@ export function analisarQuadroDominio(abas, arquivo = "") {
   return { empresa, colaboradores, avisos, extras, arquivo };
 }
 
-export function prepararDominio(state, quadro, modo, ausentesFolga = false) {
+export function prepararDominio(state, quadro, modo) {
   if (!["adicionar", "substituir"].includes(modo))
     throw new Error("Escolha adicionar ou substituir.");
   if (
@@ -447,12 +447,11 @@ export function prepararDominio(state, quadro, modo, ausentesFolga = false) {
   const novos = structuredClone(quadro.colaboradores).map((c) => {
     c.id = id++;
     preencherSexoPorNome(c);
-    if (ausentesFolga)
-      for (const h of Object.values(c.quadroDominio.semana))
-        if (h.ausente) {
-          h.status = "folga";
-          h.confirmado = true;
-        }
+    for (const h of Object.values(c.quadroDominio.semana))
+      if (h.ausente && h.status === "nao_informado") {
+        h.status = "folga";
+        h.motivo = "Dia da semana não listado no relatório; considerado folga.";
+      }
     atualizarPerfilDominio(c);
     return c;
   });

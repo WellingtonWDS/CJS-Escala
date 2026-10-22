@@ -162,8 +162,6 @@ module.exports = async function testarDominio({ browser, baseURL }) {
       await page.locator("#dominio-resumo").innerText(),
       /mudando de empresa/,
     );
-    await irParaEtapa(page, "#dominio-ausentes-folga");
-    await page.locator("#dominio-ausentes-folga").check();
     await irParaEtapa(page, "#dominio-linhas tr");
     assert.match(
       await page.locator("#dominio-linhas tr").first().innerText(),
@@ -174,6 +172,7 @@ module.exports = async function testarDominio({ browser, baseURL }) {
     s = await saved();
     assert.equal(s.colaboradores.length, 7);
     assert.equal(s.colaboradores[0].horasSemana, 44);
+    assert.equal(s.colaboradores[0].quadroDominio.semana[0].status, "folga");
     assert.equal(s.colaboradores[1].horasSemana, null);
     await irParaEtapa(page, "#btn-gerar");
     await page.locator("#btn-gerar").click();
@@ -194,12 +193,7 @@ module.exports = async function testarDominio({ browser, baseURL }) {
     );
     await upload("misto");
     await ready();
-    assert.equal(
-      await page.locator("#dominio-ausentes-folga").isChecked(),
-      false,
-    );
-    await irParaEtapa(page, "#dominio-ausentes-folga");
-    await page.locator("#dominio-ausentes-folga").check();
+    assert.equal(await page.locator("#dominio-ausentes-folga").count(), 0);
     await irParaEtapa(page, "#dominio-confirmar");
     await page.locator("#dominio-confirmar").click();
     s = await saved();

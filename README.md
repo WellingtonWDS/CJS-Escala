@@ -119,7 +119,7 @@ Os horários individuais são usados na geração, validação, cobertura e conv
 Informações não disponíveis no relatório não são inventadas:
 
 - Sexo ausente pode ser preenchido automaticamente por alta predominância na base local de prenomes, com origem e porcentagem identificadas; os demais casos ficam **Não informado**. A carga semanal é calculada dos horários completos, identificada como estimativa até confirmação do contrato; não é presumida como 44h.
-- Horários `00:00–00:00` sem indicação de folga, intervalos fora da jornada e dias conflitantes ficam pendentes de revisão. A geração exige horários completos. Dias não listados só viram folga mediante confirmação explícita na prévia ou revisão individual.
+- Horários `00:00–00:00` sem indicação de folga, intervalos fora da jornada e dias conflitantes ficam pendentes de revisão. A geração exige horários completos. Dias da semana não listados no relatório são considerados folga automaticamente, sem necessidade de marcar uma opção. Lacunas na numeração de ciclos permanecem pendentes, pois não determinam a duração real do ciclo.
 - Ciclos `1º Dia/2º Dia` exigem a data de referência de cada pessoa. Não é presumido grupo A/B pela ordem do cadastro nem pela data de admissão. Jornadas semanais alternadas permanecem semanais até confirmação do usuário; o nome do arquivo não torna toda a equipe 12×36. Um ciclo de dois dias com plantão de 12h de permanência e segundo dia livre é reconhecido como 12×36, sujeito às validações do regime.
 - Intervalo vazio permanece vazio, sem inserção automática de pausa. Cobertura mínima, tratamento de feriados e instrumento coletivo precisam ser conferidos na operação. Não se conclui suficiência com dados individuais pendentes.
 
