@@ -164,3 +164,9 @@ PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run test:browser
 O site continua carregando Tailwind e fontes por CDN, como na versão anterior. Os dados permanecem no navegador e na origem do site; mudar o domínio da implantação não transfere o `localStorage` de uma origem para outra.
 
 O painel **Preencher colaboradores manualmente** contém somente o formulário de inclusão (nome, sexo, cargo e carga contratual). Confirmar um cadastro adiciona a pessoa à lista **Colaboradores cadastrados/importados**, limpa o formulário e leva o foco para essa lista, onde todos os registros podem ser editados ou removidos. Confirmar uma importação CSV ou Domínio recolhe os painéis de importação e leva à mesma lista, com a mensagem de resultado visível. Prévia, cancelamento e erros não disparam essa navegação.
+
+## Navegação por etapas
+
+O preenchimento usa uma barra horizontal de oito etapas: Configuração, Tipo de escala, Feriados, Jornada, Folgas, Cobertura, Emenda Constitucional e Conversão e comparação. Apenas a etapa selecionada aparece; os botões Avançar/Voltar e os links da barra usam os mesmos formulários, preservando os dados e rascunhos sem recarregar a aplicação. A etapa aparece no endereço (`#sec-jornada`, por exemplo), permitindo recarga, links diretos e voltar/avançar pelo navegador. A barra também aceita setas, Home e End, com indicação da etapa atual e foco no título ao navegar.
+
+O tutorial abre a etapa de cada destaque e restaura a etapa anterior ao encerrar. A impressão continua exibindo a escala da etapa final, inclusive quando outra etapa está aberta na tela. Módulo: `ui/etapas.js`; regressões específicas: `tests/browser-etapas.cjs`. Os testes dos demais fluxos navegam pela barra antes de operar seus campos.

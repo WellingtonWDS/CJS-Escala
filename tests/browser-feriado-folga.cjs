@@ -1,3 +1,4 @@
+const { irParaEtapa } = require("./helpers/etapas.cjs");
 const assert = require("node:assert/strict");
 module.exports = async function testarFeriadoFolga({ browser, baseURL }) {
   const context = await browser.newContext({ timezoneId: "America/Sao_Paulo" });
@@ -18,7 +19,9 @@ module.exports = async function testarFeriadoFolga({ browser, baseURL }) {
     await page.waitForFunction(
       () => document.getElementById("cfg-mes").options.length === 12,
     );
+    await irParaEtapa(page, '[data-tipo="5x2"]');
     await page.locator('[data-tipo="5x2"]').click();
+    await irParaEtapa(page, "#tg-horario-dia");
     await page.locator("#tg-horario-dia").check();
     for (let day = 1; day <= 6; day++) {
       const horario =
@@ -44,6 +47,7 @@ module.exports = async function testarFeriadoFolga({ browser, baseURL }) {
       }
     }
     const checkbox = page.getByLabel("Trabalhar neste feriado");
+    await irParaEtapa(page, "#sec-feriados");
     await checkbox.waitFor();
     assert.equal(await checkbox.isChecked(), false);
     const saved = () =>
@@ -74,13 +78,17 @@ module.exports = async function testarFeriadoFolga({ browser, baseURL }) {
         assert.match(await resumo.innerText(), /Folgas: 12\/10, 18\/10/);
       }
     };
+    await irParaEtapa(page, "#btn-gerar");
     await page.locator("#btn-gerar").click();
     await conferir();
     await page.reload();
+    await irParaEtapa(page, "#btn-gerar");
     await page.locator("#btn-gerar").click();
     await conferir();
+    await irParaEtapa(page, "#sec-feriados");
     await checkbox.check();
     assert.equal((await saved()).escalaGerada, null);
+    await irParaEtapa(page, "#btn-gerar");
     await page.locator("#btn-gerar").click();
     const state = await saved();
     for (const r of state.escalaGerada.resultado) {
@@ -97,7 +105,9 @@ module.exports = async function testarFeriadoFolga({ browser, baseURL }) {
     }
     await page.reload();
     assert.equal(await checkbox.isChecked(), true);
+    await irParaEtapa(page, "#sec-feriados");
     await checkbox.uncheck();
+    await irParaEtapa(page, "#btn-gerar");
     await page.locator("#btn-gerar").click();
     await conferir();
     assert.deepEqual(errors, []);

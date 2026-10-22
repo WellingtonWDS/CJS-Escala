@@ -1,3 +1,4 @@
+const { irParaEtapa } = require("./helpers/etapas.cjs");
 const assert = require("node:assert/strict");
 module.exports = async function testarCobertura({ browser, baseURL }) {
   const context = await browser.newContext({ timezoneId: "America/Sao_Paulo" });
@@ -22,10 +23,15 @@ module.exports = async function testarCobertura({ browser, baseURL }) {
       page.evaluate(() =>
         JSON.parse(localStorage.getItem("fintria-escala-dp-v2")),
       );
+    await irParaEtapa(page, "#cfg-diaInicio");
     await page.locator("#cfg-diaInicio").selectOption("31");
+    await irParaEtapa(page, '[data-tipo="custom"]');
     await page.locator('[data-tipo="custom"]').click();
-    for (const day of [1, 2, 3, 4, 5])
+    for (const day of [1, 2, 3, 4, 5]) {
+      await irParaEtapa(page, `#weekday-picker [data-day="${day}"]`);
       await page.locator(`#weekday-picker [data-day="${day}"]`).click();
+    }
+    await irParaEtapa(page, "#cadastro-manual-colaboradores > summary");
     await page.locator("#cadastro-manual-colaboradores > summary").click();
     for (const [i, funcao] of [
       [0, "Atendente"],
@@ -39,18 +45,25 @@ module.exports = async function testarCobertura({ browser, baseURL }) {
       await horas.dispatchEvent("change");
     }
     async function cadastrar(funcao, minimo, inicio = "09:00", fim = "18:00") {
+      await irParaEtapa(page, "#cobertura-funcao");
       await page.locator("#cobertura-funcao").selectOption(funcao);
+      await irParaEtapa(page, "#cobertura-minimo");
       await page.locator("#cobertura-minimo").fill(String(minimo));
+      await irParaEtapa(page, "#cobertura-inicio");
       await page.locator("#cobertura-inicio").fill(inicio);
+      await irParaEtapa(page, "#cobertura-fim");
       await page.locator("#cobertura-fim").fill(fim);
       for (const btn of await page.locator("#cobertura-dias button").all()) {
         const selecionado = (await btn.getAttribute("aria-pressed")) === "true";
         const desejado = (await btn.getAttribute("data-cobertura-dia")) === "6";
         if (selecionado !== desejado) await btn.click();
       }
+      await irParaEtapa(page, "#cobertura-salvar");
       await page.locator("#cobertura-salvar").click();
     }
+    await irParaEtapa(page, "#cobertura-conteudo");
     assert.equal(await page.locator("#cobertura-conteudo").isVisible(), false);
+    await irParaEtapa(page, "#tg-cobertura");
     await page.locator("#tg-cobertura").check();
     assert.equal(
       await page.locator("#cobertura-funcao").evaluate((el) => el.tagName),
@@ -64,6 +77,7 @@ module.exports = async function testarCobertura({ browser, baseURL }) {
     );
     await cadastrar("Atendente", 2);
     assert.equal((await saved()).demandasCobertura.length, 1);
+    await irParaEtapa(page, "#btn-gerar");
     await page.locator("#btn-gerar").click();
     let r = (await saved()).escalaGerada.coberturaOperacional;
     assert.ok(
@@ -75,10 +89,14 @@ module.exports = async function testarCobertura({ browser, baseURL }) {
           f.faltantes === 2,
       ),
     );
+    await irParaEtapa(page, '[data-cobertura-editar="1"]');
     await page.locator('[data-cobertura-editar="1"]').click();
+    await irParaEtapa(page, "#cobertura-minimo");
     await page.locator("#cobertura-minimo").fill("1");
+    await irParaEtapa(page, "#cobertura-salvar");
     await page.locator("#cobertura-salvar").click();
     assert.equal((await saved()).escalaGerada, null);
+    await irParaEtapa(page, "#btn-gerar");
     await page.locator("#btn-gerar").click();
     r = (await saved()).escalaGerada.coberturaOperacional;
     assert.deepEqual(
@@ -101,6 +119,7 @@ module.exports = async function testarCobertura({ browser, baseURL }) {
       ["6"],
     );
     assert.equal(await page.locator("[data-cobertura-editar]").count(), 2);
+    await irParaEtapa(page, "#btn-gerar");
     await page.locator("#btn-gerar").click();
     assert.ok(
       (await saved()).escalaGerada.coberturaOperacional.lacunas.every(
@@ -114,12 +133,14 @@ module.exports = async function testarCobertura({ browser, baseURL }) {
       (d) => d.data === "2026-10-31",
     );
     page.on("dialog", (d) => d.accept("F"));
+    await irParaEtapa(page, `[data-ri="0"][data-di="${di}"]`);
     await page.locator(`[data-ri="0"][data-di="${di}"]`).click();
     r = (await saved()).escalaGerada.coberturaOperacional;
     assert.deepEqual(
       r.lacunas.map((f) => [f.inicioMin, f.fimMin, f.faltantes]),
       [[540, 1080, 1]],
     );
+    await irParaEtapa(page, "#relatorio-cobertura");
     assert.match(
       await page.locator("#relatorio-cobertura").innerText(),
       /09:00–18:00/,
@@ -127,33 +148,45 @@ module.exports = async function testarCobertura({ browser, baseURL }) {
     console.log(
       "OK: alteração de folga recalcula o relatório de cobertura imediatamente",
     );
+    await irParaEtapa(page, "#cobertura-funcao");
     await page.locator("#cobertura-funcao").selectOption("Atendente");
     for (const cb of await page
       .locator('#cobertura-dias button[aria-pressed="true"]')
       .all())
       await cb.click();
+    await irParaEtapa(page, "#cobertura-salvar");
     await page.locator("#cobertura-salvar").click();
+    await irParaEtapa(page, "#cobertura-mensagem");
     assert.match(
       await page.locator("#cobertura-mensagem").innerText(),
       /Selecione/,
     );
     assert.equal((await saved()).demandasCobertura.length, 2);
+    await irParaEtapa(page, "#tg-cobertura");
     await page.locator("#tg-cobertura").uncheck();
     assert.equal((await saved()).demandasCobertura.length, 2);
+    await irParaEtapa(page, "#cobertura-conteudo");
     assert.equal(await page.locator("#cobertura-conteudo").isVisible(), false);
     assert.equal(await page.locator("#relatorio-cobertura").count(), 0);
     await page.reload();
     assert.equal(await page.locator("#tg-cobertura").isChecked(), false);
+    await irParaEtapa(page, "#tg-cobertura");
     await page.locator("#tg-cobertura").check();
+    await irParaEtapa(page, "#cobertura-conteudo");
     assert.equal(await page.locator("#cobertura-conteudo").isVisible(), true);
-    for (const id of [1, 2])
+    for (const id of [1, 2]) {
+      await irParaEtapa(page, `[data-cobertura-remover="${id}"]`);
       await page.locator(`[data-cobertura-remover="${id}"]`).click();
+    }
     assert.equal((await saved()).demandasCobertura.length, 0);
+    await irParaEtapa(page, "#btn-gerar");
     await page.locator("#btn-gerar").click();
+    await irParaEtapa(page, "#relatorio-cobertura");
     assert.match(
       await page.locator("#relatorio-cobertura").innerText(),
       /ainda não avaliada/,
     );
+    await irParaEtapa(page, "#cadastro-manual-colaboradores > summary");
     await page.locator("#cadastro-manual-colaboradores > summary").click();
     const cargo = page.locator('[data-field="cargo"]').first();
     await cargo.fill("Caixa");
@@ -170,6 +203,7 @@ module.exports = async function testarCobertura({ browser, baseURL }) {
     }
     assert.equal(await page.locator("#cobertura-funcao").isDisabled(), true);
     assert.equal(await page.locator("#cobertura-salvar").isDisabled(), true);
+    await irParaEtapa(page, "#cobertura-funcoes-aviso");
     assert.match(
       await page.locator("#cobertura-funcoes-aviso").innerText(),
       /Cargo/,

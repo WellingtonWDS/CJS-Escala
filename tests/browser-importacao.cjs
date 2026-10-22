@@ -1,3 +1,4 @@
+const { irParaEtapa } = require("./helpers/etapas.cjs");
 const assert = require("node:assert/strict");
 const { readFile } = require("node:fs/promises");
 
@@ -20,14 +21,17 @@ module.exports = async function testarImportacao({ browser, baseURL }) {
     await page.waitForFunction(
       () => document.getElementById("cfg-mes").options.length === 12,
     );
+    await irParaEtapa(page, "#btn-gerar");
     await page.locator("#btn-gerar").click();
     const saved = () =>
       page.evaluate(() =>
         JSON.parse(localStorage.getItem("fintria-escala-dp-v2")),
       );
     const original = await saved();
+    await irParaEtapa(page, "#importacao-colaboradores summary");
     await page.locator("#importacao-colaboradores summary").click();
     const downloadPromise = page.waitForEvent("download");
+    await irParaEtapa(page, "#btn-modelo-colaboradores");
     await page.locator("#btn-modelo-colaboradores").click();
     const download = await downloadPromise;
     assert.equal(download.suggestedFilename(), "modelo-colaboradores.csv");
@@ -54,6 +58,7 @@ module.exports = async function testarImportacao({ browser, baseURL }) {
     );
     assert.deepEqual(await saved(), original);
     await upload(header + "Pessoa;F;Caixa;40", "equipe.xlsx");
+    await irParaEtapa(page, "#importacao-mensagem");
     assert.match(
       await page.locator("#importacao-mensagem").innerText(),
       /arquivo .csv/,
@@ -63,6 +68,7 @@ module.exports = async function testarImportacao({ browser, baseURL }) {
       mimeType: "text/csv",
       buffer: Buffer.alloc(1024 * 1024 + 1),
     });
+    await irParaEtapa(page, "#importacao-mensagem");
     assert.match(
       await page.locator("#importacao-mensagem").innerText(),
       /1 MB/,
@@ -76,18 +82,22 @@ module.exports = async function testarImportacao({ browser, baseURL }) {
     );
     assert.equal(await page.locator("#importacao-linhas tr").count(), 2);
     assert.equal(await page.locator("#importacao-linhas img").count(), 0);
+    await irParaEtapa(page, "#importacao-resumo");
     assert.match(
       await page.locator("#importacao-resumo").innerText(),
       /4 pessoa/,
     );
     assert.deepEqual(await saved(), original);
+    await irParaEtapa(page, "#importacao-cancelar");
     await page.locator("#importacao-cancelar").click();
     assert.deepEqual(await saved(), original);
+    await irParaEtapa(page, "#importacao-previa");
     assert.equal(await page.locator("#importacao-previa").isVisible(), false);
     await upload(valid);
     await page.waitForFunction(
       () => !document.getElementById("importacao-confirmar").disabled,
     );
+    await irParaEtapa(page, "#importacao-confirmar");
     await page.locator("#importacao-confirmar").click();
     assert.equal(
       await page.locator("#importacao-colaboradores").getAttribute("open"),
@@ -97,6 +107,7 @@ module.exports = async function testarImportacao({ browser, baseURL }) {
       await page.evaluate(() => document.activeElement.id),
       "colaboradores-cadastrados",
     );
+    await irParaEtapa(page, "#colaboradores-mensagem");
     assert.match(
       await page.locator("#colaboradores-mensagem").innerText(),
       /2 colaborador/,
@@ -119,17 +130,21 @@ module.exports = async function testarImportacao({ browser, baseURL }) {
     );
     await page.reload();
     assert.equal((await saved()).colaboradores.length, 4);
+    await irParaEtapa(page, "#importacao-colaboradores summary");
     await page.locator("#importacao-colaboradores summary").click();
     await upload(header + "Pessoa final;M;Atendente;40");
     await page.waitForFunction(
       () => !document.getElementById("importacao-confirmar").disabled,
     );
+    await irParaEtapa(page, "#importacao-modo");
     await page.locator("#importacao-modo").selectOption("substituir");
+    await irParaEtapa(page, "#importacao-resumo");
     assert.match(
       await page.locator("#importacao-resumo").innerText(),
       /atuais serão removidos/,
     );
     assert.equal((await saved()).colaboradores.length, 4);
+    await irParaEtapa(page, "#importacao-confirmar");
     await page.locator("#importacao-confirmar").click();
     const replaced = await saved();
     assert.equal(replaced.colaboradores.length, 1);
@@ -137,6 +152,7 @@ module.exports = async function testarImportacao({ browser, baseURL }) {
     assert.ok(replaced.colaboradores[0].id >= added.proximoId);
     assert.deepEqual(replaced.jornada, original.jornada);
     assert.deepEqual(replaced.demandasCobertura, original.demandasCobertura);
+    await irParaEtapa(page, "#btn-gerar");
     await page.locator("#btn-gerar").click();
     assert.equal((await saved()).escalaGerada.resultado.length, 1);
     assert.equal(

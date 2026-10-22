@@ -1,3 +1,4 @@
+const { irParaEtapa } = require("./helpers/etapas.cjs");
 const assert = require("node:assert/strict");
 module.exports = async function testarFeriados({ browser, baseURL }) {
   const context = await browser.newContext({ timezoneId: "America/Sao_Paulo" });
@@ -22,12 +23,16 @@ module.exports = async function testarFeriados({ browser, baseURL }) {
       await page.locator('[data-field="nome"]').first().inputValue(),
       "Colaborador 1",
     );
+    await irParaEtapa(page, '[data-tipo="5x2"]');
     await page.locator('[data-tipo="5x2"]').click();
+    await irParaEtapa(page, '#weekday-picker [data-day="6"]');
     await page.locator('#weekday-picker [data-day="6"]').click();
+    await irParaEtapa(page, "#cadastro-manual-colaboradores > summary");
     await page.locator("#cadastro-manual-colaboradores > summary").click();
     const horas = page.locator('[data-field="horasSemana"]').first();
     await horas.fill("40");
     await horas.dispatchEvent("change");
+    await irParaEtapa(page, "#btn-gerar");
     await page.locator("#btn-gerar").click();
     const resumo = page.locator(
       '[data-resumo-semanal][data-colaborador="1"][data-semana="2026-10-12"]',
@@ -50,6 +55,7 @@ module.exports = async function testarFeriados({ browser, baseURL }) {
       ),
     );
     page.on("dialog", (d) => d.accept("F"));
+    await irParaEtapa(page, `[data-ri="0"][data-di="${di}"]`);
     await page.locator(`[data-ri="0"][data-di="${di}"]`).click();
     assert.match(await resumo.innerText(), /ABAIXO/);
     assert.match(await resumo.innerText(), /total 32:00 \/ alvo 40:00/);

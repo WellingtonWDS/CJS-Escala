@@ -1,3 +1,4 @@
+const { irParaEtapa } = require("./helpers/etapas.cjs");
 const assert = require("node:assert/strict");
 const { readFile } = require("node:fs/promises");
 const path = require("node:path");
@@ -47,14 +48,19 @@ const { chromium } = require("playwright");
       page.evaluate(() =>
         JSON.parse(localStorage.getItem("fintria-escala-dp-v2")),
       );
+    await irParaEtapa(page, "#ciclo-12x36-config");
     assert.equal(await page.locator("#ciclo-12x36-config").isVisible(), false);
     for (const type of ["6x1", "5x2", "12x36", "custom"]) {
+      await irParaEtapa(page, `[data-tipo="${type}"]`);
       await page.locator(`[data-tipo="${type}"]`).click();
+      await irParaEtapa(page, "#ciclo-12x36-config");
       assert.equal(
         await page.locator("#ciclo-12x36-config").isVisible(),
         type === "12x36",
       );
+      await irParaEtapa(page, "#btn-gerar");
       await page.locator("#btn-gerar").click();
+      await irParaEtapa(page, "#resultado-gerar");
       assert.match(
         await page.locator("#resultado-gerar").innerText(),
         /Escala mensal/,
@@ -63,6 +69,7 @@ const { chromium } = require("playwright");
     console.log(
       "OK: modelos de escala e carregamento dos módulos na saída de produção",
     );
+    await irParaEtapa(page, '[data-tipo="5x2"]');
     await page.locator('[data-tipo="5x2"]').click();
     assert.equal(
       await page.locator("#importacao-colaboradores").getAttribute("open"),
@@ -82,19 +89,26 @@ const { chromium } = require("playwright");
         "importacao-dominio",
       ],
     );
+    await irParaEtapa(page, "#cadastro-manual-colaboradores > summary");
     await page.locator("#cadastro-manual-colaboradores > summary").click();
     assert.equal(
       await page.locator("#cadastro-manual-colaboradores #colab-list").count(),
       0,
     );
     const beforeManual = (await saved()).colaboradores.length;
+    await irParaEtapa(page, "#btn-add-colab");
     await page.locator("#btn-add-colab").click();
     assert.equal((await saved()).colaboradores.length, beforeManual);
+    await irParaEtapa(page, "#colab-nome");
     await page.locator("#colab-nome").fill("Pessoa cadastrada");
+    await irParaEtapa(page, "#colab-sexo");
     await page.locator("#colab-sexo").selectOption("masculino");
+    await irParaEtapa(page, "#colab-cargo");
     await page.locator("#colab-cargo").fill("Atendente");
+    await irParaEtapa(page, "#colab-horas");
     await page.locator("#colab-horas").fill("40");
     assert.equal((await saved()).colaboradores.length, beforeManual);
+    await irParaEtapa(page, "#btn-add-colab");
     await page.locator("#btn-add-colab").click();
     assert.equal((await saved()).colaboradores.length, beforeManual + 1);
     assert.equal(await page.locator("#colab-nome").inputValue(), "");
@@ -113,6 +127,7 @@ const { chromium } = require("playwright");
     const name = page.locator('[data-field="nome"]').last();
     await name.fill('Pessoa; "Teste"');
     await name.dispatchEvent("change");
+    await irParaEtapa(page, "#j-entrada");
     await page.locator("#j-entrada").fill("07:00");
     await page.locator("#j-entrada").dispatchEvent("change");
     await page.reload();
@@ -125,13 +140,18 @@ const { chromium } = require("playwright");
     console.log(
       "OK: persistência compatível com a chave e o formato anteriores",
     );
+    await irParaEtapa(page, "#btn-gerar");
     await page.locator("#btn-gerar").click();
     const horariosAntes = (await saved()).escalaGerada.resultado.map((r) =>
       r.dias.map((d) => [d.data, d.status, d.horas]),
     );
+    await irParaEtapa(page, "#turnos-config");
     assert.equal(await page.locator("#turnos-config").isVisible(), false);
+    await irParaEtapa(page, "#tg-turnos");
     await page.locator("#tg-turnos").check();
+    await irParaEtapa(page, "#turnos-config");
     assert.equal(await page.locator("#turnos-config").isVisible(), true);
+    await irParaEtapa(page, "#turnos-resumo");
     assert.match(await page.locator("#turnos-resumo").innerText(), /Turno B/);
     assert.deepEqual(
       (await saved()).escalaGerada.resultado.map((r) =>
@@ -144,6 +164,7 @@ const { chromium } = require("playwright");
         r.dias.some((d) => d.turno === "B" && d.entradaMin === 840),
       ),
     );
+    await irParaEtapa(page, "#entrada-turno-b");
     await page.locator("#entrada-turno-b").fill("15:00");
     await page.locator("#entrada-turno-b").dispatchEvent("change");
     assert.ok(
@@ -151,21 +172,28 @@ const { chromium } = require("playwright");
         r.dias.some((d) => d.turno === "B" && d.entradaMin === 900),
       ),
     );
+    await irParaEtapa(page, "#tg-turnos");
     await page.locator("#tg-turnos").uncheck();
     assert.ok(
       (await saved()).escalaGerada.resultado.every((r) =>
         r.dias.every((d) => d.turno === "A" && d.entradaMin === 420),
       ),
     );
+    await irParaEtapa(page, "#tg-turnos");
     await page.locator("#tg-turnos").check();
+    await irParaEtapa(page, "#entrada-turno-b");
     await page.locator("#entrada-turno-b").fill("14:00");
     await page.locator("#entrada-turno-b").dispatchEvent("change");
     console.log(
       "OK: toggle aplica turnos imediatamente, mostra grupos e preserva horas/folgas",
     );
+    await irParaEtapa(page, "#btn-gerar");
     await page.locator("#btn-gerar").click();
+    await irParaEtapa(page, "#resultado-gerar");
     assert.match(await page.locator("#resultado-gerar").innerText(), /14:00/);
+    await irParaEtapa(page, "#btn-simular-pec");
     await page.locator("#btn-simular-pec").click();
+    await irParaEtapa(page, "#pec-resultado");
     assert.match(
       await page.locator("#pec-resultado").innerText(),
       /16\/12\/2027/,
@@ -173,21 +201,26 @@ const { chromium } = require("playwright");
     page.removeAllListeners("dialog");
     let answers = ["T", "08:30"];
     page.on("dialog", (dialog) => dialog.accept(answers.shift()));
+    await irParaEtapa(page, '[data-ri="0"][data-di="0"]');
     await page.locator('[data-ri="0"][data-di="0"]').click();
     await page.waitForFunction(
       () =>
         JSON.parse(localStorage.getItem("fintria-escala-dp-v2")).escalaGerada
           .resultado[0].dias[0].horas === 8.5,
     );
+    await irParaEtapa(page, "#tg-turnos");
     await page.locator("#tg-turnos").uncheck();
+    await irParaEtapa(page, "#tg-turnos");
     await page.locator("#tg-turnos").check();
     assert.equal((await saved()).escalaGerada.resultado[0].dias[0].horas, 8.5);
     const before = (await saved()).escalaGerada.resultado[0].dias[0];
     answers = ["T", "08:99"];
+    await irParaEtapa(page, '[data-ri="0"][data-di="0"]');
     await page.locator('[data-ri="0"][data-di="0"]').click();
     assert.deepEqual((await saved()).escalaGerada.resultado[0].dias[0], before);
     console.log("OK: edição manual e rejeição de horas inválidas");
     const downloadPromise = page.waitForEvent("download");
+    await irParaEtapa(page, "#btn-exportar-csv");
     await page.locator("#btn-exportar-csv").click();
     const download = await downloadPromise;
     assert.equal(
@@ -195,18 +228,25 @@ const { chromium } = require("playwright");
       gerarCsv(await saved()),
     );
     console.log("OK: download CSV, inclusive nomes com separadores e aspas");
+    await irParaEtapa(page, "#regime-jornada");
     await page.locator("#regime-jornada").selectOption("definitivo40");
     assert.equal((await saved()).escalaGerada, null);
+    await irParaEtapa(page, "#resultado-gerar");
     assert.match(
       await page.locator("#resultado-gerar").innerText(),
       /Configuração alterada/,
     );
+    await irParaEtapa(page, "#pec-resultado");
     assert.equal(await page.locator("#pec-resultado").innerText(), "");
     assert.deepEqual(errors, []);
     assert.deepEqual(failedAssets, []);
     console.log(
       "OK: invalidação da escala e ausência de erros JavaScript/arquivos locais",
     );
+    await require("./browser-etapas.cjs")({
+      browser,
+      baseURL: `http://127.0.0.1:${server.address().port}`,
+    });
     await require("./browser-dominio.cjs")({
       browser,
       baseURL: `http://127.0.0.1:${server.address().port}/`,

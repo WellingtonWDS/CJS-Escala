@@ -1,3 +1,4 @@
+import { createEtapasUI } from "./ui/etapas.js";
 import { createCoberturaUI } from "./ui/cobertura.js";
 import { createDefaultState } from "./state/store.js";
 import { createPersistence } from "./state/persistencia.js";
@@ -77,7 +78,8 @@ export function createApplication({ env, now = () => new Date() }) {
     renderEscalaGerada: calendario.renderEscalaGerada,
   });
   const transicao = createTransicaoUI(deps);
-  const tutorial = createTutorialUI(env);
+  const etapas = createEtapasUI(env);
+  const tutorial = createTutorialUI({ ...env, etapas });
   const importacao = createImportarColaboradoresUI({
     ...deps,
     renderColaboradores: colaboradores.renderColaboradores,
@@ -105,6 +107,7 @@ export function createApplication({ env, now = () => new Date() }) {
   const { renderEscalaGerada } = calendario;
   function bindEvents() {
     for (const ui of [
+      etapas,
       feriados,
       colaboradores,
       jornada,
@@ -176,6 +179,7 @@ export function createApplication({ env, now = () => new Date() }) {
     if (state.escalaGerada) renderEscalaGerada();
     conversaoUI.initConversao();
     dominioImportacao.renderEmpresa();
+    etapas.init();
     if (!carregou || mudouPeriodo) saveState();
   }
   return {

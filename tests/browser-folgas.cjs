@@ -1,3 +1,4 @@
+const { irParaEtapa } = require("./helpers/etapas.cjs");
 const assert = require("node:assert/strict");
 module.exports = async function testarFolgas({ browser, baseURL }) {
   const context = await browser.newContext({ timezoneId: "America/Sao_Paulo" });
@@ -18,10 +19,15 @@ module.exports = async function testarFolgas({ browser, baseURL }) {
     await page.waitForFunction(
       () => document.getElementById("cfg-mes").options.length === 12,
     );
+    await irParaEtapa(page, '[data-tipo="5x2"]');
     await page.locator('[data-tipo="5x2"]').click();
+    await irParaEtapa(page, '#weekday-picker [data-day="0"]');
     await page.locator('#weekday-picker [data-day="0"]').click();
-    for (const day of [1, 5, 6])
+    for (const day of [1, 5, 6]) {
+      await irParaEtapa(page, `#folga-dias-permitidos [data-day="${day}"]`);
       await page.locator(`#folga-dias-permitidos [data-day="${day}"]`).click();
+    }
+    await irParaEtapa(page, "#btn-gerar");
     await page.locator("#btn-gerar").click();
     const saved = () =>
       page.evaluate(() =>
@@ -63,6 +69,7 @@ module.exports = async function testarFolgas({ browser, baseURL }) {
     };
     await conferir();
     await page.reload();
+    await irParaEtapa(page, "#btn-gerar");
     await page.locator("#btn-gerar").click();
     await conferir();
     assert.deepEqual(errors, []);

@@ -114,3 +114,118 @@ body {
     border: none !important;
   }
 }
+
+/* Navegação das etapas, sem remontar os formulários ao trocar de página. */
+.etapas-nav {
+  padding: 24px 12px 12px;
+}
+.etapas-linha {
+  display: flex;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 4px 2px 12px;
+  overflow-x: auto;
+}
+.etapas-linha li {
+  flex: 1 0 140px;
+  position: relative;
+}
+.etapas-linha a {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  color: #475569;
+  background: #fff;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.etapa-numero {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: #0b2545;
+}
+.etapas-linha a:hover {
+  border-color: #0b2545;
+  background: #f8fafc;
+}
+.etapas-linha a[aria-current="step"] {
+  border-color: #0b2545;
+  background: #0b2545;
+  color: #fff;
+}
+.etapas-linha a[aria-current="step"] .etapa-numero {
+  background: #fff;
+  color: #0b2545;
+}
+.etapas-status {
+  margin: 0 0 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+}
+[data-etapa][hidden] {
+  display: none;
+}
+.etapas-acoes {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 16px 0;
+  border-top: 1px solid #cbd5e1;
+}
+.etapas-acoes button {
+  padding: 12px 20px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  color: #0b2545;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.etapas-acoes #etapa-proxima {
+  background: #0b2545;
+  border-color: #0b2545;
+  color: #fff;
+  margin-left: auto;
+}
+.etapas-acoes button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.etapas-acoes button[hidden] {
+  display: none;
+}
+.etapas-linha a:focus-visible,
+.etapas-acoes button:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 3px;
+}
+@media (max-width: 640px) {
+  .etapas-nav {
+    padding-top: 16px;
+  }
+  .etapas-linha li {
+    flex-basis: 155px;
+  }
+  .etapas-acoes button {
+    width: 100%;
+  }
+}

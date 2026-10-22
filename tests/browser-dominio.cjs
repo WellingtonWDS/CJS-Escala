@@ -1,3 +1,4 @@
+const { irParaEtapa } = require("./helpers/etapas.cjs");
 const assert = require("node:assert/strict");
 const path = require("node:path");
 const { readFile } = require("node:fs/promises");
@@ -29,6 +30,7 @@ module.exports = async function testarDominio({ browser, baseURL }) {
         JSON.parse(localStorage.getItem("fintria-escala-dp-v2")),
       );
     const upload = async (tipo) => {
+      await irParaEtapa(page, "#dominio-arquivo");
       await page.locator("#importacao-dominio").evaluate((el) => {
         el.open = true;
       });
@@ -45,16 +47,20 @@ module.exports = async function testarDominio({ browser, baseURL }) {
       await page.locator("#importacao-dominio").getAttribute("open"),
       null,
     );
+    await irParaEtapa(page, "#importacao-dominio > summary");
     await page.locator("#importacao-dominio > summary").click();
     await upload("drogaria");
     await ready();
     assert.equal(await page.locator("#dominio-linhas tr").count(), 6);
+    await irParaEtapa(page, "#dominio-empresa");
     assert.match(
       await page.locator("#dominio-empresa").innerText(),
       /EMPRESA EXEMPLO DROGARIA/,
     );
+    await irParaEtapa(page, "#dominio-linhas");
     assert.match(await page.locator("#dominio-linhas").innerText(), /00012345/);
     assert.deepEqual(await saved(), original);
+    await irParaEtapa(page, "#dominio-cancelar");
     await page.locator("#dominio-cancelar").click();
     assert.deepEqual(await saved(), original);
     await page.locator("#dominio-arquivo").setInputFiles({
@@ -62,9 +68,11 @@ module.exports = async function testarDominio({ browser, baseURL }) {
       mimeType: "text/csv",
       buffer: Buffer.from("qualquer coisa"),
     });
+    await irParaEtapa(page, "#dominio-mensagem");
     assert.match(await page.locator("#dominio-mensagem").innerText(), /\.xls/);
     await upload("drogaria");
     await ready();
+    await irParaEtapa(page, "#dominio-confirmar");
     await page.locator("#dominio-confirmar").click();
     assert.equal(
       await page.locator("#importacao-dominio").getAttribute("open"),
@@ -74,6 +82,7 @@ module.exports = async function testarDominio({ browser, baseURL }) {
       await page.evaluate(() => document.activeElement.id),
       "colaboradores-cadastrados",
     );
+    await irParaEtapa(page, "#colaboradores-mensagem");
     assert.match(
       await page.locator("#colaboradores-mensagem").innerText(),
       /Quadro importado/,
@@ -87,6 +96,7 @@ module.exports = async function testarDominio({ browser, baseURL }) {
       [54, 44, 44, 44, 54, 54],
     );
     assert.ok(s.colaboradores.every((c) => c.sexo === "nao_informado"));
+    await irParaEtapa(page, "#cadastro-manual-colaboradores > summary");
     await page.locator("#cadastro-manual-colaboradores > summary").click();
     assert.equal(
       await page
@@ -96,13 +106,16 @@ module.exports = async function testarDominio({ browser, baseURL }) {
       "nao_informado",
     );
     const primeiroId = s.colaboradores[0].id;
+    await irParaEtapa(page, `[data-perfil-dominio="${primeiroId}"] > summary`);
     await page
       .locator(`[data-perfil-dominio="${primeiroId}"] > summary`)
       .click();
+    await irParaEtapa(page, '#colab-list [data-field="sexo"]');
     await page
       .locator('#colab-list [data-field="sexo"]')
       .first()
       .selectOption("masculino");
+    await irParaEtapa(page, '#colab-list [data-field="horasSemana"]');
     await page
       .locator('#colab-list [data-field="horasSemana"]')
       .first()
@@ -115,6 +128,7 @@ module.exports = async function testarDominio({ browser, baseURL }) {
       (await saved()).colaboradores[0].quadroDominio.cargaConfirmada,
       true,
     );
+    await irParaEtapa(page, "#btn-gerar");
     await page.locator("#btn-gerar").click();
     s = await saved();
     assert.equal(s.escalaGerada.resultado.length, 6);
@@ -127,6 +141,7 @@ module.exports = async function testarDominio({ browser, baseURL }) {
     );
     assert.equal(dia(s.escalaGerada.resultado[1], "2026-10-24").saidaMin, 960);
     const dp = page.waitForEvent("download");
+    await irParaEtapa(page, "#btn-exportar-csv");
     await page.locator("#btn-exportar-csv").click();
     const download = await dp;
     assert.match(
@@ -138,29 +153,37 @@ module.exports = async function testarDominio({ browser, baseURL }) {
     assert.equal(s.colaboradores.length, 6);
     assert.equal(s.colaboradores[0].quadroDominio.ctps, "00012345");
     assert.equal(dia(s.escalaGerada.resultado[0], "2026-10-19").horas, 10);
+    await irParaEtapa(page, "#importacao-dominio > summary");
     await page.locator("#importacao-dominio > summary").click();
     await upload("comercio");
     await ready();
+    await irParaEtapa(page, "#dominio-resumo");
     assert.match(
       await page.locator("#dominio-resumo").innerText(),
       /mudando de empresa/,
     );
+    await irParaEtapa(page, "#dominio-ausentes-folga");
     await page.locator("#dominio-ausentes-folga").check();
+    await irParaEtapa(page, "#dominio-linhas tr");
     assert.match(
       await page.locator("#dominio-linhas tr").first().innerText(),
       /44h/,
     );
+    await irParaEtapa(page, "#dominio-confirmar");
     await page.locator("#dominio-confirmar").click();
     s = await saved();
     assert.equal(s.colaboradores.length, 7);
     assert.equal(s.colaboradores[0].horasSemana, 44);
     assert.equal(s.colaboradores[1].horasSemana, null);
+    await irParaEtapa(page, "#btn-gerar");
     await page.locator("#btn-gerar").click();
+    await irParaEtapa(page, "#resultado-gerar");
     assert.match(
       await page.locator("#resultado-gerar").innerText(),
       /revise os dias/,
     );
     assert.equal((await saved()).escalaGerada, null);
+    await irParaEtapa(page, "#cadastro-manual-colaboradores > summary");
     await page.locator("#cadastro-manual-colaboradores > summary").click();
     assert.equal(
       await page
@@ -175,16 +198,21 @@ module.exports = async function testarDominio({ browser, baseURL }) {
       await page.locator("#dominio-ausentes-folga").isChecked(),
       false,
     );
+    await irParaEtapa(page, "#dominio-ausentes-folga");
     await page.locator("#dominio-ausentes-folga").check();
+    await irParaEtapa(page, "#dominio-confirmar");
     await page.locator("#dominio-confirmar").click();
     s = await saved();
     assert.equal(s.colaboradores.length, 17);
     assert.equal(s.tipoEscala, "custom");
+    await irParaEtapa(page, "#btn-gerar");
     await page.locator("#btn-gerar").click();
+    await irParaEtapa(page, "#resultado-gerar");
     assert.match(
       await page.locator("#resultado-gerar").innerText(),
       /1º dia do ciclo/,
     );
+    await irParaEtapa(page, "#colab-list");
     for (const c of s.colaboradores.filter(
       (c) => c.quadroDominio.tipo === "ciclo",
     )) {
@@ -227,6 +255,7 @@ module.exports = async function testarDominio({ browser, baseURL }) {
           (l) => l.intervalo === "11:00 as 12:30",
         ),
     );
+    await irParaEtapa(page, "#btn-gerar");
     await page.locator("#btn-gerar").click();
     s = await saved();
     assert.equal(s.escalaGerada.resultado.length, 17);

@@ -1,3 +1,4 @@
+const { irParaEtapa } = require("./helpers/etapas.cjs");
 const assert = require("node:assert/strict");
 module.exports = async function testarFimSemana({ browser, baseURL }) {
   const context = await browser.newContext({ timezoneId: "America/Sao_Paulo" });
@@ -28,24 +29,30 @@ module.exports = async function testarFimSemana({ browser, baseURL }) {
       await page.locator("#folga-fim-semana-opcao").isDisabled(),
       true,
     );
+    await irParaEtapa(page, '[data-tipo="5x2"]');
     await page.locator('[data-tipo="5x2"]').click();
     assert.equal(
       await page.locator("#folga-fim-semana-opcao").isDisabled(),
       false,
     );
+    await irParaEtapa(page, "#btn-gerar");
     await page.locator("#btn-gerar").click();
     const saved = () =>
       page.evaluate(() =>
         JSON.parse(localStorage.getItem("fintria-escala-dp-v2")),
       );
     const anterior = await saved();
+    await irParaEtapa(page, "#folga-tipo");
     await page.locator("#folga-tipo").selectOption("fim_semana");
     assert.equal((await saved()).escalaGerada, null);
+    await irParaEtapa(page, "#folga-dias-wrap");
     assert.equal(await page.locator("#folga-dias-wrap").isVisible(), false);
+    await irParaEtapa(page, "#folga-modelo-explicacao");
     assert.match(
       await page.locator("#folga-modelo-explicacao").innerText(),
       /Todos os colaboradores folgam aos sábados e domingos/,
     );
+    await irParaEtapa(page, "#btn-gerar");
     await page.locator("#btn-gerar").click();
     const conferir = async () => {
       const state = await saved();
@@ -71,24 +78,31 @@ module.exports = async function testarFimSemana({ browser, baseURL }) {
     await conferir();
     await page.reload();
     assert.equal(await page.locator("#folga-tipo").inputValue(), "fim_semana");
+    await irParaEtapa(page, "#folga-dias-wrap");
     assert.equal(await page.locator("#folga-dias-wrap").isVisible(), false);
+    await irParaEtapa(page, "#btn-gerar");
     await page.locator("#btn-gerar").click();
     await conferir();
+    await irParaEtapa(page, '[data-tipo="6x1"]');
     await page.locator('[data-tipo="6x1"]').click();
     assert.equal(
       await page.locator("#folga-fim-semana-opcao").isDisabled(),
       true,
     );
     assert.equal(await page.locator("#folga-tipo").inputValue(), "rotativa");
+    await irParaEtapa(page, '[data-tipo="5x2"]');
     await page.locator('[data-tipo="5x2"]').click();
     assert.equal(await page.locator("#folga-tipo").inputValue(), "fim_semana");
+    await irParaEtapa(page, "#folga-tipo");
     await page.locator("#folga-tipo").selectOption("rotativa");
+    await irParaEtapa(page, "#folga-dias-wrap");
     assert.equal(await page.locator("#folga-dias-wrap").isVisible(), true);
     assert.deepEqual(
       (await saved()).folgaDiasPermitidos,
       anterior.folgaDiasPermitidos,
     );
     assert.equal((await saved()).folgasFimSemana, false);
+    await irParaEtapa(page, "#btn-gerar");
     await page.locator("#btn-gerar").click();
     assert.ok(
       (await saved()).escalaGerada.resultado[0].dias.some(

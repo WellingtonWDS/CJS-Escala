@@ -46,7 +46,7 @@ const ETAPAS = [
   ],
 ];
 
-export function createTutorialUI({ document, window }) {
+export function createTutorialUI({ document, window, etapas }) {
   let root,
     dialog,
     highlight,
@@ -54,6 +54,7 @@ export function createTutorialUI({ document, window }) {
     previousFocus,
     previousOverflow;
   let inertElements = [];
+  let etapaAnterior;
 
   function position() {
     if (!root) return;
@@ -85,6 +86,11 @@ export function createTutorialUI({ document, window }) {
 
   function showStep() {
     const [target, title, text] = ETAPAS[index];
+    etapas?.mostrarAlvo(target, {
+      historico: false,
+      foco: false,
+      rolar: false,
+    });
     root.dataset.target = target;
     root.querySelector("#tutorial-contador").textContent =
       `Etapa ${index + 1} de ${ETAPAS.length}`;
@@ -111,6 +117,8 @@ export function createTutorialUI({ document, window }) {
     for (const [element, inert] of inertElements) element.inert = inert;
     inertElements = [];
     document.body.style.overflow = previousOverflow;
+    if (etapaAnterior)
+      etapas.mostrarAlvo(etapaAnterior, { historico: false, foco: false });
     if (previousFocus?.isConnected) previousFocus.focus();
   }
 
@@ -140,6 +148,7 @@ export function createTutorialUI({ document, window }) {
 
   function start() {
     if (root) return;
+    etapaAnterior = etapas?.etapaAtual();
     previousFocus = document.activeElement;
     previousOverflow = document.body.style.overflow;
     root = document.createElement("div");

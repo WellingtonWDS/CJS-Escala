@@ -53,6 +53,7 @@ function app(now) {
   });
   const env = {
     document,
+    window: { location: { hash: "" }, addEventListener() {} },
     localStorage: {
       getItem: (k) => storage.get(k),
       setItem: (k, v) => storage.set(k, v),
