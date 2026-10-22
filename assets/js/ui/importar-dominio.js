@@ -49,7 +49,7 @@ export function createImportarDominioUI({
       )
       .join("");
     el("resumo").textContent =
-      `${novos.length} colaboradores. ${estimados} campo(s) de sexo serão preenchidos automaticamente por predominância de pelo menos 99,5% na base de nomes. ${el("modo").value === "substituir" ? "Os colaboradores atuais serão substituídos; as demais configurações serão mantidas, e os dias operacionais serão preenchidos pela união dos horários importados." : "Os colaboradores serão adicionados e os dias operacionais serão ampliados pela união dos horários."} Horários individuais, folgas, ciclos, admissão, código, CTPS e série serão preservados. A cobertura mínima da empresa não consta no relatório e não será inventada. Escalas e comparações anteriores precisarão ser geradas novamente.`;
+      `${novos.length} colaboradores. ${estimados} campo(s) de sexo serão preenchidos automaticamente por predominância de pelo menos 99% na base de nomes. ${el("modo").value === "substituir" ? "Os colaboradores atuais serão substituídos; as demais configurações serão mantidas, e os dias operacionais serão preenchidos pela união dos horários importados." : "Os colaboradores serão adicionados e os dias operacionais serão ampliados pela união dos horários."} Horários individuais, folgas, ciclos, admissão, código, CTPS e série serão preservados. A cobertura mínima da empresa não consta no relatório e não será inventada. Escalas e comparações anteriores precisarão ser geradas novamente.`;
     if (
       state.empresaDominio?.cnpj &&
       state.empresaDominio.cnpj !== quadro.empresa.cnpj

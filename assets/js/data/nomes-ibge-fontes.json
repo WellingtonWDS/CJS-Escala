@@ -1,10 +1,10 @@
 {
-  "fonte": "IBGE — Censo 2010 / Nomes no Brasil",
-  "espelho": "MedidaSP/nomes-brasileiros-ibge",
-  "commit": "ea0678d8e410c44fb6c72324feadfec486bd555b",
-  "sha256": {
-    "ibge-fem-10000.csv": "8daff619c1516007335e54da7df6df92d759909c348e3271d57180f0ed4bb405",
-    "ibge-mas-10000.csv": "bef1a505dedb8cc8f707b79cd17146eb63b1286bd9210153c24188b591f1f0a2"
-  },
-  "pares": 1040
+  "fonte": "IBGE — Censo 2022 / Nomes no Brasil (conforme o espelho)",
+  "espelho": "ggustavowerlangg/ibge-nomes-2022",
+  "commit": "a1e2df8b26aaf626e0f35be1f66b72f83c8f696f",
+  "arquivo": "nomes_ibge.csv",
+  "sha256": "dbd34d9dde656a8b0df95174e5a8deb0b9e6b035b0e42da313e844566f129cd1",
+  "registros": 134315,
+  "prenomes": 123733,
+  "pares": 10582
 }

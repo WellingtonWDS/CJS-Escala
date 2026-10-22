@@ -18,7 +18,7 @@ export function createColaboradoresUI({
   const { document } = env;
   function descricaoSexo(c) {
     return c.sexoInferencia
-      ? `Preenchido automaticamente pelo prenome ${c.sexoInferencia.prenome}: ${(c.sexoInferencia.predominancia * 100).toFixed(2).replace(".", ",")}% de predominância na base IBGE/Censo 2010. Confira e corrija se necessário.`
+      ? `Preenchido automaticamente pelo prenome ${c.sexoInferencia.prenome}: ${(c.sexoInferencia.predominancia * 100).toFixed(2).replace(".", ",")}% de predominância na base ${c.sexoInferencia.fonte || "IBGE"}. Confira e corrija se necessário.`
       : "";
   }
 
@@ -218,8 +218,8 @@ export function createColaboradoresUI({
       }
       document.getElementById("colaboradores-mensagem").textContent =
         preenchidos
-          ? `${preenchidos} campo(s) de sexo preenchido(s) por alta predominância na base. Confira as indicações abaixo; os demais continuam não informados.`
-          : "Nenhum campo foi alterado. Os nomes sem dados suficientes ou abaixo de 99,5% de predominância continuam não informados; escolhas manuais foram preservadas.";
+          ? `${preenchidos} campo(s) de sexo preenchido(s) ou estimativa(s) atualizada(s) por alta predominância na base. Confira as indicações abaixo; os demais continuam não informados.`
+          : "Nenhum campo foi alterado. Os nomes sem dados suficientes ou abaixo de 99% de predominância continuam não informados; escolhas manuais foram preservadas.";
     };
     const form = document.getElementById("colab-form");
     form.onsubmit = (event) => {

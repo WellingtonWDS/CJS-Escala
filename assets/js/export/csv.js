@@ -146,7 +146,7 @@ export function gerarCsv(state) {
           ? [
               r.colaborador.sexo,
               r.colaborador.sexoInferencia
-                ? "Estimado pelo prenome — IBGE/Censo 2010, espelho MedidaSP"
+                ? `Estimado pelo prenome — ${r.colaborador.sexoInferencia.fonte || "IBGE"}`
                 : "Informado",
               r.colaborador.sexoInferencia
                 ? `${(r.colaborador.sexoInferencia.predominancia * 100).toFixed(2)}%`

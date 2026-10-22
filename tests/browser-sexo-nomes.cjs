@@ -30,11 +30,11 @@ module.exports = async function testarSexoNomes({ browser, baseURL }) {
     let i = 0;
     const nomes = [
       "Maria Silva",
-      "João Silva",
+      "Lucas Silva",
+      "Tiago Silva",
+      "Thamires Silva",
+      "Hellen Silva",
       "Adair Silva",
-      "Ana Paula Silva",
-      "Pessoa Exemplo",
-      "José Maria Silva",
     ];
     for (const aba of abas)
       for (const row of aba.linhas)
@@ -69,16 +69,29 @@ module.exports = async function testarSexoNomes({ browser, baseURL }) {
     );
     assert.match(
       await page.locator("#dominio-linhas tr").first().innerText(),
-      /feminino — 99,66%/,
+      /feminino — 99,51%/,
     );
     assert.match(
-      await page.locator("#dominio-linhas tr").nth(2).innerText(),
+      await page.locator("#dominio-linhas tr").nth(5).innerText(),
       /Não informado/,
     );
     assert.match(
       await page.locator("#dominio-resumo").innerText(),
-      /3 campo\(s\) de sexo/,
+      /5 campo\(s\) de sexo/,
     );
+    for (const [index, nome, sexo] of [
+      [1, "Lucas", "masculino"],
+      [2, "Tiago", "masculino"],
+      [3, "Thamires", "feminino"],
+      [4, "Hellen", "feminino"],
+    ]) {
+      const linha = await page
+        .locator("#dominio-linhas tr")
+        .nth(index)
+        .innerText();
+      assert.ok(linha.includes(nome));
+      assert.ok(linha.includes(sexo));
+    }
     assert.deepEqual(await saved(), original);
     await page.locator("#dominio-confirmar").click();
     let s = await saved();
@@ -87,18 +100,18 @@ module.exports = async function testarSexoNomes({ browser, baseURL }) {
       [
         "feminino",
         "masculino",
-        "nao_informado",
+        "masculino",
         "feminino",
-        "nao_informado",
+        "feminino",
         "nao_informado",
       ],
     );
-    assert.equal(s.colaboradores.filter((c) => c.sexoInferencia).length, 3);
+    assert.equal(s.colaboradores.filter((c) => c.sexoInferencia).length, 5);
     const campo = (n) =>
       page.locator(`#colab-list [data-field="${n}"]`).first();
     assert.match(
       await page.locator("[data-sexo-estimativa]").first().innerText(),
-      /99,66%/,
+      /99,51%/,
     );
     await campo("sexo").selectOption("masculino");
     assert.equal((await saved()).colaboradores[0].sexoOrigem, "usuario");
@@ -125,6 +138,20 @@ module.exports = async function testarSexoNomes({ browser, baseURL }) {
       await page.locator("#colaboradores-mensagem").innerText(),
       /1 campo/,
     );
+    // Uma estimativa da base anterior precisa ser atualizada e salva mesmo se o sexo não mudar.
+    await page.evaluate(() => {
+      const s = JSON.parse(localStorage.getItem("fintria-escala-dp-v2"));
+      s.colaboradores[3].sexoInferencia.fonte = "IBGE/Censo 2010";
+      s.colaboradores[3].sexoInferencia.versao = "antiga";
+      localStorage.setItem("fintria-escala-dp-v2", JSON.stringify(s));
+    });
+    await page.reload();
+    await page.locator("#btn-sugerir-sexos").click();
+    assert.match(
+      (await saved()).colaboradores[3].sexoInferencia.versao,
+      /2022/,
+    );
+    assert.equal((await saved()).colaboradores[0].sexo, "masculino");
     const segundoNome = page.locator('#colab-list [data-field="nome"]').nth(1);
     await segundoNome.fill("Adair Souza");
     await segundoNome.dispatchEvent("change");

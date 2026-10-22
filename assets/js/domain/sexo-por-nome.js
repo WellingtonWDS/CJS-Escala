@@ -1,5 +1,9 @@
-import { NOMES_IBGE } from "../data/nomes-ibge.js";
-export const PREDOMINANCIA_MINIMA = 0.995;
+import {
+  NOMES_IBGE,
+  FONTE_NOMES,
+  VERSAO_BASE_NOMES,
+} from "../data/nomes-ibge.js";
+export const PREDOMINANCIA_MINIMA = 0.99;
 export const AMOSTRA_MINIMA = 1000;
 const normalizar = (value) =>
   String(value || "")
@@ -24,8 +28,8 @@ function consultar(prenome, base) {
     amostra: total,
     frequenciaFeminina: feminino,
     frequenciaMasculina: masculino,
-    fonte: "IBGE/Censo 2010 — espelho MedidaSP (2017)",
-    versao: "ibge2010-medidasp-ea0678d-99.5-v1",
+    fonte: FONTE_NOMES,
+    versao: `${VERSAO_BASE_NOMES}-99-v2`,
   };
 }
 export function inferirSexoPorNome(nome, base = NOMES_IBGE) {
@@ -49,7 +53,7 @@ export function preencherSexoPorNome(c) {
     (["feminino", "masculino"].includes(c.sexo) && !c.sexoInferencia)
   )
     return false;
-  const antes = c.sexo;
+  const antes = JSON.stringify([c.sexo, c.sexoOrigem, c.sexoInferencia]);
   const estimativa = inferirSexoPorNome(c.nome);
   if (estimativa) {
     c.sexo = estimativa.sexo;
@@ -60,5 +64,5 @@ export function preencherSexoPorNome(c) {
     delete c.sexoInferencia;
     delete c.sexoOrigem;
   }
-  return antes !== c.sexo;
+  return antes !== JSON.stringify([c.sexo, c.sexoOrigem, c.sexoInferencia]);
 }

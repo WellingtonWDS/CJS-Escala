@@ -18,7 +18,7 @@ before(async () => {
   ({ createDomain: domain } = await import("../assets/js/domain/index.js"));
   X = await import("@e965/xlsx");
 });
-test("preenche apenas nomes com predominância mínima de 99,5% e preserva evidência", () => {
+test("preenche apenas nomes com predominância mínima de 99% e preserva evidência", () => {
   for (const [nome, sexo] of [
     ["João da Silva", "masculino"],
     ["Maria Silva", "feminino"],
@@ -26,7 +26,7 @@ test("preenche apenas nomes com predominância mínima de 99,5% e preserva evid�
   ]) {
     const r = inferir(nome);
     assert.equal(r.sexo, sexo);
-    assert.ok(r.predominancia >= 0.995);
+    assert.ok(r.predominancia >= 0.99);
     assert.ok(r.amostra >= 1000);
     assert.ok(r.frequenciaFeminina > 0 && r.frequenciaMasculina > 0);
   }
@@ -35,9 +35,6 @@ test("ambiguidades, nomes fora da base e evidências divergentes ficam sem resul
   for (const nome of [
     "Adair Silva",
     "Ariel Santos",
-    "Alex Silva",
-    "Jean Silva",
-    "Miguel Silva",
     "Pessoa Exemplo",
     "J. Silva",
     "Dra Maria Silva",
@@ -49,8 +46,8 @@ test("ambiguidades, nomes fora da base e evidências divergentes ficam sem resul
     assert.equal(inferir(nome), null, nome);
 });
 test("limites de predominância e volume são aplicados antes de arredondar", () => {
-  assert.ok(inferir("ALFA Silva", { ALFA: [995, 5] }));
-  assert.equal(inferir("ALFA Silva", { ALFA: [99499, 501] }), null);
+  assert.ok(inferir("ALFA Silva", { ALFA: [990, 10] }));
+  assert.equal(inferir("ALFA Silva", { ALFA: [98999, 1001] }), null);
   assert.equal(inferir("ALFA Silva", { ALFA: [995, 1] }), null);
   assert.equal(inferir("ALFA Silva", { ALFA: [10000, 0] }), null);
   assert.equal(inferir("ALFA Silva", { ALFA: [10000, null] }), null);
@@ -62,7 +59,7 @@ test("normaliza acentos e espaços sem usar sobrenome para decidir", () => {
   assert.equal(inferir("JOÃO/MARIA SILVA"), null);
 });
 test("base tem ambas as contagens e não trata ausência no ranking como zero", () => {
-  assert.equal(Object.keys(base).length, 1040);
+  assert.equal(Object.keys(base).length, 10582);
   assert.ok(
     Object.values(base).every(
       (c) => c.length === 2 && c.every((n) => Number.isSafeInteger(n) && n > 0),
@@ -70,9 +67,9 @@ test("base tem ambas as contagens e não trata ausência no ranking como zero", 
   );
   assert.equal(
     Object.values(base).filter(
-      (c) => Math.max(...c) / (c[0] + c[1]) >= 0.995 && c[0] + c[1] >= 1000,
+      (c) => Math.max(...c) / (c[0] + c[1]) >= 0.99 && c[0] + c[1] >= 1000,
     ).length,
-    216,
+    2655,
   );
 });
 test("sexo previamente informado é preservado mesmo que o nome sugira outro", () => {
@@ -121,5 +118,42 @@ test("prévia e confirmação usam a mesma inferência, preservando relatório e
   const texto = csv(s);
   assert.match(texto, /Origem do sexo/);
   assert.match(texto, /Estimado pelo prenome/);
-  assert.match(texto, /99\.66%/);
+  assert.match(texto, /99\.51%/);
+});
+
+test("Lucas, Tiago, Thamires e Hellen passam com a base ampliada e limiar de 99%", () => {
+  for (const [nome, sexo] of [
+    ["Lucas Silva", "masculino"],
+    ["Tiago Silva", "masculino"],
+    ["Thamires Silva", "feminino"],
+    ["Hellen Silva", "feminino"],
+  ]) {
+    const r = inferir(nome);
+    assert.equal(r.sexo, sexo);
+    assert.ok(r.predominancia >= 0.99);
+    assert.ok(r.frequenciaFeminina > 0 && r.frequenciaMasculina > 0);
+    assert.match(r.fonte, /2022/);
+  }
+});
+test("nova base atualiza evidências de uma estimativa antiga sem sobrescrever escolhas manuais", () => {
+  const c = {
+    nome: "Maria Silva",
+    sexo: "feminino",
+    sexoOrigem: "nome",
+    sexoInferencia: {
+      sexo: "feminino",
+      prenome: "MARIA",
+      predominancia: 0.9966,
+      fonte: "IBGE/Censo 2010",
+      versao: "antiga",
+    },
+  };
+  assert.equal(preencher(c), true);
+  assert.equal(c.sexo, "feminino");
+  assert.match(c.sexoInferencia.versao, /2022/);
+  assert.equal(preencher(c), false);
+  c.sexoOrigem = "usuario";
+  const antes = structuredClone(c);
+  assert.equal(preencher(c), false);
+  assert.deepEqual(c, antes);
 });
