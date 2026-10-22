@@ -17,9 +17,7 @@ export function createColaboradoresUI({
   const { saveState } = storage;
   const { document } = env;
   function descricaoSexo(c) {
-    return c.sexoInferencia
-      ? `Preenchido automaticamente pelo prenome ${c.sexoInferencia.prenome}: ${(c.sexoInferencia.predominancia * 100).toFixed(2).replace(".", ",")}% de predominância na base ${c.sexoInferencia.fonte || "IBGE"}. Confira e corrija se necessário.`
-      : "";
+    return c.sexoInferencia ? "Preenchido automaticamente" : "";
   }
 
   function renderColaboradores({ preservarEnquadramento = false } = {}) {

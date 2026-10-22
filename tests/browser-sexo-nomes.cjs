@@ -109,9 +109,9 @@ module.exports = async function testarSexoNomes({ browser, baseURL }) {
     assert.equal(s.colaboradores.filter((c) => c.sexoInferencia).length, 5);
     const campo = (n) =>
       page.locator(`#colab-list [data-field="${n}"]`).first();
-    assert.match(
+    assert.equal(
       await page.locator("[data-sexo-estimativa]").first().innerText(),
-      /99,51%/,
+      "Preenchido automaticamente",
     );
     await campo("sexo").selectOption("masculino");
     assert.equal((await saved()).colaboradores[0].sexoOrigem, "usuario");
