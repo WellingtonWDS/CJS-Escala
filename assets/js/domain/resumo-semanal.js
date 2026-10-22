@@ -1,10 +1,19 @@
 import { referenciaSemana } from "./ec141.js";
 import { distribuirCargaComAbonos } from "./distribuicao-horas.js";
 import { intervaloMin } from "./datas-horas.js";
+import { configDoPerfil } from "./perfil-dominio.js";
 
 /** Feriado dispensado abona apenas o trabalho originalmente previsto.
  * Crédito é separado de horas trabalhadas, presença e limites de trabalho. */
 export function apurarSemana(colaborador, dias, config = {}) {
+  const individual = configDoPerfil(config, colaborador);
+  if (individual) return apurarSemana(colaborador, dias, individual);
+  if (dias.some((d) => d.status === "NC"))
+    return apurarSemana(
+      colaborador,
+      dias.filter((d) => d.status !== "NC"),
+      config,
+    );
   const contrato = Number(colaborador.horasSemana);
   const alvo = config.ano
     ? referenciaSemana(config, dias, colaborador).alvo

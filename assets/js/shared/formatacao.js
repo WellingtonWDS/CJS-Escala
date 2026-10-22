@@ -8,6 +8,8 @@ export function escapeHtml(value) {
 }
 
 export function csvCell(value) {
-  const str = String(value ?? "");
+  let str = String(value ?? "");
+  if (typeof value === "string" && /^[\s\x00-\x1f]*[=+@-]/.test(str))
+    str = "'" + str;
   return /[;"\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
 }

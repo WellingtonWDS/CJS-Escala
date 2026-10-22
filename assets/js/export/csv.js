@@ -10,6 +10,7 @@ import { createDomain } from "../domain/index.js";
 import { csvCell } from "../shared/formatacao.js";
 export function gerarCsv(state) {
   const { resultado } = state.escalaGerada;
+  const dominio = resultado.some((r) => r.colaborador.quadroDominio);
   const domain = createDomain(state);
   const validacoes = resultado.map((r) => ({
     r,
@@ -61,8 +62,17 @@ export function gerarCsv(state) {
       "Enquadramento",
       "Aditamento informado",
       "Data da saída",
+      ...(dominio ? ["Código Domínio", "Admissão", "CTPS", "Série"] : []),
     ],
   ];
+  if (state.empresaDominio)
+    linhas.splice(
+      1,
+      0,
+      ["Empresa", state.empresaDominio.nome],
+      ["CNPJ", state.empresaDominio.cnpj],
+      ["Endereço", state.empresaDominio.endereco],
+    );
   for (const { r } of validacoes)
     for (const d of r.dias) {
       const dt = dateFromKey(d.data);
@@ -105,6 +115,14 @@ export function gerarCsv(state) {
               );
             })()
           : "",
+        ...(dominio
+          ? [
+              r.colaborador.quadroDominio?.codigo || "",
+              r.colaborador.quadroDominio?.admissaoIso || "",
+              r.colaborador.quadroDominio?.ctps || "",
+              r.colaborador.quadroDominio?.serie || "",
+            ]
+          : []),
       ]);
     }
   linhas.push(

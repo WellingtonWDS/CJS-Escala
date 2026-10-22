@@ -1,0 +1,46 @@
+import { escapeHtml as esc } from "../shared/formatacao.js";
+const DIAS = [
+  "Domingo",
+  "Segunda",
+  "Terça",
+  "Quarta",
+  "Quinta",
+  "Sexta",
+  "Sábado",
+];
+export function camposDominio(c) {
+  const p = c.quadroDominio;
+  if (!p) return "";
+  const input = (field, value, type = "text") =>
+    `<input type="${type}" data-id="${c.id}" data-dominio="${field}" value="${esc(value || "")}" class="border rounded p-1.5 w-full bg-white">`;
+  const horarios = p.tipo === "ciclo" ? p.ciclo : p.semana;
+  return `<details data-perfil-dominio="${c.id}" class="col-span-full border-t border-slate-200 pt-2"><summary class="cursor-pointer text-sm font-semibold text-fintria-navy">Horário individual importado da Domínio — ${esc(p.codigo)}</summary>
+    <p class="text-xs mt-2">Código: ${esc(p.codigo)} · Admissão no relatório: ${esc(p.admissao || "Não informada")} · CTPS: ${esc(p.ctps || "Não informada")} · Série: ${esc(p.serie || "Não informada")} · Visto fiscal: ${esc(p.vistoFiscal || "Não informado")}</p>
+    <p class="text-xs text-slate-500 mt-2">${esc(p.arquivo)} · aba ${esc(p.aba)} · linha ${p.linha}. Horas calculadas: <span data-horas-dominio="${c.id}">${p.horasCalculadas ?? "indeterminadas"}</span>h/semana${p.tipo === "ciclo" ? " (média do ciclo)" : ""}. O relatório não informa a carga contratual nem o sexo; confira esses campos.</p>
+    <label class="text-sm flex gap-2 items-center mt-3"><input type="checkbox" data-id="${c.id}" data-dominio="ativo" ${p.ativo !== false ? "checked" : ""}>Usar este horário individual na geração e cobertura</label>
+    <label class="text-sm flex gap-2 items-center mt-2"><input type="checkbox" data-id="${c.id}" data-dominio="cargaConfirmada" ${p.cargaConfirmada ? "checked" : ""}>Conferi a carga contratual de referência preenchida acima</label>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3"><label class="text-xs">Padrão<select data-id="${c.id}" data-dominio="tipo" class="border rounded p-2 w-full bg-white"><option value="semanal" ${p.tipo === "semanal" ? "selected" : ""}>Dias da semana</option><option value="ciclo" ${p.tipo === "ciclo" ? "selected" : ""}>Ciclo de dias / plantões</option></select></label><label class="text-xs">Admissão considerada na escala${input("admissaoIso", p.admissaoIso, "date")}</label></div>
+    ${p.tipo === "ciclo" ? `<label class="block text-xs mt-3">Data em que ocorre o 1º dia do ciclo deste colaborador${input("ancora", p.ancora, "date")}</label><p class="text-xs mt-1">A planilha informa a ordem do ciclo, mas não sua data inicial. Não é presumido que todos os colaboradores pertençam ao mesmo grupo.</p>` : ""}
+    <div class="overflow-x-auto mt-3"><table class="w-full text-xs"><thead><tr>${["Dia", "Situação", "Entrada", "Intervalo início", "Intervalo fim", "Saída"].map((t) => `<th class="text-left p-1">${t}</th>`).join("")}</tr></thead><tbody>${Object.entries(
+      horarios,
+    )
+      .map(
+        ([d, h]) =>
+          `<tr><td class="p-1">${p.tipo === "ciclo" ? `${d}º dia` : DIAS[d]}</td><td class="p-1"><select data-id="${c.id}" data-dominio="status" data-dia="${d}" class="border rounded p-1 bg-white">${[
+            ["nao_informado", "Conferir"],
+            ["trabalho", "Trabalho"],
+            ["folga", "Folga"],
+          ]
+            .map(
+              ([v, t]) =>
+                `<option value="${v}" ${h.status === v ? "selected" : ""}>${t}</option>`,
+            )
+            .join(
+              "",
+            )}</select></td>${["entrada", "intInicio", "intFim", "saida"].map((f) => `<td class="p-1"><input type="time" data-id="${c.id}" data-dominio="horario" data-dia="${d}" data-horario="${f}" value="${esc(h.jornada?.[f] || "")}" class="border rounded p-1 bg-white min-w-[100px]" ${h.status === "folga" ? "disabled" : ""}></td>`).join("")}</tr>`,
+      )
+      .join("")}</tbody></table></div>
+    <ul data-pendencias-dominio="${c.id}" class="text-xs text-fintria-ambar list-disc pl-4 mt-2">${p.pendencias.map((s) => `<li>${esc(s)}</li>`).join("")}</ul>
+    <details class="mt-3 text-xs"><summary class="cursor-pointer">Valores originais do relatório</summary><div class="overflow-x-auto"><table class="w-full"><thead><tr>${["Linha", "Dias", "Entrada", "Intervalo", "Saída", "Situação"].map((s) => `<th class="p-1 text-left">${s}</th>`).join("")}</tr></thead><tbody>${p.linhasOriginais.map((l) => `<tr>${[l.linha, l.dias, l.entrada, l.intervalo, l.saida, l.situacao].map((s) => `<td class="p-1">${esc(s)}</td>`).join("")}</tr>`).join("")}</tbody></table></div></details>
+  </details>`;
+}

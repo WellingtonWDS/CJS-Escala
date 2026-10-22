@@ -13,6 +13,7 @@ import { bindExportEvents } from "./export/download.js";
 import { createTutorialUI } from "./ui/tutorial.js";
 import { createImportarColaboradoresUI } from "./ui/importar-colaboradores.js";
 import { createConversaoUI } from "./ui/conversao.js";
+import { createImportarDominioUI } from "./ui/importar-dominio.js";
 export function createApplication({ env, now = () => new Date() }) {
   const initialState = createDefaultState(now());
   const state = structuredClone(initialState);
@@ -82,6 +83,19 @@ export function createApplication({ env, now = () => new Date() }) {
     renderColaboradores: colaboradores.renderColaboradores,
     renderResumo: resumo.renderResumo,
   });
+  const dominioImportacao = createImportarDominioUI({
+    ...deps,
+    atualizarInterface() {
+      if (!state.feriados.length) inicializarFeriadosDoMes();
+      feriados.renderFeriados();
+      cobertura.renderCoberturaConfig();
+      colaboradores.renderColaboradores();
+      configuracao.renderTipoEscala();
+      jornada.renderJornadaSection();
+      jornada.renderFolgasSection();
+      resumo.renderResumo();
+    },
+  });
   const { renderResumo } = resumo;
   const { renderFeriados } = feriados;
   const { renderColaboradores } = colaboradores;
@@ -100,6 +114,7 @@ export function createApplication({ env, now = () => new Date() }) {
       tutorial,
       importacao,
       conversaoUI,
+      dominioImportacao,
     ])
       ui.bindEvents();
     bindExportEvents(state, env);
@@ -160,6 +175,7 @@ export function createApplication({ env, now = () => new Date() }) {
     renderRegimeControls();
     if (state.escalaGerada) renderEscalaGerada();
     conversaoUI.initConversao();
+    dominioImportacao.renderEmpresa();
     if (!carregou || mudouPeriodo) saveState();
   }
   return {

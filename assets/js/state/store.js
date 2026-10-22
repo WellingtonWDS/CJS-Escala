@@ -66,6 +66,8 @@ export function createDefaultState(now = new Date()) {
     escalaGerada: null,
     conversao: null,
     destinoConversao: null,
+    empresaDominio: null,
+    relatorioDominio: null,
     atividadeComercio: false,
     domingosPermitidos: false,
     feriadosPermitidos: false,

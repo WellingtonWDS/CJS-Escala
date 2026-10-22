@@ -76,7 +76,11 @@ const { chromium } = require("playwright");
       await page
         .locator("#config-colaboradores > details")
         .evaluateAll((els) => els.map((el) => el.id)),
-      ["importacao-colaboradores", "cadastro-manual-colaboradores"],
+      [
+        "importacao-colaboradores",
+        "cadastro-manual-colaboradores",
+        "importacao-dominio",
+      ],
     );
     await page.locator("#cadastro-manual-colaboradores > summary").click();
     await page.locator("#btn-add-colab").click();
@@ -177,6 +181,10 @@ const { chromium } = require("playwright");
     console.log(
       "OK: invalidação da escala e ausência de erros JavaScript/arquivos locais",
     );
+    await require("./browser-dominio.cjs")({
+      browser,
+      baseURL: `http://127.0.0.1:${server.address().port}/`,
+    });
     await require("./browser-conversao.cjs")({
       browser,
       baseURL: `http://127.0.0.1:${server.address().port}/`,

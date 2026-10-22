@@ -21,6 +21,11 @@ import {
   VERSAO_REGRAS,
 } from "./ec141.js";
 import { apurarSemana } from "./resumo-semanal.js";
+import {
+  configDoPerfil,
+  perfilAtivo,
+  verificarPerfil,
+} from "./perfil-dominio.js";
 
 function copiarConfig(state) {
   const { conversao, escalaGerada, ...config } = state;
@@ -73,7 +78,12 @@ export function gerarReferenciaAtual(state) {
   const escala = domain.gerarDadosEscala();
   for (const r of escala.resultado)
     for (const d of [...r.dias, ...r.diasContexto, ...r.diasApuracao]) {
-      const j = normalizarJornada(domain.obterJornadaDoDia(d.weekday));
+      const proprio = perfilAtivo(r.colaborador)
+        ? createDomain(configDoPerfil(config, r.colaborador) || config)
+        : domain;
+      const j = normalizarJornada(
+        d.jornadaAplicada || proprio.obterJornadaDoDia(d.weekday),
+      );
       const horas = j ? (j.saida - j.entrada - j.intervalo) / 60 : 0;
       d.horas = ["T", "FE"].includes(d.status) ? horas : 0;
       d.horasPrevistas = d.previstoOriginal ? horas : 0;
@@ -159,7 +169,20 @@ function pontuacao(config, escala) {
 const melhor = (a, b) => a[0] < b[0] || (a[0] === b[0] && a[1] < b[1]);
 
 export function converterEscala(state, opcoes = {}) {
-  if (state.tipoEscala !== "6x1")
+  for (const c of state.colaboradores)
+    if (perfilAtivo(c)) {
+      verificarPerfil(c);
+      if (c.quadroDominio.tipo === "ciclo" || c.quadroDominio.modelo !== "6x1")
+        throw new Error(
+          "A conversão atual atende à origem 6×1. O quadro importado contém jornadas semanais ou ciclos diferentes; preserve esses regimes na prévia e revise o grupo a converter.",
+        );
+    }
+  if (
+    state.tipoEscala !== "6x1" &&
+    !state.colaboradores.every(
+      (c) => perfilAtivo(c) && c.quadroDominio.modelo === "6x1",
+    )
+  )
     throw new Error(
       "Preencha a escala atual no modelo 6×1 antes de converter.",
     );
@@ -233,6 +256,7 @@ export function converterEscala(state, opcoes = {}) {
   createDomain(config).inicializarFeriadosDoMes();
   const referencia = gerarReferenciaAtual(config);
   config.tipoEscala = "5x2";
+  config.aplicarProposta5x2 = true;
   config.modoRegime = opcoes.fase === "automatico" ? "automatico" : "simulacao";
   if (opcoes.fase !== "automatico") config.regimeJornada = opcoes.fase;
   config.folgasFimSemana = opcoes.folgas === "fim_semana";
@@ -362,6 +386,7 @@ export function compararConversao(conversao) {
     );
   }
   const pessoas = escala.resultado.map((r) => {
+    const individual = configDoPerfil(config, r.colaborador) || config;
     const dias = diasPeriodo(config, r.dias);
     const original = conversao.referencia.escala.resultado.find(
       (a) => a.colaborador.id === r.colaborador.id,
@@ -374,15 +399,16 @@ export function compararConversao(conversao) {
     if (g) {
       g.disponiveis += soma(dias);
       for (const semana of semanas(dias).values()) {
-        const ref = referenciaSemana(config, semana, r.colaborador);
+        const ref = referenciaSemana(individual, semana, r.colaborador);
         const capacidade = semana
           .filter(
             (d) =>
-              config.diasTrabalho.includes(d.weekday) &&
+              d.status !== "NC" &&
+              individual.diasTrabalho.includes(d.weekday) &&
               (!d.feriado || d.feriado.trabalhado),
           )
           .map((d) => {
-            const j = normalizarJornada(config.jornadaPorDia[d.weekday]);
+            const j = normalizarJornada(individual.jornadaPorDia[d.weekday]);
             return j
               ? Math.max(0, (j.saida - j.entrada - j.intervalo) / 60)
               : 0;
@@ -398,7 +424,8 @@ export function compararConversao(conversao) {
             5,
             semana.filter(
               (d) =>
-                config.diasTrabalho.includes(d.weekday) &&
+                d.status !== "NC" &&
+                individual.diasTrabalho.includes(d.weekday) &&
                 (!d.feriado || d.feriado.trabalhado),
             ).length,
           );
@@ -415,8 +442,9 @@ export function compararConversao(conversao) {
       horasDepois: soma(dias),
       diasAntes: trabalho(anteriores),
       diasDepois: trabalho(dias),
-      folgasAntes: anteriores.length - trabalho(anteriores),
-      folgasDepois: dias.length - trabalho(dias),
+      folgasAntes: anteriores.filter((d) => ["F", "FC"].includes(d.status))
+        .length,
+      folgasDepois: dias.filter((d) => ["F", "FC"].includes(d.status)).length,
       deficits: deficits.length,
     };
   });
@@ -433,15 +461,19 @@ export function compararConversao(conversao) {
       g.insuficiencias.push(
         "Nenhum colaborador possui essa função cadastrada.",
       );
-    const noturna = Object.values(config.jornadaPorDia).some((f) => {
-      const j = normalizarJornada(f);
-      return (
-        j &&
-        (j.saida > 1440 ||
-          (config.turnosRevezamento &&
-            timeToMin(config.entradaTurnoB) + j.saida - j.entrada > 1440))
-      );
-    });
+    const noturna = config.colaboradores.some((c) =>
+      Object.values((configDoPerfil(config, c) || config).jornadaPorDia).some(
+        (f) => {
+          const j = normalizarJornada(f);
+          return (
+            j &&
+            (j.saida > 1440 ||
+              (config.turnosRevezamento &&
+                timeToMin(config.entradaTurnoB) + j.saida - j.entrada > 1440))
+          );
+        },
+      ),
+    );
     if (!noturna) {
       const necessidade = {};
       for (const [data, minimo] of Object.entries(g.diasNecessarios)) {
@@ -461,6 +493,9 @@ export function compararConversao(conversao) {
   const pendencias = escala.validacoes.flatMap((v) =>
     v.issues.filter((i) => ["pendencia", "alerta"].includes(i.severidade)),
   );
+  const dadosIncompletos = pendencias.some(
+    (i) => i.tipo === "DADOS_DOMINIO" || i.tipo === "ADMISSAO_PARCIAL",
+  );
   const capacidadeInsuficiente = [...grupos.values()].some(
     (g) => g.insuficiencias.length,
   );
@@ -476,7 +511,7 @@ export function compararConversao(conversao) {
         : "ajustes"
       : erros.length
         ? "incompativel"
-        : pessoas.some((p) => p.deficits)
+        : dadosIncompletos || pessoas.some((p) => p.deficits)
           ? "ajustes"
           : "suficiente";
   return {

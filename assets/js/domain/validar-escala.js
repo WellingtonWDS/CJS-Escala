@@ -1,4 +1,6 @@
 import { apurarCompensacaoHoras } from "./compensacao-horas.js";
+import { createDomain } from "./index.js";
+import { configDoPerfil } from "./perfil-dominio.js";
 import {
   referenciaDia,
   referenciaSemana,
@@ -114,7 +116,11 @@ export function createValidacao(state, jornada, feriados) {
           ),
         );
       }
-      if (!jornadaValidaEstrutural(obterJornadaDoDia(d.weekday))) {
+      if (
+        !jornadaValidaEstrutural(
+          d.jornadaAplicada || obterJornadaDoDia(d.weekday),
+        )
+      ) {
         out.push(
           issue(
             "HORARIO_INVALIDO",
@@ -172,8 +178,12 @@ export function createValidacao(state, jornada, feriados) {
     for (let i = 1; i < trabalhados.length; i++) {
       const anterior = trabalhados[i - 1];
       const atual = trabalhados[i];
-      const jPrev = normalizarJornada(obterJornadaDoDia(anterior.weekday));
-      const jAtual = normalizarJornada(obterJornadaDoDia(atual.weekday));
+      const jPrev = normalizarJornada(
+        anterior.jornadaAplicada || obterJornadaDoDia(anterior.weekday),
+      );
+      const jAtual = normalizarJornada(
+        atual.jornadaAplicada || obterJornadaDoDia(atual.weekday),
+      );
       if (!jPrev || !jAtual) continue;
 
       const anteriorDate = dateFromKey(anterior.data);
@@ -544,6 +554,28 @@ export function createValidacao(state, jornada, feriados) {
   }
 
   function validarLegal(colab, dias, contexto = [], apuracao = []) {
+    const individual = configDoPerfil(state, colab);
+    if (individual)
+      return createDomain(individual).validarLegal(
+        colab,
+        dias,
+        contexto,
+        apuracao,
+      );
+    if (dias.some((d) => d.status === "NC"))
+      return [
+        issue(
+          "ADMISSAO_PARCIAL",
+          "pendencia",
+          "Há dias anteriores à admissão. Não são trabalho nem folga; confira o fechamento da semana parcial.",
+        ),
+        ...validarLegal(
+          colab,
+          dias.filter((d) => d.status !== "NC"),
+          contexto.filter((d) => d.status !== "NC"),
+          apuracao.filter((d) => d.status !== "NC"),
+        ),
+      ];
     const completos = unirDias(contexto, dias);
     const datas = new Set(dias.map((d) => d.data));
     const compensacao = apurarCompensacaoHoras(
@@ -552,6 +584,16 @@ export function createValidacao(state, jornada, feriados) {
       unirDias(apuracao, contexto, dias),
     );
     return [
+      ...(colab.quadroDominio?.ativo !== false &&
+      colab.quadroDominio?.pendencias?.length
+        ? [
+            issue(
+              "DADOS_DOMINIO",
+              "pendencia",
+              colab.quadroDominio.pendencias.join(" "),
+            ),
+          ]
+        : []),
       ...validarEnquadramento(state, colab, dias),
       ...compensacao.issues,
       ...validarRepousoMensal(state, colab, unirDias(apuracao, contexto, dias)),

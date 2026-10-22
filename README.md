@@ -28,6 +28,8 @@ Mudanças na origem ou no destino suspendem a conclusão anterior e bloqueiam su
 
 Requer Node.js 22 ou superior.
 
+O leitor Excel é `@e965/xlsx` 0.20.3, fixado no lockfile. O build publica apenas `xlsx.mjs` e sua licença em `assets/vendor/`; o servidor de desenvolvimento atende o mesmo caminho. O módulo é carregado localmente quando o usuário seleciona um relatório da Domínio, sem enviar a planilha a um serviço externo.
+
 ```sh
 npm ci
 npm run dev
@@ -108,7 +110,26 @@ O módulo `domain/cobertura.js` é independente da interface e não modifica a c
 
 ## Cadastro por planilha
 
-Em **Colaboradores → Preencher colaboradores por planilha**, baixe **modelo-colaboradores.csv**, abra no Excel ou LibreOffice e preencha a partir da segunda linha. Mantenha as quatro colunas: **Nome**, **Sexo** (Feminino/Masculino ou F/M), **Cargo / função** e **Horas semanais** (1 a 60 em múltiplos de 0,5). Salve como CSV, preferencialmente UTF-8; arquivos `.xlsx` devem ser salvos como CSV antes de importar. O modelo contém somente o cabeçalho, sem pessoas fictícias para importar por engano.
+Além do CSV e do cadastro manual, a terceira seção recolhível **Importar planilha da Domínio — Quadro de Horário de Trabalho** aceita relatórios `.xls` e `.xlsx` de até 5 MB. As três formas começam fechadas. A prévia informa empresa, CNPJ, empregador/endereço, pessoas e pendências antes de alterar o cadastro. O conteúdo original dos relatórios enviados por usuários não é publicado com a aplicação.
+
+O importador identifica as colunas pelo título e reúne linhas de cada colaborador pelo código. Preserva nome, cargo, admissão, CTPS/série com zeros à esquerda, visto fiscal, dias agrupados ou separados, entradas, intervalos, saídas, folgas e ciclos. Empresa, páginas indicadas, licenciamento do relatório e células adicionais ficam guardados como metadados. O cadastro manual permite consultar os valores originais e revisar os horários individuais, sem sobrescrever o registro original da importação.
+
+Os horários individuais são usados na geração, validação, cobertura e conversão 6×1 compatível; não são reduzidos a um horário padrão da empresa. Na referência importada, mantém-se a duração efetivamente informada, mesmo que produza alertas legais ou exceda a carga contratual confirmada. Admissão impede trabalho em datas anteriores, marcadas como **NC**, sem contá-las como folga; a semana parcial recebe conferência específica. A exportação CSV inclui a empresa e a identificação da Domínio.
+
+Informações não disponíveis no relatório não são inventadas:
+
+- Sexo fica **Não informado**. A carga semanal é calculada dos horários completos, identificada como estimativa até confirmação do contrato; não é presumida como 44h.
+- Horários `00:00–00:00` sem indicação de folga, intervalos fora da jornada e dias conflitantes ficam pendentes de revisão. A geração exige horários completos. Dias não listados só viram folga mediante confirmação explícita na prévia ou revisão individual.
+- Ciclos `1º Dia/2º Dia` exigem a data de referência de cada pessoa. Não é presumido grupo A/B pela ordem do cadastro nem pela data de admissão. Jornadas semanais alternadas permanecem semanais até confirmação do usuário; o nome do arquivo não torna toda a equipe 12×36. Um ciclo de dois dias com plantão de 12h de permanência e segundo dia livre é reconhecido como 12×36, sujeito às validações do regime.
+- Intervalo vazio permanece vazio, sem inserção automática de pausa. Cobertura mínima, tratamento de feriados e instrumento coletivo precisam ser conferidos na operação. Não se conclui suficiência com dados individuais pendentes.
+
+Adicionar exige a mesma empresa e rejeita códigos já cadastrados. Substituir por outra empresa reinicia cobertura, instrumento coletivo e feriados locais anteriores, conforme aviso da prévia. As demais configurações são preservadas. A importação invalida os resultados anteriores para nova geração.
+
+Os três arquivos originais foram lidos no desenvolvimento: 7 colaboradores no quadro de comércio, 6 no de drogaria e 17 no misto, com 4 ciclos explícitos. Os testes no repositório usam versões **fictícias**, sem nomes, documentos ou empresas reais, e reproduzem também o preâmbulo BIFF8 irregular desses relatórios. A normalização aceita somente o padrão comprovado de registros BLANK anteriores ao BOF da aba; não tenta recuperar dados arbitrariamente. Planilhas com fórmulas são rejeitadas, sem execução de fórmulas ou macros. Limites adicionais: 500 colaboradores, 20 abas, 10 mil linhas e 200 colunas por aba.
+
+Módulos: `import/arquivo-dominio.js`, `import/dominio.js`, `domain/perfil-dominio.js` e as interfaces correspondentes. Regressões: `tests/dominio.test.cjs` e `tests/browser-dominio.cjs`.
+
+Em **Colaboradores → Preencher colaboradores por planilha**, baixe **modelo-colaboradores.csv**, abra no Excel ou LibreOffice e preencha a partir da segunda linha. Mantenha as quatro colunas: **Nome**, **Sexo** (Feminino/Masculino ou F/M), **Cargo / função** e **Horas semanais** (1 a 60 em múltiplos de 0,5). Salve como CSV, preferencialmente UTF-8; para esse modelo, arquivos `.xlsx` devem ser salvos como CSV antes de importar. O relatório da Domínio possui uma importação própria que aceita `.xls` e `.xlsx`. O modelo contém somente o cabeçalho, sem pessoas fictícias para importar por engano.
 
 A leitura aceita delimitadores ponto e vírgula, vírgula ou tabulação, campos entre aspas, decimais com vírgula e codificações UTF-8, UTF-16 com BOM ou Windows-1252. Limites: 1 MB por arquivo e 500 colaboradores no cadastro resultante. Todos os registros precisam ser válidos; erros são informados por linha e nenhum cadastro muda antes da confirmação. A prévia mostra até 20 pessoas.
 

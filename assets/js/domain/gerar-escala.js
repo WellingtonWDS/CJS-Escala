@@ -5,6 +5,12 @@ import {
   VERSAO_REGRAS,
 } from "./ec141.js";
 import { createPlanejadorFolgas } from "./folgas-semana.js";
+import { createDomain } from "./index.js";
+import {
+  configDoPerfil,
+  verificarPerfil,
+  diaDoCiclo,
+} from "./perfil-dominio.js";
 import { distribuirCargaComAbonos } from "./distribuicao-horas.js";
 import { calcularPausaEfetiva, analisarCobertura } from "./cobertura.js";
 import {
@@ -16,6 +22,7 @@ import {
   getMonday,
   weekKey,
   addDays,
+  normalizarJornada,
 } from "./datas-horas.js";
 
 export function createGerador(state, jornada, feriados, validacao) {
@@ -114,6 +121,16 @@ export function createGerador(state, jornada, feriados, validacao) {
     dataFim,
     feriadosMap,
   ) {
+    verificarPerfil(colab);
+    const individual = configDoPerfil(state, colab);
+    if (individual)
+      return createDomain(individual).gerarEscalaColaborador(
+        colab,
+        idx,
+        dataInicio,
+        dataFim,
+        feriadosMap,
+      );
     dataInicio = new Date(
       dataInicio.getFullYear(),
       dataInicio.getMonth(),
@@ -142,7 +159,10 @@ export function createGerador(state, jornada, feriados, validacao) {
       const feriado = feriadosMap[key] || null;
       let plano;
 
-      if (state.tipoEscala === "12x36") {
+      if (state.cicloQuadro) {
+        const h = diaDoCiclo(state, date);
+        status = h.status === "trabalho" ? "T" : "F";
+      } else if (state.tipoEscala === "12x36") {
         const grupo = idx % 2;
         // Alternância contínua, independente das viradas de mês e ano.
         const anchor = dateFromKey(state.ancora12x36);
@@ -186,6 +206,11 @@ export function createGerador(state, jornada, feriados, validacao) {
         if (feriado.trabalhado && status === "T") status = "FE";
         else if (!feriado.trabalhado) status = "F";
       }
+      if (
+        colab.quadroDominio?.admissaoIso &&
+        key < colab.quadroDominio.admissaoIso
+      )
+        status = "NC";
 
       dias.push({
         dia: date.getDate(),
@@ -194,15 +219,25 @@ export function createGerador(state, jornada, feriados, validacao) {
         status,
         horas: 0,
         feriado,
-        previsto,
+        previsto: status === "NC" ? false : previsto,
         previstoOriginal:
-          state.tipoEscala === "12x36"
-            ? previsto
-            : state.diasTrabalho.includes(weekday) &&
-              !plano.base.includes(weekday) &&
-              !repousoSeguranca,
+          status === "NC"
+            ? false
+            : state.tipoEscala === "12x36" || state.cicloQuadro
+              ? previsto
+              : state.diasTrabalho.includes(weekday) &&
+                !plano.base.includes(weekday) &&
+                !repousoSeguranca,
         repousoSeguranca,
         turno: obterTurno(date, idx),
+        ...(state.perfilDominioId
+          ? {
+              colaboradorId: colab.id,
+              jornadaAplicada: state.cicloQuadro
+                ? diaDoCiclo(state, date).jornada || state.jornada
+                : obterJornadaDoDia(weekday),
+            }
+          : {}),
       });
 
       cursor.setDate(cursor.getDate() + 1);
@@ -214,10 +249,14 @@ export function createGerador(state, jornada, feriados, validacao) {
   }
 
   function atualizarHorarioEfetivo(d) {
+    const c = state.colaboradores.find((c) => c.id === d.colaboradorId);
+    const individual = c && configDoPerfil(state, c);
+    if (individual) return createDomain(individual).atualizarHorarioEfetivo(d);
     const j =
-      state.tipoEscala === "12x36"
+      d.jornadaAplicada ||
+      (state.tipoEscala === "12x36"
         ? state.jornada
-        : obterJornadaDoDia(d.weekday);
+        : obterJornadaDoDia(d.weekday));
     const pausa = Math.max(0, intervaloMin(j) || 0);
     d.entradaMin = timeToMin(d.turno === "B" ? state.entradaTurnoB : j.entrada);
     d.intervaloMin = pausa;
@@ -235,6 +274,24 @@ export function createGerador(state, jornada, feriados, validacao) {
       porSemana.get(key).push(d);
     });
     porSemana.forEach((semana) => {
+      if (state.usarHorasQuadro) {
+        const ref = referenciaSemana(state, semana, colab);
+        for (const d of semana) {
+          const j = d.jornadaAplicada;
+          const h = j ? jornada.calcHorasDia(d.weekday) : 0;
+          const normal = j ? normalizarJornada(j) : null;
+          const horas = normal
+            ? (normal.saida - normal.entrada - normal.intervalo) / 60
+            : h;
+          d.horas = ["T", "FE"].includes(d.status) ? horas : 0;
+          d.horasPrevistas = d.previstoOriginal ? horas : 0;
+          d.alvoSemana = ref.alvo;
+          d.limiteSemanal = ref.horas;
+          d.regimeAplicado = referenciaDia(state, d.data, colab).chave;
+          atualizarHorarioEfetivo(d);
+        }
+        return;
+      }
       // Feriado dispensado preserva sua parcela da carga semanal.
       const referencia = referenciaSemana(state, semana, colab);
       const cargaPrevista = distribuirCargaComAbonos(

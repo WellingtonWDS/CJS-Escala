@@ -34,6 +34,12 @@ export function createCalendarioUI({
 
   function editarStatus(ri, di) {
     const obj = state.escalaGerada.resultado[ri].dias[di];
+    if (obj.status === "NC") {
+      alert(
+        "Data anterior à admissão. Confira a data de admissão no cadastro importado.",
+      );
+      return;
+    }
     const atual = obj.status;
     const opcoes = [
       ["T", "T — Trabalho"],
@@ -209,18 +215,19 @@ export function createCalendarioUI({
           : state.tipoEscala === "6x1"
             ? 6
             : [...new Set(state.diasTrabalho)].length;
-      const jIndividual = diasAlvo
-        ? calcularSaidaSimulada(
-            Number(r.colaborador.horasSemana) || 0,
-            diasAlvo,
-          )
-        : null;
+      const jIndividual =
+        diasAlvo && !r.colaborador.quadroDominio
+          ? calcularSaidaSimulada(
+              Number(r.colaborador.horasSemana) || 0,
+              diasAlvo,
+            )
+          : null;
       html += `<div class="border border-slate-200 rounded-lg px-3.5 py-3 mb-3">
       <div class="flex justify-between items-start gap-3">
         <div><b>${escapeHtml(r.colaborador.nome || "(sem nome)")}</b> <span class="text-slate-500">— ${escapeHtml(r.colaborador.cargo || "")}</span> <span class="text-xs text-slate-500">· ${fmtHoras(Number(r.colaborador.horasSemana) || 0)}/semana</span></div>
         <span class="text-[10px] font-bold px-2.5 py-1 rounded-full ${cls}">${label}</span>
       </div>
-      ${state.horarioPorDia ? `<div class="text-xs text-slate-500 mt-1">Carga distribuída dentro dos horários de cada dia. Dias reduzidos são respeitados; consulte os horários efetivos na grade e o fechamento no resumo semanal.</div>` : jIndividual ? `<div class="text-xs text-slate-500 mt-1">Jornada individual estimada (uniforme): entrada ${state.jornada.entrada} · ${fmtHoras(jIndividual.horasDia)}/dia médio em ${diasAlvo} dia(s) · saída ${jIndividual.saida}. Esta é apenas a referência média; os horários efetivos de cada dia aparecem na grade e consideram folgas, feriados e ajustes manuais.</div>` : ""}
+      ${r.colaborador.quadroDominio?.ativo !== false && r.colaborador.quadroDominio ? '<div class="text-xs text-slate-500 mt-1">Horário individual da Domínio: horários, intervalos e folgas desta pessoa aparecem na grade. A carga de referência deve ser conferida com o contrato.</div>' : state.horarioPorDia ? `<div class="text-xs text-slate-500 mt-1">Carga distribuída dentro dos horários de cada dia. Dias reduzidos são respeitados; consulte os horários efetivos na grade e o fechamento no resumo semanal.</div>` : jIndividual ? `<div class="text-xs text-slate-500 mt-1">Jornada individual estimada (uniforme): entrada ${state.jornada.entrada} · ${fmtHoras(jIndividual.horasDia)}/dia médio em ${diasAlvo} dia(s) · saída ${jIndividual.saida}. Esta é apenas a referência média; os horários efetivos de cada dia aparecem na grade e consideram folgas, feriados e ajustes manuais.</div>` : ""}
       ${issues.length ? `<div class="mt-2 space-y-1">${issues.map((x) => `<div class="text-xs flex gap-2 items-start">${severityBadge(x)}<span>${escapeHtml(x.mensagem)}</span></div>`).join("")}</div>` : ""}
     </div>`;
     });
@@ -377,7 +384,7 @@ export function createCalendarioUI({
                     : x.obj.status === "FC"
                       ? "FC"
                       : x.obj.status;
-                return `<button data-ri="${x.ri}" data-di="${x.r.dias.indexOf(x.obj)}" class="w-full text-left mb-1 last:mb-0 px-1.5 py-1 rounded border ${cls} hover:opacity-80" title="${trabalho ? "Trabalho" : "Folga"}${trabalho && x.obj.intervaloInicioMin != null ? ` · Intervalo ${horarioComDia(x.obj.intervaloInicioMin)}–${horarioComDia(x.obj.intervaloFimMin)}` : ""} — clique para alterar">
+                return `<button data-ri="${x.ri}" data-di="${x.r.dias.indexOf(x.obj)}" class="w-full text-left mb-1 last:mb-0 px-1.5 py-1 rounded border ${cls} hover:opacity-80" title="${trabalho ? "Trabalho" : x.obj.status === "NC" ? "Anterior à admissão" : "Folga"}${trabalho && x.obj.intervaloInicioMin != null ? ` · Intervalo ${horarioComDia(x.obj.intervaloInicioMin)}–${horarioComDia(x.obj.intervaloFimMin)}` : ""} — clique para alterar">
               <div class="font-semibold truncate">${escapeHtml(x.r.colaborador.nome || "(sem nome)")}</div>
               <div class="text-[9px] opacity-80">${status}${state.turnosRevezamento ? ` · ${x.obj.turno}` : ""}${x.obj.horas ? ` · ${fmtHoras(x.obj.horas)} · ${horarioComDia(x.obj.entradaMin)}–${horarioComDia(x.obj.saidaMin)}` : ""}</div>
             </button>`;
@@ -427,6 +434,7 @@ export function createCalendarioUI({
     <span><b class="text-fintria-azul">F</b> — Folga/repouso</span>
     <span><b class="text-fintria-ambar">FE</b> — Feriado trabalhado</span>
     <span><b class="text-fintria-azul">FC</b> — Folga compensatória</span>
+    ${resultado.some((r) => r.dias.some((d) => d.status === "NC")) ? "<span>NC — anterior à admissão (não é folga)</span>" : ""}
     <span class="italic">A grade e os resumos são recalculados após cada alteração.</span>
   </div>`;
 
@@ -443,7 +451,12 @@ export function createCalendarioUI({
       alert("Cadastre ao menos um colaborador.");
       return;
     }
-    state.escalaGerada = gerarDadosEscala();
+    try {
+      state.escalaGerada = gerarDadosEscala();
+    } catch (error) {
+      document.getElementById(containerId).textContent = error.message;
+      return;
+    }
     renderEscalaGerada();
     onEscalaChange();
     saveState();

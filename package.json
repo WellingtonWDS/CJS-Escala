@@ -13,5 +13,8 @@
   },
   "devDependencies": {
     "playwright": "1.62.1"
+  },
+  "dependencies": {
+    "@e965/xlsx": "0.20.3"
   }
 }

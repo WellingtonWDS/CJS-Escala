@@ -7,6 +7,7 @@ const projectRoot = fileURLToPath(new URL("../", import.meta.url));
 const types = {
   ".html": "text/html; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
+  ".mjs": "text/javascript; charset=utf-8",
   ".css": "text/css; charset=utf-8",
   ".json": "application/json",
 };
@@ -16,7 +17,7 @@ export function createDevServer({ root = projectRoot } = {}) {
       const pathname = decodeURIComponent(
         new URL(req.url, "http://localhost").pathname,
       );
-      const file = resolve(
+      let file = resolve(
         root,
         "." + (pathname === "/" ? "/index.html" : pathname),
       );
@@ -27,6 +28,11 @@ export function createDevServer({ root = projectRoot } = {}) {
         res.writeHead(403).end("Forbidden");
         return;
       }
+      if (
+        resolve(root) === resolve(projectRoot) &&
+        pathname === "/assets/vendor/xlsx.mjs"
+      )
+        file = resolve(projectRoot, "node_modules/@e965/xlsx/xlsx.mjs");
       if (!(await stat(file)).isFile()) {
         res.writeHead(404).end("Not found");
         return;
