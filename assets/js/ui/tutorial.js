@@ -88,6 +88,7 @@ export function createTutorialUI({ document, window, etapas }) {
     const [target, title, text] = ETAPAS[index];
     etapas?.mostrarAlvo(target, {
       historico: false,
+      registrarVisita: false,
       foco: false,
       rolar: false,
     });
@@ -118,7 +119,11 @@ export function createTutorialUI({ document, window, etapas }) {
     inertElements = [];
     document.body.style.overflow = previousOverflow;
     if (etapaAnterior)
-      etapas.mostrarAlvo(etapaAnterior, { historico: false, foco: false });
+      etapas.mostrarAlvo(etapaAnterior, {
+        historico: false,
+        registrarVisita: false,
+        foco: false,
+      });
     if (previousFocus?.isConnected) previousFocus.focus();
   }
 

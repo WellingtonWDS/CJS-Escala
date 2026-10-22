@@ -310,6 +310,7 @@
           <div><label for="conversao-folgas" class="block text-xs font-semibold mb-1.5">Folgas da proposta</label><select id="conversao-folgas" class="w-full border border-slate-300 rounded-md p-2 bg-white"><option value="distribuir">Distribuir para buscar cobertura</option><option value="fim_semana">Fixar sábado e domingo</option></select></div>
         </div>
         <p class="text-xs text-slate-500 mb-3">As entradas, grupos de turno e janelas de horário atuais serão preservados. A conversão busca folgas entre os dias permitidos e respeita folgas fixas atuais. Não amplia saídas nem presume compensação coletiva. O 5×2 não fecha a empresa aos sábados.</p>
+        <div id="preenchimento-bloqueio" class="etapa-pendencias" role="alert" tabindex="-1" hidden></div>
         <button id="btn-converter" type="button" class="w-full bg-fintria-navy text-white px-6 py-4 rounded-lg font-display font-semibold text-lg shadow-md hover:bg-fintria-navySoft">Gerar proposta 5×2 e comparar</button>
         <p id="conversao-mensagem" role="alert" class="text-sm text-fintria-vermelho mt-3"></p>
         <button id="btn-gerar" class="w-full mt-3 border border-slate-300 bg-white text-fintria-navy px-4 py-2 rounded-lg font-semibold text-sm">Pré-visualizar escala atual / gerar escala avulsa</button>

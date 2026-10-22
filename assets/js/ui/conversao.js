@@ -11,7 +11,13 @@ import {
 } from "../domain/datas-horas.js";
 import { PRIMEIRA_FASE, VERSAO_REGRAS } from "../domain/ec141.js";
 
-export function createConversaoUI({ state, storage, env, renderEscalaGerada }) {
+export function createConversaoUI({
+  state,
+  storage,
+  env,
+  renderEscalaGerada,
+  validarPreenchimento = () => true,
+}) {
   const { document } = env;
   const el = (id) => document.getElementById(id);
   function salvar() {
@@ -124,6 +130,7 @@ export function createConversaoUI({ state, storage, env, renderEscalaGerada }) {
         };
       el("btn-converter").onclick = () => {
         el("conversao-mensagem").textContent = "";
+        if (!validarPreenchimento()) return;
         try {
           const opcoes = {
             periodo: el("conversao-periodo").value,

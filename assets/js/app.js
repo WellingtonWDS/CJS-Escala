@@ -36,6 +36,7 @@ export function createApplication({ env, now = () => new Date() }) {
     conversaoUI?.marcarDesatualizada();
   }
   const deps = { state, domain, storage, env, invalidarEscala };
+  const etapas = createEtapasUI({ ...env, state });
   const resumo = createResumoUI(deps);
   const feriados = createFeriadosUI(deps);
   const cobertura = createCoberturaUI({
@@ -75,10 +76,10 @@ export function createApplication({ env, now = () => new Date() }) {
   });
   conversaoUI = createConversaoUI({
     ...deps,
+    validarPreenchimento: etapas.validarGeracao,
     renderEscalaGerada: calendario.renderEscalaGerada,
   });
   const transicao = createTransicaoUI(deps);
-  const etapas = createEtapasUI(env);
   const tutorial = createTutorialUI({ ...env, etapas });
   const importacao = createImportarColaboradoresUI({
     ...deps,
