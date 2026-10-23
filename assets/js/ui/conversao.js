@@ -146,7 +146,7 @@ export function createConversaoUI({
           renderEscalaGerada();
           renderConversao();
           salvar();
-          el("conversao-comparacao").scrollIntoView({
+          el("conversao-resultados").scrollIntoView({
             behavior: "instant",
             block: "start",
           });

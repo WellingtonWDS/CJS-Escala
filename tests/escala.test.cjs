@@ -21,7 +21,13 @@ function app(now) {
           innerHTML: "",
           textContent: "",
           style: {},
-          classList: { toggle() {} },
+          classList: { toggle() {}, add() {}, remove() {} },
+          getBoundingClientRect() {
+            return { top: 0 };
+          },
+          querySelector() {
+            return null;
+          },
           querySelectorAll() {
             return [];
           },

@@ -5,7 +5,49 @@ body {
   font-family: "Space Grotesk", sans-serif;
 }
 .escala-mensal {
+  width: 100%;
+  table-layout: fixed;
   min-width: 1500px;
+}
+.escala-quadro {
+  min-width: 0;
+  max-width: 100%;
+}
+.escala-ferramentas {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 12px;
+  font-size: 12px;
+}
+.escala-rolagem-topo {
+  width: 100%;
+  overflow-x: scroll;
+  overflow-y: hidden;
+  height: 18px;
+}
+.escala-rolagem-topo[hidden] { display: none; }
+.escala-rolagem-topo > div { height: 1px; }
+.escala-rolagem {
+  width: 100%;
+  max-height: 72vh;
+  min-width: 0;
+  overflow: auto;
+}
+.escala-rolagem, .escala-rolagem-topo {
+  scrollbar-color: #94a3b8 #e2e8f0;
+  scrollbar-width: auto;
+}
+.escala-rolagem::-webkit-scrollbar, .escala-rolagem-topo::-webkit-scrollbar { width: 12px; height: 12px; }
+.escala-rolagem::-webkit-scrollbar-thumb, .escala-rolagem-topo::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 6px; }
+.escala-rolagem::-webkit-scrollbar-track, .escala-rolagem-topo::-webkit-scrollbar-track { background: #e2e8f0; }
+.escala-rolagem thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #f1f5f9;
 }
 .escala-mensal td {
   overflow-wrap: anywhere;
@@ -121,6 +163,11 @@ body {
   cursor: default;
 }
 @media print {
+  .escala-rolagem {
+    max-height: none;
+    overflow: visible;
+  }
+  .escala-rolagem thead th { position: static; }
   .escala-mensal {
     min-width: 0;
   }

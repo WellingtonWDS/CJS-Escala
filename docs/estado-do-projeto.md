@@ -23,7 +23,7 @@ O fluxo principal está implementado e continua em evolução. Já permite impor
 | Folgas e feriados | Folgas fixas/rotativas, opção 5×2 com sábado e domingo fixos, feriados nacionais e locais, escolha de trabalho no feriado e políticas de distribuição. Abono do feriado dispensado quando havia trabalho previsto. |
 | Regras e validações | Fases por data e simulações de 44h/42h/40h conforme o texto fornecido da EC 141; verificações de jornada, intervalos, repousos e condições declaradas de ACT/CCT. Contrato de referência preservado. |
 | Condições específicas de CCT | Intervalo computado e crédito noturno fixo de 1h por plantão quando declarados e aplicáveis ao 12×36, separados da presença efetiva na cobertura. |
-| Geração e revisão | Grade mensal com cartões ampliados, nome completo e intervalo visível nas duas escalas; semanas civis completas, resumo semanal com horas, abonos e ausências, ocorrências por colaborador e ajustes manuais com recálculo. Bloqueios individuais não podem ser ultrapassados pela edição. |
+| Geração e revisão | Grade mensal prioritária, erros antes da grade e análises recolhidas; rolagem nos dois eixos, barra superior e atalho para resumo; cartões ampliados com nome e intervalo nas duas escalas; semanas civis completas, resumo semanal com horas, abonos e ausências, ocorrências por colaborador e ajustes manuais com recálculo. Bloqueios individuais não podem ser ultrapassados pela edição. |
 | Cobertura operacional | Cadastro opcional de mínimos por função, horário e dia; identificação de faixas descobertas, considerando pausas e viradas de dia. As funções vêm do cadastro dos colaboradores. |
 | Ajustes de cobertura | Sugestões de troca de folga, horário/turno e função habilitada; prévia antes/depois, aplicar e desfazer a última aplicação, validação de dados atuais e carregamento com progresso/cancelamento em segundo plano. |
 | Diagnóstico de pessoal | Lacunas agrupadas por função, dias, horário e quantidade, com datas; diferencia capacidade insuficiente, disponibilidade, habilitações compartilhadas e redistribuição. Verifica simultaneidade, horas e dias-pessoa sem duplicar a equipe. Presente na escala, comparação e CSV. |
@@ -57,11 +57,12 @@ As implementações de restrições individuais, sugestões de ajustes de cobert
 
 ## Última validação registrada
 
-Na correção do ACT/CCT na referência atual, em **23/10/2026**, foram registrados:
+Na reorganização das prévias e da rolagem da grade, em **23/10/2026**, foram registrados:
 
 - **393 testes unitários aprovados**, sem falhas, com `npm test`.
 - A suíte específica de autenticação foi aprovada na etapa anterior das sugestões de ajuste. Esta entrega não altera o login.
 - Build e suíte completa de interface aprovados com `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run test:browser`.
+- Prévia prioriza grade, mantém erros abertos antes dela e análises recolhidas depois. Barras sincronizadas e atalho para resumo testados em desktop, viewport equivalente a zoom ampliado e celular; impressão libera todas as semanas.
 - ACT/CCT real na origem: preservação das condições vigentes, não aplicação de instrumentos futuros/expirados, sinalização de vigência inválida e exibição do intervalo descontado nos avisos de jornada diária.
 - Regressão do contexto da referência atual: 11h–13h de intervalo, 44h em 6×1 versus simulação futura de 42h, ACT/CCT com vigência futura, resumo semanal, CSV, persistência, edição com excesso real, busca de ajustes e nova prévia avulsa.
 - Cenários de lacunas recorrentes, capacidade por horário, funções compartilhadas, janelas restritas, férias, semanas e meses parciais, horas/dias-pessoa insuficientes, turnos noturnos, dados inválidos e exportação. Na interface: recálculo ao aplicar/desfazer ajustes e suspensão da conclusão desatualizada.

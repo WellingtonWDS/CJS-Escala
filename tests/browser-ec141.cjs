@@ -72,6 +72,9 @@ module.exports = async function testarEc141({ browser, baseURL }) {
       assert.equal(r.colaborador.horasSemana, 44);
     }
     await irParaEtapa(page, "#resultado-gerar");
+    await page
+      .locator("#resultado-gerar [data-analises-escala] > summary")
+      .click();
     assert.match(
       await page.locator("#resultado-gerar").innerText(),
       /PENDENTE/,

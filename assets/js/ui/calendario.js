@@ -1,3 +1,4 @@
+import { configurarRolagemEscala } from "./rolagem-escala.js";
 import { configDaEscala } from "../domain/contexto-escala.js";
 import { createDomain } from "../domain/index.js";
 import { createAjustesCoberturaUI } from "./ajustes-cobertura.js";
@@ -43,6 +44,7 @@ export function createCalendarioUI({
     };
   const validarLegal = metodoDaEscala("validarLegal");
   const atualizarHorarioEfetivo = metodoDaEscala("atualizarHorarioEfetivo");
+  let limparRolagem = () => {};
   const { saveState } = storage;
   const { document, alert, confirm, prompt } = env;
 
@@ -211,17 +213,24 @@ export function createCalendarioUI({
     if (!state.escalaGerada) return;
     const { resultado } = state.escalaGerada;
     const container = document.getElementById(containerId);
-    let html = state.escalaGerada.referenciaAtual44
+    let analises = state.escalaGerada.referenciaAtual44
       ? '<p data-referencia-atual class="text-sm border border-slate-200 rounded-lg p-3 mb-3">Referência atual 6×1: validação e resumo em 44h semanais, conforme o contexto preservado na conversão. A simulação da fase futura é aplicada à proposta 5×2. Os horários e intervalos efetivos continuam sujeitos às verificações.</p>'
       : "";
-    html += renderRelatorioCobertura(resultado);
-    html += ajustes.renderPainel();
+    const coberturaHtml = renderRelatorioCobertura(resultado);
+    const ajustesHtml = ajustes.renderPainel();
 
     // As validações são recalculadas a cada renderização. Assim, qualquer alteração
     // manual em um dia repercute imediatamente nos indicadores semanais e mensais.
-    const allIssues = resultado.flatMap((r) =>
-      validarLegal(r.colaborador, r.dias, r.diasContexto, r.diasApuracao),
-    );
+    const validacoes = resultado.map((r) => ({
+      r,
+      issues: validarLegal(
+        r.colaborador,
+        r.dias,
+        r.diasContexto,
+        r.diasApuracao,
+      ),
+    }));
+    const allIssues = validacoes.flatMap((v) => v.issues);
     const cobertura = validarCobertura(resultado);
     const erros = allIssues.filter((x) => x.severidade === "erro");
     const alertas = allIssues.filter(
@@ -230,18 +239,18 @@ export function createCalendarioUI({
     const infos = allIssues.filter((x) => x.severidade === "info");
 
     if (erros.length) {
-      html += `<div class="rounded-lg px-3.5 py-2.5 text-sm bg-fintria-vermelhoBg text-fintria-vermelho mb-2"><b>${erros.length} incompatibilidade(s) objetiva(s).</b> Revise os itens abaixo antes de tratar a escala como válida.</div>`;
+      analises += `<div class="rounded-lg px-3.5 py-2.5 text-sm bg-fintria-vermelhoBg text-fintria-vermelho mb-2"><b>${erros.length} incompatibilidade(s) objetiva(s).</b> Os erros detalhados estão antes da grade e precisam ser corrigidos antes de utilizar a escala.</div>`;
     } else if (alertas.length) {
-      html += `<div class="rounded-lg px-3.5 py-2.5 text-sm bg-fintria-ambarBg text-fintria-ambar mb-2"><b>${alertas.length} ponto(s) dependem de análise.</b> Verificações documentais ou de enquadramento pendentes não equivalem à aprovação de adequação à EC 141.</div>`;
+      analises += `<div class="rounded-lg px-3.5 py-2.5 text-sm bg-fintria-ambarBg text-fintria-ambar mb-2"><b>${alertas.length} ponto(s) dependem de análise.</b> Verificações documentais ou de enquadramento pendentes não equivalem à aprovação de adequação à EC 141.</div>`;
     } else {
-      html += `<div class="rounded-lg px-3.5 py-2.5 text-sm bg-fintria-verdeBg text-fintria-verde mb-2"><b>Nenhuma incompatibilidade objetiva detectada</b> nas regras modeladas. Isso não substitui a conferência do caso concreto.</div>`;
+      analises += `<div class="rounded-lg px-3.5 py-2.5 text-sm bg-fintria-verdeBg text-fintria-verde mb-2"><b>Nenhuma incompatibilidade objetiva detectada</b> nas regras modeladas. Isso não substitui a conferência do caso concreto.</div>`;
     }
 
     if (cobertura.length) {
-      html += `<div class="rounded-lg px-3.5 py-2.5 text-sm bg-fintria-ambarBg text-fintria-ambar mb-3">⚠ <b>Problema de cobertura:</b> ${cobertura.map((x) => escapeHtml(x.mensagem)).join(" ")}</div>`;
+      analises += `<div class="rounded-lg px-3.5 py-2.5 text-sm bg-fintria-ambarBg text-fintria-ambar mb-3">⚠ <b>Problema de cobertura:</b> ${cobertura.map((x) => escapeHtml(x.mensagem)).join(" ")}</div>`;
     }
 
-    html += `<div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 mb-4">
+    analises += `<div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 mb-4">
     <div class="border border-slate-200 rounded-lg p-3 bg-slate-50"><b class="text-fintria-vermelho">${erros.length}</b><div class="text-xs text-slate-500">ERROS</div></div>
     <div class="border border-slate-200 rounded-lg p-3 bg-slate-50"><b class="text-fintria-ambar">${alertas.length}</b><div class="text-xs text-slate-500">ANÁLISES</div></div>
     <div class="border border-slate-200 rounded-lg p-3 bg-slate-50"><b class="text-fintria-azul">${infos.length}</b><div class="text-xs text-slate-500">INFORMATIVOS</div></div>
@@ -251,13 +260,7 @@ export function createCalendarioUI({
     // ---------------------------------------------------------
     // PAINEL POR COLABORADOR
     // ---------------------------------------------------------
-    resultado.forEach((r) => {
-      const issues = validarLegal(
-        r.colaborador,
-        r.dias,
-        r.diasContexto,
-        r.diasApuracao,
-      );
+    validacoes.forEach(({ r, issues }) => {
       const hasError = issues.some((x) => x.severidade === "erro");
       const hasAlert = issues.some(
         (x) => x.severidade === "alerta" || x.severidade === "pendencia",
@@ -285,15 +288,41 @@ export function createCalendarioUI({
               diasAlvo,
             )
           : null;
-      html += `<div class="border border-slate-200 rounded-lg px-3.5 py-3 mb-3">
+      analises += `<div class="border border-slate-200 rounded-lg px-3.5 py-3 mb-3">
       <div class="flex justify-between items-start gap-3">
         <div><b>${escapeHtml(r.colaborador.nome || "(sem nome)")}</b> <span class="text-slate-500">— ${escapeHtml(r.colaborador.cargo || "")}</span> <span class="text-xs text-slate-500">· ${fmtHoras(Number(r.colaborador.horasSemana) || 0)}/semana</span></div>
         <span class="text-[10px] font-bold px-2.5 py-1 rounded-full ${cls}">${label}</span>
       </div>
       ${r.colaborador.quadroDominio?.ativo !== false && r.colaborador.quadroDominio ? '<div class="text-xs text-slate-500 mt-1">Horário individual da Domínio: horários, intervalos e folgas desta pessoa aparecem na grade. A carga de referência deve ser conferida com o contrato.</div>' : state.horarioPorDia ? `<div class="text-xs text-slate-500 mt-1">Carga distribuída dentro dos horários de cada dia. Dias reduzidos são respeitados; consulte os horários efetivos na grade e o fechamento no resumo semanal.</div>` : jIndividual ? `<div class="text-xs text-slate-500 mt-1">Jornada individual estimada (uniforme): entrada ${state.jornada.entrada} · ${fmtHoras(jIndividual.horasDia)}/dia médio em ${diasAlvo} dia(s) · saída ${jIndividual.saida}. Esta é apenas a referência média; os horários efetivos de cada dia aparecem na grade e consideram folgas, feriados e ajustes manuais.</div>` : ""}
-      ${issues.length ? `<div class="mt-2 space-y-1">${issues.map((x) => `<div class="text-xs flex gap-2 items-start">${severityBadge(x)}<span>${escapeHtml(x.mensagem)}</span></div>`).join("")}</div>` : ""}
+      ${
+        issues.length
+          ? `<div class="mt-2 space-y-1">${issues
+              .filter((x) => x.severidade !== "erro")
+              .map(
+                (x) =>
+                  `<div class="text-xs flex gap-2 items-start">${severityBadge(x)}<span>${escapeHtml(x.mensagem)}</span></div>`,
+              )
+              .join("")}</div>`
+          : ""
+      }
     </div>`;
     });
+
+    let html = erros.length
+      ? `<details data-erros-escala open class="border border-red-200 rounded-lg p-4 mb-4"><summary class="cursor-pointer font-semibold text-fintria-vermelho">${erros.length} incompatibilidade(s) objetiva(s). Corrija os erros abaixo antes de utilizar a escala.</summary>${validacoes
+          .filter((v) => v.issues.some((i) => i.severidade === "erro"))
+          .map(
+            (v) =>
+              `<div class="mt-3"><b>${escapeHtml(v.r.colaborador.nome || "(sem nome)")}</b>${v.issues
+                .filter((i) => i.severidade === "erro")
+                .map(
+                  (i) =>
+                    `<p class="text-sm mt-1">${severityBadge(i)} ${escapeHtml(i.mensagem)}</p>`,
+                )
+                .join("")}</div>`,
+          )
+          .join("")}</details>`
+      : "";
 
     // ---------------------------------------------------------
     // ESCALA VISUAL — modelo inspirado no quadro do Big Ambitions:
@@ -307,13 +336,14 @@ export function createCalendarioUI({
       const cursor = getMonday(inicio);
       const ultima = getMonday(fim);
 
-      html += `<div class="border border-slate-200 rounded-xl overflow-hidden mb-5">
+      html += `<div data-escala-quadro class="escala-quadro border border-slate-200 rounded-xl mb-5">
       <div class="bg-fintria-navy text-white px-4 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-1">
         <div><div class="font-display font-bold text-base">Escala mensal</div><div class="text-xs opacity-85">Dias na horizontal · semanas do mês na vertical · resumo da semana na última coluna</div></div>
         <div class="text-xs opacity-85">Clique em um colaborador para alterar o status</div>
       </div>
-      <p class="text-xs text-slate-500 px-3 py-2 no-print 2xl:hidden">Deslize a tabela horizontalmente para ver todos os dias e o resumo da semana.</p>
-      <div class="w-full overflow-x-auto">
+      <div class="escala-ferramentas no-print"><span>Role para ver os dias e as semanas. O resumo fica na última coluna.</span><button type="button" data-ver-resumo class="border rounded px-3 py-1 text-fintria-navy">Ver resumo da semana →</button></div>
+      <div data-rolagem-topo class="escala-rolagem-topo no-print" tabindex="0" role="region" aria-label="Rolagem horizontal da escala"><div data-rolagem-espaco></div></div>
+      <div data-rolagem-escala class="escala-rolagem" tabindex="0" role="region" aria-label="Escala mensal: role para ver todos os dias, semanas e o resumo">
         <table class="escala-mensal border-collapse w-full table-fixed text-[11px] leading-tight">
           <colgroup>
             <col style="width:7%">
@@ -511,7 +541,16 @@ export function createCalendarioUI({
     <span class="italic">A grade e os resumos são recalculados após cada alteração.</span>
   </div>`;
 
+    html += coberturaHtml + ajustesHtml;
+    html += `<details data-analises-escala class="border border-slate-200 rounded-lg p-4 mt-4"><summary class="cursor-pointer font-semibold text-fintria-navy">Análises e informações por colaborador — ${alertas.length} ponto(s) de análise · ${infos.length} informativo(s)</summary><div class="mt-4">${analises}</div></details>`;
+    const anterior = container.querySelector("[data-rolagem-escala]");
+    const posicao = {
+      left: anterior?.scrollLeft || 0,
+      top: anterior?.scrollTop || 0,
+    };
+    limparRolagem();
     container.innerHTML = html;
+    limparRolagem = configurarRolagemEscala(container, env.window, posicao);
     ajustes.bindEvents();
 
     container.querySelectorAll("[data-ri][data-di]").forEach((el) => {
