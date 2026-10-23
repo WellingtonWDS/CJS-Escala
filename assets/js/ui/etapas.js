@@ -3,6 +3,13 @@ import { escapeHtml } from "../shared/formatacao.js";
 export function createEtapasUI({ document, window, state }) {
   const nav = document.getElementById("etapas-nav");
   const links = [...nav.querySelectorAll("[data-etapa-link]")];
+  const marco = document.getElementById("etapas-marco");
+  function atualizarBarraFixa() {
+    const distancia = -marco.getBoundingClientRect().top;
+    // Limiares diferentes evitam alternância ao mudar a altura da barra.
+    if (distancia > 64) nav.classList.add("etapas-nav-compacta");
+    else if (distancia < 0) nav.classList.remove("etapas-nav-compacta");
+  }
   const paineis = links.map((link) =>
     document.getElementById(link.dataset.etapaLink),
   );
@@ -136,9 +143,12 @@ export function createEtapasUI({ document, window, state }) {
     etapaAtual: () => paineis[atual].id,
     init() {
       daUrl(false);
+      atualizarBarraFixa();
       atualizarPendencias();
     },
     bindEvents() {
+      window.addEventListener("scroll", atualizarBarraFixa, { passive: true });
+      window.addEventListener("resize", atualizarBarraFixa);
       for (const painel of paineis) {
         const titulo = painel.querySelector("h2");
         titulo.tabIndex = -1;

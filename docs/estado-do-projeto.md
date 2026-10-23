@@ -13,7 +13,7 @@ O fluxo principal está implementado e continua em evolução. Já permite impor
 | Área | O que já está disponível |
 | --- | --- |
 | Acesso | Login por senha compartilhada, sessão fixa de 12 horas, cookie assinado, bloqueio no servidor e na interface ao expirar e botão Sair. |
-| Navegação | Oito etapas com avançar/voltar, acesso direto pela barra horizontal, sem rolagem automática na troca, e preservação dos dados. Tutorial guiado de nove passos e indicadores de preenchimento obrigatório pendente. |
+| Navegação | Oito etapas com avançar/voltar, acesso direto pela barra horizontal fixa no topo e compacta durante a rolagem, sem rolagem automática na troca, e preservação dos dados. Tutorial guiado de nove passos e indicadores de preenchimento obrigatório pendente. |
 | Colaboradores | Cadastro manual, modelo/importação CSV e importação Domínio, com lista única para revisar, editar e remover pessoas. Os painéis de entrada começam fechados. |
 | Importação Domínio | Relatórios Quadro de Horário de Trabalho em XLS/XLSX, prévia e confirmação, metadados da empresa, jornadas individuais, admissão e ciclos. Dias semanais omitidos são considerados folga; dados ambíguos exigem revisão. |
 | Sexo por prenome | Sugestão conservadora por base local de nomes, limiar de 99% e requisitos de volume/disponibilidade dos dados, indicação de preenchimento automático e preservação de escolhas manuais. |

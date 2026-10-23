@@ -153,7 +153,44 @@ body {
 
 /* Navegação das etapas, sem remontar os formulários ao trocar de página. */
 .etapas-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
   padding: 24px 12px 12px;
+  background: #f1f5f9;
+}
+.etapas-nav.etapas-nav-compacta {
+  padding: 4px 8px;
+  background: rgb(248 250 252 / 97%);
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 3px 10px rgb(15 23 42 / 7%);
+}
+.etapas-nav-compacta .etapas-linha {
+  gap: 5px;
+  padding: 2px 0;
+}
+.etapas-nav-compacta .etapas-linha li {
+  flex: 1 0 auto;
+}
+.etapas-nav-compacta .etapas-linha a {
+  gap: 5px;
+  min-height: 34px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+.etapas-nav-compacta .etapa-numero {
+  width: 20px;
+  height: 20px;
+  font-size: 11px;
+}
+.etapas-nav-compacta [data-pendente] {
+  padding-right: 22px;
+}
+[data-etapa] {
+  scroll-margin-top: 88px;
 }
 .etapas-linha {
   display: flex;
