@@ -75,6 +75,12 @@ module.exports = async function testarConversao({ browser, baseURL }) {
     assert.equal(s.conversao.proposta.config.tipoEscala, "5x2");
     assert.equal(s.conversao.proposta.config.mes, 1);
     assert.equal(s.conversao.comparacao.status, "suficiente");
+    assert.equal(
+      await page
+        .locator("#conversao-comparacao [data-diagnostico-equipe]")
+        .getAttribute("data-status"),
+      "coberta",
+    );
     await irParaEtapa(page, "#conversao-diagnostico");
     assert.match(
       await page.locator("#conversao-diagnostico").innerText(),
@@ -98,6 +104,7 @@ module.exports = async function testarConversao({ browser, baseURL }) {
     assert.equal(download.suggestedFilename(), "proposta-5x2-2028-02.csv");
     const csv = await readFile(await download.path(), "utf8");
     assert.match(csv, /2028-02/);
+    assert.match(csv, /Diagnóstico da equipe e contratação/);
     await page.reload();
     await page.waitForFunction(
       () => document.documentElement.dataset.ready === "true",

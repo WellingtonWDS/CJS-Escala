@@ -1,10 +1,5 @@
-import { habilitadoPara, funcaoDoDia } from "./funcoes.js";
-import {
-  aplicarRestricoesDia,
-  bloqueioDoTurno,
-  janelaPermitida,
-  validarRestricoes,
-} from "./restricoes.js";
+import { diagnosticarEquipe } from "./diagnostico-equipe.js";
+import { aplicarRestricoesDia, validarRestricoes } from "./restricoes.js";
 import { apurarComputoCCT } from "./computo-cct.js";
 import { createDomain } from "./index.js";
 import {
@@ -22,12 +17,7 @@ import {
   minToTime,
   timeToMin,
 } from "./datas-horas.js";
-import {
-  PRIMEIRA_FASE,
-  referenciaSemana,
-  limiteDiario,
-  VERSAO_REGRAS,
-} from "./ec141.js";
+import { PRIMEIRA_FASE, limiteDiario, VERSAO_REGRAS } from "./ec141.js";
 import { apurarSemana } from "./resumo-semanal.js";
 import {
   configDoPerfil,
@@ -405,32 +395,11 @@ export function compararConversao(conversao) {
     { ...config, tipoEscala: "6x1" },
     conversao.referencia.escala.resultado,
   );
-  const grupos = new Map();
-  for (const p of cobertura.periodos) {
-    const key = normalizarFuncao(p.funcao);
-    if (!grupos.has(key))
-      grupos.set(key, {
-        funcao: p.funcao,
-        necessarias: 0,
-        faltantes: 0,
-        pico: 0,
-        disponiveis: 0,
-        limiteCapacidade: 0,
-        insuficiencias: [],
-        diasNecessarios: {},
-        diasDisponiveis: {},
-      });
-    const g = grupos.get(key);
-    g.necessarias += ((p.fimMin - p.inicioMin) * p.necessarios) / 60;
-    g.faltantes += ((p.fimMin - p.inicioMin) * p.faltantes) / 60;
-    g.pico = Math.max(g.pico, p.faltantes);
-    g.diasNecessarios[p.data] = Math.max(
-      g.diasNecessarios[p.data] || 0,
-      p.necessarios,
-    );
-  }
+  const diagnostico = diagnosticarEquipe(config, escala.resultado, cobertura);
+  const grupos = new Map(
+    diagnostico.funcoes.map((f) => [normalizarFuncao(f.funcao), f]),
+  );
   const pessoas = escala.resultado.map((r) => {
-    const individual = configDoPerfil(config, r.colaborador) || config;
     const dias = diasPeriodo(config, r.dias);
     const original = conversao.referencia.escala.resultado.find(
       (a) => a.colaborador.id === r.colaborador.id,
@@ -439,56 +408,6 @@ export function compararConversao(conversao) {
     const soma = (list) => list.reduce((s, d) => s + d.horas, 0);
     const trabalho = (list) =>
       list.filter((d) => ["T", "FE"].includes(d.status)).length;
-    for (const g of grupos.values()) {
-      if (!habilitadoPara(r.colaborador, g.funcao)) continue;
-      g.disponiveis += soma(
-        dias.filter(
-          (d) =>
-            normalizarFuncao(funcaoDoDia(r.colaborador, d)) ===
-            normalizarFuncao(g.funcao),
-        ),
-      );
-      for (const semana of semanas(dias).values()) {
-        const ref = referenciaSemana(individual, semana, r.colaborador);
-        const capacidade = semana
-          .filter(
-            (d) =>
-              d.status !== "NC" &&
-              !bloqueioDoTurno(r.colaborador, d) &&
-              individual.diasTrabalho.includes(d.weekday) &&
-              (!d.feriado || d.feriado.trabalhado),
-          )
-          .map((d) => {
-            const j = normalizarJornada(individual.jornadaPorDia[d.weekday]);
-            if (!j) return 0;
-            const janela = janelaPermitida(r.colaborador, d);
-            const inicio = Math.max(j.entrada, janela?.inicio ?? j.entrada);
-            const fim = Math.min(j.saida, janela?.fim ?? j.saida);
-            const pausa = Math.max(
-              0,
-              Math.min(fim, j.intFim) - Math.max(inicio, j.intInicio),
-            );
-            return Math.max(0, (fim - inicio - pausa) / 60);
-          })
-          .sort((a, b) => b - a)
-          .slice(0, 5)
-          .reduce((a, b) => a + b, 0);
-        g.limiteCapacidade += Math.min(ref.alvo, capacidade);
-        const week = [...semanas(semana).keys()][0];
-        g.diasDisponiveis[week] =
-          (g.diasDisponiveis[week] || 0) +
-          Math.min(
-            5,
-            semana.filter(
-              (d) =>
-                d.status !== "NC" &&
-                !bloqueioDoTurno(r.colaborador, d) &&
-                individual.diasTrabalho.includes(d.weekday) &&
-                (!d.feriado || d.feriado.trabalhado),
-            ).length,
-          );
-      }
-    }
     const deficits = [...semanas(r.dias).values()]
       .map((s) => apurarSemana(r.colaborador, s, config))
       .filter((s) => s.completa && s.estado === "abaixo");
@@ -508,41 +427,6 @@ export function compararConversao(conversao) {
       deficits: deficits.length,
     };
   });
-  for (const g of grupos.values()) {
-    if (g.necessarias > g.limiteCapacidade + 0.01)
-      g.insuficiencias.push(
-        `A demanda exige ${g.necessarias.toFixed(1)}h-pessoa no período, acima do teto estimado de ${g.limiteCapacidade.toFixed(1)}h da equipe dessa função, respeitando contratos, dias disponíveis e até cinco dias por semana.`,
-      );
-    if (!config.colaboradores.some((c) => habilitadoPara(c, g.funcao)))
-      g.insuficiencias.push(
-        "Nenhum colaborador possui habilitação cadastrada para essa função.",
-      );
-    const noturna = config.colaboradores.some((c) =>
-      Object.values((configDoPerfil(config, c) || config).jornadaPorDia).some(
-        (f) => {
-          const j = normalizarJornada(f);
-          return (
-            j &&
-            (j.saida > 1440 ||
-              (config.turnosRevezamento &&
-                timeToMin(config.entradaTurnoB) + j.saida - j.entrada > 1440))
-          );
-        },
-      ),
-    );
-    if (!noturna) {
-      const necessidade = {};
-      for (const [data, minimo] of Object.entries(g.diasNecessarios)) {
-        const week = [...semanas([{ data }]).keys()][0];
-        necessidade[week] = (necessidade[week] || 0) + minimo;
-      }
-      for (const [week, minimo] of Object.entries(necessidade))
-        if (minimo > (g.diasDisponiveis[week] || 0))
-          g.insuficiencias.push(
-            `Semana de ${week}: a demanda exige pelo menos ${minimo} dias-pessoa de presença, mas esta equipe pode oferecer no máximo ${g.diasDisponiveis[week] || 0} em 5×2. Mesmo havendo saldo de horas, faltam pessoas para cobrir os dias.`,
-          );
-    }
-  }
   const erros = escala.validacoes.flatMap((v) =>
     v.issues.filter((i) => i.severidade === "erro"),
   );
@@ -558,7 +442,7 @@ export function compararConversao(conversao) {
   const naoAvaliada =
     !cobertura.configurada ||
     !cobertura.periodos.length ||
-    cobertura.avisos.length > 0;
+    diagnostico.avisos.length > 0;
   const status = naoAvaliada
     ? "nao_avaliada"
     : cobertura.lacunas.length
@@ -576,7 +460,8 @@ export function compararConversao(conversao) {
     pessoas,
     erros: erros.length,
     pendencias: pendencias.length,
-    avisos: cobertura.avisos,
+    avisos: diagnostico.avisos,
+    diagnostico,
     lacunas: cobertura.lacunas,
     faltantesAntes: antes.lacunas.reduce(
       (s, l) => s + ((l.fimMin - l.inicioMin) * l.faltantes) / 60,

@@ -1,6 +1,6 @@
 # Estado do projeto — CJS Escala
 
-Atualizado em **23/10/2026**. Referência funcional: versão de regras `ec141-2026-10-23-2` ([histórico do projeto](https://github.com/WellingtonWDS/CJS-Escala/commits/main/)). Esta página resume o andamento; o [README](../README.md) detalha operação, arquitetura, configuração e testes.
+Atualizado em **23/10/2026**. Referência funcional: versão de regras `ec141-2026-10-23-3` ([histórico do projeto](https://github.com/WellingtonWDS/CJS-Escala/commits/main/)). Esta página resume o andamento; o [README](../README.md) detalha operação, arquitetura, configuração e testes.
 
 ## Objetivo e estágio atual
 
@@ -26,6 +26,7 @@ O fluxo principal está implementado e continua em evolução. Já permite impor
 | Geração e revisão | Grade mensal, semanas civis completas, resumo semanal com horas, abonos e ausências, ocorrências por colaborador e ajustes manuais com recálculo. Bloqueios individuais não podem ser ultrapassados pela edição. |
 | Cobertura operacional | Cadastro opcional de mínimos por função, horário e dia; identificação de faixas descobertas, considerando pausas e viradas de dia. As funções vêm do cadastro dos colaboradores. |
 | Ajustes de cobertura | Sugestões de troca de folga, horário/turno e função habilitada; prévia antes/depois, aplicar e desfazer a última aplicação, validação de dados atuais e carregamento com progresso/cancelamento em segundo plano. |
+| Diagnóstico de pessoal | Lacunas agrupadas por função, dias, horário e quantidade, com datas; diferencia capacidade insuficiente, disponibilidade, habilitações compartilhadas e redistribuição. Verifica simultaneidade, horas e dias-pessoa sem duplicar a equipe. Presente na escala, comparação e CSV. |
 | Conversão e comparação | Origem 6×1 preservada, proposta 5×2 em período próprio, busca de distribuição de folgas e comparação de horas, dias e cobertura. Diagnóstico de suficiência, insuficiência demonstrável, necessidade de ajustes, incompatibilidade ou ausência de base para avaliação. |
 | Exportação e armazenamento | CSV detalhado, impressão e persistência local no navegador. Alterações invalidam resultados dependentes; versões antigas das regras exigem nova geração. |
 | Estrutura técnica | Módulos separados de domínio, interface, importação, exportação e estado; build dos arquivos públicos e autenticação no servidor da Vercel. |
@@ -36,6 +37,7 @@ O fluxo principal está implementado e continua em evolução. Já permite impor
 - **Acesso compartilhado:** não há contas individuais, permissões por usuário, recuperação de senha ou trilha de auditoria de autoria das alterações.
 - **Busca limitada:** além da distribuição inicial de folgas, há sugestões de troca de folga, horário/turno e função. O motor usa até 600 avaliações e 20 ajustes por execução, mantém as horas e dias semanais e não aceita abrir outra lacuna. Ainda não há otimização global ou garantia de encontrar toda solução possível; 12×36 e ciclos diferenciados não são alterados automaticamente.
 - **Horários restritos:** na geração inicial, a janela individual recorta a jornada sem estender o expediente ou mover a pausa. As sugestões podem deslocar entrada, pausa e saída dentro dos limites declarados, mediante aplicação da prévia, mas não aumentam as horas para suprir déficits. Plantão 12×36 incompatível é retirado inteiro, com explicação.
+- **Diagnóstico:** os tetos potenciais não garantem viabilidade; férias podem exigir reforço temporário. Em noites/ciclos especiais, usa disponibilidade simultânea sem presumir rateio de horas/dias semanais. O limite de processamento ou dados inválidos suspendem a conclusão; as lacunas continuam disponíveis.
 - **Capacidade e funções:** há habilitações adicionais e uma função alocada por plantão, sem divisão de funções em faixas dentro do dia. Não há dimensionamento exato de contratações. A capacidade potencial por função não implica disponibilidade simultânea de uma mesma pessoa em várias funções; lacuna na proposta gerada, isoladamente, não prova falta de pessoal.
 - **Ausências:** férias e afastamentos ajustam a meta operacional de alocação; não há cálculo de folha, benefícios ou efeitos previdenciários.
 - **Regimes importados:** a conversão atende à origem 6×1 compatível. Importar um ciclo diferente não significa convertê-lo automaticamente para 5×2; âncoras e informações ambíguas precisam ser conferidas.
@@ -45,23 +47,23 @@ O fluxo principal está implementado e continua em evolução. Já permite impor
 
 ## Próximos passos propostos
 
-As implementações de restrições individuais e sugestões de ajustes de cobertura foram concluídas no escopo acima. Os itens abaixo são propostas de evolução, **ainda não implementadas**, sem prazo definido. A ordem pode ser revista conforme os testes com usuários.
+As implementações de restrições individuais, sugestões de ajustes de cobertura e diagnóstico de pessoal foram concluídas no escopo acima. Os itens abaixo são propostas de evolução, **ainda não implementadas**, sem prazo definido. A ordem pode ser revista conforme os testes com usuários.
 
 | Prioridade | Evolução | Resultado esperado |
 | --- | --- | --- |
-| 1 | Diagnóstico de pessoal mais preciso | Distinguir melhor a distribuição inadequada de uma capacidade insuficiente e apresentar alternativas por função, dia e horário. Os horários descobertos já são exibidos hoje. |
-| 2 | Comparação visual mais detalhada | Destacar as mudanças de cada dia e colaborador entre origem e proposta, além das tabelas e grades já disponíveis. |
-| 3 | Empresas, contas e versões salvas | Adicionar banco de dados, separação de empresas e usuários, persistência central e recuperação de versões. |
-| 4 | Revisão e publicação da escala | Registrar revisão, aprovação e publicação, com histórico de alterações e identificação dos responsáveis. |
+| 1 | Comparação visual mais detalhada | Destacar as mudanças de cada dia e colaborador entre origem e proposta, além das tabelas e grades já disponíveis. |
+| 2 | Empresas, contas e versões salvas | Adicionar banco de dados, separação de empresas e usuários, persistência central e recuperação de versões. |
+| 3 | Revisão e publicação da escala | Registrar revisão, aprovação e publicação, com histórico de alterações e identificação dos responsáveis. |
 
 ## Última validação registrada
 
-Na implementação das sugestões de ajuste de cobertura, em **23/10/2026**, foram registrados:
+Na implementação do diagnóstico de pessoal, em **23/10/2026**, foram registrados:
 
-- **370 testes unitários aprovados**, sem falhas, com `npm test`.
-- Login e carregamento do cálculo em segundo plano autenticado verificados com `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run test:auth:browser`.
+- **384 testes unitários aprovados**, sem falhas, com `npm test`.
+- A suíte específica de autenticação foi aprovada na etapa anterior das sugestões de ajuste. Esta entrega não altera o login.
 - Build e suíte completa de interface aprovados com `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run test:browser`.
-- Novos cenários de ajustes de horário/turno, habilitações e alocação sem duplicação, manutenção da cobertura existente, troca de folga, 11h de interjornada, sete dias consecutivos, janelas importadas, dados obsoletos, aplicar/desfazer e progresso/cancelamento na interface.
+- Novos cenários de lacunas recorrentes, capacidade por horário, funções compartilhadas, janelas restritas, férias, semanas e meses parciais, horas/dias-pessoa insuficientes, turnos noturnos, dados inválidos e exportação. Na interface: recálculo ao aplicar/desfazer ajustes e suspensão da conclusão desatualizada.
+- Cenários de ajustes de horário/turno, habilitações e alocação sem duplicação, manutenção da cobertura existente, troca de folga, 11h de interjornada, sete dias consecutivos, janelas importadas, dados obsoletos, aplicar/desfazer e progresso/cancelamento na interface.
 - Cenários de férias parciais e integrais, afastamentos, feriados durante ausências, folgas fixas, janelas diurnas/noturnas, plantões 12×36/CCT, turnos A/B, virada de mês, admissão, importação Domínio, cobertura, conversão, CSV, persistência e bloqueio de edição incompatível.
 
 Este é o registro daquela validação, não uma execução contínua nem uma confirmação do estado do deploy na Vercel. Os comandos para novas execuções e para a suíte específica de autenticação estão no [README](../README.md#testes). Os testes de interface simulam serviços externos e não validam integralmente a aparência ou a disponibilidade das CDNs.

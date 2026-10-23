@@ -1,3 +1,8 @@
+import {
+  diagnosticarEquipe,
+  TITULOS_DIAGNOSTICO,
+  CAUSAS_DIAGNOSTICO,
+} from "../domain/diagnostico-equipe.js";
 import { funcaoDoDia } from "../domain/funcoes.js";
 import {
   dateFromKey,
@@ -200,6 +205,39 @@ export function gerarCsv(state) {
         i.tipo,
         i.mensagem,
       ]);
+  if (state.coberturaAtiva) {
+    const d = diagnosticarEquipe(state, state.escalaGerada.resultado);
+    linhas.push(
+      [],
+      ["Diagnóstico da equipe e contratação", TITULOS_DIAGNOSTICO[d.status]],
+      [
+        "Função",
+        "Dias / horários e faltantes",
+        "Causa",
+        "Datas",
+        "Ocorrências",
+      ],
+    );
+    for (const g of d.grupos)
+      linhas.push([
+        g.funcao,
+        g.resumo,
+        CAUSAS_DIAGNOSTICO[g.tipo],
+        g.datas.join(", "),
+        g.ocorrencias,
+      ]);
+    linhas.push(
+      [],
+      ["Verificações de capacidade — não somar como contratações"],
+    );
+    for (const p of d.provas) linhas.push([p.tipo, p.mensagem]);
+    for (const aviso of [...d.avisos, ...d.limitacoes])
+      linhas.push(["Observação", aviso]);
+    linhas.push([
+      "Limite da análise",
+      "Capacidade potencial não garante viabilidade. Ausências temporárias podem exigir reforço temporário. Uma pessoa não é contada em duas funções simultâneas.",
+    ]);
+  }
   return (
     "\uFEFF" + linhas.map((l) => l.map(csvCell).join(";")).join("\n") + "\n"
   );

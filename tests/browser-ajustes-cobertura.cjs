@@ -73,6 +73,14 @@ module.exports = async function ({ browser, baseURL }) {
     await irParaEtapa(page, "#btn-gerar");
     await page.locator("#btn-gerar").click();
     const inicial = (await saved()).escalaGerada;
+    const diagnostico = page.locator(
+      "#resultado-gerar [data-diagnostico-equipe]",
+    );
+    assert.equal(
+      await diagnostico.getAttribute("data-status"),
+      "redistribuicao",
+    );
+    assert.ok(await diagnostico.locator("[data-diagnostico-faixa]").count());
     const painel = page.locator("#resultado-gerar-ajustes");
     // Hold the worker request to exercise visible loading and cancellation without sleep.
     let liberar;
@@ -110,6 +118,7 @@ module.exports = async function ({ browser, baseURL }) {
     let s = await saved();
     assert.equal(s.escalaGerada.coberturaOperacional.lacunas.length, 0);
     assert.ok(s.escalaGerada.ajustesCobertura);
+    assert.equal(await diagnostico.getAttribute("data-status"), "coberta");
     assert.ok(await painel.locator("[data-ajuste-desfazer]").isEnabled());
     await page.reload();
     await page.waitForFunction(
@@ -119,6 +128,10 @@ module.exports = async function ({ browser, baseURL }) {
     assert.ok(await painel.locator("[data-ajuste-desfazer]").isEnabled());
     await painel.locator("[data-ajuste-desfazer]").click();
     assert.deepEqual((await saved()).escalaGerada.resultado, inicial.resultado);
+    assert.equal(
+      await diagnostico.getAttribute("data-status"),
+      "redistribuicao",
+    );
     // Register another enabled role, then use real conversion + worker + apply.
     await page.evaluate(() => {
       const key = "fintria-escala-dp-v2",
@@ -227,6 +240,12 @@ module.exports = async function ({ browser, baseURL }) {
       /desatualizada/,
     );
     assert.equal((await saved()).conversao.desatualizada, true);
+    assert.equal(
+      await page
+        .locator("#conversao-comparacao [data-diagnostico-equipe]")
+        .count(),
+      0,
+    );
     await irParaEtapa(page, "#tg-cobertura");
     await page.locator("#tg-cobertura").check();
     await irParaEtapa(page, "#btn-converter");
