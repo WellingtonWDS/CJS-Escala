@@ -1,3 +1,4 @@
+import { validarRestricoesEscala, ausenciaProgramada } from "./restricoes.js";
 import { politicaPlantaoDeclarada, temTrabalhoNoturno } from "./computo-cct.js";
 import { apurarCompensacaoHoras } from "./compensacao-horas.js";
 import { createDomain } from "./index.js";
@@ -256,9 +257,7 @@ export function createValidacao(state, jornada, feriados) {
       const mensal =
         semana.length &&
         semana.every((d) => instrumentoValido(state, d.data, "repousoMensal"));
-      const folgas = semana.filter(
-        (x) => x.status === "F" || x.status === "FC",
-      );
+      const folgas = semana.filter((x) => ["F", "FC", "I"].includes(x.status));
       if (semana.length === 7 && ["5x2", "6x1"].includes(state.tipoEscala)) {
         const alvoFolgas = state.tipoEscala === "5x2" ? 2 : 1;
         const obrigatorias = semana.filter(
@@ -283,7 +282,11 @@ export function createValidacao(state, jornada, feriados) {
           );
         }
       }
-      if (semana.length >= 7 && folgas.length < (mensal ? 1 : regime.folgas)) {
+      if (
+        semana.length >= 7 &&
+        !semana.some(ausenciaProgramada) &&
+        folgas.length < (mensal ? 1 : regime.folgas)
+      ) {
         out.push(
           issue(
             "REPOUSO_SEMANAL",
@@ -309,11 +312,11 @@ export function createValidacao(state, jornada, feriados) {
 
   function validarDomingos(colab, dias) {
     const out = [];
-    const domingos = dias.filter((x) => x.weekday === 0);
-    const trabalhados = domingosTrabalhados(dias);
-    const folgas = domingos.filter(
-      (x) => x.status === "F" || x.status === "FC",
+    const domingos = dias.filter(
+      (x) => x.weekday === 0 && !ausenciaProgramada(x),
     );
+    const trabalhados = domingosTrabalhados(dias);
+    const folgas = domingos.filter((x) => ["F", "FC", "I"].includes(x.status));
 
     if (trabalhados.length) {
       if (state.atividadeComercio && !state.domingosPermitidos) {
@@ -397,9 +400,9 @@ export function createValidacao(state, jornada, feriados) {
       if (
         apuracao.completa &&
         Number.isFinite(jornadaContratual) &&
-        Math.abs(apuracao.computadas - referencia.alvo) > 0.01
+        Math.abs(apuracao.computadas - apuracao.alvo) > 0.01
       ) {
-        const diferenca = apuracao.computadas - referencia.alvo;
+        const diferenca = apuracao.computadas - apuracao.alvo;
         const verbo = diferenca > 0 ? "acima" : "abaixo";
         out.push(
           issue(
@@ -409,7 +412,7 @@ export function createValidacao(state, jornada, feriados) {
               : diferenca > 0
                 ? "erro"
                 : "alerta",
-            `${primeiraData}: ${fmtHoras(total)} trabalhadas + ${fmtHoras(apuracao.abonadas)} abonadas por feriado = ${fmtHoras(apuracao.computadas)} computadas na semana, ${fmtHoras(Math.abs(diferenca))} ${verbo} do alvo programado de ${fmtHoras(referencia.alvo)}; contrato de referência ${fmtHoras(jornadaContratual)} preservado.`,
+            `${primeiraData}: ${fmtHoras(total)} trabalhadas + ${fmtHoras(apuracao.abonadas)} abonadas por feriado = ${fmtHoras(apuracao.computadas)} computadas na semana, ${fmtHoras(Math.abs(diferenca))} ${verbo} do alvo programado de ${fmtHoras(apuracao.alvo)}; contrato de referência ${fmtHoras(jornadaContratual)} preservado.`,
             primeiraData,
           ),
         );
@@ -539,16 +542,16 @@ export function createValidacao(state, jornada, feriados) {
       )
         continue;
       const dataAlvo = isoDate(state.ano, state.mes, d);
-      const todosFolga = resultado.every((r) => {
+      const todosSemTrabalho = resultado.every((r) => {
         const obj = r.dias.find((x) => x.data === dataAlvo);
-        return obj && ["F", "FC"].includes(obj.status);
+        return obj && !["T", "FE"].includes(obj.status);
       });
-      if (todosFolga)
+      if (todosSemTrabalho)
         out.push(
           issue(
             "COBERTURA",
             "alerta",
-            `Dia ${d}/${state.mes + 1}: todos os colaboradores estão em folga. Revise a cobertura operacional.`,
+            `Dia ${d}/${state.mes + 1}: todos os colaboradores estão sem trabalho escalado (folga, ausência ou indisponibilidade). Revise a cobertura operacional.`,
           ),
         );
     }
@@ -586,6 +589,7 @@ export function createValidacao(state, jornada, feriados) {
       unirDias(apuracao, contexto, dias),
     );
     return [
+      ...validarRestricoesEscala(colab, dias, state),
       ...(colab.quadroDominio?.ativo !== false &&
       colab.quadroDominio?.pendencias?.length
         ? [

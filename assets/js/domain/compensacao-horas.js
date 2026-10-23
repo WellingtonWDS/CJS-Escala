@@ -1,3 +1,4 @@
+import { ausenciaProgramada } from "./restricoes.js";
 import { dataValida, instrumentoValido, referenciaDia } from "./ec141.js";
 import { dateFromKey, isoDate, addDays } from "./datas-horas.js";
 /** A apuração não presume que um instrumento válido autorize qualquer excesso.
@@ -60,6 +61,10 @@ export function apurarCompensacaoHoras(state, c, dias) {
       );
     cursor = addDays(cursor, 1);
   }
+  if (periodo.some(ausenciaProgramada))
+    return incompleta(
+      "O período de compensação inclui férias ou afastamento. As ausências não constituem saldo compensatório; confira a cláusula no período efetivamente trabalhado.",
+    );
   const refs = periodo.map((d) => referenciaDia(state, d.data, c));
   if (
     new Set(refs.map((r) => r.horas)).size !== 1 ||

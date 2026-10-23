@@ -1,3 +1,4 @@
+import { folgaIndividual } from "./restricoes.js";
 import { referenciaDia, instrumentoValido, chaveData } from "./ec141.js";
 import { getMonday, addDays, isoDate } from "./datas-horas.js";
 
@@ -8,6 +9,7 @@ export function createPlanejadorFolgas(
   escolherBase,
   feriadosMap,
   indice,
+  colaborador = {},
 ) {
   const cache = new Map();
   const ordem = (dia) => (dia + 6) % 7;
@@ -24,6 +26,7 @@ export function createPlanejadorFolgas(
       if (f && !f.trabalhado && state.politicaFeriados !== "adicional")
         feriados.push(dia.getDay());
       if (
+        folgaIndividual(colaborador, chave(dia)) ||
         !operacionais.includes(dia.getDay()) ||
         (f && !f.trabalhado && state.politicaFeriados !== "adicional")
       )
@@ -46,7 +49,7 @@ export function createPlanejadorFolgas(
           state.tipoEscala === "5x2" ? 2 : 1,
           referenciaDia(state, addDays(segunda, 6)).folgas,
         );
-    if (state.politicaFeriados === "adicional")
+    if (state.politicaFeriados === "adicional" && !colaborador.restricoes)
       return { base, opcionais: base, obrigatorias };
     const quantidade = Math.max(0, alvo - obrigatorias.length);
     const restantes = base.filter((d) => !obrigatorias.includes(d));
@@ -74,6 +77,10 @@ export function createPlanejadorFolgas(
           referenciaDia(state, addDays(segunda, 6)).folgas === 2 &&
           !instrumentoValido(state, chaveData(segunda), "repousoMensal"))) &&
       !state.folgasFimSemana &&
+      !(
+        colaborador.restricoes?.diasIndisponiveis?.length ||
+        colaborador.restricoes?.folgasObrigatorias?.length
+      ) &&
       new Set(state.diasTrabalho).size === 7 &&
       plano.opcionais.length
     ) {

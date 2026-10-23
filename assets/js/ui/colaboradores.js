@@ -1,3 +1,4 @@
+import { camposRestricoes, bindRestricoes } from "./restricoes.js";
 import { preencherSexoPorNome } from "../domain/sexo-por-nome.js";
 import { mostrarColaboradores } from "./lista-colaboradores.js";
 import { prepararImportacao } from "../import/colaboradores.js";
@@ -23,6 +24,9 @@ export function createColaboradoresUI({
   function renderColaboradores({ preservarEnquadramento = false } = {}) {
     onFuncoesChange();
     const list = document.getElementById("colab-list");
+    const restricoesAbertas = [
+      ...list.querySelectorAll("details[data-restricoes][open]"),
+    ].map((el) => el.dataset.restricoes);
     const abertos = [
       ...list.querySelectorAll("details[data-perfil-dominio][open]"),
     ].map((el) => el.dataset.perfilDominio);
@@ -53,136 +57,142 @@ export function createColaboradoresUI({
       <button data-remove="${c.id}" title="Remover" class="text-fintria-vermelho bg-transparent text-base px-2 py-2 rounded hover:bg-red-50">✕</button>
       ${state.analiseEnquadramentoAtiva === true ? camposEnquadramento(c) : ""}
       ${camposDominio(c, state)}
+      ${camposRestricoes(c)}
     </div>`;
         })
         .join("") ||
       '<p class="text-slate-500 text-sm">Nenhum colaborador cadastrado ainda.</p>';
 
-    list.querySelectorAll("input,select").forEach((el) => {
-      el.onchange = (e) => {
-        const id = Number(e.target.dataset.id);
-        const c = state.colaboradores.find((x) => x.id === id);
-        if (c && e.target.dataset.dominio) {
-          const p = c.quadroDominio,
-            key = e.target.dataset.dominio;
-          if (key === "horario" || key === "status") {
-            const mapa = p.tipo === "ciclo" ? p.ciclo : p.semana;
-            const h = mapa[e.target.dataset.dia];
-            if (key === "status") h.status = e.target.value;
-            else {
-              h.jornada ??= {
-                entrada: "",
-                intInicio: "",
-                intFim: "",
-                saida: "",
-              };
-              h.jornada[e.target.dataset.horario] = e.target.value;
-            }
-          } else if (key === "tipo") {
-            if (e.target.value === "ciclo" && !Object.keys(p.ciclo).length)
-              p.ciclo = {
-                1: structuredClone(
-                  Object.values(p.semana).find(
-                    (h) => h.status === "trabalho",
-                  ) || { status: "nao_informado" },
-                ),
-                2: { status: "folga" },
-              };
-            if (e.target.value === "semanal" && !Object.keys(p.semana).length)
-              p.semana = Object.fromEntries(
-                [0, 1, 2, 3, 4, 5, 6].map((d) => [
-                  d,
-                  { status: "nao_informado" },
-                ]),
-              );
-            p.tipo = e.target.value;
-          } else
-            p[key] =
-              e.target.type === "checkbox" ? e.target.checked : e.target.value;
-          atualizarPerfilDominio(c, state);
-          invalidarEscala();
-          saveState();
-          if (key !== "horario") renderColaboradores();
-          else {
-            const horas = list.querySelector(
-              `[data-id="${c.id}"][data-field="horasSemana"]`,
-            );
-            if (horas) horas.value = c.horasSemana ?? "";
-            const calculadas = list.querySelector(
-              `[data-horas-dominio="${c.id}"]`,
-            );
-            if (calculadas)
-              calculadas.textContent = p.horasCalculadas ?? "indeterminadas";
-            const computo = list.querySelector(
-              `[data-resumo-computo-dominio="${c.id}"]`,
-            );
-            if (computo) computo.innerHTML = resumoComputoDominio(c, state);
-            const avisos = list.querySelector(
-              `[data-pendencias-dominio="${c.id}"]`,
-            );
-            if (avisos)
-              avisos.innerHTML = p.pendencias
-                .map((t) => `<li>${escapeHtml(t)}</li>`)
-                .join("");
-          }
-          renderResumo();
-          return;
-        }
-        if (c && e.target.dataset.ec141) {
-          c.ec141 ??= {};
-          c.ec141[e.target.dataset.ec141] =
-            e.target.type === "checkbox"
-              ? e.target.checked
-              : e.target.type === "number"
-                ? e.target.value === ""
-                  ? null
-                  : Number(e.target.value)
-                : e.target.value;
-          invalidarEscala();
-          saveState();
-          if (e.target.dataset.ec141 === "tipo") renderColaboradores();
-        } else if (c) {
-          c[e.target.dataset.field] =
-            e.target.dataset.field === "horasSemana"
-              ? Number(e.target.value)
-              : e.target.value;
-          if (c.horasSemana <= 0 && !c.quadroDominio) c.horasSemana = 44;
-          if (e.target.dataset.field === "sexo") {
-            c.sexoOrigem = "usuario";
-            delete c.sexoInferencia;
-          }
-          if (c.quadroDominio && e.target.dataset.field === "nome")
-            preencherSexoPorNome(c);
-          const sexo = list.querySelector(
-            `[data-id="${c.id}"][data-field="sexo"]`,
-          );
-          if (sexo) sexo.value = c.sexo;
-          const estimativa = list.querySelector(
-            `[data-sexo-estimativa="${c.id}"]`,
-          );
-          if (estimativa) estimativa.textContent = descricaoSexo(c);
-          if (c.quadroDominio) {
-            if (e.target.dataset.field === "horasSemana")
-              c.quadroDominio.cargaConfirmada = true;
+    list
+      .querySelectorAll("[data-field], [data-dominio], [data-ec141]")
+      .forEach((el) => {
+        el.onchange = (e) => {
+          const id = Number(e.target.dataset.id);
+          const c = state.colaboradores.find((x) => x.id === id);
+          if (c && e.target.dataset.dominio) {
+            const p = c.quadroDominio,
+              key = e.target.dataset.dominio;
+            if (key === "horario" || key === "status") {
+              const mapa = p.tipo === "ciclo" ? p.ciclo : p.semana;
+              const h = mapa[e.target.dataset.dia];
+              if (key === "status") h.status = e.target.value;
+              else {
+                h.jornada ??= {
+                  entrada: "",
+                  intInicio: "",
+                  intFim: "",
+                  saida: "",
+                };
+                h.jornada[e.target.dataset.horario] = e.target.value;
+              }
+            } else if (key === "tipo") {
+              if (e.target.value === "ciclo" && !Object.keys(p.ciclo).length)
+                p.ciclo = {
+                  1: structuredClone(
+                    Object.values(p.semana).find(
+                      (h) => h.status === "trabalho",
+                    ) || { status: "nao_informado" },
+                  ),
+                  2: { status: "folga" },
+                };
+              if (e.target.value === "semanal" && !Object.keys(p.semana).length)
+                p.semana = Object.fromEntries(
+                  [0, 1, 2, 3, 4, 5, 6].map((d) => [
+                    d,
+                    { status: "nao_informado" },
+                  ]),
+                );
+              p.tipo = e.target.value;
+            } else
+              p[key] =
+                e.target.type === "checkbox"
+                  ? e.target.checked
+                  : e.target.value;
             atualizarPerfilDominio(c, state);
-            const avisos = list.querySelector(
-              `[data-pendencias-dominio="${c.id}"]`,
-            );
-            if (avisos)
-              avisos.innerHTML = c.quadroDominio.pendencias
-                .map((t) => `<li>${escapeHtml(t)}</li>`)
-                .join("");
-            const conferido = list.querySelector(
-              `[data-id="${c.id}"][data-dominio="cargaConfirmada"]`,
-            );
-            if (conferido) conferido.checked = c.quadroDominio.cargaConfirmada;
+            invalidarEscala();
+            saveState();
+            if (key !== "horario") renderColaboradores();
+            else {
+              const horas = list.querySelector(
+                `[data-id="${c.id}"][data-field="horasSemana"]`,
+              );
+              if (horas) horas.value = c.horasSemana ?? "";
+              const calculadas = list.querySelector(
+                `[data-horas-dominio="${c.id}"]`,
+              );
+              if (calculadas)
+                calculadas.textContent = p.horasCalculadas ?? "indeterminadas";
+              const computo = list.querySelector(
+                `[data-resumo-computo-dominio="${c.id}"]`,
+              );
+              if (computo) computo.innerHTML = resumoComputoDominio(c, state);
+              const avisos = list.querySelector(
+                `[data-pendencias-dominio="${c.id}"]`,
+              );
+              if (avisos)
+                avisos.innerHTML = p.pendencias
+                  .map((t) => `<li>${escapeHtml(t)}</li>`)
+                  .join("");
+            }
+            renderResumo();
+            return;
           }
-          invalidarEscala();
-          saveState();
-          onFuncoesChange();
-        }
-      };
-    });
+          if (c && e.target.dataset.ec141) {
+            c.ec141 ??= {};
+            c.ec141[e.target.dataset.ec141] =
+              e.target.type === "checkbox"
+                ? e.target.checked
+                : e.target.type === "number"
+                  ? e.target.value === ""
+                    ? null
+                    : Number(e.target.value)
+                  : e.target.value;
+            invalidarEscala();
+            saveState();
+            if (e.target.dataset.ec141 === "tipo") renderColaboradores();
+          } else if (c) {
+            c[e.target.dataset.field] =
+              e.target.dataset.field === "horasSemana"
+                ? Number(e.target.value)
+                : e.target.value;
+            if (c.horasSemana <= 0 && !c.quadroDominio) c.horasSemana = 44;
+            if (e.target.dataset.field === "sexo") {
+              c.sexoOrigem = "usuario";
+              delete c.sexoInferencia;
+            }
+            if (c.quadroDominio && e.target.dataset.field === "nome")
+              preencherSexoPorNome(c);
+            const sexo = list.querySelector(
+              `[data-id="${c.id}"][data-field="sexo"]`,
+            );
+            if (sexo) sexo.value = c.sexo;
+            const estimativa = list.querySelector(
+              `[data-sexo-estimativa="${c.id}"]`,
+            );
+            if (estimativa) estimativa.textContent = descricaoSexo(c);
+            if (c.quadroDominio) {
+              if (e.target.dataset.field === "horasSemana")
+                c.quadroDominio.cargaConfirmada = true;
+              atualizarPerfilDominio(c, state);
+              const avisos = list.querySelector(
+                `[data-pendencias-dominio="${c.id}"]`,
+              );
+              if (avisos)
+                avisos.innerHTML = c.quadroDominio.pendencias
+                  .map((t) => `<li>${escapeHtml(t)}</li>`)
+                  .join("");
+              const conferido = list.querySelector(
+                `[data-id="${c.id}"][data-dominio="cargaConfirmada"]`,
+              );
+              if (conferido)
+                conferido.checked = c.quadroDominio.cargaConfirmada;
+            }
+            invalidarEscala();
+            saveState();
+            onFuncoesChange();
+          }
+        };
+      });
     list.querySelectorAll("[data-remove]").forEach((btn) => {
       btn.onclick = () => {
         state.colaboradores = state.colaboradores.filter(
@@ -194,6 +204,18 @@ export function createColaboradoresUI({
         saveState();
       };
     });
+    bindRestricoes({
+      list,
+      state,
+      onChange: () => {
+        invalidarEscala();
+        saveState();
+        renderResumo();
+      },
+      render: renderColaboradores,
+    });
+    for (const el of list.querySelectorAll("details[data-restricoes]"))
+      if (restricoesAbertas.includes(el.dataset.restricoes)) el.open = true;
     for (const el of list.querySelectorAll("details[data-perfil-dominio]"))
       if (abertos.includes(el.dataset.perfilDominio)) el.open = true;
     for (const id of enquadramentosAbertos) {

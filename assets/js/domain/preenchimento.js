@@ -1,3 +1,4 @@
+import { validarRestricoes } from "./restricoes.js";
 import {
   jornadaValidaEstrutural,
   timeToMin,
@@ -41,6 +42,12 @@ export function pendenciasPreenchimento(state, destino) {
   for (const c of pessoas) {
     const campo = (f) => `#colab-list [data-id="${c.id}"][data-field="${f}"]`;
     const nome = String(c.nome || "").trim();
+    for (const erro of validarRestricoes(c))
+      add(
+        "sec-config",
+        `[data-restricoes="${c.id}"]`,
+        `${nome || "Colaborador"}: ${erro}`,
+      );
     if (!nome)
       add("sec-config", campo("nome"), "Preencha o nome do colaborador.");
     if (!["feminino", "masculino"].includes(c.sexo))

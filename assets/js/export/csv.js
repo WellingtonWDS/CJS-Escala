@@ -10,6 +10,7 @@ import { createDomain } from "../domain/index.js";
 import { csvCell } from "../shared/formatacao.js";
 export function gerarCsv(state) {
   const { resultado } = state.escalaGerada;
+  const restricoes = resultado.some((r) => r.colaborador.restricoes);
   const dominio = resultado.some((r) => r.colaborador.quadroDominio);
   const domain = createDomain(state);
   const validacoes = resultado.map((r) => ({
@@ -66,6 +67,9 @@ export function gerarCsv(state) {
       "Enquadramento",
       "Aditamento informado",
       "Data da saída",
+      ...(restricoes
+        ? ["Restrição individual", "Horas dispensadas da meta de alocação"]
+        : []),
       ...(dominio ? ["Código Domínio", "Admissão", "CTPS", "Série"] : []),
       ...(sexoEstimado
         ? [
@@ -134,6 +138,12 @@ export function gerarCsv(state) {
               );
             })()
           : "",
+        ...(restricoes
+          ? [
+              d.restricao?.descricao || d.ajusteRestricao || "",
+              fmtHoras(d.horasDispensadasRestricao || 0),
+            ]
+          : []),
         ...(dominio
           ? [
               r.colaborador.quadroDominio?.codigo || "",

@@ -295,3 +295,14 @@ body {
     animation: none;
   }
 }
+
+/* Restrições por colaborador: controles nativos e cartões alinhados ao cadastro. */
+.restricao-bloco { padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; }
+.restricao-form { display: grid; grid-template-columns: minmax(160px,1.4fr) 1fr 1fr auto; gap: 10px; align-items: end; margin-top: 10px; }
+.restricao-form label { display: grid; gap: 6px; }
+.restricao-dias { display: flex; flex-wrap: wrap; gap: 8px; }
+.restricao-dia { display: inline-flex; align-items: center; gap: 7px; padding: 7px 10px; border: 1px solid #cbd5e1; border-radius: 7px; background: #fff; font-size: 12px; cursor: pointer; }
+.restricao-dia:has(input:checked) { background: #e7f5ee; border-color: #148354; color: #146340; }
+.restricao-dia input { accent-color: #148354; width: 15px; height: 15px; }
+.restricao-item { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid #e2e8f0; }
+@media (max-width: 700px) { .restricao-form { grid-template-columns: 1fr 1fr; } .restricao-form label:first-child { grid-column: 1 / -1; } .restricao-form button { grid-column: 1 / -1; } }

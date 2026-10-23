@@ -1,4 +1,9 @@
 import {
+  aplicarRestricoesDia,
+  validarRestricoes,
+  bloqueioNaData,
+} from "./restricoes.js";
+import {
   apurarComputoCCT,
   politicaPlantaoDeclarada,
   computoDaJornada,
@@ -127,6 +132,9 @@ export function createGerador(state, jornada, feriados, validacao) {
     feriadosMap,
   ) {
     verificarPerfil(colab);
+    const errosRestricoes = validarRestricoes(colab);
+    if (errosRestricoes.length)
+      throw new Error(`${colab.nome}: ${errosRestricoes.join(" ")}`);
     const individual = configDoPerfil(state, colab);
     if (individual)
       return createDomain(individual).gerarEscalaColaborador(
@@ -152,6 +160,7 @@ export function createGerador(state, jornada, feriados, validacao) {
       escolherFolgasSemana,
       feriadosMap,
       idx,
+      colab,
     );
     // Contexto anterior mantém as folgas consistentes ao gerar meses adjacentes.
     let cursor = addDays(dataInicio, -14);
@@ -185,16 +194,22 @@ export function createGerador(state, jornada, feriados, validacao) {
         }
       }
 
+      const bloqueio = bloqueioNaData(colab, key);
+      if (bloqueio && ["folga", "indisponivel"].includes(bloqueio.tipo))
+        status = "F";
       let repousoSeguranca = false;
       if (
         state.tipoEscala !== "12x36" &&
         status === "T" &&
+        !(bloqueio && ["ferias", "afastamento"].includes(bloqueio.tipo)) &&
         !(feriado && !feriado.trabalhado)
       ) {
         let seguidos = 0;
         for (
           let i = dias.length - 1;
-          i >= 0 && ["T", "FE"].includes(dias[i].status);
+          i >= 0 &&
+          ["T", "FE"].includes(dias[i].status) &&
+          !bloqueioNaData(colab, dias[i].data);
           i--
         )
           seguidos++;
@@ -218,6 +233,7 @@ export function createGerador(state, jornada, feriados, validacao) {
         status = "NC";
 
       dias.push({
+        colaboradorId: colab.id,
         dia: date.getDate(),
         data: key,
         weekday,
@@ -250,6 +266,11 @@ export function createGerador(state, jornada, feriados, validacao) {
 
     const periodo = dias.filter((d) => dateFromKey(d.data) >= dataInicio);
     distribuirHorasIndividuais(colab, periodo);
+    if (!state.adiarRestricoes)
+      for (const d of periodo)
+        aplicarRestricoesDia(colab, d, state, (dia) =>
+          Object.assign(dia, apurarComputoCCT(state, dia)),
+        );
     return periodo;
   }
 

@@ -1,3 +1,4 @@
+import { ausenciaProgramada, metaComAusencias } from "./restricoes.js";
 import { referenciaSemana } from "./ec141.js";
 import { distribuirCargaComAbonos } from "./distribuicao-horas.js";
 import { intervaloMin } from "./datas-horas.js";
@@ -15,9 +16,13 @@ export function apurarSemana(colaborador, dias, config = {}) {
       config,
     );
   const contrato = Number(colaborador.horasSemana);
-  const alvo = config.ano
+  const alvoOriginal = config.ano
     ? referenciaSemana(config, dias, colaborador).alvo
     : contrato;
+  const { dispensadas, alvo, semDiasAlocaveis } = metaComAusencias(
+    dias,
+    alvoOriginal,
+  );
   const cargaPrevista = distribuirCargaComAbonos(
     { ...colaborador, horasSemana: alvo },
     dias,
@@ -72,6 +77,15 @@ export function apurarSemana(colaborador, dias, config = {}) {
           : "abaixo";
   return {
     trabalhadas,
+    dispensadas,
+    semDiasAlocaveis,
+    alvoOriginal,
+    ausencias: dias.filter(ausenciaProgramada).map((d) => ({
+      data: d.data,
+      descricao:
+        d.restricao?.descricao ||
+        (d.status === "VA" ? "Férias" : "Afastamento"),
+    })),
     creditosIntervalo,
     creditosNoturnos,
     abonadas,

@@ -1,3 +1,10 @@
+import {
+  aplicarRestricoesDia,
+  bloqueioDoTurno,
+  janelaPermitida,
+  validarRestricoes,
+} from "./restricoes.js";
+import { apurarComputoCCT } from "./computo-cct.js";
 import { createDomain } from "./index.js";
 import {
   analisarCobertura,
@@ -74,10 +81,16 @@ export function gerarReferenciaAtual(state) {
   config.planoFolgasConversao = {};
   config.folgasFimSemana = false;
   config.instrumentoCompensacao = "nenhuma";
+  config.adiarRestricoes = true;
   const domain = createDomain(config);
   const escala = domain.gerarDadosEscala();
+  delete config.adiarRestricoes;
   for (const r of escala.resultado)
-    for (const d of [...r.dias, ...r.diasContexto, ...r.diasApuracao]) {
+    for (const d of new Set([
+      ...r.dias,
+      ...r.diasContexto,
+      ...r.diasApuracao,
+    ])) {
       const proprio = perfilAtivo(r.colaborador)
         ? createDomain(configDoPerfil(config, r.colaborador) || config)
         : domain;
@@ -88,6 +101,19 @@ export function gerarReferenciaAtual(state) {
       d.horas = ["T", "FE"].includes(d.status) ? horas : 0;
       d.horasPrevistas = d.previstoOriginal ? horas : 0;
       domain.atualizarHorarioEfetivo(d);
+      aplicarRestricoesDia(
+        r.colaborador,
+        d,
+        configDoPerfil(config, r.colaborador) || config,
+        (dia) =>
+          Object.assign(
+            dia,
+            apurarComputoCCT(
+              configDoPerfil(config, r.colaborador) || config,
+              dia,
+            ),
+          ),
+      );
     }
   return { config, escala: recalcular(config, escala) };
 }
@@ -169,6 +195,10 @@ function pontuacao(config, escala) {
 const melhor = (a, b) => a[0] < b[0] || (a[0] === b[0] && a[1] < b[1]);
 
 export function converterEscala(state, opcoes = {}) {
+  for (const c of state.colaboradores) {
+    const erros = validarRestricoes(c);
+    if (erros.length) throw new Error(`${c.nome}: ${erros.join(" ")}`);
+  }
   for (const c of state.colaboradores)
     if (perfilAtivo(c)) {
       verificarPerfil(c);
@@ -404,14 +434,21 @@ export function compararConversao(conversao) {
           .filter(
             (d) =>
               d.status !== "NC" &&
+              !bloqueioDoTurno(r.colaborador, d) &&
               individual.diasTrabalho.includes(d.weekday) &&
               (!d.feriado || d.feriado.trabalhado),
           )
           .map((d) => {
             const j = normalizarJornada(individual.jornadaPorDia[d.weekday]);
-            return j
-              ? Math.max(0, (j.saida - j.entrada - j.intervalo) / 60)
-              : 0;
+            if (!j) return 0;
+            const janela = janelaPermitida(r.colaborador, d);
+            const inicio = Math.max(j.entrada, janela?.inicio ?? j.entrada);
+            const fim = Math.min(j.saida, janela?.fim ?? j.saida);
+            const pausa = Math.max(
+              0,
+              Math.min(fim, j.intFim) - Math.max(inicio, j.intInicio),
+            );
+            return Math.max(0, (fim - inicio - pausa) / 60);
           })
           .sort((a, b) => b - a)
           .slice(0, 5)
@@ -425,6 +462,7 @@ export function compararConversao(conversao) {
             semana.filter(
               (d) =>
                 d.status !== "NC" &&
+                !bloqueioDoTurno(r.colaborador, d) &&
                 individual.diasTrabalho.includes(d.weekday) &&
                 (!d.feriado || d.feriado.trabalhado),
             ).length,
@@ -442,9 +480,11 @@ export function compararConversao(conversao) {
       horasDepois: soma(dias),
       diasAntes: trabalho(anteriores),
       diasDepois: trabalho(dias),
-      folgasAntes: anteriores.filter((d) => ["F", "FC"].includes(d.status))
+      folgasAntes: anteriores.filter(
+        (d) => !["T", "FE", "NC"].includes(d.status),
+      ).length,
+      folgasDepois: dias.filter((d) => !["T", "FE", "NC"].includes(d.status))
         .length,
-      folgasDepois: dias.filter((d) => ["F", "FC"].includes(d.status)).length,
       deficits: deficits.length,
     };
   });

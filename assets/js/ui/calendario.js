@@ -1,3 +1,6 @@
+import { violacoesDia, aplicarRestricoesDia } from "../domain/restricoes.js";
+import { configDoPerfil } from "../domain/perfil-dominio.js";
+import { apurarComputoCCT } from "../domain/computo-cct.js";
 import { apurarSemana } from "../domain/resumo-semanal.js";
 import {
   isoDate,
@@ -37,6 +40,13 @@ export function createCalendarioUI({
     if (obj.status === "NC") {
       alert(
         "Data anterior à admissão. Confira a data de admissão no cadastro importado.",
+      );
+      return;
+    }
+    const colaborador = state.escalaGerada.resultado[ri].colaborador;
+    if (obj.restricao && obj.restricao.tipo !== "horario") {
+      alert(
+        `${obj.restricao.descricao}. Altere a restrição no cadastro do colaborador e gere novamente para modificar esta data.`,
       );
       return;
     }
@@ -90,9 +100,26 @@ export function createCalendarioUI({
         return;
       }
     }
-    obj.status = status;
-    obj.horas = novasHoras;
-    atualizarHorarioEfetivo(obj);
+    const candidato = { ...obj, status, horas: novasHoras };
+    atualizarHorarioEfetivo(candidato);
+    if (obj.ajusteRestricao && ["T", "FE"].includes(status)) {
+      candidato.entradaMin = obj.entradaMin;
+      candidato.intervaloMin = obj.intervaloMin;
+      candidato.saidaMin =
+        candidato.entradaMin + novasHoras * 60 + candidato.intervaloMin;
+      candidato.intervaloInicioMin = obj.intervaloInicioMin;
+      candidato.intervaloFimMin = obj.intervaloFimMin;
+    }
+    Object.assign(
+      candidato,
+      apurarComputoCCT(configDoPerfil(state, colaborador) || state, candidato),
+    );
+    const violacoes = violacoesDia(colaborador, candidato);
+    if (violacoes.length) {
+      alert(violacoes.join("\n"));
+      return;
+    }
+    Object.assign(obj, candidato);
     state.escalaGerada.validacoes = state.escalaGerada.resultado.map((r) => ({
       colaborador: r.colaborador,
       issues: validarLegal(
@@ -119,6 +146,10 @@ export function createCalendarioUI({
       for (const dia of [...(r.diasContexto ?? []), ...r.dias]) {
         dia.turno = domain.obterTurno(dateFromKey(dia.data), indice);
         atualizarHorarioEfetivo(dia);
+        const config = configDoPerfil(state, r.colaborador) || state;
+        aplicarRestricoesDia(r.colaborador, dia, config, (d) =>
+          Object.assign(d, apurarComputoCCT(config, d)),
+        );
       }
     });
     state.escalaGerada.validacoes = state.escalaGerada.resultado.map((r) => ({
@@ -344,8 +375,9 @@ export function createCalendarioUI({
             return `<div data-resumo-semanal data-colaborador="${x.r.colaborador.id}" data-semana="${isoDate(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate())}" class="pb-2 mb-2 border-b border-slate-200 last:border-0 last:mb-0 last:pb-0">
           <div class="flex items-start justify-between gap-1"><b class="text-fintria-navy">${escapeHtml(x.r.colaborador.nome || "(sem nome)")}</b>${badge}</div>
           <div class="text-slate-600 mt-0.5" title="O fechamento de horas não substitui as validações de jornada e enquadramento">${fmtHoras(x.trabalhadas)} trabalhadas${x.abonadas ? ` + ${fmtHoras(x.abonadas)} abonadas` : ""}${x.creditosIntervalo ? ` + ${fmtHoras(x.creditosIntervalo)} de intervalo computado (CCT)` : ""}${x.creditosNoturnos ? ` + ${fmtHoras(x.creditosNoturnos)} de crédito noturno (CCT)` : ""}${Number.isFinite(x.alvo) ? ` · total ${fmtHoras(x.computadas)} / alvo ${fmtHoras(x.alvo)}` : ""}</div>
+          ${x.ausencias.length ? `<div class="text-slate-600 mt-1">${x.ausencias.map((a) => `${escapeHtml(a.descricao)}: ${formatDateBR(dateFromKey(a.data))}`).join(" · ")}. ${fmtHoras(x.dispensadas)} previstas retiradas da meta de alocação; sem compensação automática.${x.semDiasAlocaveis ? " Sem dias de trabalho previstos fora da ausência nesta semana." : ""}</div>` : ""}
           ${x.abonos.map((a) => `<div class="text-fintria-azul mt-1">Abono de feriado: ${formatDateBR(dateFromKey(a.data))} — ${escapeHtml(a.nome)} (${fmtHoras(a.horas)}).</div>`).join("")}
-          ${x.contrato !== x.alvo ? `<div class="text-slate-500">Contrato de referência: ${fmtHoras(x.contrato)}. Alvo ajustado à fase, sem alteração salarial.</div>` : ""}
+          ${x.contrato !== x.alvo ? `<div class="text-slate-500">Contrato de referência: ${fmtHoras(x.contrato)}. ${x.dispensadas ? "Meta de alocação ajustada aos períodos de ausência informados." : "Alvo ajustado à fase, sem alteração salarial."}</div>` : ""}
           <div class="text-slate-500">Folgas: ${folgas || "nenhuma"}</div>
         </div>`;
           })
@@ -384,9 +416,9 @@ export function createCalendarioUI({
                     : x.obj.status === "FC"
                       ? "FC"
                       : x.obj.status;
-                return `<button data-ri="${x.ri}" data-di="${x.r.dias.indexOf(x.obj)}" class="w-full text-left mb-1 last:mb-0 px-1.5 py-1 rounded border ${cls} hover:opacity-80" title="${trabalho ? "Trabalho" : x.obj.status === "NC" ? "Anterior à admissão" : "Folga"}${trabalho && x.obj.intervaloInicioMin != null ? ` · Intervalo ${horarioComDia(x.obj.intervaloInicioMin)}–${horarioComDia(x.obj.intervaloFimMin)}` : ""} — clique para alterar">
+                return `<button data-ri="${x.ri}" data-di="${x.r.dias.indexOf(x.obj)}" class="w-full text-left mb-1 last:mb-0 px-1.5 py-1 rounded border ${cls} hover:opacity-80" title="${escapeHtml(x.obj.restricao?.descricao || (trabalho ? "Trabalho" : x.obj.status === "NC" ? "Anterior à admissão" : "Folga"))}${trabalho && x.obj.intervaloInicioMin != null ? ` · Intervalo ${horarioComDia(x.obj.intervaloInicioMin)}–${horarioComDia(x.obj.intervaloFimMin)}` : ""} — clique para alterar">
               <div class="font-semibold truncate">${escapeHtml(x.r.colaborador.nome || "(sem nome)")}</div>
-              <div class="text-[9px] opacity-80">${status}${state.turnosRevezamento ? ` · ${x.obj.turno}` : ""}${x.obj.horas ? ` · ${fmtHoras(x.obj.horas)} · ${horarioComDia(x.obj.entradaMin)}–${horarioComDia(x.obj.saidaMin)}` : ""}</div>
+              <div class="text-[9px] opacity-80">${x.obj.restricao ? escapeHtml(x.obj.restricao.descricao) : status}${state.turnosRevezamento ? ` · ${x.obj.turno}` : ""}${x.obj.horas ? ` · ${fmtHoras(x.obj.horas)} · ${horarioComDia(x.obj.entradaMin)}–${horarioComDia(x.obj.saidaMin)}` : ""}</div>
               ${(x.obj.creditoIntervaloCCT || 0) + (x.obj.creditoNoturnoCCT || 0) > 0 ? `<div class="text-[9px] font-semibold">${fmtHoras(x.obj.horasComputadasCCT)} computadas (CCT)</div>` : ""}
             </button>`;
               })
@@ -436,6 +468,7 @@ export function createCalendarioUI({
     <span><b class="text-fintria-ambar">FE</b> — Feriado trabalhado</span>
     <span><b class="text-fintria-azul">FC</b> — Folga compensatória</span>
     ${resultado.some((r) => r.dias.some((d) => d.status === "NC")) ? "<span>NC — anterior à admissão (não é folga)</span>" : ""}
+    ${resultado.some((r) => r.dias.some((d) => d.restricao)) ? "<span>VA — Férias · AF — Afastamento · I — Indisponível. Os bloqueios individuais são preservados.</span>" : ""}
     <span class="italic">A grade e os resumos são recalculados após cada alteração.</span>
   </div>`;
 

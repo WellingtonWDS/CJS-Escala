@@ -1,3 +1,4 @@
+import { ausenciaProgramada } from "./restricoes.js";
 import {
   dataValida,
   PUBLICACAO,
@@ -223,6 +224,14 @@ export function validarRepousoMensal(state, c, dias) {
         "REPOUSO_MENSAL_INCOMPLETO",
         "pendencia",
         "Não há todos os dias do mês para apurar a compensação de repousos.",
+      ),
+    ];
+  if (mes.some(ausenciaProgramada))
+    return [
+      issue(
+        "REPOUSO_MENSAL_AUSENCIA",
+        "pendencia",
+        "Há férias ou afastamento no mês. Esses períodos não são computados como repousos compensatórios; confira a apuração da cláusula coletiva no período efetivamente trabalhado.",
       ),
     ];
   const refs = mes.map((d) => referenciaDia(state, d.data, c).folgas);
