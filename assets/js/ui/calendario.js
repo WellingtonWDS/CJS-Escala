@@ -452,12 +452,13 @@ export function createCalendarioUI({
                     : x.obj.status === "FC"
                       ? "FC"
                       : x.obj.status;
-                return `<button data-ri="${x.ri}" data-di="${x.r.dias.indexOf(x.obj)}" class="w-full text-left mb-1 last:mb-0 px-1.5 py-1 rounded border ${cls} hover:opacity-80" title="${escapeHtml(x.obj.restricao?.descricao || (trabalho ? "Trabalho" : x.obj.status === "NC" ? "Anterior à admissão" : "Folga"))}${trabalho && x.obj.intervaloInicioMin != null ? ` · Intervalo ${horarioComDia(x.obj.intervaloInicioMin)}–${horarioComDia(x.obj.intervaloFimMin)}` : ""} — clique para alterar">
-              <div class="font-semibold truncate">${escapeHtml(x.r.colaborador.nome || "(sem nome)")}</div>
-              ${trabalho && x.obj.funcaoAlocada ? `<div class="text-[9px] font-semibold">Função: ${escapeHtml(funcaoDoDia(x.r.colaborador, x.obj))}</div>` : ""}
-              ${x.obj.ajusteAutomatico ? `<div class="text-[9px] opacity-80">Ajuste de cobertura aplicado</div>` : ""}
-              <div class="text-[9px] opacity-80">${x.obj.restricao ? escapeHtml(x.obj.restricao.descricao) : status}${state.turnosRevezamento ? ` · ${x.obj.turno}` : ""}${x.obj.horas ? ` · ${fmtHoras(x.obj.horas)} · ${horarioComDia(x.obj.entradaMin)}–${horarioComDia(x.obj.saidaMin)}` : ""}</div>
-              ${(x.obj.creditoIntervaloCCT || 0) + (x.obj.creditoNoturnoCCT || 0) > 0 ? `<div class="text-[9px] font-semibold">${fmtHoras(x.obj.horasComputadasCCT)} computadas (CCT)</div>` : ""}
+                return `<button data-ri="${x.ri}" data-di="${x.r.dias.indexOf(x.obj)}" class="escala-colaborador w-full text-left mb-2 last:mb-0 rounded border ${cls} hover:opacity-80" title="${escapeHtml(x.obj.restricao?.descricao || (trabalho ? "Trabalho" : x.obj.status === "NC" ? "Anterior à admissão" : "Folga"))}${trabalho && x.obj.intervaloInicioMin != null ? ` · Intervalo ${horarioComDia(x.obj.intervaloInicioMin)}–${horarioComDia(x.obj.intervaloFimMin)}` : ""} — clique para alterar">
+              <div class="escala-colaborador-nome">${escapeHtml(x.r.colaborador.nome || "(sem nome)")}</div>
+              ${trabalho && x.obj.funcaoAlocada ? `<div class="escala-colaborador-detalhe font-semibold">Função: ${escapeHtml(funcaoDoDia(x.r.colaborador, x.obj))}</div>` : ""}
+              ${x.obj.ajusteAutomatico ? `<div class="escala-colaborador-detalhe">Ajuste de cobertura aplicado</div>` : ""}
+              <div class="escala-colaborador-detalhe">${x.obj.restricao ? escapeHtml(x.obj.restricao.descricao) : status}${state.turnosRevezamento ? ` · ${x.obj.turno}` : ""}${x.obj.horas ? ` · ${fmtHoras(x.obj.horas)} trabalhadas` : ""}</div>
+              ${trabalho && x.obj.horas ? `<div class="escala-colaborador-detalhe">Horário: ${horarioComDia(x.obj.entradaMin)}–${horarioComDia(x.obj.saidaMin)}</div><div class="escala-colaborador-detalhe">${x.obj.intervaloInicioMin != null && x.obj.intervaloFimMin != null ? `Intervalo: ${horarioComDia(x.obj.intervaloInicioMin)}–${horarioComDia(x.obj.intervaloFimMin)}` : "Sem intervalo"}</div>` : ""}
+              ${(x.obj.creditoIntervaloCCT || 0) + (x.obj.creditoNoturnoCCT || 0) > 0 ? `<div class="escala-colaborador-detalhe font-semibold">${fmtHoras(x.obj.horasComputadasCCT)} computadas (CCT)</div>` : ""}
             </button>`;
               })
               .join("");

@@ -5,7 +5,30 @@ body {
   font-family: "Space Grotesk", sans-serif;
 }
 .escala-mensal {
-  min-width: 1100px;
+  min-width: 1500px;
+}
+.escala-mensal td {
+  overflow-wrap: anywhere;
+}
+.escala-mensal .escala-colaborador {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 110px;
+  padding: 9px 8px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.45;
+  break-inside: avoid;
+}
+.escala-colaborador-nome {
+  font-size: 12px;
+  font-weight: 600;
+  white-space: normal;
+}
+.escala-colaborador-detalhe {
+  margin-top: 4px;
+  font-size: 11px;
 }
 .tutorial-overlay {
   position: fixed;
@@ -102,7 +125,7 @@ body {
     min-width: 0;
   }
   .no-print,
-  main button:not([aria-pressed="true"]) {
+  main button:not([aria-pressed="true"]):not(.escala-colaborador) {
     display: none !important;
   }
   main button[aria-pressed="true"] {
