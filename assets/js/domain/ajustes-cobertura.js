@@ -1,3 +1,4 @@
+import { configDaEscala } from "./contexto-escala.js";
 import { janelasDeclaradas as janelas } from "./disponibilidade.js";
 import { analisarCobertura, normalizarFuncao } from "./cobertura.js";
 import { habilitadoPara, funcaoDoDia } from "./funcoes.js";
@@ -41,6 +42,7 @@ const resumo = (rel) => ({
   dias: new Set(rel.lacunas.map((l) => l.data)).size,
 });
 export function assinaturaAjustes(config, escala = config.escalaGerada) {
+  config = configDaEscala(config, escala);
   const { escalaGerada, conversao, ...entrada } = config;
   const raw = JSON.stringify({
     entrada,
@@ -83,6 +85,7 @@ function validarEntrada(config, escala) {
   return rel;
 }
 export function atualizarRelatoriosAjustes(config, escala) {
+  config = configDaEscala(config, escala);
   const domain = createDomain(config);
   escala.validacoes = escala.resultado.map((r) => ({
     colaborador: r.colaborador,
@@ -439,6 +442,7 @@ function seguro(config, antes, depois, alteracoes) {
   return true;
 }
 export function buscarAjustesCobertura(config, opcoes = {}) {
+  config = configDaEscala(config);
   const original = config.escalaGerada;
   let rel = validarEntrada(config, original),
     escala = structuredClone(original);
@@ -604,6 +608,7 @@ function conferirAlteracoes(config, escala, alteracoes) {
   return true;
 }
 export function aplicarAjustesCobertura(config, plano) {
+  config = configDaEscala(config);
   const original = config.escalaGerada;
   if (
     plano?.versaoRegras !== VERSAO_REGRAS ||
@@ -638,6 +643,7 @@ export function aplicarAjustesCobertura(config, plano) {
   return novo;
 }
 export function desfazerAjustesCobertura(config) {
+  config = configDaEscala(config);
   const original = config.escalaGerada,
     plano = original?.ajustesCobertura;
   if (!plano || plano.assinaturaDepois !== assinaturaAjustes(config, original))

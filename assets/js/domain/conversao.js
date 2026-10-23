@@ -1,3 +1,4 @@
+import { configDaEscala } from "./contexto-escala.js";
 import { diagnosticarEquipe } from "./diagnostico-equipe.js";
 import { aplicarRestricoesDia, validarRestricoes } from "./restricoes.js";
 import { apurarComputoCCT } from "./computo-cct.js";
@@ -106,6 +107,7 @@ export function gerarReferenciaAtual(state) {
           ),
       );
     }
+  escala.referenciaAtual44 = true;
   return { config, escala: recalcular(config, escala) };
 }
 
@@ -256,7 +258,7 @@ export function converterEscala(state, opcoes = {}) {
     }
   const origem = state.escalaGerada
     ? {
-        config: copiarConfig(state),
+        config: copiarConfig(configDaEscala(state)),
         escala: structuredClone(state.escalaGerada),
       }
     : gerarReferenciaAtual(state);

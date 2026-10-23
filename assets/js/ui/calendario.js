@@ -1,3 +1,5 @@
+import { configDaEscala } from "../domain/contexto-escala.js";
+import { createDomain } from "../domain/index.js";
 import { createAjustesCoberturaUI } from "./ajustes-cobertura.js";
 import { funcaoDoDia } from "../domain/funcoes.js";
 import { violacoesDia, aplicarRestricoesDia } from "../domain/restricoes.js";
@@ -31,10 +33,16 @@ export function createCalendarioUI({
     calcularSaidaSimulada,
     feriadoDaData,
     validarCobertura,
-    validarLegal,
-    atualizarHorarioEfetivo,
     gerarDadosEscala,
   } = domain;
+  const metodoDaEscala =
+    (nome) =>
+    (...args) => {
+      const config = configDaEscala(state);
+      return (config === state ? domain : createDomain(config))[nome](...args);
+    };
+  const validarLegal = metodoDaEscala("validarLegal");
+  const atualizarHorarioEfetivo = metodoDaEscala("atualizarHorarioEfetivo");
   const { saveState } = storage;
   const { document, alert, confirm, prompt } = env;
 
@@ -125,7 +133,11 @@ export function createCalendarioUI({
     }
     Object.assign(
       candidato,
-      apurarComputoCCT(configDoPerfil(state, colaborador) || state, candidato),
+      apurarComputoCCT(
+        configDoPerfil(configDaEscala(state), colaborador) ||
+          configDaEscala(state),
+        candidato,
+      ),
     );
     const violacoes = violacoesDia(colaborador, candidato);
     if (violacoes.length) {
@@ -160,7 +172,9 @@ export function createCalendarioUI({
       for (const dia of [...(r.diasContexto ?? []), ...r.dias]) {
         dia.turno = domain.obterTurno(dateFromKey(dia.data), indice);
         atualizarHorarioEfetivo(dia);
-        const config = configDoPerfil(state, r.colaborador) || state;
+        const config =
+          configDoPerfil(configDaEscala(state), r.colaborador) ||
+          configDaEscala(state);
         aplicarRestricoesDia(r.colaborador, dia, config, (d) =>
           Object.assign(d, apurarComputoCCT(config, d)),
         );
@@ -197,7 +211,10 @@ export function createCalendarioUI({
     if (!state.escalaGerada) return;
     const { resultado } = state.escalaGerada;
     const container = document.getElementById(containerId);
-    let html = renderRelatorioCobertura(resultado);
+    let html = state.escalaGerada.referenciaAtual44
+      ? '<p data-referencia-atual class="text-sm border border-slate-200 rounded-lg p-3 mb-3">Referência atual 6×1: validação e resumo em 44h semanais, conforme o contexto preservado na conversão. A simulação da fase futura é aplicada à proposta 5×2. Os horários e intervalos efetivos continuam sujeitos às verificações.</p>'
+      : "";
+    html += renderRelatorioCobertura(resultado);
     html += ajustes.renderPainel();
 
     // As validações são recalculadas a cada renderização. Assim, qualquer alteração
@@ -362,7 +379,11 @@ export function createCalendarioUI({
           const semana = r.dias.filter((d) =>
             semanaDatas.some((x) => x.key === d.data),
           );
-          const apuracao = apurarSemana(r.colaborador, semana, state);
+          const apuracao = apurarSemana(
+            r.colaborador,
+            semana,
+            configDaEscala(state),
+          );
           const folgas = semana.filter(
             (d) => d.status === "F" || d.status === "FC",
           );

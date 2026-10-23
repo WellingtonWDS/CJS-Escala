@@ -1,6 +1,6 @@
 # Estado do projeto — CJS Escala
 
-Atualizado em **23/10/2026**. Referência funcional: versão de regras `ec141-2026-10-23-3` ([histórico do projeto](https://github.com/WellingtonWDS/CJS-Escala/commits/main/)). Esta página resume o andamento; o [README](../README.md) detalha operação, arquitetura, configuração e testes.
+Atualizado em **23/10/2026**. Referência funcional: versão de regras `ec141-2026-10-23-4` ([histórico do projeto](https://github.com/WellingtonWDS/CJS-Escala/commits/main/)). Esta página resume o andamento; o [README](../README.md) detalha operação, arquitetura, configuração e testes.
 
 ## Objetivo e estágio atual
 
@@ -27,7 +27,7 @@ O fluxo principal está implementado e continua em evolução. Já permite impor
 | Cobertura operacional | Cadastro opcional de mínimos por função, horário e dia; identificação de faixas descobertas, considerando pausas e viradas de dia. As funções vêm do cadastro dos colaboradores. |
 | Ajustes de cobertura | Sugestões de troca de folga, horário/turno e função habilitada; prévia antes/depois, aplicar e desfazer a última aplicação, validação de dados atuais e carregamento com progresso/cancelamento em segundo plano. |
 | Diagnóstico de pessoal | Lacunas agrupadas por função, dias, horário e quantidade, com datas; diferencia capacidade insuficiente, disponibilidade, habilitações compartilhadas e redistribuição. Verifica simultaneidade, horas e dias-pessoa sem duplicar a equipe. Presente na escala, comparação e CSV. |
-| Conversão e comparação | Origem 6×1 preservada, proposta 5×2 em período próprio, busca de distribuição de folgas e comparação de horas, dias e cobertura. Diagnóstico de suficiência, insuficiência demonstrável, necessidade de ajustes, incompatibilidade ou ausência de base para avaliação. |
+| Conversão e comparação | Origem 6×1 preservada, com contexto 44h da referência automática mantido na grade, resumo, CSV e ajustes; proposta 5×2 em período próprio, busca de distribuição de folgas e comparação de horas, dias e cobertura. Diagnóstico de suficiência, insuficiência demonstrável, necessidade de ajustes, incompatibilidade ou ausência de base para avaliação. |
 | Exportação e armazenamento | CSV detalhado, impressão/PDF da etapa aberta pelo cabeçalho ou navegador (incluindo painéis expandidos) e persistência local no navegador. Alterações invalidam resultados dependentes; versões antigas das regras exigem nova geração. |
 | Estrutura técnica | Módulos separados de domínio, interface, importação, exportação e estado; build dos arquivos públicos e autenticação no servidor da Vercel. |
 
@@ -57,12 +57,13 @@ As implementações de restrições individuais, sugestões de ajustes de cobert
 
 ## Última validação registrada
 
-Na implementação do diagnóstico de pessoal, em **23/10/2026**, foram registrados:
+Na correção do contexto de validação da referência atual, em **23/10/2026**, foram registrados:
 
-- **384 testes unitários aprovados**, sem falhas, com `npm test`.
+- **389 testes unitários aprovados**, sem falhas, com `npm test`.
 - A suíte específica de autenticação foi aprovada na etapa anterior das sugestões de ajuste. Esta entrega não altera o login.
 - Build e suíte completa de interface aprovados com `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run test:browser`.
-- Novos cenários de lacunas recorrentes, capacidade por horário, funções compartilhadas, janelas restritas, férias, semanas e meses parciais, horas/dias-pessoa insuficientes, turnos noturnos, dados inválidos e exportação. Na interface: recálculo ao aplicar/desfazer ajustes e suspensão da conclusão desatualizada.
+- Regressão do contexto da referência atual: 11h–13h de intervalo, 44h em 6×1 versus simulação futura de 42h, ACT/CCT com vigência futura, resumo semanal, CSV, persistência, edição com excesso real, busca de ajustes e nova prévia avulsa.
+- Cenários de lacunas recorrentes, capacidade por horário, funções compartilhadas, janelas restritas, férias, semanas e meses parciais, horas/dias-pessoa insuficientes, turnos noturnos, dados inválidos e exportação. Na interface: recálculo ao aplicar/desfazer ajustes e suspensão da conclusão desatualizada.
 - Cenários de ajustes de horário/turno, habilitações e alocação sem duplicação, manutenção da cobertura existente, troca de folga, 11h de interjornada, sete dias consecutivos, janelas importadas, dados obsoletos, aplicar/desfazer e progresso/cancelamento na interface.
 - Cenários de férias parciais e integrais, afastamentos, feriados durante ausências, folgas fixas, janelas diurnas/noturnas, plantões 12×36/CCT, turnos A/B, virada de mês, admissão, importação Domínio, cobertura, conversão, CSV, persistência e bloqueio de edição incompatível.
 

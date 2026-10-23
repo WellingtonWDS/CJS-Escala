@@ -1,3 +1,4 @@
+import { configDaEscala } from "./contexto-escala.js";
 import { analisarCobertura, normalizarFuncao } from "./cobertura.js";
 import { habilitadoPara, funcaoDoDia } from "./funcoes.js";
 import { configDoPerfil, verificarPerfil } from "./perfil-dominio.js";
@@ -310,6 +311,7 @@ function fraseGrupo(g) {
   return `Às ${diasEmTexto(g.diasSemana)}, das ${horarioComDia(g.inicioMin)} às ${horarioComDia(g.fimMin)}: ${g.faltantes === 1 ? "falta 1 pessoa" : "faltam " + g.faltantes + " pessoas"} na função ${g.funcao}.`;
 }
 export function diagnosticarEquipe(config, resultado, relatorio = null) {
+  config = configDaEscala(config);
   const rel = relatorio || analisarCobertura(config, resultado);
   const diagnostico = {
     status: "nao_avaliada",

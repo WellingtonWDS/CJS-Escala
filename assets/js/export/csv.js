@@ -1,3 +1,4 @@
+import { configDaEscala } from "../domain/contexto-escala.js";
 import {
   diagnosticarEquipe,
   TITULOS_DIAGNOSTICO,
@@ -15,6 +16,7 @@ import { referenciaDia, VERSAO_REGRAS } from "../domain/ec141.js";
 import { createDomain } from "../domain/index.js";
 import { csvCell } from "../shared/formatacao.js";
 export function gerarCsv(state) {
+  state = configDaEscala(state);
   const { resultado } = state.escalaGerada;
   const ajustes = resultado.some((r) =>
     r.dias.some((d) => d.funcaoAlocada || d.ajusteAutomatico),

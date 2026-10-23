@@ -28,6 +28,10 @@ A busca de folgas é determinística, limitada a 120 avaliações em até duas r
 
 O pico de faltantes é ausência simultânea, não uma estimativa exata de contratações. Demandas sobrepostas continuam usando o maior mínimo, com intervalos descontados e trabalho noturno tratado pelo motor existente. Feriados nacionais são recalculados para o destino; feriados locais permanecem nas datas cadastradas e devem ser revisados para o novo período.
 
+A referência atual 6×1 criada automaticamente pela conversão conserva seu contexto de **44h**, inclusive na grade, resumo semanal, CSV, diagnóstico e busca de ajustes. Uma fase futura selecionada nos controles não deve recalcular essa referência como 42h ou exigir dois repousos. A proposta mantém sua própria fase. A prévia avulsa gerada explicitamente continua usando a referência legal escolhida; excessos reais e intervalos ausentes continuam sendo apontados. O contexto permanece após recarregar e é substituído ao gerar uma nova prévia avulsa.
+
+Exemplo de conferência do preenchimento: 08h–18h com intervalo 11h–13h representa **8h efetivas**, ou 40h de segunda a sexta; mais 4h no sábado fecha 44h. A janela operacional da empresa não substitui os horários individuais importados ativos. Informar 08h, início de intervalo 18h e os dois últimos campos zerados representa turno contínuo de 10h, não um intervalo de almoço.
+
 Mudanças na origem ou no destino suspendem a conclusão anterior e bloqueiam sua exportação até gerar uma nova proposta. Ajustes na grade proposta recalculam a comparação sem alterar a referência original. A conversão fica no armazenamento local, sujeita ao espaço disponível no navegador; se o salvamento falhar, a interface avisa para exportar antes de sair. Módulos: `domain/conversao.js` e `ui/conversao.js`. Regressões: `tests/conversao.test.cjs` e `tests/browser-conversao.cjs`.
 
 ## Desenvolvimento

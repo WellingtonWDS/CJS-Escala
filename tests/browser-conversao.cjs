@@ -198,6 +198,85 @@ module.exports = async function testarConversao({ browser, baseURL }) {
     assert.equal((await saved()).conversao.desatualizada, true);
     await irParaEtapa(page, '[data-tipo="6x1"]');
     await page.locator('[data-tipo="6x1"]').click();
+    // A referência atual deve manter o contexto 44h, mesmo com 42h/CCT futura nos controles.
+    await page.evaluate(async () => {
+      const { createDefaultState } = await import("/assets/js/state/store.js");
+      const s = createDefaultState(new Date(2026, 9, 23));
+      Object.assign(s, {
+        modoRegime: "simulacao",
+        regimeJornada: "transicao42",
+        instrumentoCompensacao: "act_cct",
+        horarioPorDia: true,
+        destinoConversao: {
+          periodo: "2026-12",
+          fase: "transicao42",
+          folgas: "distribuir",
+        },
+      });
+      Object.assign(s.instrumentoColetivo, {
+        identificacao: "CCT teste",
+        inicio: "2026-12-16",
+        fim: "2027-12-15",
+        compativelEC141: true,
+        compensacaoDiaria: true,
+        limiteDiario: 8.5,
+      });
+      s.colaboradores = [1, 2].map((id) => ({
+        id,
+        nome: `Pessoa ${id}`,
+        cargo: "Atendente",
+        sexo: "masculino",
+        horasSemana: 44,
+      }));
+      s.jornada = {
+        entrada: "08:00",
+        intInicio: "11:00",
+        intFim: "13:00",
+        saida: "18:00",
+      };
+      for (let d = 1; d <= 6; d++)
+        s.jornadaPorDia[d] =
+          d === 6
+            ? {
+                entrada: "08:00",
+                intInicio: "12:00",
+                intFim: "00:00",
+                saida: "00:00",
+              }
+            : { ...s.jornada };
+      localStorage.setItem("fintria-escala-dp-v2", JSON.stringify(s));
+    });
+    await page.reload();
+    await page.waitForFunction(
+      () => document.documentElement.dataset.ready === "true",
+    );
+    await irParaEtapa(page, "#btn-converter");
+    await page.locator("#btn-converter").click();
+    s = await saved();
+    assert.equal(s.regimeJornada, "transicao42");
+    assert.equal(s.escalaGerada.referenciaAtual44, true);
+    assert.equal(s.conversao.proposta.config.regimeJornada, "transicao42");
+    assert.ok(!s.conversao.proposta.config.escalaGerada.referenciaAtual44);
+    const atual = page.locator("#resultado-gerar");
+    assert.ok(await atual.locator("[data-referencia-atual]").count());
+    assert.doesNotMatch(
+      await atual.innerText(),
+      /INCOMPATÍVEL|a semana civil contém|fora da vigência|acima da referência de 42/,
+    );
+    assert.match(await atual.innerText(), /alvo 44:00/);
+    await page.reload();
+    await page.waitForFunction(
+      () => document.documentElement.dataset.ready === "true",
+    );
+    await irParaEtapa(page, "#btn-converter");
+    assert.doesNotMatch(
+      await atual.innerText(),
+      /INCOMPATÍVEL|a semana civil contém|fora da vigência/,
+    );
+    const downloadAtual = page.waitForEvent("download");
+    await page.locator("#btn-exportar-csv").click();
+    const csvAtual = await readFile(await (await downloadAtual).path(), "utf8");
+    assert.doesNotMatch(csvAtual, /REPOUSO_SEMANAL|INSTRUMENTO_FORA_VIGENCIA/);
     // Se faltar espaço, a proposta continua disponível nesta aba e a UI avisa.
     await page.evaluate(() => {
       Storage.prototype.setItem = () => {
