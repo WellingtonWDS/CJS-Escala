@@ -1,6 +1,12 @@
 # CJS Escala
 
-Ferramenta estática para configurar, gerar e revisar escalas de trabalho. Usa HTML, CSS e módulos JavaScript nativos. Não exige backend nem compilação do JavaScript.
+Ferramenta para configurar, gerar e revisar escalas de trabalho e comparar a escala atual 6×1 com uma proposta 5×2. A interface e os cálculos usam HTML, CSS e módulos JavaScript nativos no navegador, sem bundler ou compilação do JavaScript da aplicação. A autenticação depende de código no servidor: middleware e função de login na Vercel. Os cadastros e as escalas continuam armazenados no navegador, sem banco de dados central.
+
+## Andamento do projeto
+
+Consulte [Estado do projeto](docs/estado-do-projeto.md) para uma visão consolidada das funcionalidades implementadas, limitações, últimas validações e próximos passos propostos. O documento reflete o código atual; auditorias e relatórios datados em `docs/` são registros históricos.
+
+O fluxo principal já inclui cadastro manual e por planilhas, importação Domínio, restrições individuais, geração, conversão 6×1 → 5×2, comparação de cobertura, edição da grade, CSV e impressão. O acesso usa login compartilhado com sessão de 12 horas. Os detalhes de funcionamento e configuração estão nas seções abaixo.
 
 ## Conversão da escala atual 6×1 para uma proposta 5×2
 
@@ -40,19 +46,27 @@ O servidor local usa a porta 3000. Para outra porta, use `PORT=3001 npm run dev`
 ## Organização
 
 ```text
-index.html                      Estrutura e conteúdo da página
+index.html                      Estrutura e conteúdo da aplicação
+login.html                      Página de entrada
+middleware.js                   Proteção de páginas e recursos na Vercel
+api/auth.js                     Login, consulta da sessão e saída
+server/auth.js                  Senha, assinatura e validação das sessões
 assets/css/styles.css           Estilos próprios e impressão
 assets/js/
-  main.js                       Inicialização no navegador
+  main.js                       Verificação de sessão e inicialização
+  session.js                    Controle da expiração na interface
+  login.js                      Envio do formulário de login
   app.js                        Montagem da aplicação e coordenação dos módulos
   config/                       Regras de jornada, constantes e tema Tailwind
   domain/                       Datas, feriados, cálculo e validação das escalas
   state/                        Estado inicial e persistência
   ui/                           Formulários, colaboradores, calendário e transição
   shared/                       Formatação de texto e escape
+  import/                       Leitura e validação de CSV e relatórios Domínio
   export/                       Geração e download de CSV
 scripts/                        Servidor local e preparação da publicação
 tests/                          Regressões e fluxos no navegador
+docs/estado-do-projeto.md        Implementado, limitações e próximos passos
 ```
 
 O domínio recebe a configuração explicitamente, por meio de `createDomain(state)`, e não acessa HTML, armazenamento ou variáveis globais da aplicação. `gerarDadosEscala()` devolve a escala e suas validações; a interface decide quando exibi-la e salvá-la. Cada instância da aplicação possui seu próprio estado. O toggle de dois turnos mostra os grupos A/B para duas semanas e atualiza os horários da escala existente, inclusive ao mudar a entrada do Turno B, preservando status, folgas e horas ajustadas manualmente.
@@ -159,7 +173,9 @@ PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run test:browser
 
 ## Vercel
 
-`npm run build` copia apenas `index.html` e `assets/` para `dist/`. A configuração em `vercel.json` define esse comando e essa pasta de publicação. Não há bundler: os módulos são publicados com seus caminhos relativos, e testes e ferramentas de desenvolvimento ficam fora da saída.
+`npm run build` prepara `dist/` com `index.html`, `login.html`, `assets/` e o leitor Excel local com sua licença. A configuração em `vercel.json` define esse comando e essa pasta para os arquivos estáticos. Não há bundler para os módulos da aplicação: eles são publicados com seus caminhos relativos, e testes e ferramentas de desenvolvimento ficam fora da saída.
+
+A implantação também precisa do middleware da raiz, de `api/auth.js` e do módulo de autenticação em `server/`, processados pela Vercel separadamente dos arquivos estáticos. Publicar somente `dist/` em um servidor estático não reproduz a proteção de acesso. Configure `AUTH_SESSION_SECRET` nos ambientes utilizados e faça novo deploy, conforme [Login e sessão de 12 horas](#login-e-sessão-de-12-horas).
 
 O site continua carregando Tailwind e fontes por CDN, como na versão anterior. Os dados permanecem no navegador e na origem do site; mudar o domínio da implantação não transfere o `localStorage` de uma origem para outra.
 
