@@ -66,7 +66,7 @@ export function createEtapasUI({ document, window, state }) {
     {
       historico = true,
       foco = true,
-      rolar = true,
+      rolar = false,
       registrarVisita = true,
     } = {},
   ) {
@@ -126,8 +126,8 @@ export function createEtapasUI({ document, window, state }) {
     } catch {
       id = "";
     }
-    if (!mostrarAlvo(id, { historico: false, foco, rolar: foco }))
-      mostrarAlvo(paineis[0], { historico: false, foco, rolar: foco });
+    if (!mostrarAlvo(id, { historico: false, foco, rolar: false }))
+      mostrarAlvo(paineis[0], { historico: false, foco, rolar: false });
   }
   return {
     mostrarAlvo,
@@ -173,7 +173,7 @@ export function createEtapasUI({ document, window, state }) {
           if (index === undefined) return;
           event.preventDefault();
           mostrarAlvo(paineis[index], { foco: false, rolar: false });
-          links[index].focus();
+          links[index].focus({ preventScroll: true });
           links[index].scrollIntoView({ block: "nearest", inline: "nearest" });
         };
       });
