@@ -1,6 +1,14 @@
 const { test, before } = require("node:test");
 const assert = require("node:assert/strict");
-let base, referencia, converter, contexto, domain, csv, apurar, buscar, assinatura;
+let base,
+  referencia,
+  converter,
+  contexto,
+  domain,
+  csv,
+  apurar,
+  buscar,
+  assinatura;
 before(async () => {
   ({ createDefaultState: base } = await import("../assets/js/state/store.js"));
   ({ gerarReferenciaAtual: referencia, converterEscala: converter } =
@@ -147,4 +155,81 @@ test("busca de cobertura usa a mesma referência preservada na tela e no CSV", (
   assert.equal(plano.assinaturaAntes, assinatura(contexto(s)));
   assert.equal(plano.antes.minutosFaltantes, 0);
   assert.equal(s.regimeJornada, "transicao42");
+});
+
+test("ACT/CCT vigente da origem é preservado e autoriza somente o limite diário declarado", () => {
+  const s = empresa();
+  Object.assign(s.instrumentoColetivo, {
+    inicio: "2026-01-01",
+    fim: "2026-12-31",
+    limiteDiario: 8.5,
+  });
+  for (let d = 1; d <= 5; d++) s.jornadaPorDia[d].saida = "18:30";
+  s.jornadaPorDia[6] = {
+    entrada: "08:00",
+    intInicio: "09:30",
+    intFim: "00:00",
+    saida: "00:00",
+  };
+  s.escalaGerada = referencia(s).escala;
+  assert.equal(contexto(s).instrumentoCompensacao, "act_cct");
+  assert.equal(erros(s).length, 0);
+  // Alterar o formulário depois não muda as condições preservadas desta referência.
+  s.instrumentoColetivo.limiteDiario = 10;
+  assert.equal(contexto(s).instrumentoColetivo.limiteDiario, 8.5);
+  const restaurado = JSON.parse(JSON.stringify(s));
+  const d = restaurado.escalaGerada.resultado[0].dias.find(
+    (d) => d.data === "2026-10-05",
+  );
+  d.horas = 9;
+  d.saidaMin += 30;
+  assert.ok(erros(restaurado).some((i) => i.tipo === "JORNADA_DIARIA"));
+});
+test("ACT futuro ou expirado não autoriza compensação diária na origem", () => {
+  for (const datas of [
+    { inicio: "2026-12-16", fim: "2027-12-15" },
+    { inicio: "2026-01-01", fim: "2026-08-31" },
+  ]) {
+    const s = empresa();
+    Object.assign(s.instrumentoColetivo, datas);
+    for (let d = 1; d <= 5; d++) s.jornadaPorDia[d].saida = "18:30";
+    s.escalaGerada = referencia(s).escala;
+    assert.equal(contexto(s).instrumentoCompensacao, "nenhuma");
+    assert.ok(erros(s).some((i) => i.tipo === "JORNADA_DIARIA"));
+  }
+});
+test("ACT com vigência inválida continua sinalizado para revisão", () => {
+  const s = empresa();
+  s.instrumentoColetivo.inicio = "";
+  s.escalaGerada = referencia(s).escala;
+  assert.equal(contexto(s).instrumentoCompensacao, "act_cct");
+  assert.ok(erros(s).length > 0);
+  const invertido = empresa();
+  Object.assign(invertido.instrumentoColetivo, {
+    inicio: "2026-12-16",
+    fim: "2026-08-31",
+  });
+  invertido.escalaGerada = referencia(invertido).escala;
+  assert.equal(contexto(invertido).instrumentoCompensacao, "act_cct");
+  assert.ok(erros(invertido).length > 0);
+});
+
+test("jornada de dez horas sem pausa explica que nenhum intervalo foi descontado", () => {
+  const s = empresa();
+  for (let d = 1; d <= 5; d++)
+    s.jornadaPorDia[d] = {
+      entrada: "08:00",
+      intInicio: "18:00",
+      intFim: "00:00",
+      saida: "00:00",
+    };
+  s.escalaGerada = referencia(s).escala;
+  assert.ok(
+    erros(s)
+      .filter((i) => i.tipo === "JORNADA_DIARIA")
+      .every((i) =>
+        i.mensagem.includes("Intervalo descontado neste dia: 00:00"),
+      ),
+  );
+  assert.ok(erros(s).some((i) => i.tipo === "JORNADA_DIARIA"));
 });

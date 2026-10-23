@@ -112,7 +112,7 @@ export function createValidacao(state, jornada, feriados) {
           issue(
             "JORNADA_DIARIA",
             "erro",
-            `${d.data}: ${fmtHoras(h)} de trabalho efetivo no dia, acima de ${state.tipoEscala === "12x36" ? 12 : limiteDiario(state, d.data)}h. ${fundamento}`,
+            `${d.data}: ${fmtHoras(h)} de trabalho efetivo no dia, acima de ${state.tipoEscala === "12x36" ? 12 : limiteDiario(state, d.data)}h. ${fundamento}${Number.isFinite(d.intervaloMin) ? ` Intervalo descontado neste dia: ${fmtHoras(d.intervaloMin / 60)}.` : ""}`,
             d.data,
           ),
         );

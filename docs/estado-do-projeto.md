@@ -1,6 +1,6 @@
 # Estado do projeto — CJS Escala
 
-Atualizado em **23/10/2026**. Referência funcional: versão de regras `ec141-2026-10-23-4` ([histórico do projeto](https://github.com/WellingtonWDS/CJS-Escala/commits/main/)). Esta página resume o andamento; o [README](../README.md) detalha operação, arquitetura, configuração e testes.
+Atualizado em **23/10/2026**. Referência funcional: versão de regras `ec141-2026-10-23-5` ([histórico do projeto](https://github.com/WellingtonWDS/CJS-Escala/commits/main/)). Esta página resume o andamento; o [README](../README.md) detalha operação, arquitetura, configuração e testes.
 
 ## Objetivo e estágio atual
 
@@ -57,11 +57,12 @@ As implementações de restrições individuais, sugestões de ajustes de cobert
 
 ## Última validação registrada
 
-Na correção do contexto de validação da referência atual, em **23/10/2026**, foram registrados:
+Na correção do ACT/CCT na referência atual, em **23/10/2026**, foram registrados:
 
-- **389 testes unitários aprovados**, sem falhas, com `npm test`.
+- **393 testes unitários aprovados**, sem falhas, com `npm test`.
 - A suíte específica de autenticação foi aprovada na etapa anterior das sugestões de ajuste. Esta entrega não altera o login.
 - Build e suíte completa de interface aprovados com `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run test:browser`.
+- ACT/CCT real na origem: preservação das condições vigentes, não aplicação de instrumentos futuros/expirados, sinalização de vigência inválida e exibição do intervalo descontado nos avisos de jornada diária.
 - Regressão do contexto da referência atual: 11h–13h de intervalo, 44h em 6×1 versus simulação futura de 42h, ACT/CCT com vigência futura, resumo semanal, CSV, persistência, edição com excesso real, busca de ajustes e nova prévia avulsa.
 - Cenários de lacunas recorrentes, capacidade por horário, funções compartilhadas, janelas restritas, férias, semanas e meses parciais, horas/dias-pessoa insuficientes, turnos noturnos, dados inválidos e exportação. Na interface: recálculo ao aplicar/desfazer ajustes e suspensão da conclusão desatualizada.
 - Cenários de ajustes de horário/turno, habilitações e alocação sem duplicação, manutenção da cobertura existente, troca de folga, 11h de interjornada, sete dias consecutivos, janelas importadas, dados obsoletos, aplicar/desfazer e progresso/cancelamento na interface.

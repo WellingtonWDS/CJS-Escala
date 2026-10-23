@@ -18,7 +18,12 @@ import {
   minToTime,
   timeToMin,
 } from "./datas-horas.js";
-import { PRIMEIRA_FASE, limiteDiario, VERSAO_REGRAS } from "./ec141.js";
+import {
+  PRIMEIRA_FASE,
+  limiteDiario,
+  VERSAO_REGRAS,
+  dataValida,
+} from "./ec141.js";
 import { apurarSemana } from "./resumo-semanal.js";
 import {
   configDoPerfil,
@@ -72,7 +77,22 @@ export function gerarReferenciaAtual(state) {
   config.regimeJornada = "atual44";
   config.planoFolgasConversao = {};
   config.folgasFimSemana = false;
-  config.instrumentoCompensacao = "nenhuma";
+  const instrumento = config.instrumentoColetivo || {};
+  const inicioMes = isoDate(config.ano, config.mes, 1);
+  const fimMes = isoDate(
+    config.ano,
+    config.mes,
+    diasNoMes(config.mes, config.ano),
+  );
+  // Um instrumento de outro período não autoriza a referência atual.
+  if (
+    config.instrumentoCompensacao === "act_cct" &&
+    dataValida(instrumento.inicio) &&
+    dataValida(instrumento.fim) &&
+    instrumento.inicio <= instrumento.fim &&
+    (instrumento.inicio > fimMes || instrumento.fim < inicioMes)
+  )
+    config.instrumentoCompensacao = "nenhuma";
   config.adiarRestricoes = true;
   const domain = createDomain(config);
   const escala = domain.gerarDadosEscala();
@@ -108,6 +128,10 @@ export function gerarReferenciaAtual(state) {
       );
     }
   escala.referenciaAtual44 = true;
+  escala.instrumentoReferencia = {
+    base: config.instrumentoCompensacao,
+    condicoes: structuredClone(config.instrumentoColetivo),
+  };
   return { config, escala: recalcular(config, escala) };
 }
 
