@@ -129,6 +129,8 @@ Além do CSV e do cadastro manual, a terceira seção recolhível **Importar pla
 
 O importador identifica as colunas pelo título e reúne linhas de cada colaborador pelo código. Preserva nome, cargo, admissão, CTPS/série com zeros à esquerda, visto fiscal, dias agrupados ou separados, entradas, intervalos, saídas, folgas e ciclos. Empresa, páginas indicadas, licenciamento do relatório e células adicionais ficam guardados como metadados. A lista **Colaboradores cadastrados/importados**, ao final da seção, permite consultar os valores originais e revisar os horários individuais, sem sobrescrever o registro original da importação.
 
+A ausência da carga contratual nos relatórios da Domínio não gera avisos ou pendências de importação. O campo de jornada contratual de referência e sua conferência permanecem disponíveis, com as validações de valores e limites da escala.
+
 Os horários individuais são usados na geração, validação, cobertura e conversão 6×1 compatível; não são reduzidos a um horário padrão da empresa. Na referência importada, mantém-se a duração efetivamente informada, mesmo que produza alertas legais ou exceda a carga contratual confirmada. Admissão impede trabalho em datas anteriores, marcadas como **NC**, sem contá-las como folga; a semana parcial recebe conferência específica. A exportação CSV inclui a empresa e a identificação da Domínio.
 
 Informações não disponíveis no relatório não são inventadas:

@@ -110,7 +110,7 @@ export function createImportarDominioUI({
           mensagem(
             salvo === false
               ? "Importação aplicada nesta aba, mas não foi possível salvar no navegador. Exporte os dados antes de sair."
-              : "Quadro importado. Confira na lista de colaboradores cadastrados/importados carga contratual, sexo, dias não informados e datas de início dos ciclos. Os horários individuais serão usados na geração e na cobertura.",
+              : "Quadro importado. Confira na lista de colaboradores cadastrados/importados sexo, dias não informados e datas de início dos ciclos. Os horários individuais serão usados na geração e na cobertura.",
           );
           mostrarColaboradores(env.document, el("mensagem").textContent);
         } catch (error) {

@@ -156,10 +156,6 @@ export function atualizarPerfilDominio(c, config) {
     p.pendencias.push(
       "Confira a data de admissão, que está ausente ou inválida.",
     );
-  if (!p.cargaConfirmada)
-    p.pendencias.push(
-      "Carga contratual não consta no relatório; confira a referência calculada e confirme no cadastro manual.",
-    );
   if (c.sexo === "nao_informado")
     p.pendencias.push(
       "Sexo não consta no relatório; informe para avaliar regras específicas de repouso aos domingos.",
@@ -414,7 +410,7 @@ export function analisarQuadroDominio(abas, arquivo = "") {
   }
   if (colaboradores.some((c) => c.quadroDominio.pendencias.length))
     avisos.push(
-      "O relatório não informa sexo nem carga contratual. Horas são calculadas apenas quando o horário está completo; confirme os dados ausentes no cadastro manual.",
+      "Há dados que precisam de revisão. Confira as pendências no cadastro dos colaboradores.",
     );
   return { empresa, colaboradores, avisos, extras, arquivo };
 }
