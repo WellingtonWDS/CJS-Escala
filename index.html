@@ -18,6 +18,7 @@
     <span class="text-slate-300 text-sm">Calculadora de horas e migração 6×1 → 5×2 · dados salvos apenas neste navegador</span>
   </div>
   <div class="flex items-center gap-2 flex-wrap">
+    <button id="btn-imprimir-pagina" type="button" class="no-print text-white text-xs border border-white/50 hover:bg-white/10 rounded-md px-3 py-1.5" title="Imprimir a etapa aberta">Imprimir / PDF</button>
     <button id="btn-tutorial" type="button" class="no-print text-white text-xs border border-white/50 hover:bg-white/10 rounded-md px-3 py-1.5" aria-haspopup="dialog">Tutorial guiado</button>
     <button id="btn-sair" class="no-print text-slate-300 hover:text-white text-xs border border-white/25 rounded-md px-3 py-1.5">Sair</button>
     <button id="btn-limpar-dados" class="no-print text-slate-300 hover:text-white text-xs border border-white/25 hover:border-white/50 rounded-md px-3 py-1.5">Limpar dados salvos</button>
@@ -62,7 +63,7 @@
       <div id="config-colaboradores">
       <h3 class="font-display text-fintria-navy text-sm font-semibold mt-6">Colaboradores</h3>
       <p class="text-slate-500 text-sm mb-3">Escolha o modelo CSV, o cadastro manual ou importe o Quadro de Horário de Trabalho da Domínio.</p>
-      <details class="mt-4 border border-slate-200 rounded-lg p-4 bg-slate-50 no-print" id="importacao-colaboradores">
+      <details class="mt-4 border border-slate-200 rounded-lg p-4 bg-slate-50" id="importacao-colaboradores">
         <summary class="cursor-pointer font-semibold text-fintria-navy text-sm">Preencher colaboradores por planilha</summary>
         <p class="text-sm text-slate-500 mt-3">Baixe o modelo CSV e abra no Excel ou LibreOffice. Preencha a partir da segunda linha, mantendo os títulos das quatro colunas, e salve como CSV (preferencialmente UTF-8). O arquivo é lido apenas neste navegador.</p>
         <p class="text-xs text-slate-500 mt-2">Nome e cargo/função são livres (até 120 caracteres). Sexo: Feminino/Masculino ou F/M. Horas semanais: de 1 a 60 em múltiplos de 0,5, como 40 ou 42,5. Limites: 500 colaboradores no cadastro e 1 MB por arquivo.</p>
@@ -91,7 +92,7 @@
           <div class="md:col-span-2"><button id="btn-add-colab" type="submit" class="bg-fintria-navy text-white px-3.5 py-2 rounded-md text-sm font-semibold">Cadastrar colaborador</button></div>
         </form>
       </details>
-      <details class="mt-4 border border-slate-200 rounded-lg p-4 bg-slate-50 no-print" id="importacao-dominio">
+      <details class="mt-4 border border-slate-200 rounded-lg p-4 bg-slate-50" id="importacao-dominio">
         <summary class="cursor-pointer font-semibold text-fintria-navy text-sm">Importar planilha da Domínio — Quadro de Horário de Trabalho</summary>
         <p class="text-sm text-slate-500 mt-3">Selecione o relatório .xls ou .xlsx exportado da Domínio (até 5 MB). A leitura ocorre neste navegador. Os horários são mantidos por colaborador, inclusive sábados reduzidos, jornadas noturnas e ciclos de plantão.</p>
         <p class="text-xs text-slate-500 mt-2">Sexo, data inicial de ciclos, regras coletivas e cobertura mínima não constam necessariamente no relatório. O sexo pode ser preenchido por nome apenas quando a predominância estatística atingir 99%, com indicação da estimativa para conferência. Confira as pendências em Colaboradores cadastrados/importados. “00:00–00:00” sem indicação de folga não será interpretado como folga ou 24 horas de trabalho.</p>
@@ -106,7 +107,7 @@
         <h4 id="colaboradores-cadastrados-titulo" class="font-display font-semibold text-fintria-navy mb-2">Colaboradores cadastrados/importados</h4>
         <p class="text-sm text-slate-500 mb-3">Confira, edite ou remova os colaboradores de qualquer forma de cadastro. Horários individuais e pendências da Domínio também ficam disponíveis aqui.</p>
         <p id="colaboradores-mensagem" role="status" class="text-sm text-fintria-navy mb-3"></p>
-        <div class="no-print mb-4"><button id="btn-sugerir-sexos" type="button" class="border border-slate-300 rounded-md bg-white px-3 py-2 text-sm font-semibold text-fintria-navy">Preencher sexos por nome nos importados</button><p class="text-xs text-slate-500 mt-2">A importação da Domínio preenche apenas prenomes com pelo menos 99% de predominância e mil registros na base local IBGE/Censo 2022 (espelho ggustavowerlangg/ibge-nomes-2022). Nomes ambíguos ou sem dados suficientes ficam não informados. Este botão também atende cadastros já importados e preserva escolhas manuais. A porcentagem descreve a base histórica; confira o cadastro individual.</p></div>
+        <div class="mb-4"><button id="btn-sugerir-sexos" type="button" class="border border-slate-300 rounded-md bg-white px-3 py-2 text-sm font-semibold text-fintria-navy">Preencher sexos por nome nos importados</button><p class="text-xs text-slate-500 mt-2">A importação da Domínio preenche apenas prenomes com pelo menos 99% de predominância e mil registros na base local IBGE/Censo 2022 (espelho ggustavowerlangg/ibge-nomes-2022). Nomes ambíguos ou sem dados suficientes ficam não informados. Este botão também atende cadastros já importados e preserva escolhas manuais. A porcentagem descreve a base histórica; confira o cadastro individual.</p></div>
         <div id="colab-list"></div>
       </section>
       </div>
@@ -310,8 +311,8 @@
     <!-- 8. CONVERSÃO E COMPARAÇÃO -->
     <section id="sec-gerar" data-etapa hidden class="scroll-mt-4 bg-white border border-slate-200 rounded-xl p-5 md:p-7 mb-5">
       <h2 class="font-display text-fintria-navy text-lg font-semibold mb-1">Converter escala 6×1 para 5×2</h2>
-      <p class="text-slate-500 text-sm mb-4 no-print">2. Escolha o destino. A escala atual será preservada e a proposta manterá os dias de funcionamento da empresa. Cadastre a cobertura por função para avaliar se a equipe atende à operação.</p>
-      <div class="mt-4 no-print">
+      <p class="text-slate-500 text-sm mb-4">2. Escolha o destino. A escala atual será preservada e a proposta manterá os dias de funcionamento da empresa. Cadastre a cobertura por função para avaliar se a equipe atende à operação.</p>
+      <div class="mt-4">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
           <div><label for="conversao-periodo" class="block text-xs font-semibold mb-1.5">Mês da proposta 5×2</label><input id="conversao-periodo" type="month" min="2026-01" max="2100-12" class="w-full border border-slate-300 rounded-md p-2 bg-white"></div>
           <div><label for="conversao-fase" class="block text-xs font-semibold mb-1.5">Referência da mudança</label><select id="conversao-fase" class="w-full border border-slate-300 rounded-md p-2 bg-white"><option value="automatico">Automática — vigência nas datas</option><option value="transicao42">Simular fase de 42h</option><option value="definitivo40">Simular fase de 40h</option></select></div>

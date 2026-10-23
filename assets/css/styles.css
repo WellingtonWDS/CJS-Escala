@@ -101,17 +101,30 @@ body {
   .escala-mensal {
     min-width: 0;
   }
-  .no-print {
+  .no-print,
+  main button:not([aria-pressed="true"]) {
     display: none !important;
   }
-  main > section {
+  main button[aria-pressed="true"] {
+    color: #0b2545 !important;
+    background: white !important;
+    border: 1px solid #0b2545 !important;
+  }
+  main > section[hidden] {
     display: none !important;
   }
-  main > section#sec-gerar {
+  main > section:not([hidden]) {
     display: block !important;
-    break-inside: avoid;
     box-shadow: none !important;
     border: none !important;
+  }
+  main {
+    padding: 0 !important;
+  }
+  main .overflow-x-auto,
+  main .overflow-y-auto {
+    overflow: visible !important;
+    max-height: none !important;
   }
 }
 

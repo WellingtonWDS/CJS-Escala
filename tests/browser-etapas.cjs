@@ -112,16 +112,48 @@ module.exports = async function testarEtapas({ browser, baseURL }) {
       /Escala mensal/,
     );
     await page.locator('[data-etapa-link="sec-config"]').click();
+    // A impressão acompanha a etapa visível e não altera a navegação nem os dados.
+    const etapas = await page
+      .locator("[data-etapa-link]")
+      .evaluateAll((els) => els.map((el) => el.dataset.etapaLink));
+    for (const id of etapas) {
+      await page.locator(`[data-etapa-link="${id}"]`).click();
+      await page.emulateMedia({ media: "print" });
+      assert.deepEqual(
+        await page
+          .locator("main > section:visible")
+          .evaluateAll((els) => els.map((el) => el.id)),
+        [id],
+      );
+      assert.equal(await page.locator("#etapas-nav").isVisible(), false);
+      assert.equal(
+        await page.locator("#btn-imprimir-pagina").isVisible(),
+        false,
+      );
+      if (id === "sec-tipo")
+        assert.equal(
+          await page.locator("#tabs-tipo button:visible").count(),
+          1,
+        );
+      await page.emulateMedia({ media: "screen" });
+      assert.ok(await page.locator("#btn-imprimir-pagina").isVisible());
+    }
+    await page.locator('[data-etapa-link="sec-config"]').click();
+    await page
+      .locator("#importacao-dominio")
+      .evaluate((el) => (el.open = true));
     await page.emulateMedia({ media: "print" });
-    assert.deepEqual(
-      await page
-        .locator("main > section:visible")
-        .evaluateAll((els) => els.map((el) => el.id)),
-      ["sec-gerar"],
-    );
-    assert.equal(await page.locator("#etapas-nav").isVisible(), false);
+    assert.ok(await page.locator("#importacao-dominio").isVisible());
+    assert.ok(await page.locator("#dominio-arquivo").isVisible());
     await page.emulateMedia({ media: "screen" });
     await conferir(0);
+    // O botão global funciona fora da etapa de geração.
+    await page.evaluate(() => {
+      window.__impressoes = 0;
+      window.print = () => window.__impressoes++;
+    });
+    await page.locator("#btn-imprimir-pagina").click();
+    assert.equal(await page.evaluate(() => window.__impressoes), 1);
     for (const width of [390, 320]) {
       await page.setViewportSize({ width, height: 844 });
       await page.locator('[data-etapa-link="sec-gerar"]').click();

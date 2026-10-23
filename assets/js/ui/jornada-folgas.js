@@ -18,7 +18,7 @@ export function createJornadaFolgasUI({
     const el = document.getElementById(containerId);
     el.innerHTML = DIAS_SEMANA.map((d, i) => {
       const on = arr.includes(i);
-      return `<button type="button" data-day="${i}" class="w-11 py-2 text-center border-[1.5px] rounded-md font-semibold text-xs ${on ? "bg-fintria-verde border-fintria-verde text-white" : "border-slate-200 bg-white text-slate-500"}">${d}</button>`;
+      return `<button type="button" data-day="${i}" aria-pressed="${on}" class="w-11 py-2 text-center border-[1.5px] rounded-md font-semibold text-xs ${on ? "bg-fintria-verde border-fintria-verde text-white" : "border-slate-200 bg-white text-slate-500"}">${d}</button>`;
     }).join("");
     el.querySelectorAll("button").forEach((btn) => {
       btn.onclick = () => {

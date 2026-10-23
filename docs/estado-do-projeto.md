@@ -28,7 +28,7 @@ O fluxo principal está implementado e continua em evolução. Já permite impor
 | Ajustes de cobertura | Sugestões de troca de folga, horário/turno e função habilitada; prévia antes/depois, aplicar e desfazer a última aplicação, validação de dados atuais e carregamento com progresso/cancelamento em segundo plano. |
 | Diagnóstico de pessoal | Lacunas agrupadas por função, dias, horário e quantidade, com datas; diferencia capacidade insuficiente, disponibilidade, habilitações compartilhadas e redistribuição. Verifica simultaneidade, horas e dias-pessoa sem duplicar a equipe. Presente na escala, comparação e CSV. |
 | Conversão e comparação | Origem 6×1 preservada, proposta 5×2 em período próprio, busca de distribuição de folgas e comparação de horas, dias e cobertura. Diagnóstico de suficiência, insuficiência demonstrável, necessidade de ajustes, incompatibilidade ou ausência de base para avaliação. |
-| Exportação e armazenamento | CSV detalhado, impressão e persistência local no navegador. Alterações invalidam resultados dependentes; versões antigas das regras exigem nova geração. |
+| Exportação e armazenamento | CSV detalhado, impressão/PDF da etapa aberta pelo cabeçalho ou navegador (incluindo painéis expandidos) e persistência local no navegador. Alterações invalidam resultados dependentes; versões antigas das regras exigem nova geração. |
 | Estrutura técnica | Módulos separados de domínio, interface, importação, exportação e estado; build dos arquivos públicos e autenticação no servidor da Vercel. |
 
 ## Limitações atuais

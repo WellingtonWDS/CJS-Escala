@@ -174,7 +174,7 @@ export function createConfiguracaoUI({
     const wrap = document.getElementById("tabs-tipo");
     wrap.innerHTML = TIPOS.map(([val, label]) => {
       const active = state.tipoEscala === val;
-      return `<button data-tipo="${val}" class="px-4 py-2.5 rounded-lg border-[1.5px] font-semibold text-sm ${active ? "border-fintria-verde bg-fintria-verdeBg text-fintria-verde" : "border-slate-200 bg-white text-slate-500"}">${label}</button>`;
+      return `<button data-tipo="${val}" aria-pressed="${active}" class="px-4 py-2.5 rounded-lg border-[1.5px] font-semibold text-sm ${active ? "border-fintria-verde bg-fintria-verdeBg text-fintria-verde" : "border-slate-200 bg-white text-slate-500"}">${label}</button>`;
     }).join("");
 
     wrap.querySelectorAll("button").forEach((btn) => {

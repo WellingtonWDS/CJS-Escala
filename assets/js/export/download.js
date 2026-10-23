@@ -15,5 +15,6 @@ export function bindExportEvents(state, env) {
     link.click();
     setTimeout(() => URL.revokeObjectURL(link.href), 1000);
   };
-  document.getElementById("btn-imprimir").onclick = () => window.print();
+  for (const id of ["btn-imprimir", "btn-imprimir-pagina"])
+    document.getElementById(id).onclick = () => window.print();
 }
