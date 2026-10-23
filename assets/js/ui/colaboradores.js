@@ -1,3 +1,4 @@
+import { camposHabilitacoes, bindHabilitacoes } from "./habilitacoes.js";
 import { camposRestricoes, bindRestricoes } from "./restricoes.js";
 import { preencherSexoPorNome } from "../domain/sexo-por-nome.js";
 import { mostrarColaboradores } from "./lista-colaboradores.js";
@@ -24,6 +25,9 @@ export function createColaboradoresUI({
   function renderColaboradores({ preservarEnquadramento = false } = {}) {
     onFuncoesChange();
     const list = document.getElementById("colab-list");
+    const habilitacoesAbertas = [
+      ...list.querySelectorAll("details[data-habilitacoes][open]"),
+    ].map((el) => el.dataset.habilitacoes);
     const restricoesAbertas = [
       ...list.querySelectorAll("details[data-restricoes][open]"),
     ].map((el) => el.dataset.restricoes);
@@ -57,6 +61,7 @@ export function createColaboradoresUI({
       <button data-remove="${c.id}" title="Remover" class="text-fintria-vermelho bg-transparent text-base px-2 py-2 rounded hover:bg-red-50">✕</button>
       ${state.analiseEnquadramentoAtiva === true ? camposEnquadramento(c) : ""}
       ${camposDominio(c, state)}
+      ${camposHabilitacoes(c, state.colaboradores)}
       ${camposRestricoes(c)}
     </div>`;
         })
@@ -190,6 +195,7 @@ export function createColaboradoresUI({
             invalidarEscala();
             saveState();
             onFuncoesChange();
+            if (e.target.dataset.field === "cargo") renderColaboradores();
           }
         };
       });
@@ -204,6 +210,17 @@ export function createColaboradoresUI({
         saveState();
       };
     });
+    bindHabilitacoes({
+      list,
+      state,
+      onChange: () => {
+        invalidarEscala();
+        saveState();
+        onFuncoesChange();
+      },
+    });
+    for (const el of list.querySelectorAll("details[data-habilitacoes]"))
+      if (habilitacoesAbertas.includes(el.dataset.habilitacoes)) el.open = true;
     bindRestricoes({
       list,
       state,

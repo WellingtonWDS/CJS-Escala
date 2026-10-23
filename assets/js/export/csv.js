@@ -1,3 +1,4 @@
+import { funcaoDoDia } from "../domain/funcoes.js";
 import {
   dateFromKey,
   minToTime,
@@ -10,6 +11,9 @@ import { createDomain } from "../domain/index.js";
 import { csvCell } from "../shared/formatacao.js";
 export function gerarCsv(state) {
   const { resultado } = state.escalaGerada;
+  const ajustes = resultado.some((r) =>
+    r.dias.some((d) => d.funcaoAlocada || d.ajusteAutomatico),
+  );
   const restricoes = resultado.some((r) => r.colaborador.restricoes);
   const dominio = resultado.some((r) => r.colaborador.quadroDominio);
   const domain = createDomain(state);
@@ -67,6 +71,9 @@ export function gerarCsv(state) {
       "Enquadramento",
       "Aditamento informado",
       "Data da saída",
+      ...(ajustes
+        ? ["Função alocada no dia", "Ajuste de cobertura aplicado"]
+        : []),
       ...(restricoes
         ? ["Restrição individual", "Horas dispensadas da meta de alocação"]
         : []),
@@ -138,6 +145,12 @@ export function gerarCsv(state) {
               );
             })()
           : "",
+        ...(ajustes
+          ? [
+              trabalha ? funcaoDoDia(r.colaborador, d) : "",
+              d.ajusteAutomatico ? "Sim" : "",
+            ]
+          : []),
         ...(restricoes
           ? [
               d.restricao?.descricao || d.ajusteRestricao || "",

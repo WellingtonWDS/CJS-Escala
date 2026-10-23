@@ -42,6 +42,7 @@ export function createApplication({ env, now = () => new Date() }) {
   const cobertura = createCoberturaUI({
     ...deps,
     onCoberturaChange: () => {
+      conversaoUI?.marcarDesatualizada();
       if (state.escalaGerada) {
         state.escalaGerada.coberturaOperacional = domain.analisarCobertura(
           state.escalaGerada.resultado,

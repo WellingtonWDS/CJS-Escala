@@ -1,3 +1,4 @@
+import { habilitadoPara, funcaoDoDia } from "./funcoes.js";
 import { validarRestricoesEscala, ausenciaProgramada } from "./restricoes.js";
 import { politicaPlantaoDeclarada, temTrabalhoNoturno } from "./computo-cct.js";
 import { apurarCompensacaoHoras } from "./compensacao-horas.js";
@@ -589,6 +590,20 @@ export function createValidacao(state, jornada, feriados) {
       unirDias(apuracao, contexto, dias),
     );
     return [
+      ...dias
+        .filter(
+          (d) =>
+            ["T", "FE"].includes(d.status) &&
+            !habilitadoPara(colab, funcaoDoDia(colab, d)),
+        )
+        .map((d) =>
+          issue(
+            "FUNCAO_NAO_HABILITADA",
+            "erro",
+            `${d.data}: colaborador sem habilitação cadastrada para a função alocada.`,
+            d.data,
+          ),
+        ),
       ...validarRestricoesEscala(colab, dias, state),
       ...(colab.quadroDominio?.ativo !== false &&
       colab.quadroDominio?.pendencias?.length

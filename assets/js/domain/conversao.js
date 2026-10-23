@@ -1,3 +1,4 @@
+import { habilitadoPara, funcaoDoDia } from "./funcoes.js";
 import {
   aplicarRestricoesDia,
   bloqueioDoTurno,
@@ -285,6 +286,19 @@ export function converterEscala(state, opcoes = {}) {
   ];
   createDomain(config).inicializarFeriadosDoMes();
   const referencia = gerarReferenciaAtual(config);
+  config.horariosOrigemCobertura = {
+    jornada: structuredClone(state.jornada),
+    jornadaPorDia: structuredClone(state.jornadaPorDia),
+    horarioPorDia: state.horarioPorDia,
+    turnosRevezamento: state.turnosRevezamento,
+    entradaTurnoB: state.entradaTurnoB,
+  };
+  config.folgasFixasOrigemCobertura =
+    state.folgaTipo === "fixa"
+      ? (state.folgaDiasPermitidos || [])
+          .filter((d) => state.diasTrabalho.includes(d))
+          .slice(0, Math.max(0, state.diasTrabalho.length - 6))
+      : [];
   config.tipoEscala = "5x2";
   config.aplicarProposta5x2 = true;
   config.modoRegime = opcoes.fase === "automatico" ? "automatico" : "simulacao";
@@ -425,9 +439,15 @@ export function compararConversao(conversao) {
     const soma = (list) => list.reduce((s, d) => s + d.horas, 0);
     const trabalho = (list) =>
       list.filter((d) => ["T", "FE"].includes(d.status)).length;
-    const g = grupos.get(normalizarFuncao(r.colaborador.cargo));
-    if (g) {
-      g.disponiveis += soma(dias);
+    for (const g of grupos.values()) {
+      if (!habilitadoPara(r.colaborador, g.funcao)) continue;
+      g.disponiveis += soma(
+        dias.filter(
+          (d) =>
+            normalizarFuncao(funcaoDoDia(r.colaborador, d)) ===
+            normalizarFuncao(g.funcao),
+        ),
+      );
       for (const semana of semanas(dias).values()) {
         const ref = referenciaSemana(individual, semana, r.colaborador);
         const capacidade = semana
@@ -493,13 +513,9 @@ export function compararConversao(conversao) {
       g.insuficiencias.push(
         `A demanda exige ${g.necessarias.toFixed(1)}h-pessoa no período, acima do teto estimado de ${g.limiteCapacidade.toFixed(1)}h da equipe dessa função, respeitando contratos, dias disponíveis e até cinco dias por semana.`,
       );
-    if (
-      !config.colaboradores.some(
-        (c) => normalizarFuncao(c.cargo) === normalizarFuncao(g.funcao),
-      )
-    )
+    if (!config.colaboradores.some((c) => habilitadoPara(c, g.funcao)))
       g.insuficiencias.push(
-        "Nenhum colaborador possui essa função cadastrada.",
+        "Nenhum colaborador possui habilitação cadastrada para essa função.",
       );
     const noturna = config.colaboradores.some((c) =>
       Object.values((configDoPerfil(config, c) || config).jornadaPorDia).some(

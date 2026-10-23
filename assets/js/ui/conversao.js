@@ -71,7 +71,7 @@ export function createConversaoUI({
               )}</tbody></table></div>${m.lacunas.length > 200 ? "<p>Exibindo as primeiras 200 faixas; todas entram nos totais.</p>" : ""}</details>`
           : ""
       }
-      <p class="text-xs text-slate-500 mb-4">A distribuição busca reduzir lacunas preservando funções, entradas, grupos de turno, janelas de horário, contratos e restrições de folga. A busca é limitada; não garante encontrar toda solução possível.</p>`;
+      <p class="text-xs text-slate-500 mb-4">A distribuição busca reduzir lacunas preservando funções, entradas e grupos de turno na geração inicial, janelas de horário, contratos e restrições de folga. Ajustes de horário ou função adicionais podem ser buscados e revisados no painel de sugestões da proposta. A busca é limitada; não garante encontrar toda solução possível.</p>`;
     el("btn-exportar-proposta").disabled = !!c.desatualizada;
   }
   function renderConversao() {
@@ -86,6 +86,7 @@ export function createConversaoUI({
       domain: createDomain(config),
       env,
       containerId: "resultado-proposta",
+      ajustesPermitidos: () => !c.desatualizada,
       renderRelatorioCobertura: () => "",
       storage: {
         saveState() {

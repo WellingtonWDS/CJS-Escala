@@ -306,3 +306,7 @@ body {
 .restricao-dia input { accent-color: #148354; width: 15px; height: 15px; }
 .restricao-item { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid #e2e8f0; }
 @media (max-width: 700px) { .restricao-form { grid-template-columns: 1fr 1fr; } .restricao-form label:first-child { grid-column: 1 / -1; } .restricao-form button { grid-column: 1 / -1; } }
+
+.ajuste-spinner { display:inline-block; width:18px; height:18px; border:2px solid #cbd5e1; border-top-color:#148354; border-radius:50%; animation:ajuste-girar .8s linear infinite; flex-shrink:0; }
+@keyframes ajuste-girar { to { transform:rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .ajuste-spinner { animation:none; } }

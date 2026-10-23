@@ -6,7 +6,7 @@ Ferramenta para configurar, gerar e revisar escalas de trabalho e comparar a esc
 
 Consulte [Estado do projeto](docs/estado-do-projeto.md) para uma visão consolidada das funcionalidades implementadas, limitações, últimas validações e próximos passos propostos. O documento reflete o código atual; auditorias e relatórios datados em `docs/` são registros históricos.
 
-O fluxo principal já inclui cadastro manual e por planilhas, importação Domínio, restrições individuais, geração, conversão 6×1 → 5×2, comparação de cobertura, edição da grade, CSV e impressão. O acesso usa login compartilhado com sessão de 12 horas. Os detalhes de funcionamento e configuração estão nas seções abaixo.
+O fluxo principal já inclui cadastro manual e por planilhas, importação Domínio, restrições individuais, habilitações por função, geração, conversão 6×1 → 5×2, comparação de cobertura, sugestões de ajustes com prévia/aplicação/desfazer, edição da grade, CSV e impressão. O acesso usa login compartilhado com sessão de 12 horas. Os detalhes de funcionamento e configuração estão nas seções abaixo.
 
 ## Conversão da escala atual 6×1 para uma proposta 5×2
 
@@ -16,7 +16,7 @@ O fluxo principal já inclui cadastro manual e por planilhas, importação Domí
 
 A origem e a proposta são configurações e resultados distintos. A conversão não troca o modelo, período ou cadastro da origem. O snapshot original preserva uma grade já gerada, incluindo seus ajustes manuais; sem grade anterior, a referência usa os horários atuais informados, sem reduzir a duração para limites futuros. Para comparar períodos de comprimentos diferentes, o relatório projeta o padrão original 6×1 também no mês de destino. Ajustes pontuais datados da grade original não são transpostos automaticamente para outras datas.
 
-Os dias de funcionamento são preservados: uma loja aberta de segunda a sábado continua aberta aos sábados. A proposta distribui até cinco dias de trabalho, preserva contratos, funções, entradas/grupos de turno e usa as janelas atuais como limites. Respeita dias permitidos e folgas fixas atuais; sábado e domingo fixos são uma escolha explícita no destino. Não estende saídas nem presume ACT/CCT. Sem fundamento coletivo aplicável, mantém até 8h diárias: a distribuição de 42h em cinco dias pode exigir revisão, registrada nos déficits/alertas.
+Os dias de funcionamento são preservados: uma loja aberta de segunda a sábado continua aberta aos sábados. A geração inicial da proposta distribui até cinco dias de trabalho, preserva contratos, funções, entradas/grupos de turno e usa as janelas atuais como limites. Sugestões adicionais de mudança de horário, turno ou função são buscadas em uma etapa própria, com prévia antes de aplicar. Respeita dias permitidos e folgas fixas atuais; sábado e domingo fixos são uma escolha explícita no destino. Não estende saídas nem presume ACT/CCT. Sem fundamento coletivo aplicável, mantém até 8h diárias: a distribuição de 42h em cinco dias pode exigir revisão, registrada nos déficits/alertas.
 
 A busca de folgas é determinística, limitada a 120 avaliações em até duas rodadas e prioriza reduzir incompatibilidades antes das lacunas. Não é uma prova de otimização global. Os diagnósticos distinguem:
 
@@ -61,6 +61,7 @@ assets/js/
   domain/                       Datas, feriados, cálculo e validação das escalas
   state/                        Estado inicial e persistência
   ui/                           Formulários, colaboradores, calendário e transição
+  workers/                      Busca de ajustes de cobertura em segundo plano
   shared/                       Formatação de texto e escape
   import/                       Leitura e validação de CSV e relatórios Domínio
   export/                       Geração e download de CSV
@@ -114,11 +115,11 @@ O crédito não é contado como presença na cobertura nem como hora efetivament
 
 ## Cobertura operacional
 
-Ative o toggle de **Cobertura operacional** para cadastrar faixas recorrentes, informando função, horário, mínimo de pessoas, dias da semana e aplicação em feriados. A seção fica recolhida quando desativada. O select de função lista somente os cargos preenchidos livremente em **Cargo / função** nos colaboradores; novos cargos são cadastrados ali. Desativar a cobertura suspende a análise e preserva as faixas salvas. Cadastros antigos que já tinham faixas mantêm a análise ativa na migração. Nomes de função ignoram acentos, maiúsculas e espaços extras; cada pessoa exerce uma única função nesta versão.
+Ative o toggle de **Cobertura operacional** para cadastrar faixas recorrentes, informando função, horário, mínimo de pessoas, dias da semana e aplicação em feriados. A seção fica recolhida quando desativada. O select de função lista somente os cargos preenchidos livremente em **Cargo / função** nos colaboradores; novos cargos são cadastrados ali. Desativar a cobertura suspende a análise e preserva as faixas salvas. Cadastros antigos que já tinham faixas mantêm a análise ativa na migração. Nomes de função ignoram acentos, maiúsculas e espaços extras; a função principal já está habilitada e funções adicionais podem ser marcadas na ficha. Cada pessoa é contada somente na função alocada ao plantão; habilitação não implica presença simultânea em várias funções.
 
 Ao gerar a escala, o relatório mostra data, função, período descoberto, mínimo, presentes e faltantes. A análise usa os horários individuais, exclui intervalos e folgas e considera plantões iniciados no dia anterior. Horários noturnos têm término no dia seguinte. Faixas sobrepostas da mesma função usam o maior mínimo, sem somar demandas duplicadas. Os dias/feriados escolhidos referem-se ao início da faixa, independentemente dos dias operacionais da empresa.
 
-A pausa mantém sua distância da entrada configurada, inclusive no Turno B; em jornadas menores, é antecipada para caber no plantão. O intervalo efetivo aparece na descrição do dia na grade. A análise ocorre em minutos e se limita ao período selecionado. O total de horas-pessoa faltantes soma a duração de cada lacuna multiplicada pela quantidade de pessoas que faltam.
+Na geração inicial, a pausa mantém sua distância da entrada configurada, inclusive no Turno B; em jornadas menores, é antecipada para caber no plantão. A cobertura utiliza os limites explícitos da pausa efetiva quando disponíveis, incluindo jornadas recortadas por restrições e ajustes de horário. O intervalo efetivo aparece na descrição do dia na grade. A análise ocorre em minutos e se limita ao período selecionado. O total de horas-pessoa faltantes soma a duração de cada lacuna multiplicada pela quantidade de pessoas que faltam.
 
 O módulo `domain/cobertura.js` é independente da interface e não modifica a configuração ou a escala. As demandas ficam em `demandasCobertura`, preservando a chave existente do armazenamento. Sem demandas, a cobertura por função é identificada como não avaliada. Alterar demandas ou cargos invalida a escala; editar um status diário recalcula a cobertura. A análise isolada diagnostica lacunas; o fluxo de conversão usa essa análise para buscar uma distribuição das folgas.
 
@@ -241,3 +242,22 @@ As condições são salvas no navegador e aplicadas tanto à escala atual quanto
 A grade, impressão, CSV, validações legais, cobertura operacional e comparação utilizam a presença resultante. Edições manuais não podem ultrapassar bloqueios ou janelas: é necessário revisar a condição no cadastro e gerar novamente. O comparativo de capacidade por função desconta ausências e janelas restritas. Resultados salvos de versões anteriores são invalidados pela nova versão das regras.
 
 Regras em `assets/js/domain/restricoes.js`; formulário em `assets/js/ui/restricoes.js`. Testes: `tests/restricoes.test.cjs`, incluindo uma matriz de operações de comércio, padaria e drogaria, e `tests/browser-restricoes.cjs` na suíte de interface.
+
+
+## Ajustes sugeridos para cobrir horários descobertos
+
+1. Na ficha do colaborador, abra **Funções habilitadas para cobertura** e marque outras funções que ele pode exercer. A função principal já está habilitada. As opções vêm dos cargos e habilitações cadastrados, sem campo livre na cobertura. O sistema não infere qualificação profissional por nome ou semelhança de cargos.
+2. Ative a cobertura, cadastre os mínimos e gere a escala ou a proposta 5×2. Na grade correspondente, use **Buscar ajustes de cobertura**.
+3. Acompanhe o carregamento, o número de alternativas avaliadas e os ajustes encontrados. **Cancelar busca** encerra o processamento sem alterar a escala. A busca ocorre em um Web Worker local, sem enviar cadastros ou planilhas a serviços externos.
+4. Confira a prévia por pessoa e data: trabalho/folga, função, entrada, saída, intervalo e horas antes/depois, redução de horas-pessoa descobertas, lacunas restantes e conferências da escala sugerida. **Aplicar ajustes sugeridos** atualiza grade, validações, cobertura, CSV e comparação. A origem da conversão é preservada quando os ajustes são feitos na proposta.
+5. **Desfazer último ajuste** restaura o estado anterior à última aplicação, inclusive após recarregar. Alterações posteriores na escala ou configuração desabilitam o desfazer para preservar essas alterações. Não é um histórico completo de versões.
+
+A busca tenta deslocar horários dentro das janelas operacionais cadastradas, incluindo o Turno B quando declarado, e das disponibilidades individuais; realocar o plantão para outra função explicitamente habilitada; ou trocar um dia de trabalho com uma folga da mesma semana, inclusive em uma troca coordenada entre duas pessoas. O intervalo pode acompanhar o horário sugerido e aparece na prévia. Nas propostas, a janela operacional original é preservada como teto, mesmo quando a geração inicial encurta a jornada para o limite da fase. Horários individuais da Domínio também são limites, não permissões para estender o expediente.
+
+Cada alternativa aceita reduz as lacunas totais **sem criar ou agravar uma lacuna em outro horário ou função**. Conserva as horas computadas e a quantidade de dias trabalhados por pessoa/semana, exige ausência de erros objetivos nas validações dos colaboradores alterados e respeita jornadas, interjornada, repousos, admissão, feriados dispensados, folgas protegidas e restrições. Dias editados manualmente são preservados. Colaboradores com incompatibilidades objetivas precisam de revisão antes de receber ajustes. Pendências de fundamento ou conferência continuam visíveis e não representam aprovação automática.
+
+O escopo atual realoca funções pelo plantão inteiro e não divide o mesmo funcionário entre funções simultâneas ou faixas dentro do dia. Não cria horas extras, não aumenta a jornada para preencher déficits, não altera plantões 12×36 nem ciclos importados diferenciados. A busca é determinística e limitada, por padrão, a **600 alternativas avaliadas e 20 ajustes aceitos** por execução; pode terminar antes ao não encontrar melhoria. Após aplicar uma melhoria, é possível buscar novamente. Nenhuma sugestão encontrada não é prova de inviabilidade global nem indicação automática de contratação.
+
+Prévia e aplicação conferem se os dados permanecem atuais. Alterar cadastro, restrições, habilitações, demanda, horários ou a grade exige nova busca; proposta desatualizada precisa ser gerada novamente. As mudanças efetivas e o registro da última aplicação ficam no armazenamento local, sujeitos ao espaço disponível, com aviso se o salvamento falhar. O CSV identifica a função alocada no dia e os ajustes de cobertura aplicados; o cargo cadastrado é preservado.
+
+Motor: `assets/js/domain/ajustes-cobertura.js`; habilitações: `assets/js/domain/funcoes.js`; execução: `assets/js/workers/ajustes-cobertura.js`; painel e cadastro: `assets/js/ui/ajustes-cobertura.js` e `assets/js/ui/habilitacoes.js`. Testes: `tests/ajustes-cobertura.test.cjs` e `tests/browser-ajustes-cobertura.cjs`, integrados às suítes existentes.

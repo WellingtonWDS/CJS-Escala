@@ -1,3 +1,5 @@
+import { normalizarFuncao, habilitadoPara, funcaoDoDia } from "./funcoes.js";
+export { normalizarFuncao } from "./funcoes.js";
 import { diasNoMes, isoDate, timeToMin } from "./datas-horas.js";
 import { createFeriados } from "./feriados.js";
 
@@ -8,13 +10,6 @@ const minutoData = (key) => {
 };
 const chaveData = (minuto) =>
   new Date(minuto * 60000).toISOString().slice(0, 10);
-export const normalizarFuncao = (valor) =>
-  String(valor ?? "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .trim()
-    .replace(/\s+/g, " ")
-    .toLocaleLowerCase("pt-BR");
 const horarioValido = (v) => /^([01]\d|2[0-3]):[0-5]\d$/.test(v);
 
 export function validarDemanda(demanda) {
@@ -75,7 +70,22 @@ function segmentosTrabalho(dia, jornada) {
     pausa >= saida - entrada
   )
     return null;
-  const intervalo = pausa > 0 ? calcularPausaEfetiva(dia, jornada) : null;
+  const explicito =
+    Number.isFinite(dia.intervaloInicioMin) &&
+    Number.isFinite(dia.intervaloFimMin);
+  const intervalo =
+    pausa > 0
+      ? explicito
+        ? { inicio: dia.intervaloInicioMin, fim: dia.intervaloFimMin }
+        : calcularPausaEfetiva(dia, jornada)
+      : null;
+  if (
+    intervalo &&
+    (intervalo.inicio < entrada ||
+      intervalo.fim > saida ||
+      Math.abs(intervalo.fim - intervalo.inicio - pausa) > 0.01)
+  )
+    return null;
   if (pausa > 0 && !intervalo) return null;
   const partes = intervalo
     ? [
@@ -144,13 +154,22 @@ export function analisarCobertura(config, resultado) {
     }
   }
   resultado.forEach((r, indice) => {
-    const g = grupos.get(normalizarFuncao(r.colaborador.cargo));
-    if (!g) return;
     // O dia anterior é necessário para o plantão que atravessa a meia-noite.
     const dias = new Map(
       [...(r.diasContexto ?? []), ...r.dias].map((d) => [d.data, d]),
     );
     for (const d of dias.values()) {
+      if (
+        ["T", "FE"].includes(d.status) &&
+        !habilitadoPara(r.colaborador, funcaoDoDia(r.colaborador, d))
+      ) {
+        relatorio.avisos.push(
+          `${r.colaborador.nome || "(sem nome)"} · ${d.data}: função alocada sem habilitação cadastrada; não contabilizado na cobertura.`,
+        );
+        continue;
+      }
+      const g = grupos.get(normalizarFuncao(funcaoDoDia(r.colaborador, d)));
+      if (!g) continue;
       const base = minutoData(d.data);
       if (base + 2 * DIA <= inicio || base >= fim) continue;
       const jornada =

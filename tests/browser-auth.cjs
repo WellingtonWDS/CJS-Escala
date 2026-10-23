@@ -51,6 +51,15 @@ const { chromium } = require("playwright");
       ).status(),
       303,
     );
+    assert.equal(
+      (
+        await context.request.get(
+          base + "/assets/js/workers/ajustes-cobertura.js",
+          { maxRedirects: 0 },
+        )
+      ).status(),
+      303,
+    );
     await page.locator("#password").fill("incorrect");
     await page.locator("button[type=submit]").click();
     await page.waitForFunction(() =>
@@ -65,6 +74,24 @@ const { chromium } = require("playwright");
     await page.evaluate(() =>
       localStorage.setItem("auth-preserve-test", "preserved"),
     );
+    const respostaWorker = await page.evaluate(
+      () =>
+        new Promise((resolve, reject) => {
+          const worker = new Worker("/assets/js/workers/ajustes-cobertura.js", {
+            type: "module",
+          });
+          worker.onmessage = (event) => {
+            worker.terminate();
+            resolve(event.data);
+          };
+          worker.onerror = () => {
+            worker.terminate();
+            reject(new Error("Worker autenticado não carregou"));
+          };
+          worker.postMessage({ config: {} });
+        }),
+    );
+    assert.match(respostaWorker.erro, /Gere uma escala/);
     const cookies = await context.cookies();
     const session = cookies.find((c) => c.name === "cjs_session");
     assert.ok(session.httpOnly);

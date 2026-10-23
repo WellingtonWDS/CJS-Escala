@@ -1,3 +1,4 @@
+import { funcoesHabilitadas } from "../domain/funcoes.js";
 import { DIAS_SEMANA } from "../config/regras-jornada.js";
 import {
   dateFromKey,
@@ -28,9 +29,9 @@ export function createCoberturaUI({
   function funcoesCadastradas() {
     const funcoes = new Map();
     for (const pessoa of state.colaboradores) {
-      const nome = String(pessoa.cargo ?? "").trim();
-      if (nome && !funcoes.has(normalizarFuncao(nome)))
-        funcoes.set(normalizarFuncao(nome), nome);
+      for (const nome of funcoesHabilitadas(pessoa))
+        if (!funcoes.has(normalizarFuncao(nome)))
+          funcoes.set(normalizarFuncao(nome), nome);
     }
     return [...funcoes.values()];
   }
@@ -156,7 +157,7 @@ export function createCoberturaUI({
       : relatorio.periodos.length
         ? '<p class="text-fintria-verde">Todas as faixas aplicáveis estão cobertas na escala atual.</p>'
         : '<p class="text-slate-500">Nenhuma faixa válida se aplica ao período selecionado. Confira os dias da semana, o dia inicial e a opção de feriados.</p>';
-    return `<section id="relatorio-cobertura" class="border rounded-lg p-4 mb-4">${titulo}${avisos}${conteudo}<p class="text-xs text-slate-500 mt-2">Presentes = pessoas da função trabalhando no período, sem contar intervalos, folgas ou funções diferentes. Horas-pessoa somam a duração de cada falta multiplicada pela quantidade necessária.</p></section>`;
+    return `<section id="relatorio-cobertura" class="border rounded-lg p-4 mb-4">${titulo}${avisos}${conteudo}<p class="text-xs text-slate-500 mt-2">Presentes = pessoas alocadas na função para a qual estão habilitadas e trabalhando no período, sem contar intervalos, folgas ou funções diferentes. Horas-pessoa somam a duração de cada falta multiplicada pela quantidade necessária.</p></section>`;
   }
   function bindEvents() {
     document.getElementById("tg-cobertura").onchange = (e) => {

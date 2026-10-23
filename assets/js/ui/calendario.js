@@ -1,3 +1,5 @@
+import { createAjustesCoberturaUI } from "./ajustes-cobertura.js";
+import { funcaoDoDia } from "../domain/funcoes.js";
 import { violacoesDia, aplicarRestricoesDia } from "../domain/restricoes.js";
 import { configDoPerfil } from "../domain/perfil-dominio.js";
 import { apurarComputoCCT } from "../domain/computo-cct.js";
@@ -22,6 +24,7 @@ export function createCalendarioUI({
   renderRelatorioCobertura,
   containerId = "resultado-gerar",
   onEscalaChange = () => {},
+  ajustesPermitidos = () => true,
 }) {
   const {
     calcHorasDia,
@@ -34,6 +37,16 @@ export function createCalendarioUI({
   } = domain;
   const { saveState } = storage;
   const { document, alert, confirm, prompt } = env;
+
+  const ajustes = createAjustesCoberturaUI({
+    state,
+    storage,
+    env,
+    containerId,
+    renderEscalaGerada,
+    onEscalaChange,
+    permitido: ajustesPermitidos,
+  });
 
   function editarStatus(ri, di) {
     const obj = state.escalaGerada.resultado[ri].dias[di];
@@ -119,6 +132,7 @@ export function createCalendarioUI({
       alert(violacoes.join("\n"));
       return;
     }
+    candidato.ajusteManual = true;
     Object.assign(obj, candidato);
     state.escalaGerada.validacoes = state.escalaGerada.resultado.map((r) => ({
       colaborador: r.colaborador,
@@ -184,6 +198,7 @@ export function createCalendarioUI({
     const { resultado } = state.escalaGerada;
     const container = document.getElementById(containerId);
     let html = renderRelatorioCobertura(resultado);
+    html += ajustes.renderPainel();
 
     // As validações são recalculadas a cada renderização. Assim, qualquer alteração
     // manual em um dia repercute imediatamente nos indicadores semanais e mensais.
@@ -418,6 +433,8 @@ export function createCalendarioUI({
                       : x.obj.status;
                 return `<button data-ri="${x.ri}" data-di="${x.r.dias.indexOf(x.obj)}" class="w-full text-left mb-1 last:mb-0 px-1.5 py-1 rounded border ${cls} hover:opacity-80" title="${escapeHtml(x.obj.restricao?.descricao || (trabalho ? "Trabalho" : x.obj.status === "NC" ? "Anterior à admissão" : "Folga"))}${trabalho && x.obj.intervaloInicioMin != null ? ` · Intervalo ${horarioComDia(x.obj.intervaloInicioMin)}–${horarioComDia(x.obj.intervaloFimMin)}` : ""} — clique para alterar">
               <div class="font-semibold truncate">${escapeHtml(x.r.colaborador.nome || "(sem nome)")}</div>
+              ${trabalho && x.obj.funcaoAlocada ? `<div class="text-[9px] font-semibold">Função: ${escapeHtml(funcaoDoDia(x.r.colaborador, x.obj))}</div>` : ""}
+              ${x.obj.ajusteAutomatico ? `<div class="text-[9px] opacity-80">Ajuste de cobertura aplicado</div>` : ""}
               <div class="text-[9px] opacity-80">${x.obj.restricao ? escapeHtml(x.obj.restricao.descricao) : status}${state.turnosRevezamento ? ` · ${x.obj.turno}` : ""}${x.obj.horas ? ` · ${fmtHoras(x.obj.horas)} · ${horarioComDia(x.obj.entradaMin)}–${horarioComDia(x.obj.saidaMin)}` : ""}</div>
               ${(x.obj.creditoIntervaloCCT || 0) + (x.obj.creditoNoturnoCCT || 0) > 0 ? `<div class="text-[9px] font-semibold">${fmtHoras(x.obj.horasComputadasCCT)} computadas (CCT)</div>` : ""}
             </button>`;
@@ -473,6 +490,7 @@ export function createCalendarioUI({
   </div>`;
 
     container.innerHTML = html;
+    ajustes.bindEvents();
 
     container.querySelectorAll("[data-ri][data-di]").forEach((el) => {
       el.onclick = () =>
