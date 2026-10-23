@@ -1,3 +1,8 @@
+import { createEdicaoManualUI } from "./edicao-manual.js";
+import {
+  assinaturaAjustes,
+  substituirDiasDaEscala,
+} from "../domain/ajustes-cobertura.js";
 import { configurarRolagemEscala } from "./rolagem-escala.js";
 import { configDaEscala } from "../domain/contexto-escala.js";
 import { createDomain } from "../domain/index.js";
@@ -58,7 +63,21 @@ export function createCalendarioUI({
     permitido: ajustesPermitidos,
   });
 
+  const edicaoManual = createEdicaoManualUI({
+    state,
+    storage,
+    env,
+    containerId,
+    renderEscalaGerada,
+    onEscalaChange,
+    permitido: ajustesPermitidos,
+  });
+
   function editarStatus(ri, di) {
+    if (!ajustesPermitidos()) {
+      alert("A proposta está desatualizada. Gere novamente antes de editar.");
+      return;
+    }
     const obj = state.escalaGerada.resultado[ri].dias[di];
     if (obj.status === "NC") {
       alert(
@@ -147,7 +166,10 @@ export function createCalendarioUI({
       return;
     }
     candidato.ajusteManual = true;
-    Object.assign(obj, candidato);
+    const antes = structuredClone(obj);
+    state.escalaGerada = substituirDiasDaEscala(state.escalaGerada, [
+      { colaboradorId: colaborador.id, data: obj.data, depois: candidato },
+    ]);
     state.escalaGerada.validacoes = state.escalaGerada.resultado.map((r) => ({
       colaborador: r.colaborador,
       issues: validarLegal(
@@ -163,9 +185,16 @@ export function createCalendarioUI({
     state.escalaGerada.coberturaOperacional = domain.analisarCobertura(
       state.escalaGerada.resultado,
     );
+    state.escalaGerada.ultimaEdicaoManual = {
+      colaboradorId: colaborador.id,
+      data: obj.data,
+      antes,
+      assinatura: assinaturaAjustes(state),
+    };
     renderEscalaGerada();
     onEscalaChange();
     saveState();
+    edicaoManual.destacar();
   }
 
   function atualizarTurnosEscala() {
@@ -549,9 +578,10 @@ export function createCalendarioUI({
       top: anterior?.scrollTop || 0,
     };
     limparRolagem();
-    container.innerHTML = html;
+    container.innerHTML = edicaoManual.renderPainel() + html;
     limparRolagem = configurarRolagemEscala(container, env.window, posicao);
     ajustes.bindEvents();
+    edicaoManual.bindEvents();
 
     container.querySelectorAll("[data-ri][data-di]").forEach((el) => {
       el.onclick = () =>

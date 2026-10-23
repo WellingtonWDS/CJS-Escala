@@ -280,10 +280,21 @@ O diagnóstico distingue quadro habilitado insuficiente, disponibilidade incompa
 
 Pausas e interjornada continuam verificadas na escala e nas sugestões; o teto potencial não resolve uma otimização global. Em turnos noturnos e ciclos especiais, a prova usa disponibilidade simultânea, sem presumir rateio semanal de horas ou dias. Dados inválidos ou limite de processamento suspendem a conclusão de capacidade e preservam as lacunas observadas. Alterações invalidam a comparação anterior. Módulos: `domain/diagnostico-equipe.js`, `domain/disponibilidade.js`, `domain/fluxo-capacidade.js` e `ui/diagnostico-equipe.js`. Testes específicos: `tests/diagnostico-equipe.test.cjs`; integração na suíte de navegador (aplicar/desfazer, comparação, CSV e resultado desatualizado).
 
-Os cartões de colaboradores nas escalas atual e proposta exibem o nome completo com quebra de linha, horários de entrada/saída e intervalo visível. A grade usa colunas mais largas, cartões com altura mínima e expansão conforme o conteúdo; em telas menores, há rolagem horizontal. Os cartões também permanecem visíveis na impressão.
+Os cartões de colaboradores nas escalas atual e proposta exibem o nome completo com quebra de linha, horários de entrada/saída e intervalo visível. A grade usa colunas mais largas, cartões com altura uniforme calculada pelo maior conteúdo da grade, independentemente do status; em telas menores, há rolagem horizontal. Os cartões também permanecem visíveis na impressão.
 
 Nas duas prévias, a grade mensal aparece primeiro. Erros objetivos ficam abertos antes dela; análises documentais, informações e detalhes por colaborador ficam em um painel recolhido depois. A comparação detalhada também fica abaixo das prévias. A grade tem rolagem vertical e horizontal, barra horizontal sincronizada no topo e botão **Ver resumo da semana**, mantendo a última coluna acessível em telas menores ou com zoom. Ajustar uma célula preserva a posição da grade; na impressão, a altura deixa de ser limitada para incluir todas as semanas. Regressão de interface: `tests/browser-previas.cjs`.
 
 ## Impressão e PDF
 
 A impressão acompanha a **etapa aberta**: use o botão **Imprimir / PDF** do cabeçalho ou a impressão do navegador em qualquer etapa, inclusive antes de gerar uma escala. Abra os painéis de detalhes que deseja incluir. Na etapa de conversão, também ficam disponíveis os parâmetros e resultados exibidos. As outras etapas e os botões de ação ficam fora do documento; a impressão não troca de etapa nem modifica o preenchimento.
+
+
+## Revisão da edição manual
+
+Ao clicar em um cartão e alterar trabalho/folga, a grade já é recalculada e o painel **Revisão da edição manual** recebe foco. Ele mostra repousos e horas da semana civil, com aviso quando faltam repousos ou o alvo semanal é ultrapassado. A edição com incompatibilidades permanece como rascunho para revisão.
+
+A busca em segundo plano tenta trocar outro dia do próprio colaborador e, quando necessário para preservar a cobertura, ajustar colegas habilitados na mesma semana. O dia escolhido e as demais edições manuais são preservados. A prévia permite escolher a alternativa e conferir cada mudança antes de **Aplicar readequação**. **Cancelar busca** mantém apenas a edição feita; **Desfazer última edição** restaura o dia anterior, inclusive após recarregar, enquanto os dados não tiverem mudado.
+
+As sugestões conferem restrições, horários declarados, repouso e jornada; não aumentam as horas/dias de colegas nem criam novas lacunas em relação à cobertura anterior à edição. Sem faixas válidas, a cobertura é explicitamente indicada como não avaliada. Folgas fixas e ciclos especiais podem impedir a troca: 12×36 e ciclos importados continuam exigindo revisão própria. A busca avalia até sete bases e, para cada uma, até 100 tentativas e oito ações de cobertura. Não encontrar uma alternativa não comprova inviabilidade ou necessidade de contratação.
+
+Implementação em `domain/edicao-manual.js`, `ui/edicao-manual.js` e `workers/edicao-manual.js`. Regressões em `tests/edicao-manual.test.cjs` e `tests/browser-edicao-manual.cjs` (avisos, proposta sem mutação, troca com colega, aplicar, cancelar, desfazer após recarga e altura uniforme em desktop, celular e impressão).

@@ -10,12 +10,31 @@ export function configurarRolagemEscala(container, window, posicao = {}) {
   function limpar() {
     observador?.disconnect();
     window.removeEventListener("resize", atualizar);
+    window.removeEventListener("beforeprint", atualizar);
+    window.removeEventListener("afterprint", atualizar);
   }
   const atualizar = () => {
     if (!viewport.isConnected) {
       limpar();
       return;
     }
+    if (!viewport.clientWidth) return;
+    const cards = [...tabela.querySelectorAll(".escala-colaborador")];
+    // Mede o conteúdo natural, sem truncar nomes, horários ou intervalos.
+    tabela.style.setProperty("--altura-card", "110px");
+    cards.forEach((card) => {
+      card.style.height = "auto";
+    });
+    const altura = Math.ceil(
+      Math.max(
+        110,
+        ...cards.map((card) => card.getBoundingClientRect().height),
+      ),
+    );
+    tabela.style.setProperty("--altura-card", `${altura}px`);
+    cards.forEach((card) => {
+      card.style.height = `${altura}px`;
+    });
     const excede = viewport.scrollWidth > viewport.clientWidth + 1;
     topo.hidden = !excede;
     botao.hidden = !excede;
@@ -45,5 +64,8 @@ export function configurarRolagemEscala(container, window, posicao = {}) {
   observador?.observe(viewport);
   observador?.observe(tabela);
   window.addEventListener("resize", atualizar);
+  window.addEventListener("beforeprint", atualizar);
+  window.addEventListener("afterprint", atualizar);
+  window.document?.fonts?.ready?.then(atualizar);
   return limpar;
 }

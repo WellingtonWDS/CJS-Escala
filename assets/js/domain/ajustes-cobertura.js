@@ -657,3 +657,11 @@ export function desfazerAjustesCobertura(config) {
   delete novo.ajustesCobertura;
   return atualizarRelatoriosAjustes(config, novo);
 }
+
+// Operações de dia reutilizadas na edição assistida, mantendo os três calendários coerentes.
+export {
+  substituir as substituirDiasDaEscala,
+  transformarEmFolga as criarFolga,
+  horario as criarHorarioCompativel,
+  podeVirarFolga as permiteFolga,
+};
