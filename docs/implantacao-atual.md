@@ -20,6 +20,8 @@ Este registro separa código disponível, infraestrutura confirmada pelo operado
 
 ## Pendente de confirmação
 
+Atualização do operador: Vercel configurada para publicar a main; frontend em `https://cjs-escala.vercel.app`. A consulta pública a `/api/auth?config=1` retornou `Serviço indisponível.`. Esse texto é o catch do adaptador Vercel, não o erro explícito de segredo ausente ou AUTH_MODE inválido. Causa ainda não identificada. O adaptador passa a registrar `CJS_API_FAILURE` com rota e etapa, sem valores de configuração, cabeçalhos, corpos ou exceções. Consultar os logs da função após o próximo deployment. A tentativa de acesso deste ambiente foi bloqueada pelo proxy de saída (403), portanto não houve reprodução remota independente.
+
 1. Confirmar substituição da chave de RPC anteriormente exposta; nunca registrar seu valor.
 2. Conferir commit do deployment e configurar as variáveis privadas em Production, conforme `.env.example` e guia n8n; obter a origem real do frontend para APP_ORIGIN.
 3. Redeploy; conferir `/api/auth?config=1` retornando `{"mode":"n8n"}` e a tela exigindo e-mail/senha.
