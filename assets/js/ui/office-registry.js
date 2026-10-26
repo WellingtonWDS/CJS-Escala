@@ -5,6 +5,7 @@ export function createOfficeRegistry({
   service = createCompanyService(),
 }) {
   const root = document.getElementById("office-management");
+  root.dataset.loadingLabel = "Atualizando escritórios";
   root.innerHTML = `<h2>Escritórios</h2><p>Somente Admin pode criar novos escritórios. Depois, cadastre as empresas e os usuários do escritório.</p><form id="office-create"><label>Nome do escritório<input name="name" required maxlength="160"></label><button type="submit">Criar escritório</button></form><h3 class="mt-5 font-semibold">Escritórios cadastrados</h3><ul data-office-list></ul><p data-office-status role="status" aria-live="polite"></p>`;
   const form = root.querySelector("form"),
     status = root.querySelector("[role=status]"),

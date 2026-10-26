@@ -108,7 +108,9 @@ module.exports = async function ({ browser, baseURL }) {
     const rascunho = (await saved()).escalaGerada;
     assert.equal(rascunho.resultado[0].dias[0].status, "T");
     assert.deepEqual(rascunho.resultado[1], seed.escalaGerada.resultado[1]);
-    await painel.locator("[data-manual-cancelar]").click();
+    await page
+      .locator("[data-loading-overlay][open] [data-loading-cancel]")
+      .click();
     await waitForDialogs(page);
     liberar();
     await page.unroute("**/assets/js/workers/edicao-manual.js");

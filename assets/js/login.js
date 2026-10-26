@@ -1,4 +1,6 @@
 import { safeDestination } from "./session.js";
+import { initLoading } from "./ui/loading.js";
+initLoading(document);
 const form = document.getElementById("login-form");
 const message = document.getElementById("login-message");
 const params = new URLSearchParams(location.search);
@@ -26,7 +28,9 @@ configuration.catch(() => {});
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
   const button = form.querySelector("button");
+  if (button.disabled) return;
   button.disabled = true;
+  form.setAttribute("aria-busy", "true");
   message.textContent = "";
   try {
     await configuration;
@@ -47,5 +51,6 @@ form.addEventListener("submit", async (event) => {
       error.message || "Não foi possível conectar. Tente novamente.";
   } finally {
     button.disabled = false;
+    form.removeAttribute("aria-busy");
   }
 });

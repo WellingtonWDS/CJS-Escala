@@ -1,4 +1,5 @@
 import { createCompanyService } from "../services/companies.js";
+import { closeDialog } from "./motion.js";
 import { validCnpj, formatCnpj } from "../shared/empresas.js";
 import { createDefaultState } from "../state/store.js";
 export function createDominioCompanyResolver({
@@ -67,6 +68,7 @@ function chooseCompany({ document, workspace, quadro, service }) {
       status = dialog.querySelector("[role=status]"),
       confirm = dialog.querySelector("[data-company-import-confirm]"),
       cancel = dialog.querySelector("[data-company-import-cancel]");
+    cancel.setAttribute("data-loading-cancel-action", "");
     dialog.querySelector("[data-company-import-name]").textContent =
       quadro.empresa.nome;
     dialog.querySelector("[data-company-import-cnpj]").textContent = formatCnpj(
@@ -76,12 +78,11 @@ function chooseCompany({ document, workspace, quadro, service }) {
       applying = false,
       generation = 0,
       match;
-    const finish = (value) => {
+    const finish = async (value) => {
       if (closed) return;
       closed = true;
       generation++;
-      dialog.close();
-      dialog.remove();
+      await closeDialog(dialog, { remove: true });
       resolve(value);
     };
     cancel.onclick = () => {
@@ -96,11 +97,14 @@ function chooseCompany({ document, workspace, quadro, service }) {
       match = null;
       confirm.disabled = true;
       if (!office.value) {
+        dialog.removeAttribute("aria-busy");
         status.textContent =
           "Selecione o escritório ao qual o relatório pertence.";
         return;
       }
       status.textContent = "Consultando empresa pelo CNPJ…";
+      dialog.dataset.loadingLabel = "Identificando a empresa do relatório";
+      dialog.setAttribute("aria-busy", "true");
       try {
         const result = await service.resolve(
           office.value,
@@ -127,12 +131,17 @@ function chooseCompany({ document, workspace, quadro, service }) {
       } catch (error) {
         if (!closed && request === generation)
           status.textContent = error.message;
+      } finally {
+        if (request === generation && !closed)
+          dialog.removeAttribute("aria-busy");
       }
     }
     office.onchange = lookup;
     confirm.onclick = async () => {
       if (!match || applying) return;
       applying = true;
+      dialog.dataset.loadingLabel = "Confirmando o cadastro da empresa";
+      dialog.setAttribute("aria-busy", "true");
       confirm.disabled = true;
       cancel.disabled = true;
       office.disabled = true;
@@ -149,6 +158,7 @@ function chooseCompany({ document, workspace, quadro, service }) {
         status.textContent = error.message;
       } finally {
         applying = false;
+        dialog.removeAttribute("aria-busy");
         if (!closed) {
           confirm.disabled = false;
           cancel.disabled = false;
@@ -159,6 +169,8 @@ function chooseCompany({ document, workspace, quadro, service }) {
     document.body.append(dialog);
     dialog.showModal();
     status.textContent = "Carregando escritórios autorizados…";
+    dialog.dataset.loadingLabel = "Carregando os escritórios autorizados";
+    dialog.setAttribute("aria-busy", "true");
     service
       .options()
       .then((options) => {
@@ -176,6 +188,9 @@ function chooseCompany({ document, workspace, quadro, service }) {
       })
       .catch((error) => {
         if (!closed) status.textContent = error.message;
+      })
+      .finally(() => {
+        if (!closed && !office.value) dialog.removeAttribute("aria-busy");
       });
   });
 }

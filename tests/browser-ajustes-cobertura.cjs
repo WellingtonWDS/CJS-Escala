@@ -98,7 +98,9 @@ module.exports = async function ({ browser, baseURL }) {
     assert.equal(await painel.getAttribute("aria-busy"), "true");
     assert.ok(await painel.locator("[data-ajuste-progresso]").isVisible());
     assert.ok(await painel.locator("[data-ajuste-buscar]").isDisabled());
-    await painel.locator("[data-ajuste-cancelar]").click();
+    await page
+      .locator("[data-loading-overlay][open] [data-loading-cancel]")
+      .click();
     liberar();
     await page.unroute("**/assets/js/workers/ajustes-cobertura.js");
     assert.equal(await painel.getAttribute("aria-busy"), null);

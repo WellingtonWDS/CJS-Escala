@@ -11,6 +11,12 @@ Consultar este registro antes de orientar o operador. Distinguir código dispon�
 - Novo modelo: menu lateral dentro do sistema, nome e perfil; Operador acessa suas empresas, Gerente gera escalas e gerencia usuários no escritório, Admin tem acesso global. Não há senha adicional nem página separada. Gerente não cria Admin e não edita empresas de outro escritório. Admin/gerentes podem criar Gerentes nos escritórios autorizados; alteração de empresas vale para Operadores.
 - O proprietário deve ser promovido explicitamente usando o **identity_subject informado no chat**. Esse ID é do provedor de login, não o UUID interno de cjs_private.users. Não presumir que o vínculo antigo membership.admin já seja Admin global: ele agora representa Gerente.
 
+## Atualização de interface — carregamento e animações
+
+Pedido atual: tela de carregamento nas operações demoradas, fundo escurecido e animação central fluida; animações nas janelas. Entrega usa loading.js/motion.js/motion.css e os aria-busy dos fluxos de cadastro/rascunho, login, importação e workers. Confirmações suspendem o overlay para não bloquear respostas; buscas canceláveis mantêm Cancelar busca na tela. Fluxos liberam o loading em sucesso/erro/cancelamento e leituras de arquivos descartadas limpam seu marcador. Entrada/saída dos modais, login/painéis/tutorial e menu recebem animações; preferência de movimento reduzido é respeitada.
+
+Validado localmente: 434 unitários, build, suíte completa de interface incluindo teste específico de loading (requisição lenta/falha, duplicação, concorrência, confirmação, cancelamento, celular e movimento reduzido), login compartilhado e integração individual PostgreSQL/PostgREST com navegador real. Revisão visual local realizada. Não há nova migração nem variável para esta entrega; Vercel publica a main. A ativação da migração 006 da entrega de escritórios/edição de empresas continua sem confirmação explícita do operador; não misturar as duas etapas nem repetir configuração inicial de login.
+
 ## Atualização de interface — modais
 
 Pedido seguinte do usuário: substituir alert/confirm/prompt nativos por modais com o estilo do sistema. Implementado componente compartilhado em assets/js/ui/dialogs.js, fila por documento, cancelamento sem mutação, foco e teclado. Confirm/prompt são assíncronos: calendário, limpeza e operações de rascunho aguardam a resposta. Editor do dia oferece select de status e campo de horas, com proteção se a escala mudar enquanto a pergunta estiver aberta. A sessão também usa o componente no aviso de logout sem confirmação remota.

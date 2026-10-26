@@ -182,6 +182,12 @@ Alertas, confirmações e edição de valores usam modais com o estilo do sistem
 
 Componente: `assets/js/ui/dialogs.js` e `assets/css/dialogs.css`. `getDialogs(document)` retorna alert/confirm/prompt **assíncronos**; aguardar confirm/prompt antes de alterar dados. No ambiente da aplicação, env.alert/env.confirm/env.prompt usam esse componente. A escala não é alterada quando o usuário cancela uma pergunta. O módulo da sessão compartilha a mesma fila e o arquivo de diálogo é uma dependência pública do login, sem dados de usuário.
 
+## Carregamento e animações
+
+Operações demoradas de cadastro, rascunhos, login, importação e buscas de ajuste mostram um overlay modal com fundo escurecido/desfocado e animação central nas cores do sistema. A indicação só aparece após 180 ms, evita piscar em chamadas rápidas e acompanha o término real da operação. Confirmações não ficam encobertas; buscas canceláveis mantêm Cancelar busca no overlay. Sucesso, falha e cancelamento liberam a interface, e uma operação não esconde o carregamento de outra ainda ativa.
+
+Janelas têm entrada/saída suaves; painéis de gestão, login, tutorial e menu lateral também recebem transições. Movimento reduzido do navegador remove rotações e transições. Componentes: assets/js/ui/loading.js, assets/js/ui/motion.js e assets/css/motion.css. O loading acompanha aria-busy=true dos fluxos assíncronos; sempre remover esse atributo em finally, inclusive em erros e descarte de leitura de arquivo. O overlay não representa progresso percentual nem inventa duração de processamento. Não requer alteração de banco ou novas variáveis.
+
 ## Testes
 
 ```sh

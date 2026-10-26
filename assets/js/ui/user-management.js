@@ -1,6 +1,7 @@
 import { companyLabel, matchesCompany } from "../shared/empresas.js";
 export function createUserManagement({ document, window }) {
   const root = document.getElementById("user-management");
+  root.dataset.loadingLabel = "Atualizando usuários e permissões";
   root.innerHTML = `<h2 data-management-title></h2><p data-management-description></p>
   <form id="manage-create" hidden>
   <label>Nome completo<input name="name" required maxlength="160" autocomplete="off"></label>

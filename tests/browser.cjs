@@ -310,6 +310,10 @@ const { chromium } = require("playwright");
       browser,
       baseURL: `http://127.0.0.1:${server.address().port}/`,
     });
+    await require("./browser-loading.cjs")({
+      browser,
+      baseURL: `http://127.0.0.1:${server.address().port}`,
+    });
     await require("./browser-dialogs.cjs")({
       browser,
       baseURL: `http://127.0.0.1:${server.address().port}`,

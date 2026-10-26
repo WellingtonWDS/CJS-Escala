@@ -1,6 +1,13 @@
 import { requireSession } from "./session.js";
 import { getDialogs } from "./ui/dialogs.js";
+import { initLoading } from "./ui/loading.js";
+import { initWindowMotion } from "./ui/motion.js";
+initWindowMotion(document);
+initLoading(document);
+document.body.dataset.loadingLabel = "Abrindo sua sessão";
+document.body.setAttribute("aria-busy", "true");
 const session = await requireSession();
+document.body.removeAttribute("aria-busy");
 if (session) {
   const { createApplication } = await import("./app.js");
   const env = {

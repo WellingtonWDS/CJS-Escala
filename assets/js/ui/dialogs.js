@@ -1,3 +1,4 @@
+import { closeDialog } from "./motion.js";
 const instances = new WeakMap();
 export function getDialogs(document = globalThis.document) {
   if (instances.has(document)) return instances.get(document);
@@ -53,11 +54,10 @@ export function getDialogs(document = globalThis.document) {
         }
         const dismissValue =
           type === "prompt" ? null : type === "confirm" ? false : undefined;
-        function finish(result) {
+        async function finish(result) {
           if (finished) return;
           finished = true;
-          dialog.close();
-          dialog.remove();
+          await closeDialog(dialog, { remove: true });
           if (previous?.isConnected) previous.focus({ preventScroll: true });
           resolve(result);
         }

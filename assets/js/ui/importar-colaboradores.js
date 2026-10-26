@@ -27,6 +27,7 @@ export function createImportarColaboradoresUI({
     leitura++;
     pendentes = [];
     el("importacao-arquivo").value = "";
+    el("importacao-arquivo").removeAttribute("aria-busy");
     el("importacao-previa").hidden = true;
     el("importacao-erros").innerHTML = "";
     el("importacao-confirmar").disabled = true;
@@ -41,6 +42,7 @@ export function createImportarColaboradoresUI({
   async function lerArquivo() {
     const file = el("importacao-arquivo").files?.[0];
     const token = ++leitura;
+    el("importacao-arquivo").removeAttribute("aria-busy");
     pendentes = [];
     el("importacao-previa").hidden = true;
     el("importacao-erros").innerHTML = "";
@@ -60,6 +62,9 @@ export function createImportarColaboradoresUI({
       return;
     }
     mensagem("Lendo e validando a planilha…");
+    el("importacao-arquivo").dataset.loadingLabel =
+      "Lendo e validando os colaboradores";
+    el("importacao-arquivo").setAttribute("aria-busy", "true");
     try {
       const texto = decodificarPlanilha(await file.arrayBuffer());
       if (token !== leitura) return;
@@ -95,6 +100,9 @@ export function createImportarColaboradoresUI({
         mensagem(
           "Não foi possível ler o arquivo. Salve novamente como CSV e tente outra vez. Nenhum cadastro foi alterado.",
         );
+    } finally {
+      if (token === leitura)
+        el("importacao-arquivo").removeAttribute("aria-busy");
     }
   }
   function confirmar() {

@@ -20,6 +20,7 @@ export function createImportarDominioUI({
     token++;
     quadro = null;
     el("arquivo").value = "";
+    el("arquivo").removeAttribute("aria-busy");
     el("previa").hidden = true;
     el("confirmar").disabled = true;
   }
@@ -63,6 +64,7 @@ export function createImportarDominioUI({
         const file = el("arquivo").files?.[0],
           atual = ++token;
         quadro = null;
+        el("arquivo").removeAttribute("aria-busy");
         el("previa").hidden = true;
         el("confirmar").disabled = true;
         if (!file) return;
@@ -77,6 +79,9 @@ export function createImportarDominioUI({
           return;
         }
         mensagem("Lendo o quadro e validando os horários…");
+        el("arquivo").dataset.loadingLabel =
+          "Lendo e validando a planilha Domínio";
+        el("arquivo").setAttribute("aria-busy", "true");
         try {
           const abas = await lerArquivoDominio(await file.arrayBuffer());
           if (atual !== token) return;
@@ -90,6 +95,8 @@ export function createImportarDominioUI({
         } catch (error) {
           if (atual === token)
             mensagem(`Não foi possível importar: ${error.message}`);
+        } finally {
+          if (atual === token) el("arquivo").removeAttribute("aria-busy");
         }
       };
       el("modo").onchange = previa;

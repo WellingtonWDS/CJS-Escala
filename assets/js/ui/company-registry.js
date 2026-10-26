@@ -7,6 +7,7 @@ export function createCompanyRegistry({
   service = createCompanyService(),
 }) {
   const root = document.getElementById("company-management");
+  root.dataset.loadingLabel = "Atualizando o cadastro da empresa";
   root.innerHTML = `<h2>Empresas</h2><p>Cadastre ou edite a razão social e o CNPJ. Alterações mantêm os rascunhos e acessos vinculados à mesma empresa.</p><h3 class="mt-5 font-semibold">Novo cadastro</h3>
   <form id="company-create"><label>Escritório<select name="officeId" required></select></label><label>Razão social<input name="name" maxlength="160" required></label><label>CNPJ<input name="cnpj" maxlength="18" required placeholder="00.000.000/0000-00" autocomplete="off"></label><button type="submit">Cadastrar empresa</button></form>
   <h3 class="mt-5 font-semibold">Empresas cadastradas</h3><label>Buscar por razão social ou CNPJ<input data-company-search type="search" placeholder="Digite o nome ou CNPJ"></label><label>Empresa<select data-company-list size="6"></select></label>
