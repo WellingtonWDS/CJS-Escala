@@ -1,0 +1,158 @@
+.app-sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: 224px;
+  background: #102b49;
+  color: #fff;
+  padding: 28px 16px;
+  overflow-y: auto;
+  z-index: 60;
+}
+.sidebar-brand {
+  display: block;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #fff;
+  text-decoration: none;
+  margin-bottom: 28px;
+}
+#sidebar-user {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.sidebar-role {
+  color: #cbd5e1;
+  font-size: 0.8rem;
+  margin: 4px 0 24px;
+}
+.app-sidebar nav {
+  display: grid;
+  gap: 8px;
+}
+.app-sidebar button {
+  font: inherit;
+  font-size: 0.9rem;
+  text-align: left;
+  padding: 12px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  color: #e2e8f0;
+  background: transparent;
+  cursor: pointer;
+}
+.app-sidebar button:hover,
+.app-sidebar button[aria-current="page"] {
+  background: #23476c;
+  color: #fff;
+  border-color: #406184;
+}
+.has-app-sidebar {
+  padding-left: 224px;
+}
+.user-management {
+  max-width: 1000px;
+  margin: 24px auto;
+  padding: 24px;
+  background: white;
+  border: 1px solid #dbe4ef;
+  border-radius: 12px;
+}
+.user-management h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #102b49;
+}
+.user-management form {
+  display: grid;
+  gap: 16px;
+  margin-top: 20px;
+}
+.user-management label {
+  display: grid;
+  gap: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.user-management input,
+.user-management select {
+  padding: 10px;
+  border: 1px solid #b5c5d8;
+  border-radius: 6px;
+  width: 100%;
+  background: white;
+  color: #102b49;
+}
+.user-management fieldset {
+  padding: 16px;
+  border: 1px solid #dbe4ef;
+  border-radius: 7px;
+}
+.management-companies {
+  display: grid;
+  gap: 10px;
+}
+.management-companies label {
+  display: flex;
+  align-items: center;
+  font-weight: 400;
+}
+.management-companies input {
+  width: 18px;
+  height: 18px;
+  accent-color: #102b49;
+}
+.user-management button {
+  padding: 12px 16px;
+  background: #102b49;
+  color: white;
+  border-radius: 6px;
+  font-weight: 600;
+}
+.user-management button:disabled {
+  opacity: 0.5;
+}
+.user-management [role="status"] {
+  margin-top: 18px;
+  white-space: pre-wrap;
+}
+.user-management small {
+  font-weight: 400;
+  color: #64748b;
+}
+body[data-app-view="create"] #btn-tutorial,
+body[data-app-view="access"] #btn-tutorial,
+body[data-app-view="create"] #btn-imprimir-pagina,
+body[data-app-view="access"] #btn-imprimir-pagina {
+  display: none;
+}
+@media (max-width: 900px) {
+  .app-sidebar {
+    position: static;
+    width: auto;
+    padding: 16px;
+  }
+  .sidebar-brand {
+    margin-bottom: 8px;
+  }
+  .sidebar-role {
+    margin-bottom: 12px;
+  }
+  .app-sidebar nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .has-app-sidebar {
+    padding-left: 0;
+  }
+  .user-management {
+    margin: 16px;
+    padding: 20px;
+  }
+}
+@media print {
+  .has-app-sidebar {
+    padding-left: 0;
+  }
+}
+[hidden] {
+  display: none !important;
+}

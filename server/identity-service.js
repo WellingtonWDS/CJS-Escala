@@ -104,16 +104,6 @@ export function createIdentityService(
     exp: Math.min(Math.floor(s.exp / 1000), Math.floor(now() / 1000) + 60),
   });
   return {
-    async adminAttempt(userId) {
-      const digest = await crypto.subtle.digest(
-        "SHA-256",
-        new TextEncoder().encode(`admin:${userId}`),
-      );
-      const bucket = Array.from(new Uint8Array(digest), (v) =>
-        v.toString(16).padStart(2, "0"),
-      ).join("");
-      return rpc("login_attempt", gateway("login"), { p_bucket: bucket });
-    },
     async login(email, password) {
       if (
         typeof email !== "string" ||

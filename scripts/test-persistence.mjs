@@ -93,6 +93,35 @@ try {
     ),
   );
   docker([
+    "cp",
+    new URL("../database", import.meta.url).pathname,
+    `${pg}:/tmp/cjs-database`,
+  ]);
+  for (let attempt = 0; attempt < 2; attempt++) {
+    docker([
+      "exec",
+      pg,
+      "psql",
+      "-U",
+      "postgres",
+      "-v",
+      "ON_ERROR_STOP=1",
+      "-v",
+      "identity_subject=test:admin-a",
+      "-f",
+      "/tmp/cjs-database/enable-user-management.sql",
+    ]);
+    assert.equal(
+      sql(
+        "SELECT platform_admin FROM cjs_private.users WHERE identity_subject='test:admin-a';",
+      ),
+      "t",
+    );
+  }
+  sql(
+    "UPDATE cjs_private.users SET platform_admin=false WHERE identity_subject='test:admin-a';",
+  );
+  docker([
     "run",
     "-d",
     "--name",

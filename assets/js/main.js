@@ -70,6 +70,13 @@ if (session) {
     const { initRemoteWorkspace } = await import("./ui/remote-workspace.js");
     await initRemoteWorkspace({ app, workspace, document, window });
   }
+  if (session.user) {
+    const { initNavigation } = await import("./ui/navigation.js");
+    initNavigation({ session, document, window });
+    document.querySelector("footer").textContent = session.persistenceEnabled
+      ? "Salve seus rascunhos por empresa para mantê-los no servidor."
+      : "Preenchimento salvo localmente neste navegador.";
+  }
   document.documentElement.dataset.ready = "true";
   document.documentElement.style.visibility = "visible";
 }

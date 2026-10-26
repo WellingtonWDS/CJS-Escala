@@ -1,40 +1,49 @@
 # Registro de implantação — 26/10/2026
 
-Este registro separa código disponível, infraestrutura confirmada pelo operador e validação ponta a ponta. Não contém senhas, chaves ou identificadores pessoais. Atualizar a cada etapa de homologação.
+Consultar este registro antes de orientar o operador. Distinguir código disponível, testes locais e resultados informados pelo operador. Não contém senhas, chaves ou identificadores pessoais.
 
-## Código conferido no GitHub
+## Estado vigente
 
-- `1118045`: base de persistência e isolamento por escritório.
-- `4b1cd59`: login individual, sessões e interface de empresas/rascunhos.
-- `7cb692f`: template n8n com assinatura JWT nativa.
-- `login.html` contém o campo de e-mail inicialmente oculto. `assets/js/login.js` consulta `/api/auth?config=1`; somente `mode=n8n` exibe e exige e-mail. `server/auth.js` determina o modo por `AUTH_MODE`. O padrão continua compartilhado.
-- Publicação na main não comprova qual commit está em execução na Vercel. É necessário conferir o deployment de Production e suas variáveis.
+- Vercel publica automaticamente a main em `https://cjs-escala.vercel.app`. Uma alteração de variável ainda exige novo deployment.
+- Login individual pela aplicação **confirmado pelo operador** após corrigir o relógio de verificação do token (`6309a5a`). A tela de e-mail/senha já está ativa; não orientar novamente a configuração inicial de login.
+- Operador utilizou seleção de empresa e salvamento de rascunho; relatou lista com apenas um item. Correção `d0679db` recarrega a lista sem esconder outros rascunhos. Testada localmente; aguarda confirmação específica em produção.
+- A proposta de página secreta `/admin.html` com senha adicional (`7baa2d3`) foi **substituída a pedido do usuário**. Não configurar ADMIN_USER_IDS nem ADMIN_PASSWORD_HASH. O código atual não lê essas variáveis.
+- Novo modelo: menu lateral dentro do sistema, nome e perfil; Operador acessa suas empresas, Gerente gera escalas e gerencia usuários no escritório, Admin tem acesso global. Não há senha adicional nem página separada. Gerente não cria Admin e não edita empresas de outro escritório. Admin/gerentes podem criar Gerentes nos escritórios autorizados; alteração de empresas vale para Operadores.
+- O proprietário deve ser promovido explicitamente usando o **identity_subject informado no chat**. Esse ID é do provedor de login, não o UUID interno de cjs_private.users. Não presumir que o vínculo antigo membership.admin já seja Admin global: ele agora representa Gerente.
 
-## Confirmado pelo operador na VPS
+## Próxima ação na infraestrutura
 
-- PostgreSQL 17.10, banco dedicado `cjs_escala`; migrações 001 e 002 executadas.
-- PostgREST 14.15 dedicado, rede Docker privada; `/escala/rpc/check_session` público responde 401 sem sessão, via Caddy.
-- `public.users` criada administrativamente no banco dedicado; credencial `cjs_identity_reader` com SELECT restrito. Conexão do n8n testada.
-- Primeira identidade criada com hash bcrypt; usuário interno, escritório, vínculo admin e primeira empresa confirmados por consulta. A criação adotou mínimo de 6 caracteres. Não há cadastro público.
-- Workflow publicado em `https://n8n.fintria.com.br/webhook/auth/cjs-login`. Teste retornou HTTP 200, success=true e token presente. Isso não valida a assinatura pela aplicação nem a persistência ponta a ponta.
+1. Operador executa `database/enable-user-management.sql` com identity_subject do proprietário. Pré-requisitos 001/002 já cumpridos. O instalador aplica 003/004 se ausentes e promove somente a conta explicitamente informada. Não repetir migrações manualmente sem conferir o estado.
+2. Aguardar deployment da main e recarregar a aplicação. Não há novo segredo nem alteração do workflow n8n. ADMIN_USER_IDS/ADMIN_PASSWORD_HASH, se cadastradas antes, podem ser removidas.
+3. Homologar menu Admin, criar Operador/Gerente e alterar acesso a empresas na VPS real. Testes locais passaram com os três perfis, limites por escritório, cadastro bcrypt atômico, auditoria, revogação e navegador real; isso não confirma ativação remota.
 
-## Pendente de confirmação
+Guia vigente: [administração de usuários](administracao-usuarios.md). Não orientar mais o fluxo da página secreta.
 
-Nova entrega: página `/admin.html` sem link no menu, protegida por login individual, allowlist de UUIDs internos em ADMIN_USER_IDS e senha adicional (hash em ADMIN_PASSWORD_HASH). Cookie adicional de até 30 minutos, vinculado à sessão; API verifica revogação. Cadastro cria identidade bcrypt, usuário interno, vínculo/permissão/empresas e auditoria em transação única via papel administrativo próprio. Testes locais unitários e navegador com PostgreSQL/PostgREST reais passaram. **Não ativada na VPS:** operador precisa aplicar somente a migração 003 e configurar as duas novas variáveis privadas na Vercel, depois redeploy. Procedimento: [administração de usuários](administracao-usuarios.md). Nunca habilitar outros administradores de escritório na allowlist sem autorização do proprietário. Não há novo webhook n8n nem cadastro público.
+## Infraestrutura confirmada pelo operador
 
-Login pela aplicação confirmado pelo operador após a correção do relógio. A seleção de empresas foi utilizada para salvar um rascunho. Relato seguinte: seletor mostrava apenas um item após salvar. Bug identificado na UI: a lista era substituída pela opção recém-salva. Correção recarrega a lista do servidor preservando a seleção; se apenas a listagem falhar, mantém a confirmação da gravação e informa o problema. Teste de navegador com PostgreSQL/PostgREST locais valida criação de cópia e atualização de título sem esconder o original. “Salvar” atualiza o registro aberto; “Salvar como novo” cria outro. Aguardar confirmação em produção.
+- PostgreSQL 17.10 em postgres_apps, banco dedicado cjs_escala; migrações 001/002 executadas. Aplicação da 003 isolada não foi confirmada, por isso o instalador verifica sua presença.
+- PostgREST 14.15 dedicado, rede Docker privada; API HTTPS `https://api.fintria.com.br/escala`. Sem sessão, check_session retorna 401 via Caddy.
+- public.users criada administrativamente no banco dedicado; hashes bcrypt. Credencial cjs_identity_reader consulta apenas as colunas necessárias no login n8n; teste de conexão aprovado.
+- Primeira identidade, escritório, vínculo e empresa confirmados por consulta. Mínimo de senha de usuário: 6 caracteres. Sem cadastro público.
+- Workflow de login publicado em `https://n8n.fintria.com.br/webhook/auth/cjs-login`; teste HTTP 200/success/token passou, seguido de login real pela aplicação confirmado.
+- Frontend permanece na Vercel. Migração de hospedagem para VPS não executada.
 
-O operador conseguiu abrir a tela individual após ajustar a configuração, mas o login retornou `Não foi possível validar a identidade recebida.`. Foi reproduzido localmente um bug no relógio: as rotas congelavam o instante usado pelo serviço de identidade no início da requisição; um token emitido pelo n8n depois desse instante falhava na validação de iat. Correção: repassar o relógio consultável ao serviço. Regressão com avanço simulado de 2,5 segundos falhou antes da correção com o mesmo erro e passou após. A assinatura, emissor, audiência e validação temporal permanecem obrigatórios. Aguardar novo teste em produção; correspondência dos segredos e claims reais não foi verificada independentemente.
+## Limites e pendências preservados
 
-Atualização do operador: Vercel configurada para publicar a main; frontend em `https://cjs-escala.vercel.app`. A consulta pública a `/api/auth?config=1` retornou `Serviço indisponível.`. Esse texto é o catch do adaptador Vercel, não o erro explícito de segredo ausente ou AUTH_MODE inválido. Causa ainda não identificada. O adaptador passa a registrar `CJS_API_FAILURE` com rota e etapa, sem valores de configuração, cabeçalhos, corpos ou exceções. Consultar os logs da função após o próximo deployment. A tentativa de acesso deste ambiente foi bloqueada pelo proxy de saída (403), portanto não houve reprodução remota independente.
+- Rotação da chave de RPC anteriormente exposta ainda não foi confirmada explicitamente; nunca registrar ou pedir seu valor.
+- CNPJ informado no chat não foi persistido: cadastro de empresas ainda não possui campo próprio.
+- Rascunhos exigem salvar manualmente. Salvar atualiza o aberto; Salvar como novo cria outro. Não há sincronização automática nem painel de histórico.
+- Não há edição de senha, convites, exclusão de contas, alteração de perfil existente ou cadastro de escritório/empresa na nova gestão. Vínculos legados de consulta conservam restrição de escrita.
+- Permissões do servidor são autoritativas; retirada de acesso não apaga caches já vistos no navegador. Novas aberturas conferem acesso.
 
-1. Confirmar substituição da chave de RPC anteriormente exposta; nunca registrar seu valor.
-2. Conferir commit do deployment e configurar as variáveis privadas em Production, conforme `.env.example` e guia n8n; obter a origem real do frontend para APP_ORIGIN.
-3. Redeploy; conferir `/api/auth?config=1` retornando `{"mode":"n8n"}` e a tela exigindo e-mail/senha.
-4. Validar login pela aplicação, seleção de escritório/empresa, salvar e reabrir rascunho em outra sessão e logout. Não declarar produção homologada antes desses resultados.
-5. O cadastro de empresas ainda não possui campo próprio de CNPJ. O CNPJ fornecido não foi persistido pelos comandos administrativos.
-6. Hospedagem do frontend continua na Vercel; migração para VPS ainda não realizada.
+## Histórico técnico essencial
 
-## Procedimento para continuar
+- 1118045: base de persistência e isolamento por escritório.
+- 4b1cd59: login individual, sessões e interface de empresas/rascunhos.
+- 7cb692f: template n8n com JWT nativo.
+- 7b3337e: diagnóstico seguro da API Vercel. Falha request-url investigada; operador ajustou configuração e abriu a tela individual.
+- 6309a5a: relógio consultável na validação do token; login real confirmado depois.
+- d0679db: correção da lista de rascunhos após salvar.
+- 7baa2d3: página secreta, agora substituída pelo menu e perfis do banco.
 
-Antes de orientar o operador, consultar este registro e o código. Distinguir claramente teste local, teste informado pelo operador e teste em produção. Não supor que configuração de ambiente já foi aplicada ou que um teste isolado confirma todo o fluxo. SQL administrativo executado no chat não se torna automaticamente uma migração versionada.
+SQL administrativo informado no chat não se torna automaticamente migração executada. Não declarar implantação confirmada sem retorno do operador; nunca repetir etapas concluídas por perda de contexto.

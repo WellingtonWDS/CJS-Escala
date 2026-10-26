@@ -9,8 +9,17 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="./assets/js/config/tema.js"></script>
 <link rel="stylesheet" href="./assets/css/styles.css">
+<link rel="stylesheet" href="./assets/css/navigation.css">
 </head>
 <body class="bg-slate-100 text-slate-800 text-[15px] leading-relaxed">
+<aside id="app-sidebar" class="app-sidebar no-print" hidden aria-label="Menu principal">
+  <a class="sidebar-brand" href="/">Escala DP</a>
+  <p id="sidebar-user"></p><p id="sidebar-role" class="sidebar-role"></p>
+  <nav><button type="button" data-app-view="schedule" aria-current="page">Gerar escala</button>
+  <button type="button" id="sidebar-companies">Empresas e rascunhos</button>
+  <button type="button" data-app-view="create" hidden>Criar novo usuário</button>
+  <button type="button" data-app-view="access" hidden>Acessos dos operadores</button></nav>
+</aside>
 
 <header class="no-print bg-fintria-navy text-white px-4 md:px-10 py-5 flex items-center justify-between gap-3 flex-wrap">
   <div class="flex items-baseline gap-3 flex-wrap">
@@ -27,7 +36,8 @@
 </header>
 <dialog id="remote-workspace" class="remote-workspace no-print" aria-label="Empresas e rascunhos"></dialog>
 
-<div class="w-full max-w-[1920px] mx-auto px-2 lg:px-4">
+<section id="user-management" class="user-management no-print" hidden aria-label="Gestão de usuários"></section>
+<div id="scheduler-view" class="w-full max-w-[1920px] mx-auto px-2 lg:px-4">
   <div id="etapas-marco" aria-hidden="true"></div>
   <nav id="etapas-nav" class="etapas-nav no-print" aria-label="Etapas de preenchimento">
     <ol class="etapas-linha">

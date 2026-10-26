@@ -170,7 +170,7 @@ A evolução para PostgreSQL/PostgREST com isolamento por escritório está desc
 
 ## Administração de usuários
 
-A página `/admin.html`, sem link no menu, permite criar contas e definir escritório, permissão e empresas autorizadas. Exige login individual, UUID interno explicitamente autorizado e uma senha administrativa adicional, com liberação de até 30 minutos. Não existe cadastro público. Aplicar a migração 003 e configurar as duas variáveis privadas antes de usar: [guia de ativação](docs/administracao-usuarios.md). A criação grava identidade bcrypt e vínculos na mesma transação, com auditoria.
+O menu lateral mostra nome, perfil, geração de escala e empresas/rascunhos. Gerentes e Admins também têm acesso a Criar novo usuário e Acessos dos operadores, dentro da mesma aplicação e com o login individual existente. Operadores acessam somente as empresas atribuídas; Gerentes administram seu escritório; Admin tem acesso global. A migração 004 e a promoção explícita da identidade do proprietário habilitam o novo modelo: [guia de ativação](docs/administracao-usuarios.md). Não há senha administrativa adicional nem cadastro público. Cadastro e vínculos são atômicos, com bcrypt e auditoria; o servidor valida o escopo de cada operação.
 
 ## Testes
 

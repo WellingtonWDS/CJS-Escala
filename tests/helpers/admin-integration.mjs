@@ -1,22 +1,25 @@
 import assert from "node:assert/strict";
-import { createAdminHandler, adminPasswordHash } from "../../server/admin.js";
+import { createAdminHandler } from "../../server/admin.js";
 import { issueSession } from "../../server/auth.js";
 import { signJwt } from "../../server/jwt.js";
 import { createDevServer } from "../../scripts/serve.js";
 export async function testAdminIntegration({ env, sql, browserTest }) {
   const userId = "10000000-0000-0000-0000-000000000001",
     sid = "40000000-0000-0000-0000-000000000099";
+  const office = "20000000-0000-0000-0000-000000000001",
+    otherOffice = "20000000-0000-0000-0000-000000000002";
+  const company = "30000000-0000-0000-0000-000000000001",
+    restricted = "30000000-0000-0000-0000-000000000003",
+    otherCompany = "30000000-0000-0000-0000-000000000002";
   sql(
     `INSERT INTO cjs_private.sessions(id,user_id,expires_at) VALUES('${sid}','${userId}',now()+interval '1 hour');`,
   );
   const settings = {
     ...env,
     AUTH_MODE: "n8n",
-    AUTH_SESSION_SECRET: "integration-admin-cookie-with-enough-characters",
-    ADMIN_USER_IDS: userId,
-    ADMIN_PASSWORD_HASH: await adminPasswordHash("admin-test-pass"),
+    AUTH_SESSION_SECRET: "integration-cookie-key-with-enough-characters",
     N8N_LOGIN_URL: "https://unused.example/login",
-    N8N_SERVICE_SECRET: "test-header-key-with-enough-characters",
+    N8N_SERVICE_SECRET: "test-service-key-with-enough-characters",
     N8N_JWT_SECRET: "test-identity-key-with-enough-characters",
     N8N_JWT_ISSUER: "identity",
     N8N_JWT_AUDIENCE: "login",
@@ -26,9 +29,9 @@ export async function testAdminIntegration({ env, sql, browserTest }) {
     sessionId: sid,
     expiresAt: Date.now() + 3600000,
   });
-  const cookie = "cjs_session=" + normal;
-  const handler = createAdminHandler({ env: settings });
-  const request = (body, cookies = cookie) =>
+  const cookie = "cjs_session=" + normal,
+    handler = createAdminHandler({ env: settings });
+  const req = (body, cookies = cookie) =>
     new Request("https://app.example/api/admin", {
       method: body ? "POST" : "GET",
       headers: {
@@ -38,25 +41,36 @@ export async function testAdminIntegration({ env, sql, browserTest }) {
       },
       ...(body ? { body: JSON.stringify(body) } : {}),
     });
-  const unlock = await handler(
-    request({ action: "unlock", password: "admin-test-pass" }),
-  );
-  assert.equal(unlock.status, 200, await unlock.clone().text());
-  const both = cookie + "; " + unlock.headers.get("set-cookie").split(";")[0];
-  assert.equal(
-    (await (await handler(request(null, both))).json()).offices.length,
-    2,
-  );
   const fields = {
     action: "createUser",
-    name: "Conta teste",
+    name: "Operador teste",
     email: "provision@example.test",
     password: "123456",
-    officeId: "20000000-0000-0000-0000-000000000001",
-    role: "editor",
-    companyIds: ["30000000-0000-0000-0000-000000000001"],
+    officeId: office,
+    role: "operator",
+    companyIds: [company],
   };
-  const created = await handler(request(fields, both));
+  let options = await (await handler(req())).json();
+  assert.equal(options.platformAdmin, false);
+  assert.equal(options.offices.length, 1);
+  assert.equal(options.companies.length, 2);
+  assert.ok(
+    options.users.every((u) => u.officeId === office && u.role === "operator"),
+  );
+  assert.equal((await handler(req({ ...fields, role: "admin" }))).status, 403);
+  assert.equal(
+    (
+      await handler(
+        req({ ...fields, officeId: otherOffice, companyIds: [otherCompany] }),
+      )
+    ).status,
+    403,
+  );
+  assert.equal(
+    (await handler(req({ ...fields, companyIds: [otherCompany] }))).status,
+    400,
+  );
+  const created = await handler(req(fields));
   assert.equal(created.status, 201, await created.clone().text());
   const newId = (await created.json()).user.id;
   assert.equal(
@@ -65,85 +79,41 @@ export async function testAdminIntegration({ env, sql, browserTest }) {
     ),
     "t",
   );
+  assert.equal((await handler(req(fields))).status, 409);
   assert.equal(
-    sql(
-      `SELECT count(*) FROM cjs_private.company_access WHERE user_id='${newId}';`,
-    ),
-    "1",
-  );
-  assert.equal(
-    sql(
-      `SELECT count(*) FROM cjs_private.admin_provision_log WHERE user_id='${newId}';`,
-    ),
-    "1",
-  );
-  assert.equal(
-    sql(
-      `SELECT role FROM cjs_private.memberships WHERE user_id='${newId}' AND office_id='${fields.officeId}';`,
-    ),
+    sql(`SELECT role FROM cjs_private.memberships WHERE user_id='${newId}';`),
     "editor",
   );
-  const identitySubject = sql(
+  assert.equal(
+    sql(`SELECT platform_admin FROM cjs_private.users WHERE id='${newId}';`),
+    "f",
+  );
+  const manager = await handler(
+    req({
+      ...fields,
+      email: "new-manager@example.test",
+      role: "manager",
+      companyIds: [],
+    }),
+  );
+  assert.equal(manager.status, 201);
+  const subject = sql(
     `SELECT identity_subject FROM cjs_private.users WHERE id='${newId}';`,
   );
-  const issued = Math.floor(Date.now() / 1000);
-  const gatewayToken = await signJwt(
-    {
-      role: "cjs_identity_gateway",
-      purpose: "identity",
-      sub: identitySubject,
-      iss: "cjs-escala-api",
-      aud: "cjs-postgrest",
-      iat: issued,
-      exp: issued + 60,
-    },
-    settings.PERSISTENCE_JWT_SECRET,
-  );
-  const opened = await fetch(
-    settings.PERSISTENCE_RPC_URL + "/rpc/open_session",
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${gatewayToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        p_expires_at: new Date(Date.now() + 3600000).toISOString(),
-      }),
-    },
-  );
-  assert.equal(opened.status, 200);
-  assert.equal((await opened.json()).userId, newId);
-  assert.equal((await handler(request(fields, both))).status, 409);
-  assert.equal(
-    (
-      await handler(
-        request(
-          {
-            ...fields,
-            email: "invalid-cross@example.test",
-            companyIds: ["30000000-0000-0000-0000-000000000002"],
-          },
-          both,
-        ),
-      )
-    ).status,
-    400,
-  );
-  assert.equal(
-    sql(
-      "SELECT count(*) FROM public.users WHERE email='invalid-cross@example.test';",
-    ),
-    "0",
-  );
-  for (const role of ["cjs_authenticated", "cjs_identity_gateway"]) {
+  const rpc = async (
+    name,
+    body,
+    who = userId,
+    session = sid,
+    role = "cjs_authenticated",
+  ) => {
     const iat = Math.floor(Date.now() / 1000);
     const token = await signJwt(
       {
         role,
-        sub: userId,
-        sid,
         purpose: "identity",
+        sub: who,
+        sid: session,
         iss: "cjs-escala-api",
         aud: "cjs-postgrest",
         iat,
@@ -151,16 +121,142 @@ export async function testAdminIntegration({ env, sql, browserTest }) {
       },
       settings.PERSISTENCE_JWT_SECRET,
     );
-    const r = await fetch(settings.PERSISTENCE_RPC_URL + "/rpc/admin_options", {
+    return fetch(settings.PERSISTENCE_RPC_URL + "/rpc/" + name, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      body: "{}",
+      body: JSON.stringify(body),
     });
-    assert.ok([401, 403].includes(r.status));
-  }
+  };
+  const opened = await rpc(
+    "open_session",
+    { p_expires_at: new Date(Date.now() + 3600000).toISOString() },
+    subject,
+    sid,
+    "cjs_identity_gateway",
+  );
+  assert.equal(opened.status, 200);
+  const operatorSession = (await opened.json()).sessionId;
+  const operatorCookie =
+    "cjs_session=" +
+    (await issueSession(settings, Date.now(), {
+      userId: newId,
+      sessionId: operatorSession,
+      expiresAt: Date.now() + 3600000,
+    }));
+  assert.equal((await handler(req(null, operatorCookie))).status, 403);
+  assert.equal(
+    (
+      await handler(
+        req(
+          { ...fields, email: "operator-illegal@example.test" },
+          operatorCookie,
+        ),
+      )
+    ).status,
+    403,
+  );
+  assert.equal(
+    (await (await rpc("get_identity", {}, newId, operatorSession)).json()).role,
+    "operator",
+  );
+  assert.equal(
+    (
+      await (
+        await rpc(
+          "list_companies",
+          { p_office_id: office },
+          newId,
+          operatorSession,
+        )
+      ).json()
+    ).length,
+    1,
+  );
+  const update = {
+    action: "updateAccess",
+    userId: newId,
+    officeId: office,
+    companyIds: [restricted],
+  };
+  assert.equal(
+    (await handler(req({ ...update, companyIds: [otherCompany] }))).status,
+    400,
+  );
+  assert.equal(
+    sql(
+      `SELECT company_id FROM cjs_private.company_access WHERE user_id='${newId}';`,
+    ),
+    company,
+  );
+  assert.equal((await handler(req({ ...update, userId }))).status, 403);
+  assert.equal((await handler(req(update))).status, 200);
+  assert.deepEqual(
+    (
+      await (
+        await rpc(
+          "list_companies",
+          { p_office_id: office },
+          newId,
+          operatorSession,
+        )
+      ).json()
+    ).map((c) => c.id),
+    [restricted],
+  );
+  assert.equal((await handler(req({ ...update, companyIds: [] }))).status, 200);
+  assert.equal(
+    (
+      await (
+        await rpc(
+          "list_companies",
+          { p_office_id: office },
+          newId,
+          operatorSession,
+        )
+      ).json()
+    ).length,
+    0,
+  );
+  assert.equal(
+    sql(
+      `SELECT count(*) FROM cjs_private.access_change_log WHERE user_id='${newId}';`,
+    ),
+    "2",
+  );
+  sql(`UPDATE cjs_private.users SET platform_admin=true WHERE id='${userId}';`);
+  options = await (await handler(req())).json();
+  assert.equal(options.platformAdmin, true);
+  assert.equal(options.offices.length, 2);
+  assert.equal((await (await rpc("get_identity", {})).json()).role, "admin");
+  assert.equal(
+    (await (await rpc("list_companies", { p_office_id: otherOffice })).json())
+      .length,
+    1,
+  );
+  const adminCreated = await handler(
+    req({
+      ...fields,
+      email: "new-admin@example.test",
+      role: "admin",
+      companyIds: [],
+    }),
+  );
+  assert.equal(adminCreated.status, 201);
+  const globalId = (await adminCreated.json()).user.id;
+  assert.equal(
+    sql(`SELECT platform_admin FROM cjs_private.users WHERE id='${globalId}';`),
+    "t",
+  );
+  assert.ok(
+    [401, 403].includes(
+      (await rpc("manage_options", {}, "login", sid, "cjs_identity_gateway"))
+        .status,
+    ),
+  );
+  assert.equal((await rpc("admin_options", {})).status, 404);
   if (browserTest) {
     const { chromium } = await import("playwright");
     const app = createDevServer({ env: settings });
@@ -177,49 +273,136 @@ export async function testAdminIntegration({ env, sql, browserTest }) {
       await context.addCookies([
         { name: "cjs_session", value: normal, url: origin },
       ]);
+      await context.route("https://**/*", (r) =>
+        r.request().url().includes("cdn.tailwindcss.com")
+          ? r.fulfill({
+              contentType: "application/javascript",
+              body: "window.tailwind={};",
+            })
+          : r.abort(),
+      );
       const page = await context.newPage();
-      await page.goto(origin + "/admin.html");
-      await page.locator("#admin-unlock input").fill("admin-test-pass");
-      await page.locator("#admin-unlock button").click();
-      await page.locator("#admin-create").waitFor({ state: "visible" });
-      await page.locator('#admin-create [name="name"]').fill("Navegador teste");
+      const errors = [];
+      page.on("pageerror", (e) => errors.push(e.message));
+      await page.goto(origin + "/");
+      await page.waitForFunction(
+        () => document.documentElement.dataset.ready === "true",
+      );
+      assert.equal(await page.locator("#sidebar-role").textContent(), "Admin");
+      await page.locator('[data-app-view="create"]').click();
+      await page.locator("#manage-create").waitFor({ state: "visible" });
       await page
-        .locator('#admin-create [name="email"]')
+        .locator('#manage-create [name="name"]')
+        .fill("Operador navegador");
+      await page
+        .locator('#manage-create [name="email"]')
         .fill("browser-provision@example.test");
-      await page.locator('#admin-create [name="password"]').fill("123456");
-      await page.locator('#admin-create [name="confirmation"]').fill("123456");
+      await page.locator('#manage-create [name="password"]').fill("123456");
+      await page.locator('#manage-create [name="confirmation"]').fill("123456");
       await page
-        .locator('#admin-create [name="officeId"]')
-        .selectOption(fields.officeId);
+        .locator('#manage-create [name="officeId"]')
+        .selectOption(office);
       await page
-        .locator(`#admin-companies input[value="${fields.companyIds[0]}"]`)
+        .locator(`[data-create-companies] input[value="${company}"]`)
         .check();
-      await page.locator("#admin-submit").click();
+      await page.locator("#manage-create button").click();
       await page.waitForFunction(() =>
         document
-          .querySelector("#admin-status")
-          .textContent.includes("criado com acesso"),
+          .querySelector("[data-management-status]")
+          .textContent.includes("criado."),
+      );
+      const browserId = sql(
+        "SELECT u.id FROM cjs_private.users u JOIN public.users i ON i.user_id::text=u.identity_subject WHERE i.email='browser-provision@example.test';",
+      );
+      await page.locator('[data-app-view="access"]').click();
+      await page.locator("#manage-access").waitFor({ state: "visible" });
+      await page
+        .locator('#manage-access [name="officeId"]')
+        .selectOption(office);
+      await page
+        .locator('#manage-access [name="userId"]')
+        .selectOption(browserId);
+      await page
+        .locator(`[data-access-companies] input[value="${company}"]`)
+        .uncheck();
+      await page
+        .locator(`[data-access-companies] input[value="${restricted}"]`)
+        .check();
+      await page.locator("#manage-access button").click();
+      await page.waitForFunction(() =>
+        document
+          .querySelector("[data-management-status]")
+          .textContent.includes("Acessos atualizados"),
       );
       assert.equal(
         sql(
-          "SELECT count(*) FROM public.users WHERE email='browser-provision@example.test';",
+          `SELECT company_id FROM cjs_private.company_access WHERE user_id='${browserId}';`,
         ),
-        "1",
+        restricted,
       );
-      await page.locator("#admin-lock").click();
-      await page.locator("#admin-unlock").waitFor({ state: "visible" });
+      await page.locator('[data-app-view="schedule"]').click();
+      assert.equal(await page.locator("#scheduler-view").isVisible(), true);
+      // O mesmo menu mostra apenas geração e empresas para Operador.
       await context.clearCookies();
-      const denied = await page.goto(origin + "/admin.html");
-      assert.equal(denied.status(), 404);
+      await context.addCookies([
+        {
+          name: "cjs_session",
+          value: operatorCookie.split("=")[1],
+          url: origin,
+        },
+      ]);
+      await page.reload();
+      await page.waitForFunction(
+        () => document.documentElement.dataset.ready === "true",
+      );
+      assert.equal(
+        await page.locator("#sidebar-role").textContent(),
+        "Operador",
+      );
+      assert.equal(
+        await page.locator('[data-app-view="create"]').isVisible(),
+        false,
+      );
+      // Gerente vê apenas o próprio escritório e não pode criar Admin.
+      sql(
+        `UPDATE cjs_private.users SET platform_admin=false WHERE id='${userId}';`,
+      );
+      await context.clearCookies();
+      await context.addCookies([
+        { name: "cjs_session", value: normal, url: origin },
+      ]);
+      await page.reload();
+      await page.waitForFunction(
+        () => document.documentElement.dataset.ready === "true",
+      );
+      assert.equal(
+        await page.locator("#sidebar-role").textContent(),
+        "Gerente",
+      );
+      await page.locator('[data-app-view="create"]').click();
+      await page.locator("#manage-create").waitFor({ state: "visible" });
+      assert.equal(
+        await page.locator('#manage-create [name="officeId"] option').count(),
+        1,
+      );
+      assert.equal(
+        await page
+          .locator('#manage-create [name="role"] option[value="admin"]')
+          .count(),
+        0,
+      );
+      assert.deepEqual(errors, []);
     } finally {
       await browser.close();
       await new Promise((r) => app.close(r));
     }
   }
-  sql(`UPDATE cjs_private.sessions SET revoked_at=now() WHERE id='${sid}';`);
-  assert.equal((await handler(request(null, both))).status, 401);
+  sql(
+    `UPDATE cjs_private.users SET platform_admin=false WHERE id='${userId}';UPDATE cjs_private.sessions SET revoked_at=now() WHERE id='${sid}';`,
+  );
+  assert.equal((await handler(req())).status, 401);
   console.log(
-    "OK: administração — senha adicional, cadastro bcrypt atômico, duplicidade, isolamento de empresas, auditoria, papéis negados e revogação" +
-      (browserTest ? "; página validada em navegador real." : "."),
+    "OK: perfis Admin/Gerente/Operador, criação bcrypt atômica, limites por escritório, edição/revogação de empresas, auditoria e sessão; menu integrado" +
+      (browserTest ? " em navegador real." : "."),
   );
 }
