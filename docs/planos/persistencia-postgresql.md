@@ -121,3 +121,10 @@ Mudança de origem exige novo login e não transfere localStorage automaticament
 Implementados [migração e provisionamento administrativo](../../database/README.md), isolamento RLS, RPCs de rascunhos, histórico/auditoria, revisão esperada e idempotência. Serviços portáteis de backend e cliente de frontend preparados e testados. Integração real executada em containers descartáveis com PostgreSQL 17 e PostgREST **14.15**, além dos testes unitários e build. O teste inclui estado fictício completo do simulador, sem dados dos arquivos de usuários.
 
 Ainda não há rota pública de persistência montada nem adaptação do login individual: o handler nega acesso por padrão e não aceita o cookie de senha compartilhada como identidade. `PERSISTENCE_ENABLED` permanece false por padrão. Para ativar a entrega vertical na interface, a próxima etapa é integrar o contrato n8n, sessões individuais e seleção de empresa/rascunho. A referência histórica à versão 3.9 foi esclarecida pela informação de imagem `latest` e saída do binário 14.15. Nenhum token ou senha real foi solicitado para esta validação.
+
+
+## Segundo incremento — login individual e rascunhos
+
+Implementados: validação criptográfica do JWT de identidade n8n com emissor/audiência/expiração explícitos, mapeamento de subject, abertura/revogação de sessão no banco, limitação de tentativas, rotas HTTP portáteis, formulário de e-mail/senha opcional e painel de empresas/rascunhos. Cache e envios pendentes são separados por usuário e contexto, há importação local confirmada, repetição idempotente após resposta perdida e cópia local para revisar conflitos.
+
+A implementação está testada com provedor simulado e serviços de banco reais; ainda depende da importação/configuração/homologação do novo fluxo n8n e da aplicação das migrações no ambiente escolhido. O login compartilhado não autoriza RPCs de dados. Guia e template: [integrations/n8n](../../integrations/n8n/README.md). Não houve modificação na VPS ou no n8n do usuário.

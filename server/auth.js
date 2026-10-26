@@ -1,3 +1,4 @@
+import { createIdentityService, IdentityError } from "./identity-service.js";
 const encoder = new TextEncoder();
 export const SESSION_MS = 12 * 60 * 60 * 1000;
 export const COOKIE = "cjs_session";
@@ -64,12 +65,21 @@ export async function passwordMatches(password, env) {
     diff |= actual.charCodeAt(i) ^ expected.charCodeAt(i);
   return diff === 0;
 }
-export async function issueSession(env, now = Date.now()) {
+export async function issueSession(env, now = Date.now(), identity = null) {
   const payload = encode(
     encoder.encode(
       JSON.stringify({
         iat: now,
-        exp: now + SESSION_MS,
+        exp: identity
+          ? Math.min(identity.expiresAt, now + SESSION_MS)
+          : now + SESSION_MS,
+        ...(identity
+          ? {
+              kind: "individual",
+              userId: identity.userId,
+              sessionId: identity.sessionId,
+            }
+          : {}),
         nonce: crypto.randomUUID(),
       }),
     ),
@@ -101,7 +111,14 @@ export async function readSession(cookie, env, now = Date.now()) {
     const value = JSON.parse(new TextDecoder().decode(decode(parts[0])));
     return Number.isSafeInteger(value.iat) &&
       value.iat <= now &&
-      value.exp === value.iat + SESSION_MS &&
+      Number.isSafeInteger(value.exp) &&
+      (env.AUTH_MODE === "n8n"
+        ? value.kind === "individual" &&
+          /^[a-f0-9-]{36}$/i.test(value.userId) &&
+          /^[a-f0-9-]{36}$/i.test(value.sessionId) &&
+          value.exp > value.iat &&
+          value.exp <= value.iat + SESSION_MS
+        : !value.kind && value.exp === value.iat + SESSION_MS) &&
       now < value.exp
       ? value
       : null;
@@ -131,6 +148,8 @@ export function safeNext(value) {
 export async function guard(request, env, now = Date.now()) {
   const url = new URL(request.url);
   if (publicPath(url.pathname)) return null;
+  if (env.AUTH_MODE && !["shared", "n8n"].includes(env.AUTH_MODE))
+    return new Response("Autenticação indisponível.", { status: 503 });
   if (!configured(env))
     return new Response(
       "Acesso indisponível: configure AUTH_SESSION_SECRET na hospedagem.",
@@ -143,6 +162,11 @@ export async function guard(request, env, now = Date.now()) {
       },
     );
   if (await readSession(request.headers.get("cookie"), env, now)) return null;
+  if (url.pathname.startsWith("/api/"))
+    return new Response(
+      JSON.stringify({ error: "Sessão expirada. Entre novamente." }),
+      { status: 401, headers },
+    );
   return new Response(null, {
     status: 303,
     headers: {
@@ -153,7 +177,12 @@ export async function guard(request, env, now = Date.now()) {
     },
   });
 }
-export async function authResponse(request, env, now = Date.now()) {
+export async function authResponse(
+  request,
+  env,
+  now = Date.now(),
+  options = {},
+) {
   const json = (body, status = 200, extra = {}) =>
     new Response(JSON.stringify(body), {
       status,
@@ -166,11 +195,42 @@ export async function authResponse(request, env, now = Date.now()) {
       },
       503,
     );
+  if (env.AUTH_MODE && !["shared", "n8n"].includes(env.AUTH_MODE))
+    return json({ error: "Modo de autenticação inválido." }, 503);
+  if (
+    request.method === "GET" &&
+    new URL(request.url).searchParams.get("config") === "1"
+  )
+    return json({ mode: env.AUTH_MODE === "n8n" ? "n8n" : "shared" });
   if (request.method === "GET") {
     const session = await readSession(request.headers.get("cookie"), env, now);
-    return session
-      ? json({ expiresAt: session.exp, serverNow: now })
-      : json({ error: "Sessão expirada. Entre novamente." }, 401);
+    if (!session)
+      return json({ error: "Sessão expirada. Entre novamente." }, 401);
+    if (env.AUTH_MODE === "n8n") {
+      try {
+        const user = await createIdentityService(env, {
+          ...options,
+          now: () => now,
+        }).getIdentity(session);
+        return json({
+          expiresAt: session.exp,
+          serverNow: now,
+          user,
+          persistenceEnabled: env.PERSISTENCE_ENABLED === "true",
+        });
+      } catch (error) {
+        return json(
+          {
+            error:
+              error instanceof IdentityError
+                ? error.message
+                : "Serviço indisponível.",
+          },
+          error instanceof IdentityError ? error.status : 503,
+        );
+      }
+    }
+    return json({ expiresAt: session.exp, serverNow: now });
   }
   if (request.method !== "POST")
     return json({ error: "Método não permitido." }, 405, {
@@ -191,6 +251,48 @@ export async function authResponse(request, env, now = Date.now()) {
     return json({ error: "Requisição inválida." }, 400);
   }
   const secure = url.protocol === "https:" ? "; Secure" : "";
+  if (env.AUTH_MODE === "n8n") {
+    const clear = {
+      "Set-Cookie": `${COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${secure}`,
+    };
+    try {
+      const identityService = createIdentityService(env, {
+        ...options,
+        now: () => now,
+      });
+      if (body?.action === "logout") {
+        const session = await readSession(
+          request.headers.get("cookie"),
+          env,
+          now,
+        );
+        if (session)
+          try {
+            await identityService.revoke(session);
+          } catch (e) {
+            if (e.status !== 401) throw e;
+          }
+        return json({ ok: true }, 200, clear);
+      }
+      const identity = await identityService.login(body?.email, body?.password);
+      const token = await issueSession(env, now, identity),
+        expiresAt = Math.min(identity.expiresAt, now + SESSION_MS);
+      return json({ expiresAt, serverNow: now }, 200, {
+        "Set-Cookie": `${COOKIE}=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${Math.max(0, Math.floor((expiresAt - now) / 1000))}; Expires=${new Date(expiresAt).toUTCString()}${secure}`,
+      });
+    } catch (error) {
+      return json(
+        {
+          error:
+            error instanceof IdentityError
+              ? error.message
+              : "Serviço de autenticação indisponível.",
+        },
+        error instanceof IdentityError ? error.status : 503,
+        body?.action === "logout" ? clear : {},
+      );
+    }
+  }
   if (body?.action === "logout")
     return json({ ok: true }, 200, {
       "Set-Cookie": `${COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${secure}`,

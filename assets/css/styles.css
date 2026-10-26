@@ -431,3 +431,15 @@ body {
 .ajuste-spinner { display:inline-block; width:18px; height:18px; border:2px solid #cbd5e1; border-top-color:#148354; border-radius:50%; animation:ajuste-girar .8s linear infinite; flex-shrink:0; }
 @keyframes ajuste-girar { to { transform:rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .ajuste-spinner { animation:none; } }
+
+.remote-workspace { width: min(640px, calc(100vw - 24px)); max-height: 85vh; overflow: auto; border: 1px solid #cbd5e1; border-radius: 12px; padding: 24px; color: #0b2545; }
+.remote-workspace::backdrop { background: #0b254580; }
+.remote-workspace h2 { font-size: 20px; font-weight: 600; }
+.remote-workspace p { margin: 12px 0; }
+.remote-workspace label { display: block; font-size: 13px; font-weight: 600; margin: 12px 0; }
+.remote-workspace select, .remote-workspace input { display: block; width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 9px; margin-top: 4px; background: white; }
+.remote-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.remote-actions button { border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 12px; font-size: 13px; }
+.remote-actions [data-remote-save] { background: #0b2545; color: white; }
+.remote-actions button:disabled { opacity: .5; }
+.remote-close { float: right; font-size: 24px; }

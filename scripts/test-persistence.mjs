@@ -1,5 +1,6 @@
+import { testIdentityIntegration } from "../tests/helpers/identity-integration.mjs";
 import { spawnSync } from "node:child_process";
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import { randomUUID, createHmac } from "node:crypto";
 import { cenario } from "../tests/fixtures/edicao-manual.mjs";
 import assert from "node:assert/strict";
@@ -79,12 +80,11 @@ try {
     }
   }
   assert.ok(ready, "PostgreSQL não iniciou");
-  sql(
-    await readFile(
-      new URL("../database/migrations/001_persistence.sql", import.meta.url),
-      "utf8",
-    ),
-  );
+  const migrations = new URL("../database/migrations/", import.meta.url);
+  for (const file of (await readdir(migrations))
+    .filter((n) => n.endsWith(".sql"))
+    .sort())
+    sql(await readFile(new URL(file, migrations), "utf8"));
   sql(
     await readFile(
       new URL("../database/tests/seed.sql", import.meta.url),
@@ -358,6 +358,11 @@ try {
     () => service.getDraft(admin, office, company, saved.id),
     (e) => e.status === 401,
   );
+  await testIdentityIntegration({
+    env,
+    sql,
+    browserTest: process.argv.includes("--browser"),
+  });
   console.log(
     "OK: PostgreSQL 17 + PostgREST 14.15 reais: migração, isolamento entre escritórios/empresas, consulta/edição, revisão, idempotência, concorrência, histórico/auditoria, rollback, RLS, FK cruzada, JWT e sessão revogada; API portátil nega identidade não autenticada.",
   );

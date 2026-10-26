@@ -12,7 +12,7 @@ O fluxo principal está implementado e continua em evolução. Já permite impor
 
 | Área | O que já está disponível |
 | --- | --- |
-| Acesso | Login por senha compartilhada, sessão fixa de 12 horas, cookie assinado, bloqueio no servidor e na interface ao expirar e botão Sair. |
+| Acesso | Modo compartilhado preservado; modo individual n8n configurável com cookie HttpOnly, sessão revogável no banco de até 12h, emissor/audiência explícitos e vínculo provisionado. Ativação depende de homologação. |
 | Navegação | Oito etapas com avançar/voltar, acesso direto pela barra horizontal fixa no topo e compacta durante a rolagem, sem rolagem automática na troca, e preservação dos dados. Tutorial guiado de nove passos e indicadores de preenchimento obrigatório pendente. |
 | Colaboradores | Cadastro manual, modelo/importação CSV e importação Domínio, com lista única para revisar, editar e remover pessoas. Os painéis de entrada começam fechados. |
 | Importação Domínio | Relatórios Quadro de Horário de Trabalho em XLS/XLSX, prévia e confirmação, metadados da empresa, jornadas individuais, admissão e ciclos. Dias semanais omitidos são considerados folga; dados ambíguos exigem revisão. |
@@ -34,8 +34,8 @@ O fluxo principal está implementado e continua em evolução. Já permite impor
 
 ## Limitações atuais
 
-- **Armazenamento local:** não há banco de dados central, sincronização entre dispositivos, backup automático, carteira de empresas separadas ou histórico de versões com recuperação. Trocar de domínio ou navegador não transfere os dados locais.
-- **Acesso compartilhado:** não há contas individuais, permissões por usuário, recuperação de senha ou trilha de auditoria de autoria das alterações.
+- **Persistência:** no modo padrão, os dados continuam locais. O modo individual habilita rascunhos por escritório/empresa no servidor, com histórico interno, salvamento manual e reabertura em outro navegador; requer configurar n8n e banco. Não há sincronização automática, histórico navegável na interface ou backup remoto gerenciado pela aplicação. Trocar de domínio não transfere o cache local.
+- **Provisionamento:** o modo individual tem contas vinculadas ao provedor, permissões e auditoria, mas não há painel de criação de escritórios/membros, recuperação de senha ou convites. O provisionamento continua administrativo, sem cadastro público.
 - **Busca limitada:** além da distribuição inicial de folgas, há sugestões de troca de folga, horário/turno e função. O motor usa até 600 avaliações e 20 ajustes por execução, mantém as horas e dias semanais e não aceita abrir outra lacuna. Ainda não há otimização global ou garantia de encontrar toda solução possível; 12×36 e ciclos diferenciados não são alterados automaticamente.
 - **Horários restritos:** na geração inicial, a janela individual recorta a jornada sem estender o expediente ou mover a pausa. As sugestões podem deslocar entrada, pausa e saída dentro dos limites declarados, mediante aplicação da prévia, mas não aumentam as horas para suprir déficits. Plantão 12×36 incompatível é retirado inteiro, com explicação.
 - **Diagnóstico:** os tetos potenciais não garantem viabilidade; férias podem exigir reforço temporário. Em noites/ciclos especiais, usa disponibilidade simultânea sem presumir rateio de horas/dias semanais. O limite de processamento ou dados inválidos suspendem a conclusão; as lacunas continuam disponíveis.
@@ -43,12 +43,14 @@ O fluxo principal está implementado e continua em evolução. Já permite impor
 - **Ausências:** férias e afastamentos ajustam a meta operacional de alocação; não há cálculo de folha, benefícios ou efeitos previdenciários.
 - **Regimes importados:** a conversão atende à origem 6×1 compatível. Importar um ciclo diferente não significa convertê-lo automaticamente para 5×2; âncoras e informações ambíguas precisam ser conferidas.
 - **Conferência normativa:** a implementação usa o texto da EC 141 fornecido para o projeto. Cláusulas coletivas, exceções e efeitos específicos do trabalho noturno continuam sujeitos às verificações indicadas no relatório. A análise individual avançada de enquadramento permanece oculta e desativada por padrão.
-- **Publicação:** o login depende do middleware, da função de autenticação e de `AUTH_SESSION_SECRET` na Vercel. O build estático sozinho não fornece essa proteção. Fontes e Tailwind ainda dependem de CDN.
+- **Publicação:** na Vercel, o login depende do middleware, das funções de API e das variáveis privadas. Há também adaptador Node.js para futura VPS, dependente de configuração HTTPS/proxy/supervisão; essa migração não foi executada. O build estático sozinho não fornece proteção. Fontes e Tailwind ainda dependem de CDN.
 - **Publicação de escalas:** ainda não há fluxo de rascunho → revisão → aprovação/publicação com registro de responsáveis.
 
 ## Planejamento de persistência — 26/10/2026
 
-Definida a evolução para várias contabilidades, com isolamento por escritório e empresas, usuários provisionados por administração autorizada e sem autocadastro público. Os fluxos de login/cadastro do n8n foram analisados estaticamente; sua reutilização exige adaptar tokens, sessões, permissões e provisionamento. A API deve ser portátil para a futura mudança da Vercel para a VPS, no domínio fintria.com.br. A primeira entrega já implementa a base de banco, RLS, RPCs de rascunhos, revisão/idempotência e histórico/auditoria, junto aos serviços portáteis de servidor/frontend. Foi validada localmente em PostgreSQL 17 e PostgREST 14.15, versão confirmada na VPS. Essa base não está ativada na aplicação: faltam integrar autenticação individual n8n, abertura/revogação de sessões e seleção/salvamento na interface. Nenhuma alteração foi aplicada na infraestrutura de produção. Operação e limites: [database/README.md](../database/README.md). Detalhes: [plano de persistência](planos/persistencia-postgresql.md) e [análise n8n](planos/autenticacao-n8n.md).
+Definida a evolução para várias contabilidades, com isolamento por escritório e empresas, usuários provisionados por administração autorizada e sem autocadastro público. Os fluxos de login/cadastro do n8n foram analisados estaticamente; sua reutilização exige adaptar tokens, sessões, permissões e provisionamento. A API deve ser portátil para a futura mudança da Vercel para a VPS, no domínio fintria.com.br. A primeira entrega já implementa a base de banco, RLS, RPCs de rascunhos, revisão/idempotência e histórico/auditoria, junto aos serviços portáteis de servidor/frontend. Foi validada localmente em PostgreSQL 17 e PostgREST 14.15, versão confirmada na VPS. Essa base não está ativada na aplicação: a segunda entrega implementou autenticação individual n8n, abertura/revogação de sessões e seleção/salvamento na interface, mas a ativação depende de importar o novo fluxo e configurar/homologar os serviços. Nenhuma alteração foi aplicada na infraestrutura de produção. Operação e limites: [database/README.md](../database/README.md). Detalhes: [plano de persistência](planos/persistencia-postgresql.md) e [análise n8n](planos/autenticacao-n8n.md).
+
+O [guia de homologação n8n](../integrations/n8n/README.md) e o template de login independente estão disponíveis. `AUTH_MODE=shared` e `PERSISTENCE_ENABLED=false` preservam a configuração atual até a ativação.
 
 ## Próximos passos propostos
 
@@ -62,12 +64,12 @@ As implementações de restrições individuais, sugestões de ajustes de cobert
 
 ## Última validação registrada
 
-Na primeira entrega de persistência, em **26/10/2026**, foram registrados:
+Na integração do login individual e da interface de persistência, em **26/10/2026**, foram registrados:
 
-- **416 testes unitários aprovados**, sem falhas, com `npm test`.
+- **428 testes unitários aprovados**, sem falhas, com `npm test`.
 - Integração real com PostgreSQL 17 e PostgREST 14.15 aprovada por `npm run test:persistence`: isolamento de escritórios/empresas, permissões, concorrência, idempotência, histórico/auditoria, FK cruzada, token inválido/expirado e sessão revogada.
 - Build atual aprovado com `npm run build`.
-- As suítes completas de interface e autenticação foram aprovadas nas entregas anteriores; não foram repetidas nesta etapa, que não ativa alterações no login nem na interface. As regressões anteriores incluíram os cenários abaixo.
+- Suíte completa de interface e suíte específica do login compartilhado aprovadas novamente, além de `test:identity:browser` com provedor simulado e PostgreSQL/PostgREST reais. Login individual, migração explícita, reabertura em outro navegador, perda de resposta sem duplicação, conflito com recuperação local, troca de conta e revogação validados. A instância real do n8n não foi executada. As regressões também incluem os cenários abaixo.
 - Edição de folga para trabalho com 48h/um repouso: aviso, alternativas próprias e com colega, respeito a restrições e habilitações, cobertura preservada, dados obsoletos bloqueados, aplicação e desfazer após recarga. Cartões uniformes em desktop, celular e impressão.
 - Prévia prioriza grade, mantém erros abertos antes dela e análises recolhidas depois. Barras sincronizadas e atalho para resumo testados em desktop, viewport equivalente a zoom ampliado e celular; impressão libera todas as semanas.
 - ACT/CCT real na origem: preservação das condições vigentes, não aplicação de instrumentos futuros/expirados, sinalização de vigência inválida e exibição do intervalo descontado nos avisos de jornada diária.

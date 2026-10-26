@@ -1,6 +1,6 @@
 # CJS Escala
 
-Ferramenta para configurar, gerar e revisar escalas de trabalho e comparar a escala atual 6×1 com uma proposta 5×2. A interface e os cálculos usam HTML, CSS e módulos JavaScript nativos no navegador, sem bundler ou compilação do JavaScript da aplicação. A autenticação depende de código no servidor: middleware e função de login na Vercel. Os cadastros e as escalas continuam armazenados no navegador, sem banco de dados central.
+Ferramenta para configurar, gerar e revisar escalas de trabalho e comparar a escala atual 6×1 com uma proposta 5×2. A interface e os cálculos usam HTML, CSS e módulos JavaScript nativos no navegador, sem bundler ou compilação do JavaScript da aplicação. A autenticação depende de código no servidor: middleware e função de login na Vercel. Por padrão, os cadastros e as escalas ficam no navegador. O modo individual com PostgreSQL e n8n é opcional e exige a configuração de homologação descrita adiante.
 
 ## Andamento do projeto
 
@@ -166,7 +166,7 @@ O botão **Tutorial guiado**, ao lado de **Limpar dados salvos**, inicia nove et
 
 ## Planejamento de persistência e hospedagem
 
-A evolução para PostgreSQL/PostgREST com isolamento por escritório está descrita no [plano de persistência](docs/planos/persistencia-postgresql.md), junto à [análise dos fluxos de autenticação n8n](docs/planos/autenticacao-n8n.md). O acesso será provisionado por administração autorizada, sem autocadastro público. A API será preparada para rodar na Vercel ou na VPS, com futura hospedagem no domínio fintria.com.br. A [primeira entrega técnica](database/README.md) já implementa migração SQL, RLS, RPCs de rascunhos, histórico/auditoria e serviços portáteis de API, testados em PostgreSQL 17 e PostgREST 14.15 (versão confirmada na VPS). A integração n8n/sessão individual, a interface remota e a implantação ainda serão feitas. A aplicação atual continua usando autenticação compartilhada e armazenamento local; a base remota fica desativada até concluir essa integração.
+A evolução para PostgreSQL/PostgREST com isolamento por escritório está descrita no [plano de persistência](docs/planos/persistencia-postgresql.md), junto à [análise dos fluxos de autenticação n8n](docs/planos/autenticacao-n8n.md). O acesso será provisionado por administração autorizada, sem autocadastro público. A API será preparada para rodar na Vercel ou na VPS, com futura hospedagem no domínio fintria.com.br. A [primeira entrega técnica](database/README.md) já implementa migração SQL, RLS, RPCs de rascunhos, histórico/auditoria e serviços portáteis de API, testados em PostgreSQL 17 e PostgREST 14.15 (versão confirmada na VPS). A segunda entrega já inclui login individual, abertura/revogação de sessões, rotas HTTP e interface de empresas/rascunhos com cache separado e migração local explícita. A ativação depende de importar e homologar o [novo fluxo n8n e suas variáveis](integrations/n8n/README.md); a implantação real ainda não foi feita. A aplicação atual continua usando autenticação compartilhada e armazenamento local; a base remota fica desativada até concluir essa integração.
 
 ## Testes
 
@@ -174,6 +174,8 @@ A evolução para PostgreSQL/PostgREST com isolamento por escritório está desc
 npm test
 # Integração opcional: requer Docker; cria apenas serviços locais descartáveis.
 npm run test:persistence
+# Login individual + interface, com banco real e provedor simulado (Docker + Chromium).
+npm run test:identity:browser
 npx playwright install chromium
 npm run test:browser
 ```

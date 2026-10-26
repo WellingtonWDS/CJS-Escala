@@ -4,16 +4,39 @@ const message = document.getElementById("login-message");
 const params = new URLSearchParams(location.search);
 if (params.has("expired"))
   message.textContent = "Sua sessão expirou. Entre novamente.";
+let mode;
+const configuration = fetch("/api/auth?config=1", { cache: "no-store" })
+  .then(async (response) => {
+    if (!response.ok) throw Error("Login indisponível. Tente novamente.");
+    const data = await response.json();
+    mode = data.mode;
+    if (mode === "n8n") {
+      document.getElementById("login-email").hidden = false;
+      form.email.required = true;
+      document.getElementById("login-description").textContent =
+        "Entre com sua conta autorizada. A sessão dura até 12 horas.";
+      form.email.focus();
+    }
+  })
+  .catch((error) => {
+    message.textContent = error.message;
+    throw error;
+  });
+configuration.catch(() => {});
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
   const button = form.querySelector("button");
   button.disabled = true;
   message.textContent = "";
   try {
+    await configuration;
     const response = await fetch("/api/auth", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password: form.password.value }),
+      body: JSON.stringify({
+        password: form.password.value,
+        ...(mode === "n8n" ? { email: form.email.value } : {}),
+      }),
       cache: "no-store",
     });
     const data = await response.json();

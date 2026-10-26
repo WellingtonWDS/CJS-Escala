@@ -15,15 +15,17 @@
 <header class="no-print bg-fintria-navy text-white px-4 md:px-10 py-5 flex items-center justify-between gap-3 flex-wrap">
   <div class="flex items-baseline gap-3 flex-wrap">
     <h1 class="font-display text-white text-xl font-semibold">Escala DP</h1>
-    <span class="text-slate-300 text-sm">Calculadora de horas e migração 6×1 → 5×2 · dados salvos apenas neste navegador</span>
+    <span id="storage-description" class="text-slate-300 text-sm">Calculadora de horas e migração 6×1 → 5×2 · dados salvos apenas neste navegador</span>
   </div>
   <div class="flex items-center gap-2 flex-wrap">
+    <button id="btn-remote-workspace" hidden type="button" class="no-print text-white text-xs border border-white/50 rounded-md px-3 py-1.5">Empresas e rascunhos</button>
     <button id="btn-imprimir-pagina" type="button" class="no-print text-white text-xs border border-white/50 hover:bg-white/10 rounded-md px-3 py-1.5" title="Imprimir a etapa aberta">Imprimir / PDF</button>
     <button id="btn-tutorial" type="button" class="no-print text-white text-xs border border-white/50 hover:bg-white/10 rounded-md px-3 py-1.5" aria-haspopup="dialog">Tutorial guiado</button>
     <button id="btn-sair" class="no-print text-slate-300 hover:text-white text-xs border border-white/25 rounded-md px-3 py-1.5">Sair</button>
     <button id="btn-limpar-dados" class="no-print text-slate-300 hover:text-white text-xs border border-white/25 hover:border-white/50 rounded-md px-3 py-1.5">Limpar dados salvos</button>
   </div>
 </header>
+<dialog id="remote-workspace" class="remote-workspace no-print" aria-label="Empresas e rascunhos"></dialog>
 
 <div class="w-full max-w-[1920px] mx-auto px-2 lg:px-4">
   <div id="etapas-marco" aria-hidden="true"></div>

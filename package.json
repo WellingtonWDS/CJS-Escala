@@ -8,7 +8,9 @@
     "build": "node scripts/build.js",
     "test:browser": "npm run build && node tests/browser.cjs",
     "test:auth:browser": "npm run build && node tests/browser-auth.cjs",
-    "test:persistence": "node scripts/test-persistence.mjs"
+    "test:persistence": "node scripts/test-persistence.mjs",
+    "start": "node scripts/start.js",
+    "test:identity:browser": "npm run build && node scripts/test-persistence.mjs --browser"
   },
   "engines": {
     "node": ">=22"

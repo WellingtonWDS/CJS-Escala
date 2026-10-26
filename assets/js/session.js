@@ -10,7 +10,8 @@ export function safeDestination(value) {
 }
 export async function requireSession() {
   let timer,
-    checking = false;
+    checking = false,
+    owner;
   const expire = (expired = true) => {
     document.documentElement.style.visibility = "hidden";
     document.body.inert = true;
@@ -31,6 +32,11 @@ export async function requireSession() {
         return false;
       }
       const session = await response.json();
+      if (owner && owner !== session.user?.id) {
+        expire();
+        return false;
+      }
+      owner = session.user?.id;
       const remaining = session.expiresAt - session.serverNow;
       if (!(remaining > 0)) {
         expire();
@@ -38,7 +44,7 @@ export async function requireSession() {
       }
       clearTimeout(timer);
       timer = setTimeout(expire, remaining);
-      return true;
+      return session;
     } catch {
       expire();
       return false;
@@ -46,7 +52,8 @@ export async function requireSession() {
       checking = false;
     }
   }
-  if (!(await check())) return false;
+  const initialSession = await check();
+  if (!initialSession) return false;
   window.addEventListener("pageshow", async (event) => {
     if (event.persisted) {
       document.documentElement.style.visibility = "hidden";
@@ -65,16 +72,20 @@ export async function requireSession() {
   setInterval(check, 60000);
   document.getElementById("btn-sair")?.addEventListener("click", async () => {
     try {
-      await fetch("/api/auth", {
+      const response = await fetch("/api/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "logout" }),
       });
+      if (!response.ok)
+        window.alert(
+          "O acesso local foi encerrado, mas o servidor não confirmou a revogação da sessão. Tente novamente quando o serviço estiver disponível.",
+        );
     } catch {
       // The local interface is still locked if the network is unavailable.
     } finally {
       expire(false);
     }
   });
-  return true;
+  return initialSession;
 }

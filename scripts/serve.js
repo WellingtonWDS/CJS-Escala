@@ -1,5 +1,6 @@
+import { createRoutes } from "../server/routes.js";
 import { randomBytes } from "node:crypto";
-import { guard, authResponse, SESSION_MS } from "../server/auth.js";
+import { guard, SESSION_MS } from "../server/auth.js";
 import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
 import { resolve, extname, sep } from "node:path";
@@ -23,28 +24,45 @@ export function createDevServer({
   auth = true,
   env = developmentEnv,
   now = Date.now,
+  fetchImpl = fetch,
 } = {}) {
+  const routes = createRoutes({ env, now, fetchImpl });
   return createServer(async (req, res) => {
     try {
       const pathname = decodeURIComponent(
         new URL(req.url, "http://localhost").pathname,
       );
-      const requestUrl = new URL(req.url, `http://${req.headers.host}`);
+      const incoming = new URL(req.url, "http://local");
+      const requestUrl = new URL(
+        env.APP_ORIGIN || `http://${req.headers.host}`,
+      );
+      requestUrl.pathname = incoming.pathname;
+      requestUrl.search = incoming.search;
       const webRequest = new Request(requestUrl, {
         method: req.method,
         headers: req.headers,
         ...(req.method === "POST"
           ? {
               body: await new Promise((resolve, reject) => {
-                let body = "";
+                const chunks = [];
+                let size = 0,
+                  rejected = false;
                 req.on("data", (chunk) => {
-                  body += chunk;
-                  if (body.length > 2048) {
-                    reject(new Error("Body too large"));
-                    req.destroy();
-                  }
+                  if (rejected) return;
+                  size += chunk.length;
+                  if (
+                    size > (pathname === "/api/persistence" ? 1100000 : 4096)
+                  ) {
+                    rejected = true;
+                    chunks.length = 0;
+                    reject(
+                      Object.assign(new Error("Body too large"), {
+                        status: 413,
+                      }),
+                    );
+                  } else chunks.push(chunk);
                 });
-                req.on("end", () => resolve(body));
+                req.on("end", () => resolve(Buffer.concat(chunks)));
                 req.on("error", reject);
               }),
             }
@@ -53,7 +71,7 @@ export function createDevServer({
       let response;
       if (pathname === "/api/auth") {
         response = auth
-          ? await authResponse(webRequest, env, now())
+          ? await routes(webRequest)
           : new Response(
               JSON.stringify({
                 expiresAt: now() + SESSION_MS,
@@ -61,7 +79,9 @@ export function createDevServer({
               }),
               { headers: { "Content-Type": "application/json" } },
             );
-      } else if (auth) response = await guard(webRequest, env, now());
+      } else if (pathname === "/api/persistence")
+        response = await routes(webRequest);
+      else if (auth) response = await guard(webRequest, env, now());
       if (response) {
         res.writeHead(response.status, Object.fromEntries(response.headers));
         res.end(await response.text());
@@ -99,8 +119,11 @@ export function createDevServer({
         "Cache-Control": "no-store",
       });
       res.end(await readFile(file));
-    } catch {
-      res.writeHead(404).end("Not found");
+    } catch (error) {
+      if (!res.headersSent)
+        res
+          .writeHead(error.status === 413 ? 413 : 404)
+          .end(error.status === 413 ? "Requisição muito grande." : "Not found");
     }
   });
 }

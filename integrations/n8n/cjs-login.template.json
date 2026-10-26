@@ -1,0 +1,230 @@
+{
+  "name": "CJS Escala — Login individual (homologação)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "cjs/auth/login",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "7edf7982-f903-42b4-a713-b7d62d78fa02",
+      "name": "Login CJS",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body=$json.body??{};\nif(typeof body.email!==\"string\"||typeof body.password!==\"string\")throw Error(\"Entrada inválida\");\nconst email=body.email.trim().toLowerCase();\nif(!email||email.length>254||!/^\\S+@\\S+\\.\\S+$/.test(email)||!body.password||Buffer.byteLength(body.password,\"utf8\")>72)throw Error(\"Entrada inválida\");\nreturn [{json:{email,password:body.password}}];"
+      },
+      "id": "5699cfbd-515d-4730-9162-fc8329af1e98",
+      "name": "Validar entrada",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT user_id, password_hash FROM public.users WHERE lower(btrim(email))=$1 LIMIT 1;",
+        "options": {
+          "queryReplacement": "={{ [$json.email] }}"
+        }
+      },
+      "id": "330fe862-8caa-42b5-a305-6a17a500ea14",
+      "name": "Buscar identidade",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        440,
+        0
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const bcrypt=require(\"bcrypt\");\nconst user=$input.first().json;\nconst password=$(\"Validar entrada\").first().json.password;\nlet valid=false;\nif(user.user_id!=null&&typeof user.password_hash===\"string\")valid=await bcrypt.compare(password,user.password_hash);\nelse await bcrypt.hash(password,12);\nreturn [{json:{valid,user_id:user.user_id==null?null:String(user.user_id)}}];"
+      },
+      "id": "520f5d8d-6bbc-4b76-b27c-3d46c67c140b",
+      "name": "Conferir senha",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0ff4f41f-1314-4739-ba2e-edaffc01cd4d",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "c0742e24-12e7-4a42-9de9-ba6e78c3d660",
+      "name": "Credenciais válidas",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        880,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const jwt=require(\"jsonwebtoken\");\nconst secret=$env.CJS_IDENTITY_JWT_SECRET;\nconst issuer=$env.CJS_IDENTITY_JWT_ISSUER;\nconst audience=$env.CJS_IDENTITY_JWT_AUDIENCE;\nif(typeof secret!==\"string\"||secret.length<32||!issuer||!audience)throw Error(\"Emissor não configurado\");\nconst token=jwt.sign({sub:String($json.user_id)},secret,{algorithm:\"HS256\",expiresIn:\"12h\",issuer,audience});\nreturn [{json:{success:true,token}}];"
+      },
+      "id": "e2573b55-2b07-49d5-896b-6918baf78ba5",
+      "name": "Assinar identidade CJS",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "94f2c205-a686-4039-9a0a-7b7ff093d272",
+      "name": "Responder identidade",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1320,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {success:false,message:\"E-mail ou senha inválidos.\"} }}",
+        "options": {
+          "responseCode": 401
+        }
+      },
+      "id": "20211628-e92c-4ca5-9695-31c574dfc90f",
+      "name": "Credenciais inválidas",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1100,
+        120
+      ]
+    }
+  ],
+  "connections": {
+    "Login CJS": {
+      "main": [
+        [
+          {
+            "node": "Validar entrada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar entrada": {
+      "main": [
+        [
+          {
+            "node": "Buscar identidade",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar identidade": {
+      "main": [
+        [
+          {
+            "node": "Conferir senha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conferir senha": {
+      "main": [
+        [
+          {
+            "node": "Credenciais válidas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Credenciais válidas": {
+      "main": [
+        [
+          {
+            "node": "Assinar identidade CJS",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Credenciais inválidas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assinar identidade CJS": {
+      "main": [
+        [
+          {
+            "node": "Responder identidade",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataSuccessExecution": "none",
+    "saveDataErrorExecution": "none",
+    "saveManualExecutions": false,
+    "saveExecutionProgress": false,
+    "executionTimeout": 30
+  }
+}

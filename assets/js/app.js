@@ -17,6 +17,10 @@ import { createConversaoUI } from "./ui/conversao.js";
 import { createImportarDominioUI } from "./ui/importar-dominio.js";
 export function createApplication({ env, now = () => new Date() }) {
   const initialState = createDefaultState(now());
+  if (env.individual) {
+    initialState.colaboradores = [];
+    initialState.proximoId = 1;
+  }
   const state = structuredClone(initialState);
   const storage = createPersistence({
     state,
@@ -128,9 +132,12 @@ export function createApplication({ env, now = () => new Date() }) {
       ui.bindEvents();
     bindExportEvents(state, env);
     document.getElementById("btn-limpar-dados").onclick = () => {
+      if (env.beforeClearState?.() === false) return;
       if (
         confirm(
-          "Isso apaga todos os dados preenchidos neste navegador. Continuar?",
+          env.individual
+            ? "Limpar o preenchimento local desta seleção? As versões salvas no servidor e os outros preenchimentos serão preservados."
+            : "Isso apaga todos os dados preenchidos neste navegador. Continuar?",
         )
       ) {
         try {
@@ -156,7 +163,8 @@ export function createApplication({ env, now = () => new Date() }) {
     });
     const hoje = now();
     const mudouPeriodo =
-      state.mes !== hoje.getMonth() || state.ano !== hoje.getFullYear();
+      !env.preserveSavedPeriod &&
+      (state.mes !== hoje.getMonth() || state.ano !== hoje.getFullYear());
     if (mudouPeriodo) {
       state.mes = hoje.getMonth();
       state.ano = hoje.getFullYear();

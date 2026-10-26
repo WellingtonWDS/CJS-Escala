@@ -10,8 +10,9 @@
     <main class="login-card">
       <div class="brand">Escala DP</div>
       <h1>Acesse o sistema</h1>
-      <p>Informe a senha de acesso para continuar. Sua sessão dura 12 horas.</p>
+      <p id="login-description">Informe a senha de acesso para continuar. Sua sessão dura até 12 horas.</p>
       <form id="login-form">
+        <div id="login-email" hidden><label for="email">E-mail</label><input id="email" name="email" type="email" autocomplete="username" maxlength="254" /></div>
         <label for="password">Senha</label
         ><input
           id="password"

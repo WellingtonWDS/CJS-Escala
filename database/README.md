@@ -1,21 +1,22 @@
-# Persistência — primeira entrega
+# Persistência — banco, sessões e interface
 
-Implementada a base de banco e de serviços para salvar rascunhos completos com isolamento por escritório/empresa. O fluxo atual de produção continua local. Não há formulário de cadastro público nem ligação automática ao n8n/VPS. O handler de API nega todas as chamadas por padrão até receber um autenticador individual do servidor; a senha compartilhada não dá acesso remoto.
+Implementados banco, sessões individuais, serviços portáteis e interface de rascunhos com isolamento por escritório/empresa. A ativação depende da configuração de homologação; o padrão continua sendo login compartilhado e armazenamento local. Não há cadastro público. A senha compartilhada não dá acesso remoto. Consulte o [guia de integração n8n](../integrations/n8n/README.md) para configurar o novo fluxo sem alterar o outro projeto.
 
 ## Conteúdo
 
 - `migrations/001_persistence.sql`: schemas privados/API, papéis mínimos, usuários provisionados, escritórios, vínculos, empresas, acesso por empresa, sessões, rascunhos, versões imutáveis e auditoria. Migração transacional para banco dedicado, executar uma vez com administrador; não altera `public.users` de outro produto. Papéis são globais no cluster: conferir colisões de nomes antes da implantação. Não executar automaticamente ao iniciar a aplicação.
+- `migrations/002_individual_sessions.sql`: papel exclusivo do serviço de identidade, abertura/revogação de sessão, consulta de identidade e limitação persistente de tentativas.
 - `provision-office.sql`: criação administrativa de escritório, primeiro administrador e empresa. Não cria senha nem sessão e não substitui a integração com o provedor de identidade. A variável `identity_subject` identifica um usuário já provisionado nesse provedor. A primeira fase usa um único emissor de identidade configurado para o produto; adicionar outro emissor exige mudar a chave de identidade para `(emissor, subject)`.
 - `tests/seed.sql`: exemplos descartáveis; inclui credenciais exclusivamente locais de teste. Nunca executar em produção.
 - `server/services/persistence.js`: operações fixas por `fetch`, JWT HS256 de até 60s associado a usuário e sessão, HTTPS e timeout. Não recebe papel ou identidade do corpo da requisição.
-- `server/persistence-api.js`: handler padrão Request/Response independente de Vercel/Node. Autenticador injetado pelo backend; sem ele retorna 401. Valida origem, método, IDs e tamanho, trata conflito e não expõe erros SQL. Ainda não montado em uma rota pública.
-- `assets/js/services/persistence.js`: cliente para `/api/persistence`, preparado para a próxima entrega. Não invocado pelo formulário atual.
+- `server/persistence-api.js`: handler padrão Request/Response independente de Vercel/Node. Autenticador injetado pelo backend; sem ele retorna 401. Valida origem, método, IDs e tamanho, trata conflito e não expõe erros SQL. Montado em `/api/persistence`, com autenticador do cookie individual do servidor e nova checagem pelo PostgreSQL.
+- `assets/js/services/persistence.js`: cliente para `/api/persistence`, preparado para a próxima entrega. Usado pelo painel de empresas/rascunhos quando o modo individual está configurado e a persistência habilitada.
 
 ## Contrato da identidade e sessões
 
 O autenticador do backend deverá verificar a sessão/cookie e devolver `{userId, sessionId, expiresAt}`. `userId` e `sessionId` são UUIDs do banco desta aplicação, não IDs arbitrários do corpo ou do JWT do outro projeto. JWT de identidade externo terá sua assinatura, emissor, audiência e expiração verificados antes de estabelecer essa sessão. O JWT curto encaminhado ao PostgREST usa outro contrato: `role=cjs_authenticated`, `sub=userId`, `sid=sessionId`, `iss=cjs-escala-api`, `aud=cjs-postgrest`.
 
-Nesta entrega, a criação de sessões permanece restrita ao administrador/conexão privilegiada: o papel de RPC não insere, lê nem revoga diretamente sessões ou usuários. A próxima migração implementará abertura/revogação através de serviço de identidade restrito após definir o contrato com n8n. Nenhum endpoint aceita cadastrar usuário ou fabricar identidade.
+A criação de sessões ocorre pela RPC `open_session`, exclusiva do papel `cjs_identity_gateway`, com subject extraído do JWT de identidade verificado pelo backend. O papel de dados não abre sessões nem consulta usuários/sessões diretamente. `get_identity` e `revoke_session` atendem apenas ao próprio usuário e à sessão presente no token. O gateway não lê rascunhos. Nenhum endpoint aceita cadastrar usuário ou fabricar identidade.
 
 Sessões duram no máximo 12h no banco. O `db-pre-request` confere existência, titularidade, expiração e revogação em cada requisição. Funções de RLS repetem a checagem, inclusive se chamadas fora do PostgREST por uma conexão que assuma o papel da aplicação. Administradores têm acesso às empresas do próprio escritório; editores/consulta precisam de vínculo em `company_access`. Perfil consulta não grava. Um mesmo usuário pode ter vínculos explícitos com mais de um escritório.
 
@@ -59,4 +60,4 @@ Estados são rascunhos JSONB com `schema_version=1`, limitados a 1 MiB na repres
 
 A listagem inicial retorna no máximo 100 rascunhos por empresa; paginação, histórico na interface, política de retenção/idempotência, arquivos originais, sincronização automática e validação autoritativa de escalas não fazem parte desta etapa. A API de salvamento só recebe snapshots completos nesta fase. A normalização de colaboradores/restrições/configurações em cadastros próprios será feita por novas migrações, preservando versões históricas.
 
-Próxima entrega: autenticação individual via n8n com credenciais de serviço, mapeamento de subject para usuário e abertura/revogação de sessões; adaptadores HTTP e seleção de empresa/rascunho na interface, mantendo o funcionamento local até a migração assistida. A futura hospedagem na VPS reutilizará os mesmos handlers, sem depender do middleware Vercel.
+Entregues autenticação individual via n8n (dependente de homologação do template), abertura/revogação de sessões, adaptadores HTTP e seleção de empresa/rascunho na interface. Próxima etapa operacional: aplicar as migrações e configurar o novo fluxo em homologação, seguindo o guia. A futura hospedagem na VPS reutiliza os mesmos handlers, sem depender do middleware Vercel.
