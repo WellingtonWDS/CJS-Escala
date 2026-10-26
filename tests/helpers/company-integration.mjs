@@ -1,3 +1,5 @@
+import dialogTools from "./dialogs.cjs";
+const { respondToDialogs, waitForDialogs } = dialogTools;
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { createCompaniesHandler } from "../../server/companies.js";
@@ -176,7 +178,7 @@ export async function testCompanyIntegration({ env, sql, browserTest }) {
       const page = await context.newPage(),
         errors = [];
       page.on("pageerror", (e) => errors.push(e.message));
-      page.on("dialog", (d) => d.accept());
+      await respondToDialogs(page, (d) => d.accept());
       const ready = () =>
         page.waitForFunction(
           () => document.documentElement.dataset.ready === "true",
@@ -185,6 +187,7 @@ export async function testCompanyIntegration({ env, sql, browserTest }) {
       await ready();
       assert.equal(await page.locator("#btn-imprimir-pagina").count(), 0);
       await page.locator("#sidebar-toggle").click();
+      await waitForDialogs(page);
       assert.equal(
         await page.locator("#sidebar-toggle").getAttribute("aria-expanded"),
         "false",
@@ -196,7 +199,9 @@ export async function testCompanyIntegration({ env, sql, browserTest }) {
         "false",
       );
       await page.locator("#sidebar-toggle").click();
+      await waitForDialogs(page);
       await page.locator('[data-app-view="companies"]').click();
+      await waitForDialogs(page);
       await page.locator("#company-create").waitFor({ state: "visible" });
       await page.waitForFunction(
         () =>
@@ -211,6 +216,7 @@ export async function testCompanyIntegration({ env, sql, browserTest }) {
         .locator('#company-create [name="cnpj"]')
         .fill("04.252.011/0001-10");
       await page.locator("#company-create button").click();
+      await waitForDialogs(page);
       await page.waitForFunction(() =>
         document
           .querySelector("[data-company-status]")
@@ -222,7 +228,9 @@ export async function testCompanyIntegration({ env, sql, browserTest }) {
         /Comércio navegador — 04\.252\.011/,
       );
       await page.locator('[data-app-view="schedule"]').click();
+      await waitForDialogs(page);
       await page.locator("#btn-remote-workspace").click();
+      await waitForDialogs(page);
       await page.waitForFunction(
         () =>
           !document
@@ -253,21 +261,21 @@ export async function testCompanyIntegration({ env, sql, browserTest }) {
       await ready();
       const upload = async (cnpj, name) => {
         await page.locator('[data-etapa-link="sec-config"]').click();
+        await waitForDialogs(page);
         await page
           .locator("#importacao-dominio")
           .evaluate((el) => (el.open = true));
-        await page
-          .locator("#dominio-arquivo")
-          .setInputFiles({
-            name: "quadro.xlsx",
-            mimeType:
-              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            buffer: workbook(cnpj, name),
-          });
+        await page.locator("#dominio-arquivo").setInputFiles({
+          name: "quadro.xlsx",
+          mimeType:
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          buffer: workbook(cnpj, name),
+        });
         await page.waitForFunction(
           () => !document.querySelector("#dominio-confirmar").disabled,
         );
         await page.locator("#dominio-confirmar").click();
+        await waitForDialogs(page);
         await page
           .locator("#dominio-company-dialog")
           .waitFor({ state: "visible" });
@@ -295,6 +303,7 @@ export async function testCompanyIntegration({ env, sql, browserTest }) {
         /já cadastrada/,
       );
       await page.locator("[data-company-import-confirm]").click();
+      await waitForDialogs(page);
       await page
         .locator("#dominio-company-dialog")
         .waitFor({ state: "detached" });
@@ -322,6 +331,7 @@ export async function testCompanyIntegration({ env, sql, browserTest }) {
       );
       await upload("33.000.167/0001-01", "Empresa nova importada");
       await page.locator("[data-company-import-cancel]").click();
+      await waitForDialogs(page);
       await page
         .locator("#dominio-company-dialog")
         .waitFor({ state: "detached" });
@@ -334,6 +344,7 @@ export async function testCompanyIntegration({ env, sql, browserTest }) {
       );
       await upload("33.000.167/0001-01", "Empresa nova importada");
       await page.locator("[data-company-import-confirm]").click();
+      await waitForDialogs(page);
       await page
         .locator("#dominio-company-dialog")
         .waitFor({ state: "detached" });
@@ -382,6 +393,7 @@ export async function testCompanyIntegration({ env, sql, browserTest }) {
         /Sem permissão/,
       );
       await page.locator("[data-company-import-cancel]").click();
+      await waitForDialogs(page);
       assert.deepEqual(errors, []);
     } finally {
       await browser.close();

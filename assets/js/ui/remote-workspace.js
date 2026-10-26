@@ -1,4 +1,5 @@
 import { createCompanyPicker } from "./company-picker.js";
+import { getDialogs } from "./dialogs.js";
 import { createRemotePersistence } from "../services/persistence.js";
 import { createDefaultState } from "../state/store.js";
 import { validateSnapshot } from "../state/workspace.js";
@@ -10,6 +11,7 @@ export async function initRemoteWorkspace({
   window,
   service = createRemotePersistence(),
 }) {
+  const dialogs = getDialogs(document);
   const button = document.getElementById("btn-remote-workspace"),
     dialog = document.getElementById("remote-workspace");
   button.hidden = false;
@@ -133,9 +135,9 @@ export async function initRemoteWorkspace({
       const s = selected();
       if (!s.companyId) throw Error("Selecione uma empresa.");
       if (
-        !window.confirm(
+        !(await dialogs.confirm(
           "Abrir esta seleção? O preenchimento atual continuará salvo apenas no cache deste navegador até ser enviado ao servidor.",
-        )
+        ))
       )
         return;
       let state,
@@ -235,9 +237,9 @@ export async function initRemoteWorkspace({
         state = workspace.previous();
       if (!state) throw Error("Não há cópia local anterior para esta seleção.");
       if (
-        !window.confirm(
+        !(await dialogs.confirm(
           "Recuperar o preenchimento local anterior para conferir e mesclar? Nada será enviado ao servidor. A revisão atual será mantida e o conteúdo aberto ficará guardado como cópia anterior.",
-        )
+        ))
       )
         return;
       workspace.activate(c, state);
@@ -250,9 +252,9 @@ export async function initRemoteWorkspace({
       const raw = workspace.legacy();
       if (!raw) throw Error("Não há dados antigos neste navegador.");
       if (
-        !window.confirm(
+        !(await dialogs.confirm(
           "Importar o preenchimento antigo para esta empresa? Confira que ele pertence a ela. O original será preservado e nada será enviado ao servidor automaticamente.",
-        )
+        ))
       )
         return;
       const state = validateSnapshot(JSON.parse(raw));

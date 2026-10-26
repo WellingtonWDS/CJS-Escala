@@ -131,13 +131,18 @@ export function createApplication({ env, now = () => new Date() }) {
     ])
       ui.bindEvents();
     bindExportEvents(state, env);
-    document.getElementById("btn-limpar-dados").onclick = () => {
-      if (env.beforeClearState?.() === false) return;
+    document.getElementById("btn-limpar-dados").onclick = async () => {
+      if ((await env.beforeClearState?.()) === false) return;
       if (
-        confirm(
+        await confirm(
           env.individual
             ? "Limpar o preenchimento local desta seleção? As versões salvas no servidor e os outros preenchimentos serão preservados."
             : "Isso apaga todos os dados preenchidos neste navegador. Continuar?",
+          {
+            title: "Limpar preenchimento",
+            confirmText: "Limpar dados",
+            cancelText: "Manter preenchimento",
+          },
         )
       ) {
         try {

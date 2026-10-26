@@ -1,3 +1,8 @@
+const {
+  respondToDialogs,
+  waitForDialogs,
+  stopDialogResponses,
+} = require("./helpers/dialogs.cjs");
 const { irParaEtapa } = require("./helpers/etapas.cjs");
 const assert = require("node:assert/strict");
 const { readFile } = require("node:fs/promises");
@@ -65,6 +70,7 @@ module.exports = async function testarConversao({ browser, baseURL }) {
     await page.locator("#conversao-periodo").fill("2028-02");
     await irParaEtapa(page, "#btn-converter");
     await page.locator("#btn-converter").click();
+    await waitForDialogs(page);
     await page.waitForFunction(
       () =>
         !!JSON.parse(localStorage.getItem("fintria-escala-dp-v2")).conversao,
@@ -100,6 +106,7 @@ module.exports = async function testarConversao({ browser, baseURL }) {
     const promise = page.waitForEvent("download");
     await irParaEtapa(page, "#btn-exportar-proposta");
     await page.locator("#btn-exportar-proposta").click();
+    await waitForDialogs(page);
     const download = await promise;
     assert.equal(download.suggestedFilename(), "proposta-5x2-2028-02.csv");
     const csv = await readFile(await download.path(), "utf8");
@@ -135,7 +142,7 @@ module.exports = async function testarConversao({ browser, baseURL }) {
         break;
       }
     }
-    page.on("dialog", (dialog) => dialog.accept("F"));
+    await respondToDialogs(page, (dialog) => dialog.accept("F"));
     await irParaEtapa(
       page,
       `#resultado-proposta [data-ri="${ri}"][data-di="${di}"]`,
@@ -143,6 +150,7 @@ module.exports = async function testarConversao({ browser, baseURL }) {
     await page
       .locator(`#resultado-proposta [data-ri="${ri}"][data-di="${di}"]`)
       .click();
+    await waitForDialogs(page);
     assert.ok((await saved()).conversao.comparacao.faltantesDepois > 0);
     assert.deepEqual((await saved()).conversao.origem, origem);
     await irParaEtapa(page, "#conversao-folgas");
@@ -158,6 +166,7 @@ module.exports = async function testarConversao({ browser, baseURL }) {
     );
     await irParaEtapa(page, "#btn-converter");
     await page.locator("#btn-converter").click();
+    await waitForDialogs(page);
     assert.ok((await saved()).conversao.comparacao.lacunas.length);
     assert.ok(
       (await saved()).conversao.proposta.config.diasTrabalho.includes(6),
@@ -166,10 +175,13 @@ module.exports = async function testarConversao({ browser, baseURL }) {
     await page.locator("#conversao-folgas").selectOption("distribuir");
     await irParaEtapa(page, "#cadastro-manual-colaboradores > summary");
     await page.locator("#cadastro-manual-colaboradores > summary").click();
+    await waitForDialogs(page);
     await irParaEtapa(page, "#colab-list [data-remove]");
     await page.locator("#colab-list [data-remove]").last().click();
+    await waitForDialogs(page);
     await irParaEtapa(page, "#btn-converter");
     await page.locator("#btn-converter").click();
+    await waitForDialogs(page);
     assert.equal((await saved()).conversao.comparacao.status, "insuficiente");
     await irParaEtapa(page, "#conversao-comparacao");
     assert.match(
@@ -180,6 +192,7 @@ module.exports = async function testarConversao({ browser, baseURL }) {
     await page.locator("#tg-cobertura").uncheck();
     await irParaEtapa(page, "#btn-converter");
     await page.locator("#btn-converter").click();
+    await waitForDialogs(page);
     assert.equal((await saved()).conversao.comparacao.status, "nao_avaliada");
     await irParaEtapa(page, "#conversao-diagnostico");
     assert.match(
@@ -188,8 +201,10 @@ module.exports = async function testarConversao({ browser, baseURL }) {
     );
     await irParaEtapa(page, '[data-tipo="5x2"]');
     await page.locator('[data-tipo="5x2"]').click();
+    await waitForDialogs(page);
     await irParaEtapa(page, "#btn-converter");
     await page.locator("#btn-converter").click();
+    await waitForDialogs(page);
     await irParaEtapa(page, "#conversao-mensagem");
     assert.match(
       await page.locator("#conversao-mensagem").innerText(),
@@ -198,6 +213,7 @@ module.exports = async function testarConversao({ browser, baseURL }) {
     assert.equal((await saved()).conversao.desatualizada, true);
     await irParaEtapa(page, '[data-tipo="6x1"]');
     await page.locator('[data-tipo="6x1"]').click();
+    await waitForDialogs(page);
     // A referência atual deve manter o contexto 44h, mesmo com 42h/CCT futura nos controles.
     await page.evaluate(async () => {
       const { createDefaultState } = await import("/assets/js/state/store.js");
@@ -252,6 +268,7 @@ module.exports = async function testarConversao({ browser, baseURL }) {
     );
     await irParaEtapa(page, "#btn-converter");
     await page.locator("#btn-converter").click();
+    await waitForDialogs(page);
     s = await saved();
     assert.equal(s.regimeJornada, "transicao42");
     assert.equal(s.escalaGerada.referenciaAtual44, true);
@@ -275,6 +292,7 @@ module.exports = async function testarConversao({ browser, baseURL }) {
     );
     const downloadAtual = page.waitForEvent("download");
     await page.locator("#btn-exportar-csv").click();
+    await waitForDialogs(page);
     const csvAtual = await readFile(await (await downloadAtual).path(), "utf8");
     assert.doesNotMatch(csvAtual, /REPOUSO_SEMANAL|INSTRUMENTO_FORA_VIGENCIA/);
     // Se faltar espaço, a proposta continua disponível nesta aba e a UI avisa.
@@ -285,6 +303,7 @@ module.exports = async function testarConversao({ browser, baseURL }) {
     });
     await irParaEtapa(page, "#btn-converter");
     await page.locator("#btn-converter").click();
+    await waitForDialogs(page);
     await irParaEtapa(page, "#conversao-mensagem");
     assert.match(
       await page.locator("#conversao-mensagem").innerText(),

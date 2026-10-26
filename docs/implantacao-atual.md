@@ -11,6 +11,12 @@ Consultar este registro antes de orientar o operador. Distinguir código dispon�
 - Novo modelo: menu lateral dentro do sistema, nome e perfil; Operador acessa suas empresas, Gerente gera escalas e gerencia usuários no escritório, Admin tem acesso global. Não há senha adicional nem página separada. Gerente não cria Admin e não edita empresas de outro escritório. Admin/gerentes podem criar Gerentes nos escritórios autorizados; alteração de empresas vale para Operadores.
 - O proprietário deve ser promovido explicitamente usando o **identity_subject informado no chat**. Esse ID é do provedor de login, não o UUID interno de cjs_private.users. Não presumir que o vínculo antigo membership.admin já seja Admin global: ele agora representa Gerente.
 
+## Atualização de interface — modais
+
+Pedido seguinte do usuário: substituir alert/confirm/prompt nativos por modais com o estilo do sistema. Implementado componente compartilhado em assets/js/ui/dialogs.js, fila por documento, cancelamento sem mutação, foco e teclado. Confirm/prompt são assíncronos: calendário, limpeza e operações de rascunho aguardam a resposta. Editor do dia oferece select de status e campo de horas, com proteção se a escala mudar enquanto a pergunta estiver aberta. A sessão também usa o componente no aviso de logout sem confirmação remota.
+
+Validação local: 434 testes unitários, build, suíte completa de interface, teste dedicado de modais (fila, Escape/Enter, texto seguro, foco, janela sobreposta e celular), login compartilhado e integração individual com PostgreSQL/PostgREST passaram. A troca de modais não requer migração nova nem variável. A entrega anterior de edição/criação de escritórios foi enviada à main em c5c4744, mas a migração 006 na VPS ainda não foi confirmada pelo operador. Ao responder, distinguir a interface nova da ativação do banco pendente e explicar que compartilhar escalas ainda exige Salvar manualmente.
+
 ## Atualização mais recente — edição, escritórios e compartilhamento
 
 Nova entrega: Gerente/Admin editam razão social/CNPJ das empresas autorizadas sem mudar ID/escritório, preservando rascunhos e permissões. Conflito entre edições e CNPJ duplicado são bloqueados, com auditoria. Admin cria novos escritórios no menu; Gerente/Operador não têm essa operação. Requer migração 006; não afirmar que já foi aplicada na VPS.

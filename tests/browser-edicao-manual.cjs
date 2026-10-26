@@ -1,3 +1,8 @@
+const {
+  respondToDialogs,
+  waitForDialogs,
+  stopDialogResponses,
+} = require("./helpers/dialogs.cjs");
 const assert = require("node:assert/strict");
 module.exports = async function ({ browser, baseURL }) {
   const { cenario } = await import("./fixtures/edicao-manual.mjs");
@@ -33,6 +38,7 @@ module.exports = async function ({ browser, baseURL }) {
       () => document.documentElement.dataset.ready === "true",
     );
     await page.locator('[data-etapa-link="sec-gerar"]').click();
+    await waitForDialogs(page);
     const saved = () =>
       page.evaluate(() =>
         JSON.parse(localStorage.getItem("fintria-escala-dp-v2")),
@@ -90,9 +96,11 @@ module.exports = async function ({ browser, baseURL }) {
     });
     let respostas = ["T", "08:00"];
     const responder = (dialog) => dialog.accept(respostas.shift() || "");
-    page.on("dialog", responder);
+    await respondToDialogs(page, responder);
     await page.locator('#resultado-gerar [data-ri="0"][data-di="0"]').click();
-    page.removeListener("dialog", responder);
+    await waitForDialogs(page);
+    await waitForDialogs(page);
+    stopDialogResponses(page);
     const painel = page.locator("#resultado-gerar-edicao-manual");
     await painel.waitFor();
     assert.match(await painel.locator('[role="alert"]').textContent(), /48:00/);
@@ -101,6 +109,7 @@ module.exports = async function ({ browser, baseURL }) {
     assert.equal(rascunho.resultado[0].dias[0].status, "T");
     assert.deepEqual(rascunho.resultado[1], seed.escalaGerada.resultado[1]);
     await painel.locator("[data-manual-cancelar]").click();
+    await waitForDialogs(page);
     liberar();
     await page.unroute("**/assets/js/workers/edicao-manual.js");
     assert.match(
@@ -109,6 +118,7 @@ module.exports = async function ({ browser, baseURL }) {
     );
     assert.deepEqual((await saved()).escalaGerada, rascunho);
     await painel.locator("[data-manual-buscar]").click();
+    await waitForDialogs(page);
     await painel.locator("[data-manual-aplicar]").waitFor();
     assert.deepEqual((await saved()).escalaGerada, rascunho);
     const opcao = await painel
@@ -123,6 +133,7 @@ module.exports = async function ({ browser, baseURL }) {
       /Colaborador de Exemplo 2/,
     );
     await painel.locator("[data-manual-aplicar]").click();
+    await waitForDialogs(page);
     assert.equal(await painel.count(), 0);
     const aplicado = (await saved()).escalaGerada;
     assert.equal(aplicado.resultado[0].dias[0].status, "T");
@@ -136,15 +147,19 @@ module.exports = async function ({ browser, baseURL }) {
     assert.equal(aplicado.coberturaOperacional.lacunas.length, 0);
     // A nova edição pode ser desfeita, inclusive após recarregar a página.
     respostas = ["F"];
-    page.on("dialog", responder);
+    await respondToDialogs(page, responder);
     await page.locator('#resultado-gerar [data-ri="0"][data-di="0"]').click();
-    page.removeListener("dialog", responder);
+    await waitForDialogs(page);
+    await waitForDialogs(page);
+    stopDialogResponses(page);
     await page.reload();
     await page.waitForFunction(
       () => document.documentElement.dataset.ready === "true",
     );
     await page.locator('[data-etapa-link="sec-gerar"]').click();
+    await waitForDialogs(page);
     await painel.locator("[data-manual-desfazer]").click();
+    await waitForDialogs(page);
     assert.equal(await painel.count(), 0);
     assert.deepEqual(
       (await saved()).escalaGerada.resultado,

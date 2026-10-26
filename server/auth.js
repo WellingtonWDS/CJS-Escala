@@ -132,6 +132,7 @@ export function publicPath(path) {
     "/assets/css/login.css",
     "/assets/js/login.js",
     "/assets/js/session.js",
+    "/assets/js/ui/dialogs.js",
     "/api/auth",
   ].includes(path);
 }

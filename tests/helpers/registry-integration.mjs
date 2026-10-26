@@ -1,3 +1,5 @@
+import dialogTools from "./dialogs.cjs";
+const { respondToDialogs, waitForDialogs } = dialogTools;
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { createCompaniesHandler } from "../../server/companies.js";
@@ -227,7 +229,7 @@ export async function testRegistryIntegration({ env, sql, browserTest }) {
       const page = await context.newPage();
       const errors = [];
       page.on("pageerror", (e) => errors.push(e.message));
-      page.on("dialog", (d) => d.accept());
+      await respondToDialogs(page, (d) => d.accept());
       const ready = () =>
         page.waitForFunction(
           () => document.documentElement.dataset.ready === "true",
@@ -235,16 +237,25 @@ export async function testRegistryIntegration({ env, sql, browserTest }) {
       await page.goto(origin);
       await ready();
       await page.locator('[data-app-view="offices"]').click();
+      await waitForDialogs(page);
+      await page.waitForFunction(
+        () =>
+          !document
+            .querySelector("#office-management")
+            .hasAttribute("aria-busy"),
+      );
       await page
         .locator("#office-create input")
         .fill("Escritório do navegador");
       await page.locator("#office-create button").click();
+      await waitForDialogs(page);
       await page.waitForFunction(() =>
         document
           .querySelector("[data-office-status]")
           .textContent.includes("Escritório criado"),
       );
       await page.locator('[data-app-view="companies"]').click();
+      await waitForDialogs(page);
       await page.waitForFunction(
         () =>
           !document
@@ -259,6 +270,7 @@ export async function testRegistryIntegration({ env, sql, browserTest }) {
         .locator('#company-edit [name="name"]')
         .fill("Razão social revisada");
       await page.locator("#company-edit button").click();
+      await waitForDialogs(page);
       await page.waitForFunction(() =>
         document
           .querySelector("[data-company-status]")
@@ -291,6 +303,7 @@ export async function testRegistryIntegration({ env, sql, browserTest }) {
         false,
       );
       await page.locator("#btn-remote-workspace").click();
+      await waitForDialogs(page);
       await page.waitForFunction(
         () =>
           !document
@@ -312,6 +325,7 @@ export async function testRegistryIntegration({ env, sql, browserTest }) {
       await ready();
       assert.equal(await page.locator('[data-field="nome"]').count(), 1);
       await page.locator('[data-etapa-link="sec-gerar"]').click();
+      await waitForDialogs(page);
       assert.ok(
         (await page.locator("#resultado-gerar .escala-mensal").count()) > 0,
       );

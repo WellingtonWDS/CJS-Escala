@@ -1,3 +1,8 @@
+const {
+  respondToDialogs,
+  waitForDialogs,
+  stopDialogResponses,
+} = require("./helpers/dialogs.cjs");
 const assert = require("node:assert/strict");
 module.exports = async function ({ browser, baseURL }) {
   const context = await browser.newContext({ timezoneId: "America/Sao_Paulo" });
@@ -60,6 +65,7 @@ module.exports = async function ({ browser, baseURL }) {
       () => document.documentElement.dataset.ready === "true",
     );
     await page.locator('[data-etapa-link="sec-gerar"]').click();
+    await waitForDialogs(page);
     for (const id of ["resultado-gerar", "resultado-proposta"]) {
       const container = page.locator("#" + id);
       assert.equal(
@@ -71,8 +77,10 @@ module.exports = async function ({ browser, baseURL }) {
       const analises = container.locator("[data-analises-escala]");
       assert.equal(await analises.getAttribute("open"), null);
       await analises.locator("summary").first().click();
+      await waitForDialogs(page);
       assert.ok(await analises.locator("div").first().isVisible());
       await analises.locator("summary").first().click();
+      await waitForDialogs(page);
       for (const viewport of [
         { width: 1280, height: 900 },
         { width: 640, height: 450 },
@@ -90,6 +98,7 @@ module.exports = async function ({ browser, baseURL }) {
           await grade.evaluate((el) => el.scrollWidth > el.clientWidth),
         );
         await container.locator("[data-ver-resumo]").click();
+        await waitForDialogs(page);
         assert.ok(
           await grade.evaluate(
             (el) =>
@@ -137,11 +146,12 @@ module.exports = async function ({ browser, baseURL }) {
       el.scrollTop = 150;
     });
     const aceitarFolga = (dialog) => dialog.accept("F");
-    page.on("dialog", aceitarFolga);
+    await respondToDialogs(page, aceitarFolga);
     await page
       .locator('#resultado-gerar [data-ri="0"][data-di="0"]')
       .dispatchEvent("click");
-    page.removeListener("dialog", aceitarFolga);
+    await waitForDialogs(page);
+    stopDialogResponses(page);
     assert.ok(
       await gradeAtual.evaluate(
         (el) =>
@@ -164,6 +174,7 @@ module.exports = async function ({ browser, baseURL }) {
       () => document.documentElement.dataset.ready === "true",
     );
     await page.locator('[data-etapa-link="sec-gerar"]').click();
+    await waitForDialogs(page);
     const atual = page.locator("#resultado-gerar");
     assert.equal(
       await atual.evaluate((el) =>

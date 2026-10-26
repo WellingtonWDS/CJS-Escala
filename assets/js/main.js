@@ -1,4 +1,5 @@
 import { requireSession } from "./session.js";
+import { getDialogs } from "./ui/dialogs.js";
 const session = await requireSession();
 if (session) {
   const { createApplication } = await import("./app.js");
@@ -13,9 +14,7 @@ if (session) {
     window,
     Blob,
     URL,
-    alert: (...args) => window.alert(...args),
-    confirm: (...args) => window.confirm(...args),
-    prompt: (...args) => window.prompt(...args),
+    ...getDialogs(document),
     setTimeout: (...args) => window.setTimeout(...args),
   };
   let workspace;
@@ -47,9 +46,9 @@ if (session) {
         window.dispatchEvent(new Event("cjs-local-save"));
       },
     };
-    env.beforeClearState = () => {
+    env.beforeClearState = async () => {
       if (workspace.pending()) {
-        window.alert(
+        await env.alert(
           "Há um envio pendente de confirmação. Resolva esse envio antes de limpar o preenchimento.",
         );
         return false;

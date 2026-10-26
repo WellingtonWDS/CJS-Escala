@@ -73,128 +73,146 @@ export function createCalendarioUI({
     permitido: ajustesPermitidos,
   });
 
-  function editarStatus(ri, di) {
-    if (!ajustesPermitidos()) {
-      alert("A proposta está desatualizada. Gere novamente antes de editar.");
-      return;
-    }
-    const obj = state.escalaGerada.resultado[ri].dias[di];
-    if (obj.status === "NC") {
-      alert(
-        "Data anterior à admissão. Confira a data de admissão no cadastro importado.",
-      );
-      return;
-    }
-    const colaborador = state.escalaGerada.resultado[ri].colaborador;
-    if (obj.restricao && obj.restricao.tipo !== "horario") {
-      alert(
-        `${obj.restricao.descricao}. Altere a restrição no cadastro do colaborador e gere novamente para modificar esta data.`,
-      );
-      return;
-    }
-    const atual = obj.status;
-    const opcoes = [
-      ["T", "T — Trabalho"],
-      ["F", "F — Folga/repouso"],
-      ["FE", "FE — Feriado trabalhado"],
-      ["FC", "FC — Folga compensatória"],
-    ];
-
-    const escolha = prompt(
-      `Dia ${obj.dia} (${DIAS_SEMANA[obj.weekday]})\nStatus atual: ${atual}\n\nDigite T, F, FE ou FC:`,
-      atual,
-    );
-    if (escolha === null) return;
-    const status = escolha.trim().toUpperCase();
-    if (!opcoes.some((o) => o[0] === status)) {
-      alert("Status inválido. Use T, F, FE ou FC.");
-      return;
-    }
-
-    if (status === "FE" && !obj.feriado) {
-      if (
-        !confirm(
-          "Este dia não está cadastrado como feriado. Manter FE mesmo assim?",
-        )
-      )
-        return;
-    }
-
-    if (status === "FC") {
-      if (
-        !confirm(
-          "FC representa folga compensatória. Confirme que existe fundamento para a compensação antes de usar este status.",
-        )
-      )
-        return;
-    }
-
-    let novasHoras = 0;
-    if (status === "T" || status === "FE") {
-      const horasStr = prompt(
-        "Horas trabalhadas neste dia (HH:MM ou decimal):",
-        fmtHoras(obj.horas || calcHorasDia(obj.weekday)),
-      );
-      if (horasStr === null) return;
-      novasHoras = parseHorasTrabalhadas(horasStr);
-      if (novasHoras === null) {
-        alert("Informe horas válidas, entre 0 e 24, com minutos de 00 a 59.");
+  let editando = false;
+  async function editarStatus(ri, di) {
+    if (editando) return;
+    editando = true;
+    const escalaInicial = state.escalaGerada;
+    try {
+      if (!ajustesPermitidos()) {
+        alert("A proposta está desatualizada. Gere novamente antes de editar.");
         return;
       }
-    }
-    const candidato = { ...obj, status, horas: novasHoras };
-    atualizarHorarioEfetivo(candidato);
-    if (obj.ajusteRestricao && ["T", "FE"].includes(status)) {
-      candidato.entradaMin = obj.entradaMin;
-      candidato.intervaloMin = obj.intervaloMin;
-      candidato.saidaMin =
-        candidato.entradaMin + novasHoras * 60 + candidato.intervaloMin;
-      candidato.intervaloInicioMin = obj.intervaloInicioMin;
-      candidato.intervaloFimMin = obj.intervaloFimMin;
-    }
-    Object.assign(
-      candidato,
-      apurarComputoCCT(
-        configDoPerfil(configDaEscala(state), colaborador) ||
-          configDaEscala(state),
+      const obj = state.escalaGerada.resultado[ri].dias[di];
+      if (obj.status === "NC") {
+        alert(
+          "Data anterior à admissão. Confira a data de admissão no cadastro importado.",
+        );
+        return;
+      }
+      const colaborador = state.escalaGerada.resultado[ri].colaborador;
+      if (obj.restricao && obj.restricao.tipo !== "horario") {
+        alert(
+          `${obj.restricao.descricao}. Altere a restrição no cadastro do colaborador e gere novamente para modificar esta data.`,
+        );
+        return;
+      }
+      const atual = obj.status;
+      const opcoes = [
+        ["T", "T — Trabalho"],
+        ["F", "F — Folga/repouso"],
+        ["FE", "FE — Feriado trabalhado"],
+        ["FC", "FC — Folga compensatória"],
+      ];
+
+      const escolha = await prompt(
+        `Dia ${obj.dia} (${DIAS_SEMANA[obj.weekday]})\nStatus atual: ${atual}\n\nSelecione o novo status:`,
+        atual,
+        { title: "Alterar status do dia", label: "Status", choices: opcoes },
+      );
+      if (escolha === null) return;
+      const status = escolha.trim().toUpperCase();
+      if (!opcoes.some((o) => o[0] === status)) {
+        alert("Status inválido. Use T, F, FE ou FC.");
+        return;
+      }
+
+      if (status === "FE" && !obj.feriado) {
+        if (
+          !(await confirm(
+            "Este dia não está cadastrado como feriado. Manter FE mesmo assim?",
+          ))
+        )
+          return;
+      }
+
+      if (status === "FC") {
+        if (
+          !(await confirm(
+            "FC representa folga compensatória. Confirme que existe fundamento para a compensação antes de usar este status.",
+          ))
+        )
+          return;
+      }
+
+      let novasHoras = 0;
+      if (status === "T" || status === "FE") {
+        const horasStr = await prompt(
+          "Horas trabalhadas neste dia (HH:MM ou decimal):",
+          fmtHoras(obj.horas || calcHorasDia(obj.weekday)),
+          {
+            title: "Ajustar horas do dia",
+            label: "Horas trabalhadas (HH:MM ou decimal)",
+            maxLength: 10,
+          },
+        );
+        if (horasStr === null) return;
+        novasHoras = parseHorasTrabalhadas(horasStr);
+        if (novasHoras === null) {
+          alert("Informe horas válidas, entre 0 e 24, com minutos de 00 a 59.");
+          return;
+        }
+      }
+      if (state.escalaGerada !== escalaInicial || !ajustesPermitidos()) {
+        await alert("A escala mudou durante a edição. Abra o dia novamente.");
+        return;
+      }
+      const candidato = { ...obj, status, horas: novasHoras };
+      atualizarHorarioEfetivo(candidato);
+      if (obj.ajusteRestricao && ["T", "FE"].includes(status)) {
+        candidato.entradaMin = obj.entradaMin;
+        candidato.intervaloMin = obj.intervaloMin;
+        candidato.saidaMin =
+          candidato.entradaMin + novasHoras * 60 + candidato.intervaloMin;
+        candidato.intervaloInicioMin = obj.intervaloInicioMin;
+        candidato.intervaloFimMin = obj.intervaloFimMin;
+      }
+      Object.assign(
         candidato,
-      ),
-    );
-    const violacoes = violacoesDia(colaborador, candidato);
-    if (violacoes.length) {
-      alert(violacoes.join("\n"));
-      return;
+        apurarComputoCCT(
+          configDoPerfil(configDaEscala(state), colaborador) ||
+            configDaEscala(state),
+          candidato,
+        ),
+      );
+      const violacoes = violacoesDia(colaborador, candidato);
+      if (violacoes.length) {
+        alert(violacoes.join("\n"));
+        return;
+      }
+      candidato.ajusteManual = true;
+      const antes = structuredClone(obj);
+      state.escalaGerada = substituirDiasDaEscala(state.escalaGerada, [
+        { colaboradorId: colaborador.id, data: obj.data, depois: candidato },
+      ]);
+      state.escalaGerada.validacoes = state.escalaGerada.resultado.map((r) => ({
+        colaborador: r.colaborador,
+        issues: validarLegal(
+          r.colaborador,
+          r.dias,
+          r.diasContexto,
+          r.diasApuracao,
+        ),
+      }));
+      state.escalaGerada.avisosCobertura = validarCobertura(
+        state.escalaGerada.resultado,
+      );
+      state.escalaGerada.coberturaOperacional = domain.analisarCobertura(
+        state.escalaGerada.resultado,
+      );
+      state.escalaGerada.ultimaEdicaoManual = {
+        colaboradorId: colaborador.id,
+        data: obj.data,
+        antes,
+        assinatura: assinaturaAjustes(state),
+      };
+      renderEscalaGerada();
+      onEscalaChange();
+      saveState();
+      edicaoManual.destacar();
+    } finally {
+      editando = false;
     }
-    candidato.ajusteManual = true;
-    const antes = structuredClone(obj);
-    state.escalaGerada = substituirDiasDaEscala(state.escalaGerada, [
-      { colaboradorId: colaborador.id, data: obj.data, depois: candidato },
-    ]);
-    state.escalaGerada.validacoes = state.escalaGerada.resultado.map((r) => ({
-      colaborador: r.colaborador,
-      issues: validarLegal(
-        r.colaborador,
-        r.dias,
-        r.diasContexto,
-        r.diasApuracao,
-      ),
-    }));
-    state.escalaGerada.avisosCobertura = validarCobertura(
-      state.escalaGerada.resultado,
-    );
-    state.escalaGerada.coberturaOperacional = domain.analisarCobertura(
-      state.escalaGerada.resultado,
-    );
-    state.escalaGerada.ultimaEdicaoManual = {
-      colaboradorId: colaborador.id,
-      data: obj.data,
-      antes,
-      assinatura: assinaturaAjustes(state),
-    };
-    renderEscalaGerada();
-    onEscalaChange();
-    saveState();
-    edicaoManual.destacar();
   }
 
   function atualizarTurnosEscala() {

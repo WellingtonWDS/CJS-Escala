@@ -1,3 +1,4 @@
+import { getDialogs } from "./ui/dialogs.js";
 export function safeDestination(value) {
   return typeof value === "string" &&
     value.startsWith("/") &&
@@ -78,7 +79,7 @@ export async function requireSession() {
         body: JSON.stringify({ action: "logout" }),
       });
       if (!response.ok)
-        window.alert(
+        await getDialogs(document).alert(
           "O acesso local foi encerrado, mas o servidor não confirmou a revogação da sessão. Tente novamente quando o serviço estiver disponível.",
         );
     } catch {

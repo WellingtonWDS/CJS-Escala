@@ -1,3 +1,8 @@
+const {
+  respondToDialogs,
+  waitForDialogs,
+  stopDialogResponses,
+} = require("./helpers/dialogs.cjs");
 const assert = require("node:assert/strict");
 module.exports = async ({ browser, baseURL, sql }) => {
   const { cenario } = await import("./fixtures/edicao-manual.mjs");
@@ -16,7 +21,7 @@ module.exports = async ({ browser, baseURL, sql }) => {
     );
     const page = await context.newPage();
     page.on("pageerror", (e) => errors.push(e.message));
-    page.on("dialog", (d) => d.accept());
+    await respondToDialogs(page, (d) => d.accept());
     await page.goto(baseURL + "/login.html");
     await page.locator("#email").waitFor({ state: "visible" });
     await page.locator("#email").fill(email);
@@ -158,18 +163,37 @@ module.exports = async ({ browser, baseURL, sql }) => {
     // Criar uma cópia e atualizá-la mantém os demais rascunhos no seletor.
     await a.locator("[data-remote-title]").fill("Cópia independente");
     await a.locator("[data-remote-new]").click();
-    await a.waitForFunction(() => !document.querySelector("#remote-workspace").hasAttribute("aria-busy"));
+    await a.waitForFunction(
+      () =>
+        !document.querySelector("#remote-workspace").hasAttribute("aria-busy"),
+    );
     const copyId = await a.locator("[data-remote-draft]").inputValue();
     assert.notEqual(copyId, id);
     for (const savedId of [id, copyId]) {
-      assert.equal(await a.locator(`[data-remote-draft] option[value="${savedId}"]`).count(), 1);
+      assert.equal(
+        await a
+          .locator(`[data-remote-draft] option[value="${savedId}"]`)
+          .count(),
+        1,
+      );
     }
     await a.locator("[data-remote-title]").fill("Cópia renomeada");
     await a.locator("[data-remote-save]").click();
-    await a.waitForFunction(() => !document.querySelector("#remote-workspace").hasAttribute("aria-busy"));
+    await a.waitForFunction(
+      () =>
+        !document.querySelector("#remote-workspace").hasAttribute("aria-busy"),
+    );
     assert.equal(await a.locator("[data-remote-draft]").inputValue(), copyId);
-    assert.equal(await a.locator(`[data-remote-draft] option[value="${id}"]`).count(), 1);
-    assert.match(await a.locator(`[data-remote-draft] option[value="${copyId}"]`).textContent(), /Cópia renomeada/);
+    assert.equal(
+      await a.locator(`[data-remote-draft] option[value="${id}"]`).count(),
+      1,
+    );
+    assert.match(
+      await a
+        .locator(`[data-remote-draft] option[value="${copyId}"]`)
+        .textContent(),
+      /Cópia renomeada/,
+    );
     // Após logout, login de outro escritório no mesmo navegador não abre o cache anterior.
     await second.locator("#btn-sair").click();
     await second.waitForURL("**/login.html?**");

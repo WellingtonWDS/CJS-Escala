@@ -169,15 +169,15 @@ test("restaura horário salvo nos campos após recarregar", () => {
     true,
   );
 });
-test("edição rejeita minutos, negativos, texto, mais de 24h; cancelar preserva dia", () => {
+test("edição rejeita minutos, negativos, texto, mais de 24h; cancelar preserva dia", async () => {
   const run = app();
   for (const value of ["08:99", "08:60", "-1", "25:00", "24:01", "8abc", ""])
     assert.equal(run(`parseHorasTrabalhadas(${JSON.stringify(value)})`), null);
   assert.equal(run(`parseHorasTrabalhadas('08:59')`), 8 + 59 / 60);
   assert.equal(run(`parseHorasTrabalhadas('8,5')`), 8.5);
   assert.equal(
-    run(
-      `state.escalaGerada={resultado:[{dias:[{dia:1,status:'F',horas:0}]}]};prompt=(()=>{let i=0;return ()=>['T','08:99'][i++]})();editarStatus(0,0);state.escalaGerada.resultado[0].dias[0].status`,
+    await run(
+      `state.escalaGerada={resultado:[{dias:[{dia:1,status:'F',horas:0}]}]};prompt=(()=>{let i=0;return ()=>['T','08:99'][i++]})();editarStatus(0,0).then(()=>state.escalaGerada.resultado[0].dias[0].status)`,
     ),
     "F",
   );
@@ -191,11 +191,11 @@ test("12x36 respeita feriado dispensado sem reiniciar o ciclo", () => {
     true,
   );
 });
-test("cancelar a edição das horas preserva status e totais", () => {
+test("cancelar a edição das horas preserva status e totais", async () => {
   const run = app();
   assert.equal(
-    run(
-      `state.escalaGerada={resultado:[{dias:[{dia:1,status:'F',horas:0}]}]};prompt=(()=>{let i=0;return ()=>['T',null][i++]})();editarStatus(0,0);state.escalaGerada.resultado[0].dias[0].status==='F' && state.escalaGerada.resultado[0].dias[0].horas===0`,
+    await run(
+      `state.escalaGerada={resultado:[{dias:[{dia:1,status:'F',horas:0}]}]};prompt=(()=>{let i=0;return ()=>['T',null][i++]})();editarStatus(0,0).then(()=>state.escalaGerada.resultado[0].dias[0].status==='F' && state.escalaGerada.resultado[0].dias[0].horas===0)`,
     ),
     true,
   );

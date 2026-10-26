@@ -176,6 +176,12 @@ Gerente e Admin podem cadastrar e editar empresas com razão social/CNPJ, preser
 
 Os rascunhos salvos pertencem à empresa e podem ser abertos por outros usuários autorizados, mesmo quando criados por colegas. Preenchimentos e escalas geradas só chegam ao servidor ao usar **Salvar**; **Salvar como novo** cria outro planejamento. Não há salvamento automático na nuvem.
 
+## Avisos e confirmações
+
+Alertas, confirmações e edição de valores usam modais com o estilo do sistema, incluindo os fluxos de limpeza local, rascunhos e calendário. O editor do dia apresenta um select de status e um campo para horas. Há cancelamento por Escape, confirmação por teclado, foco contido na janela e restauração do foco sem rolagem. Mensagens são inseridas como texto, e avisos simultâneos são exibidos em fila.
+
+Componente: `assets/js/ui/dialogs.js` e `assets/css/dialogs.css`. `getDialogs(document)` retorna alert/confirm/prompt **assíncronos**; aguardar confirm/prompt antes de alterar dados. No ambiente da aplicação, env.alert/env.confirm/env.prompt usam esse componente. A escala não é alterada quando o usuário cancela uma pergunta. O módulo da sessão compartilha a mesma fila e o arquivo de diálogo é uma dependência pública do login, sem dados de usuário.
+
 ## Testes
 
 ```sh

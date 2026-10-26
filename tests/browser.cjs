@@ -1,3 +1,8 @@
+const {
+  respondToDialogs,
+  waitForDialogs,
+  stopDialogResponses,
+} = require("./helpers/dialogs.cjs");
 const { irParaEtapa } = require("./helpers/etapas.cjs");
 const assert = require("node:assert/strict");
 const { readFile } = require("node:fs/promises");
@@ -41,7 +46,7 @@ const { chromium } = require("playwright");
       if (response.url().includes("127.0.0.1") && response.status() >= 400)
         failedAssets.push(response.url());
     });
-    page.on("dialog", (dialog) => dialog.dismiss());
+    await respondToDialogs(page, (dialog) => dialog.dismiss());
     await page.goto(`http://127.0.0.1:${server.address().port}/`);
     await page.waitForFunction(
       () => document.getElementById("cfg-mes").options.length === 12,
@@ -56,6 +61,7 @@ const { chromium } = require("playwright");
     for (const type of ["6x1", "5x2", "12x36", "custom"]) {
       await irParaEtapa(page, `[data-tipo="${type}"]`);
       await page.locator(`[data-tipo="${type}"]`).click();
+      await waitForDialogs(page);
       await irParaEtapa(page, "#ciclo-12x36-config");
       assert.equal(
         await page.locator("#ciclo-12x36-config").isVisible(),
@@ -63,6 +69,7 @@ const { chromium } = require("playwright");
       );
       await irParaEtapa(page, "#btn-gerar");
       await page.locator("#btn-gerar").click();
+      await waitForDialogs(page);
       await irParaEtapa(page, "#resultado-gerar");
       assert.match(
         await page.locator("#resultado-gerar").innerText(),
@@ -74,6 +81,7 @@ const { chromium } = require("playwright");
     );
     await irParaEtapa(page, '[data-tipo="5x2"]');
     await page.locator('[data-tipo="5x2"]').click();
+    await waitForDialogs(page);
     assert.equal(
       await page.locator("#importacao-colaboradores").getAttribute("open"),
       null,
@@ -94,6 +102,7 @@ const { chromium } = require("playwright");
     );
     await irParaEtapa(page, "#cadastro-manual-colaboradores > summary");
     await page.locator("#cadastro-manual-colaboradores > summary").click();
+    await waitForDialogs(page);
     assert.equal(
       await page.locator("#cadastro-manual-colaboradores #colab-list").count(),
       0,
@@ -101,6 +110,7 @@ const { chromium } = require("playwright");
     const beforeManual = (await saved()).colaboradores.length;
     await irParaEtapa(page, "#btn-add-colab");
     await page.locator("#btn-add-colab").click();
+    await waitForDialogs(page);
     assert.equal((await saved()).colaboradores.length, beforeManual);
     await irParaEtapa(page, "#colab-nome");
     await page.locator("#colab-nome").fill("Pessoa cadastrada");
@@ -113,6 +123,7 @@ const { chromium } = require("playwright");
     assert.equal((await saved()).colaboradores.length, beforeManual);
     await irParaEtapa(page, "#btn-add-colab");
     await page.locator("#btn-add-colab").click();
+    await waitForDialogs(page);
     assert.equal((await saved()).colaboradores.length, beforeManual + 1);
     assert.equal(await page.locator("#colab-nome").inputValue(), "");
     assert.equal(await page.locator("#colab-horas").inputValue(), "44");
@@ -148,6 +159,7 @@ const { chromium } = require("playwright");
     );
     await irParaEtapa(page, "#btn-gerar");
     await page.locator("#btn-gerar").click();
+    await waitForDialogs(page);
     const horariosAntes = (await saved()).escalaGerada.resultado.map((r) =>
       r.dias.map((d) => [d.data, d.status, d.horas]),
     );
@@ -195,20 +207,23 @@ const { chromium } = require("playwright");
     );
     await irParaEtapa(page, "#btn-gerar");
     await page.locator("#btn-gerar").click();
+    await waitForDialogs(page);
     await irParaEtapa(page, "#resultado-gerar");
     assert.match(await page.locator("#resultado-gerar").innerText(), /14:00/);
     await irParaEtapa(page, "#btn-simular-pec");
     await page.locator("#btn-simular-pec").click();
+    await waitForDialogs(page);
     await irParaEtapa(page, "#pec-resultado");
     assert.match(
       await page.locator("#pec-resultado").innerText(),
       /16\/12\/2027/,
     );
-    page.removeAllListeners("dialog");
+
     let answers = ["T", "08:30"];
-    page.on("dialog", (dialog) => dialog.accept(answers.shift()));
+    await respondToDialogs(page, (dialog) => dialog.accept(answers.shift()));
     await irParaEtapa(page, '[data-ri="0"][data-di="0"]');
     await page.locator('[data-ri="0"][data-di="0"]').click();
+    await waitForDialogs(page);
     await page.waitForFunction(
       () =>
         JSON.parse(localStorage.getItem("fintria-escala-dp-v2")).escalaGerada
@@ -223,11 +238,13 @@ const { chromium } = require("playwright");
     answers = ["T", "08:99"];
     await irParaEtapa(page, '[data-ri="0"][data-di="0"]');
     await page.locator('[data-ri="0"][data-di="0"]').click();
+    await waitForDialogs(page);
     assert.deepEqual((await saved()).escalaGerada.resultado[0].dias[0], before);
     console.log("OK: edição manual e rejeição de horas inválidas");
     const downloadPromise = page.waitForEvent("download");
     await irParaEtapa(page, "#btn-exportar-csv");
     await page.locator("#btn-exportar-csv").click();
+    await waitForDialogs(page);
     const download = await downloadPromise;
     assert.equal(
       await readFile(await download.path(), "utf8"),
@@ -292,6 +309,10 @@ const { chromium } = require("playwright");
     await require("./browser-importacao.cjs")({
       browser,
       baseURL: `http://127.0.0.1:${server.address().port}/`,
+    });
+    await require("./browser-dialogs.cjs")({
+      browser,
+      baseURL: `http://127.0.0.1:${server.address().port}`,
     });
     await require("./browser-tutorial.cjs")({
       browser,
