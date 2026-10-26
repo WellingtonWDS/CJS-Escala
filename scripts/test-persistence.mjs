@@ -1,3 +1,4 @@
+import { testRegistryIntegration } from "../tests/helpers/registry-integration.mjs";
 import { testCompanyIntegration } from "../tests/helpers/company-integration.mjs";
 import { testIdentityIntegration } from "../tests/helpers/identity-integration.mjs";
 import { testAdminIntegration } from "../tests/helpers/admin-integration.mjs";
@@ -400,6 +401,11 @@ try {
     browserTest: process.argv.includes("--browser"),
   });
   await testCompanyIntegration({
+    env,
+    sql,
+    browserTest: process.argv.includes("--browser"),
+  });
+  await testRegistryIntegration({
     env,
     sql,
     browserTest: process.argv.includes("--browser"),

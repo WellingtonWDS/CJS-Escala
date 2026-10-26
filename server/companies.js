@@ -46,6 +46,15 @@ export function createCompaniesHandler({
       } catch {
         return json({ error: "JSON inválido." }, 400);
       }
+      if (body?.action === "createOffice") {
+        if (
+          typeof body.name !== "string" ||
+          !body.name.trim() ||
+          body.name.length > 160
+        )
+          return json({ error: "Informe o nome do escritório." }, 400);
+        return json(await service.createOffice(identity, body.name.trim()));
+      }
       if (
         typeof body?.name !== "string" ||
         !body.name.trim() ||
@@ -60,6 +69,25 @@ export function createCompaniesHandler({
           { error: "Informe razão social, escritório e CNPJ válido." },
           400,
         );
+      if (body.action === "updateCompany") {
+        if (
+          !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(
+            body.companyId || "",
+          ) ||
+          typeof body.previousName !== "string" ||
+          !(body.previousCnpj === null || typeof body.previousCnpj === "string")
+        )
+          return json({ error: "Reabra a empresa antes de editar." }, 400);
+        return json(
+          await service.updateCompany(identity, {
+            ...body,
+            name: body.name.trim(),
+            cnpj: normalizeCnpj(body.cnpj),
+          }),
+        );
+      }
+      if (body.action !== undefined)
+        return json({ error: "Operação inválida." }, 400);
       return json(
         await service.resolveCompany(identity, {
           ...body,
@@ -74,13 +102,15 @@ export function createCompaniesHandler({
       return json(
         {
           error:
-            status === 403
-              ? "Sem permissão para identificar ou cadastrar essa empresa. Solicite acesso ao gerente."
-              : status === 400
-                ? "Razão social ou CNPJ inválido."
-                : status === 401
-                  ? "Sessão expirada ou revogada."
-                  : "Não foi possível consultar o cadastro. Confira a migração do banco e tente novamente.",
+            status === 409
+              ? "Cadastro alterado por outro usuário ou documento/nome já utilizado. Reabra a lista e confira antes de salvar."
+              : status === 403
+                ? "Sem permissão para esta operação neste escritório ou empresa. Solicite acesso ao Admin ou gerente."
+                : status === 400
+                  ? "Razão social ou CNPJ inválido."
+                  : status === 401
+                    ? "Sessão expirada ou revogada."
+                    : "Não foi possível consultar o cadastro. Confira a migração do banco e tente novamente.",
         },
         status,
       );

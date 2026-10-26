@@ -172,7 +172,9 @@ A evolução para PostgreSQL/PostgREST com isolamento por escritório está desc
 
 O menu lateral pode ser recolhido/expandido e mostra nome, perfil, geração de escala e empresas/rascunhos. Gerentes e Admins também têm acesso a Criar novo usuário e Acessos dos operadores, dentro da mesma aplicação e com o login individual existente. Operadores acessam somente as empresas atribuídas; Gerentes administram seu escritório; Admin tem acesso global. A migração 004 e a promoção explícita da identidade do proprietário habilitam o novo modelo: [guia de ativação](docs/administracao-usuarios.md). Não há senha administrativa adicional nem cadastro público. Cadastro e vínculos são atômicos, com bcrypt e auditoria; o servidor valida o escopo de cada operação.
 
-Gerente e Admin podem cadastrar empresas com razão social/CNPJ. Seletores e buscas exibem ambos os dados; a importação Domínio identifica o CNPJ no escritório e permite confirmar cadastro novo sem misturar colaboradores. Requer a migração 005: [operação e ativação](docs/cadastro-empresas.md).
+Gerente e Admin podem cadastrar e editar empresas com razão social/CNPJ, preservando seus rascunhos e permissões. Admin também pode criar escritórios pelo menu lateral. Seletores e buscas exibem ambos os dados; a importação Domínio identifica o CNPJ no escritório e permite confirmar cadastro novo sem misturar colaboradores. Requer migrações 005/006: [operação e ativação](docs/cadastro-empresas.md).
+
+Os rascunhos salvos pertencem à empresa e podem ser abertos por outros usuários autorizados, mesmo quando criados por colegas. Preenchimentos e escalas geradas só chegam ao servidor ao usar **Salvar**; **Salvar como novo** cria outro planejamento. Não há salvamento automático na nuvem.
 
 ## Testes
 

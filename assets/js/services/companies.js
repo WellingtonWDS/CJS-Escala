@@ -27,6 +27,8 @@ export function createCompanyService({ fetchImpl = fetch } = {}) {
     return data;
   }
   return {
+    update: (fields) => call({ ...fields, action: "updateCompany" }),
+    createOffice: (name) => call({ action: "createOffice", name }),
     options: () => call(),
     resolve: (officeId, name, cnpj, apply = false) =>
       call({ officeId, name, cnpj, apply }),

@@ -166,7 +166,8 @@
 }
 body[data-app-view="create"] #btn-tutorial,
 body[data-app-view="access"] #btn-tutorial,
-body[data-app-view="companies"] #btn-tutorial {
+body[data-app-view="companies"] #btn-tutorial,
+body[data-app-view="offices"] #btn-tutorial {
   display: none;
 }
 @media (max-width: 900px) {

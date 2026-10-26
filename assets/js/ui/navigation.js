@@ -41,7 +41,9 @@ export function initNavigation({ session, document, window }) {
   const canManage = ["admin", "manager"].includes(role);
   const buttons = [...sidebar.querySelectorAll("[data-app-view]")];
   buttons.forEach((button) => {
-    if (button.dataset.appView !== "schedule") button.hidden = !canManage;
+    if (button.dataset.appView !== "schedule")
+      button.hidden =
+        button.dataset.appView === "offices" ? role !== "admin" : !canManage;
   });
   document.getElementById("sidebar-companies").hidden =
     !session.persistenceEnabled;
@@ -52,16 +54,18 @@ export function initNavigation({ session, document, window }) {
     );
   let management,
     companies,
+    offices,
     generation = 0;
   async function show(view) {
     if (
-      ["user-management", "company-management"].some(
+      ["user-management", "company-management", "office-management"].some(
         (id) =>
           document.getElementById(id).getAttribute("aria-busy") === "true",
       )
     )
       return;
     if (view !== "schedule" && !canManage) return;
+    if (view === "offices" && role !== "admin") return;
     const current = ++generation;
     document.getElementById("scheduler-view").hidden = view !== "schedule";
     document.getElementById("user-management").hidden = ![
@@ -69,6 +73,7 @@ export function initNavigation({ session, document, window }) {
       "access",
     ].includes(view);
     document.getElementById("company-management").hidden = view !== "companies";
+    document.getElementById("office-management").hidden = view !== "offices";
     document.body.dataset.appView = view;
     buttons.forEach((b) =>
       b.dataset.appView === view
@@ -78,6 +83,14 @@ export function initNavigation({ session, document, window }) {
     if (view === "schedule") return;
     buttons.forEach((button) => (button.disabled = true));
     try {
+      if (view === "offices") {
+        if (!offices) {
+          const { createOfficeRegistry } = await import("./office-registry.js");
+          offices = createOfficeRegistry({ document, window });
+        }
+        await offices.show();
+        return;
+      }
       if (view === "companies") {
         if (!companies) {
           const { createCompanyRegistry } = await import(

@@ -88,4 +88,38 @@ test("cadastro de empresa exige sessão, origem, CNPJ válido e corpo controlado
   assert.equal(calls[0].url, "https://rpc.example/rpc/resolve_company");
   assert.ok(!("role" in calls[0].body));
   assert.equal(calls[0].body.p_apply, true);
+  const edit = {
+    ...fields,
+    action: "updateCompany",
+    companyId: "30000000-0000-0000-0000-000000000001",
+    previousName: "Nome anterior",
+    previousCnpj: null,
+    newOfficeId: "other",
+  };
+  assert.equal(
+    (await handler(req({ ...edit, previousCnpj: false }))).status,
+    400,
+  );
+  assert.equal((await handler(req(edit))).status, 200);
+  assert.equal(calls.at(-1).url, "https://rpc.example/rpc/update_company");
+  assert.equal(calls.at(-1).body.p_previous_cnpj, null);
+  assert.ok(!("newOfficeId" in calls.at(-1).body));
+  assert.equal(
+    (await handler(req({ action: "createOffice", name: " " }))).status,
+    400,
+  );
+  assert.equal(
+    (
+      await handler(
+        req({
+          action: "createOffice",
+          name: " Escritório novo ",
+          role: "admin",
+        }),
+      )
+    ).status,
+    200,
+  );
+  assert.deepEqual(calls.at(-1).body, { p_name: "Escritório novo" });
+  assert.equal(calls.at(-1).url, "https://rpc.example/rpc/create_office");
 });
