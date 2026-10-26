@@ -174,7 +174,15 @@ O menu lateral pode ser recolhido/expandido e mostra nome, perfil, geração de 
 
 Gerente e Admin podem cadastrar e editar empresas com razão social/CNPJ, preservando seus rascunhos e permissões. Admin também pode criar escritórios pelo menu lateral. Seletores e buscas exibem ambos os dados; a importação Domínio identifica o CNPJ no escritório e permite confirmar cadastro novo sem misturar colaboradores. Requer migrações 005/006: [operação e ativação](docs/cadastro-empresas.md).
 
-Os rascunhos salvos pertencem à empresa e podem ser abertos por outros usuários autorizados, mesmo quando criados por colegas. Preenchimentos e escalas geradas só chegam ao servidor ao usar **Salvar**; **Salvar como novo** cria outro planejamento. Não há salvamento automático na nuvem.
+Os rascunhos salvos pertencem à empresa e podem ser abertos por outros usuários autorizados, mesmo quando criados por colegas. Preenchimentos e escalas geradas só chegam ao servidor ao usar **Salvar preenchimento**; **Salvar uma cópia** cria outro planejamento. Não há salvamento automático na nuvem.
+
+## Empresa atual e Preenchimentos
+
+O menu e o cabeçalho abrem a janela **Empresa atual e Preenchimentos**, organizada em empresa/escritório e preenchimentos disponíveis. O botão principal é **Usar esta empresa** para um preenchimento ainda não salvo ou **Abrir preenchimento** para um registro existente. A ação permanece visível no rodapé da janela; recuperação e importação de dados antigos ficam numa área recolhível.
+
+Durante o preenchimento das oito etapas, uma barra fixa inferior mostra razão social/CNPJ, escritório e nome do preenchimento aberto. **Salvar preenchimento** atualiza o aberto diretamente, sem precisar abrir a janela. **Salvar uma cópia** pede o nome e cria outro registro na mesma empresa, preservando o original. **Trocar empresa ou abrir preenchimento** leva ao seletor. A barra informa alterações locais, confirmação no servidor e envio pendente; nesse último caso o botão passa a **Concluir salvamento** e a cópia fica indisponível até resolver o envio anterior.
+
+Escolher outra empresa ou outro preenchimento no seletor não altera os dados nem o nome do que já está aberto. Salvar usa o contexto efetivamente aberto; cancelar a seleção mantém a empresa anterior como destino. Só o botão de abertura confirmado troca esse contexto. A barra se adapta ao celular, reserva espaço de rolagem, fica fora da impressão e não aparece nos painéis de gestão de cadastros. O contrato de persistência/idempotência/revisão permanece o mesmo; não há nova migração.
 
 ## Avisos e confirmações
 

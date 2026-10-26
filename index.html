@@ -12,6 +12,7 @@
 <link rel="stylesheet" href="./assets/css/navigation.css">
 <link rel="stylesheet" href="./assets/css/dialogs.css">
 <link rel="stylesheet" href="./assets/css/motion.css">
+<link rel="stylesheet" href="./assets/css/workspace.css">
 </head>
 <body class="bg-slate-100 text-slate-800 text-[15px] leading-relaxed">
 <aside id="app-sidebar" class="app-sidebar no-print" hidden aria-label="Menu principal">
@@ -19,7 +20,7 @@
   <a class="sidebar-brand" href="/">Escala DP</a>
   <p id="sidebar-user"></p><p id="sidebar-role" class="sidebar-role"></p>
   <nav id="sidebar-navigation"><button type="button" data-app-view="schedule" aria-current="page">Gerar escala</button>
-  <button type="button" id="sidebar-companies">Empresas e rascunhos</button>
+  <button type="button" id="sidebar-companies">Empresa atual e Preenchimentos</button>
   <button type="button" data-app-view="companies" hidden>Empresas — cadastrar e editar</button>
   <button type="button" data-app-view="offices" hidden>Escritórios</button>
   <button type="button" data-app-view="create" hidden>Criar novo usuário</button>
@@ -32,13 +33,14 @@
     <span id="storage-description" class="text-slate-300 text-sm">Calculadora de horas e migração 6×1 → 5×2 · dados salvos apenas neste navegador</span>
   </div>
   <div class="flex items-center gap-2 flex-wrap">
-    <button id="btn-remote-workspace" hidden type="button" class="no-print text-white text-xs border border-white/50 rounded-md px-3 py-1.5">Empresas e rascunhos</button>
+    <button id="btn-remote-workspace" hidden type="button" class="no-print text-white text-xs border border-white/50 rounded-md px-3 py-1.5">Empresa atual e Preenchimentos</button>
     <button id="btn-tutorial" type="button" class="no-print text-white text-xs border border-white/50 hover:bg-white/10 rounded-md px-3 py-1.5" aria-haspopup="dialog">Tutorial guiado</button>
     <button id="btn-sair" class="no-print text-slate-300 hover:text-white text-xs border border-white/25 rounded-md px-3 py-1.5">Sair</button>
     <button id="btn-limpar-dados" class="no-print text-slate-300 hover:text-white text-xs border border-white/25 hover:border-white/50 rounded-md px-3 py-1.5">Limpar dados salvos</button>
   </div>
 </header>
-<dialog id="remote-workspace" class="remote-workspace no-print" aria-label="Empresas e rascunhos"></dialog>
+<section id="current-workspace" class="current-workspace no-print" aria-label="Empresa atual e Preenchimentos" hidden></section>
+<dialog id="remote-workspace" class="remote-workspace no-print" aria-label="Empresa atual e Preenchimentos"></dialog>
 
 <section id="user-management" class="user-management no-print" hidden aria-label="Gestão de usuários"></section>
 <section id="company-management" class="user-management no-print" hidden aria-label="Cadastro de empresas"></section>

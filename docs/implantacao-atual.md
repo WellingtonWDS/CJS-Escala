@@ -11,6 +11,14 @@ Consultar este registro antes de orientar o operador. Distinguir código dispon�
 - Novo modelo: menu lateral dentro do sistema, nome e perfil; Operador acessa suas empresas, Gerente gera escalas e gerencia usuários no escritório, Admin tem acesso global. Não há senha adicional nem página separada. Gerente não cria Admin e não edita empresas de outro escritório. Admin/gerentes podem criar Gerentes nos escritórios autorizados; alteração de empresas vale para Operadores.
 - O proprietário deve ser promovido explicitamente usando o **identity_subject informado no chat**. Esse ID é do provedor de login, não o UUID interno de cjs_private.users. Não presumir que o vínculo antigo membership.admin já seja Admin global: ele agora representa Gerente.
 
+## Atualização vigente — Empresa atual e Preenchimentos
+
+Nome atual da seção/menu: **Empresa atual e Preenchimentos**. Os botões frequentes saíram da janela: barra fixa inferior nas etapas mostra empresa (razão social/CNPJ), escritório, nome e **Salvar preenchimento** / **Salvar uma cópia**. Cópia pede nome e preserva o original. A janela só escolhe/abre a empresa e o preenchimento, com CTA visível no rodapé; recuperação/importação de dados antigos fica recolhida. Não orientar mais a abrir a janela para salvar nem usar os rótulos Abrir seleção/Salvar como novo.
+
+Salvar usa workspace.context(), não uma seleção ainda não aberta. Selecionar outra empresa/preenchimento não sobrescreve o nome na barra. Cancelar preserva o contexto atual. A barra trata envio pendente com Concluir salvamento, desabilita cópia até resolver, informa alterações locais e só confirma sucesso após o servidor. Esquema/API de rascunhos, revisão, idempotência, cache por usuário e permissões por empresa não mudaram.
+
+Testes locais: 434 unitários, build, suíte completa de interface, novo teste da barra em desktop/celular e integração individual PostgreSQL/PostgREST com repetição de envio, conflito, recuperação, empresas e perfis passaram. Sem migração nem variável nova para esta entrega. Migração 006 da funcionalidade anterior segue sem confirmação explícita do operador.
+
 ## Atualização de interface — carregamento e animações
 
 Pedido atual: tela de carregamento nas operações demoradas, fundo escurecido e animação central fluida; animações nas janelas. Entrega usa loading.js/motion.js/motion.css e os aria-busy dos fluxos de cadastro/rascunho, login, importação e workers. Confirmações suspendem o overlay para não bloquear respostas; buscas canceláveis mantêm Cancelar busca na tela. Fluxos liberam o loading em sucesso/erro/cancelamento e leituras de arquivos descartadas limpam seu marcador. Entrada/saída dos modais, login/painéis/tutorial e menu recebem animações; preferência de movimento reduzido é respeitada.

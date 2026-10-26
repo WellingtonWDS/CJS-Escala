@@ -43,6 +43,12 @@ module.exports = async ({ browser, baseURL, sql }) => {
         !document.querySelector("#remote-workspace").hasAttribute("aria-busy"),
     );
   };
+  const closePanel = async (page) => {
+    if (await page.locator("#remote-workspace").evaluate((el) => el.open)) {
+      await page.locator(".remote-close").click();
+      await page.locator("#remote-workspace").waitFor({ state: "hidden" });
+    }
+  };
   const openSelection = async (page, draft = "") => {
     await openPanel(page);
     await page
@@ -72,6 +78,7 @@ module.exports = async ({ browser, baseURL, sql }) => {
     );
     await openSelection(a);
     await openPanel(a);
+    await a.locator(".workspace-recovery summary").click();
     await a.locator("[data-remote-import]").click();
     await a.waitForFunction(
       () =>
@@ -80,7 +87,6 @@ module.exports = async ({ browser, baseURL, sql }) => {
     );
     assert.equal(await a.locator('[data-field="nome"]').count(), 2);
     assert.equal(await a.locator("#cfg-mes").inputValue(), "8");
-    await openPanel(a);
     await a
       .locator("[data-remote-title]")
       .fill("Rascunho integração navegador");
@@ -93,9 +99,13 @@ module.exports = async ({ browser, baseURL, sql }) => {
       } else await route.continue();
     });
     await a.locator("[data-remote-save]").click();
+    await a.waitForFunction(
+      () =>
+        !document.querySelector("#current-workspace").hasAttribute("aria-busy"),
+    );
     await a.waitForFunction(() =>
       document
-        .querySelector("[data-remote-status]")
+        .querySelector("[data-current-status]")
         .textContent.includes("Não foi possível conectar"),
     );
     await a.unroute("**/api/persistence");
@@ -103,14 +113,19 @@ module.exports = async ({ browser, baseURL, sql }) => {
     await a.waitForFunction(
       () => document.documentElement.dataset.ready === "true",
     );
-    await openPanel(a);
     await a.locator("[data-remote-save]").click();
+    await a.waitForFunction(
+      () =>
+        !document.querySelector("#current-workspace").hasAttribute("aria-busy"),
+    );
     await a.waitForFunction(() =>
       document
-        .querySelector("[data-remote-status]")
+        .querySelector("[data-current-status]")
         .textContent.includes("Salvo no servidor"),
     );
-    const id = await a.locator("[data-remote-draft]").inputValue();
+    const id = await a
+      .locator("#current-workspace")
+      .getAttribute("data-draft-id");
     assert.match(id, /^[a-f0-9-]{36}$/);
     assert.equal(
       sql(
@@ -118,17 +133,20 @@ module.exports = async ({ browser, baseURL, sql }) => {
       ),
       "1",
     );
-    await a.locator(".remote-close").click();
+    await closePanel(a);
     const second = await login("admin-a@example.test");
     await openSelection(second, id);
     assert.equal(await second.locator('[data-field="nome"]').count(), 2);
     assert.equal(await second.locator("#cfg-mes").inputValue(), "8");
-    await openPanel(a);
     await a.locator("[data-remote-title]").fill("Revisão A");
     await a.locator("[data-remote-save]").click();
+    await a.waitForFunction(
+      () =>
+        !document.querySelector("#current-workspace").hasAttribute("aria-busy"),
+    );
     await a.waitForFunction(() =>
       document
-        .querySelector("[data-remote-status]")
+        .querySelector("[data-current-status]")
         .textContent.includes("revisão 2"),
     );
     await second
@@ -136,20 +154,20 @@ module.exports = async ({ browser, baseURL, sql }) => {
       .first()
       .fill("Alteração local preservada");
     await second.locator('[data-field="nome"]').first().dispatchEvent("change");
-    await openPanel(second);
     await second.locator("[data-remote-save]").click();
     await second.waitForFunction(() =>
       document
-        .querySelector("[data-remote-status]")
+        .querySelector("[data-current-status]")
         .textContent.includes("Outra pessoa alterou"),
     );
-    await second.locator(".remote-close").click();
+    await closePanel(second);
     assert.equal(
       await second.locator('[data-field="nome"]').first().inputValue(),
       "Alteração local preservada",
     );
     await openSelection(second, id);
     await openPanel(second);
+    await second.locator(".workspace-recovery summary").click();
     await second.locator("[data-remote-restore]").click();
     await second.waitForFunction(
       () =>
@@ -163,11 +181,19 @@ module.exports = async ({ browser, baseURL, sql }) => {
     // Criar uma cópia e atualizá-la mantém os demais rascunhos no seletor.
     await a.locator("[data-remote-title]").fill("Cópia independente");
     await a.locator("[data-remote-new]").click();
+    await waitForDialogs(a);
+    await a.waitForFunction(
+      () =>
+        !document.querySelector("#current-workspace").hasAttribute("aria-busy"),
+    );
     await a.waitForFunction(
       () =>
         !document.querySelector("#remote-workspace").hasAttribute("aria-busy"),
     );
-    const copyId = await a.locator("[data-remote-draft]").inputValue();
+    const copyId = await a
+      .locator("#current-workspace")
+      .getAttribute("data-draft-id");
+    await openPanel(a);
     assert.notEqual(copyId, id);
     for (const savedId of [id, copyId]) {
       assert.equal(
@@ -177,12 +203,18 @@ module.exports = async ({ browser, baseURL, sql }) => {
         1,
       );
     }
+    await closePanel(a);
     await a.locator("[data-remote-title]").fill("Cópia renomeada");
     await a.locator("[data-remote-save]").click();
     await a.waitForFunction(
       () =>
+        !document.querySelector("#current-workspace").hasAttribute("aria-busy"),
+    );
+    await a.waitForFunction(
+      () =>
         !document.querySelector("#remote-workspace").hasAttribute("aria-busy"),
     );
+    await openPanel(a);
     assert.equal(await a.locator("[data-remote-draft]").inputValue(), copyId);
     assert.equal(
       await a.locator(`[data-remote-draft] option[value="${id}"]`).count(),

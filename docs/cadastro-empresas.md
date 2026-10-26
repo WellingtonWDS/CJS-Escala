@@ -6,7 +6,7 @@ Gerente e Admin têm a opção **Cadastrar empresas** no menu lateral. Seleciona
 
 O CNPJ é armazenado sem pontuação e exibido formatado junto da razão social. Os dígitos verificadores são conferidos no servidor e banco, com suporte a CNPJ numérico e alfanumérico. A unicidade é por escritório: o mesmo cliente pode pertencer a contabilidades distintas, sem compartilhar dados. Repetir um cadastro ou confirmar duas vezes o mesmo CNPJ não cria duplicidade.
 
-Empresas e rascunhos e a listagem de cadastro têm select e busca digitada por razão social (inclusive sem acentos) ou CNPJ (com/sem pontuação). Digitar um CNPJ completo seleciona a correspondência exata; busca parcial filtra as opções e preserva a seleção atual. Nas atribuições de empresas aos usuários, as opções de checkbox também mostram razão social/CNPJ e têm campo de busca. Filtrar não desmarca empresas já selecionadas.
+Empresa atual e Preenchimentos e a listagem de cadastro têm select e busca digitada por razão social (inclusive sem acentos) ou CNPJ (com/sem pontuação). Digitar um CNPJ completo seleciona a correspondência exata; busca parcial filtra as opções e preserva a seleção atual. Nas atribuições de empresas aos usuários, as opções de checkbox também mostram razão social/CNPJ e têm campo de busca. Filtrar não desmarca empresas já selecionadas.
 
 ## Importação Domínio no modo individual
 
@@ -20,7 +20,7 @@ Ao confirmar o relatório, o sistema pede o escritório e consulta o CNPJ antes 
 
 Se a empresa escolhida difere da empresa aberta, começa um novo preenchimento com os colaboradores importados, sem carregar funcionários, cobertura ou condições de outra empresa. O preenchimento anterior permanece no cache de seu contexto. Cancelar não cria empresa nem altera o contexto. Envios pendentes de rascunho devem ser resolvidos antes de mudar de empresa.
 
-O cadastro da empresa é confirmado no servidor. Os colaboradores continuam sendo um preenchimento local até **Salvar** o rascunho; a mensagem de importação informa isso. Cadastro de empresa e importação local são operações distintas: se o navegador falhar após cadastrar, repetir identifica a empresa existente. Não se presume demanda de cobertura do relatório.
+O cadastro da empresa é confirmado no servidor. Os colaboradores continuam sendo um preenchimento local até usar **Salvar preenchimento**; a mensagem de importação informa isso. Cadastro de empresa e importação local são operações distintas: se o navegador falhar após cadastrar, repetir identifica a empresa existente. Não se presume demanda de cobertura do relatório.
 
 No modo compartilhado/local, o importador anterior é preservado e não acessa cadastro remoto.
 
@@ -36,7 +36,7 @@ Somente Admin tem a opção **Escritórios**, para criar escritório pelo nome. 
 
 Os rascunhos são vinculados por office_id/company_id, sem filtro pelo usuário que criou. Todo Operador autorizado à empresa pode listar, abrir e atualizar o mesmo rascunho, incluindo a escala gerada no snapshot. Gerentes e Admins seguem seus escopos. A revisão impede sobrescrever silenciosamente uma alteração de outro usuário.
 
-Salvar no servidor continua **manual**: depois de preencher ou gerar, usar **Salvar**. Isso atualiza o rascunho aberto; **Salvar como novo** guarda um planejamento separado na lista. Dados apenas no navegador não ficam disponíveis a colegas. Há histórico interno de revisões, mas ainda não existe navegação por essas versões na interface. A listagem inicial retorna até 100 rascunhos por empresa. Retirada de acesso bloqueia as próximas consultas, sem excluir os dados.
+Salvar no servidor continua **manual**: depois de preencher ou gerar, usar **Salvar preenchimento** na barra inferior. Isso atualiza o preenchimento aberto; **Salvar uma cópia** guarda um planejamento separado na lista. Dados apenas no navegador não ficam disponíveis a colegas. Há histórico interno de revisões, mas ainda não existe navegação por essas versões na interface. A listagem inicial retorna até 100 rascunhos por empresa. Retirada de acesso bloqueia as próximas consultas, sem excluir os dados.
 
 ## Banco e implantação
 

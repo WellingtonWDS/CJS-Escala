@@ -81,7 +81,7 @@ if (session) {
       state: app.state,
     });
     document.getElementById("storage-description").textContent =
-      "Preencha e salve rascunhos por empresa";
+      "Preencha e salve planejamentos por empresa";
     const { initRemoteWorkspace } = await import("./ui/remote-workspace.js");
     await initRemoteWorkspace({ app, workspace, document, window });
   }
@@ -89,7 +89,7 @@ if (session) {
     const { initNavigation } = await import("./ui/navigation.js");
     initNavigation({ session, document, window });
     document.querySelector("footer").textContent = session.persistenceEnabled
-      ? "Salve seus rascunhos por empresa para mantê-los no servidor."
+      ? "Salve seus preenchimentos por empresa para mantê-los no servidor."
       : "Preenchimento salvo localmente neste navegador.";
   }
   document.documentElement.dataset.ready = "true";
