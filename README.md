@@ -170,7 +170,9 @@ A evolução para PostgreSQL/PostgREST com isolamento por escritório está desc
 
 ## Administração de usuários
 
-O menu lateral mostra nome, perfil, geração de escala e empresas/rascunhos. Gerentes e Admins também têm acesso a Criar novo usuário e Acessos dos operadores, dentro da mesma aplicação e com o login individual existente. Operadores acessam somente as empresas atribuídas; Gerentes administram seu escritório; Admin tem acesso global. A migração 004 e a promoção explícita da identidade do proprietário habilitam o novo modelo: [guia de ativação](docs/administracao-usuarios.md). Não há senha administrativa adicional nem cadastro público. Cadastro e vínculos são atômicos, com bcrypt e auditoria; o servidor valida o escopo de cada operação.
+O menu lateral pode ser recolhido/expandido e mostra nome, perfil, geração de escala e empresas/rascunhos. Gerentes e Admins também têm acesso a Criar novo usuário e Acessos dos operadores, dentro da mesma aplicação e com o login individual existente. Operadores acessam somente as empresas atribuídas; Gerentes administram seu escritório; Admin tem acesso global. A migração 004 e a promoção explícita da identidade do proprietário habilitam o novo modelo: [guia de ativação](docs/administracao-usuarios.md). Não há senha administrativa adicional nem cadastro público. Cadastro e vínculos são atômicos, com bcrypt e auditoria; o servidor valida o escopo de cada operação.
+
+Gerente e Admin podem cadastrar empresas com razão social/CNPJ. Seletores e buscas exibem ambos os dados; a importação Domínio identifica o CNPJ no escritório e permite confirmar cadastro novo sem misturar colaboradores. Requer a migração 005: [operação e ativação](docs/cadastro-empresas.md).
 
 ## Testes
 
@@ -298,7 +300,7 @@ Nas duas prévias, a grade mensal aparece primeiro. Erros objetivos ficam aberto
 
 ## Impressão e PDF
 
-A impressão acompanha a **etapa aberta**: use o botão **Imprimir / PDF** do cabeçalho ou a impressão do navegador em qualquer etapa, inclusive antes de gerar uma escala. Abra os painéis de detalhes que deseja incluir. Na etapa de conversão, também ficam disponíveis os parâmetros e resultados exibidos. As outras etapas e os botões de ação ficam fora do documento; a impressão não troca de etapa nem modifica o preenchimento.
+A impressão acompanha a **etapa aberta**: use a impressão do navegador em qualquer etapa, inclusive antes de gerar uma escala. Abra os painéis de detalhes que deseja incluir. Na etapa de conversão, também ficam disponíveis os parâmetros e resultados exibidos. As outras etapas e os botões de ação ficam fora do documento; a impressão não troca de etapa nem modifica o preenchimento.
 
 
 ## Revisão da edição manual

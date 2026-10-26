@@ -1,3 +1,4 @@
+import { companyLabel, matchesCompany } from "../shared/empresas.js";
 export function createUserManagement({ document, window }) {
   const root = document.getElementById("user-management");
   root.innerHTML = `<h2 data-management-title></h2><p data-management-description></p>
@@ -8,11 +9,11 @@ export function createUserManagement({ document, window }) {
   <label>Confirmar senha<input name="confirmation" type="password" required minlength="6" maxlength="72" autocomplete="new-password"></label>
   <label>Escritório<select name="officeId" required></select></label>
   <label>Perfil<select name="role"><option value="operator">Operador</option><option value="manager">Gerente</option></select></label>
-  <p data-role-help></p><fieldset><legend>Empresas autorizadas</legend><div class="management-companies" data-create-companies></div></fieldset>
+  <p data-role-help></p><fieldset><legend>Empresas autorizadas</legend><label>Buscar por razão social ou CNPJ<input data-create-company-search type="search"></label><div class="management-companies" data-create-companies></div></fieldset>
   <button type="submit">Criar usuário</button></form>
   <form id="manage-access" hidden><label>Escritório<select name="officeId" required></select></label>
   <label>Operador<select name="userId" required></select></label>
-  <fieldset><legend>Empresas autorizadas</legend><div class="management-companies" data-access-companies></div></fieldset>
+  <fieldset><legend>Empresas autorizadas</legend><label>Buscar por razão social ou CNPJ<input data-access-company-search type="search"></label><div class="management-companies" data-access-companies></div></fieldset>
   <p>Desmarcar todas as empresas retira o acesso do operador aos rascunhos deste escritório. Os dados salvos no servidor são preservados.</p><button type="submit">Salvar acessos</button></form>
   <p data-management-status role="status" aria-live="polite"></p>`;
   const create = root.querySelector("#manage-create"),
@@ -72,13 +73,29 @@ export function createUserManagement({ document, window }) {
       input.value = company.id;
       input.checked = all || selected.includes(company.id);
       input.disabled = all;
-      label.append(input, document.createTextNode(company.name));
+      label.dataset.companyId = company.id;
+      label.append(input, document.createTextNode(companyLabel(company)));
       container.append(label);
     }
     if (!container.children.length)
       container.textContent = "Não há empresas cadastradas neste escritório.";
   }
+  for (const prefix of ["create", "access"]) {
+    root
+      .querySelector(`[data-${prefix}-company-search]`)
+      .addEventListener("input", (event) => {
+        root
+          .querySelectorAll(`[data-${prefix}-companies] label`)
+          .forEach((label) => {
+            const row = options.companies.find(
+              (c) => c.id === label.dataset.companyId,
+            );
+            label.hidden = !matchesCompany(row, event.target.value);
+          });
+      });
+  }
   function createChecks() {
+    root.querySelector("[data-create-company-search]").value = "";
     const role = create.elements.role.value;
     root.querySelector("[data-role-help]").textContent =
       role === "admin"
@@ -94,6 +111,7 @@ export function createUserManagement({ document, window }) {
     );
   }
   function accessChecks() {
+    root.querySelector("[data-access-company-search]").value = "";
     const user = options.users.find(
       (u) =>
         u.id === access.elements.userId.value &&

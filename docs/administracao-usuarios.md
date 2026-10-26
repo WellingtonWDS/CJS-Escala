@@ -12,7 +12,7 @@ Gerentes não criam Admins globais, não alteram sua própria função, não edi
 
 ## Ativação na VPS
 
-Pré-requisitos: migrações 001 e 002 já aplicadas no banco dedicado `cjs_escala`, login individual n8n funcionando. O instalador administrativo aplica 003 e 004 somente se ausentes e promove **somente** a identidade explicitamente informada. Não presume que o primeiro cadastro público seja administrador. Não executar em banco de outro produto. Revisar SQL/backup antes de aplicar.
+Pré-requisitos: migrações 001 e 002 já aplicadas no banco dedicado `cjs_escala`, login individual n8n funcionando. O instalador administrativo aplica 003, 004 e 005 somente se ausentes e promove **somente** a identidade explicitamente informada. Não presume que o primeiro cadastro público seja administrador. Não executar em banco de outro produto. Revisar SQL/backup antes de aplicar.
 
 A partir de uma cópia atualizada do repositório:
 
@@ -37,8 +37,10 @@ Na Vercel, manter AUTH_MODE=n8n, PERSISTENCE_ENABLED=true e os segredos/URLs exi
 - `admin_provision_log` registra criação; `access_change_log` registra escritório, ator, operador e empresas anteriores/posteriores. Nenhuma senha ou hash entra nessas auditorias.
 - As RPCs antigas `admin_options` e `admin_create_user` são removidas. O antigo papel administrativo perde seu caminho de pré-requisição. Cookies administrativos antigos não são usados. Os segredos de RPC/cookie do sistema continuam privados.
 
-A interface cria novas contas e altera empresas de Operadores. Não há edição de senha, convite, exclusão de conta, alteração de perfil de conta existente, criação de escritórios/empresas ou painel para auditoria. Contas já existentes em outro escritório exigem provisionamento administrativo de vínculo; e-mail duplicado não cria associação silenciosamente.
+A interface cria novas contas e altera empresas de Operadores. Não há edição de senha, convite, exclusão de conta, alteração de perfil de conta existente, criação de escritórios ou painel para auditoria. Contas já existentes em outro escritório exigem provisionamento administrativo de vínculo; e-mail duplicado não cria associação silenciosamente.
 
 ## Validação
 
 `npm test` cobre o handler autenticado, origem e validação de entrada. `npm run test:identity:browser` verifica PostgreSQL 17/PostgREST 14.15 locais, criação bcrypt, abertura de sessão da nova identidade, duplicidade, bloqueio de escalada para Admin, isolamento entre escritórios, edição/revogação de empresas e auditoria, além do menu integrado para os três perfis em navegador real. A identidade n8n nessa suíte é simulada; homologar as operações na infraestrutura real após a ativação.
+
+Gerente/Admin também cadastram empresas por razão social/CNPJ, com busca e identificação na importação Domínio: [cadastro de empresas](cadastro-empresas.md).

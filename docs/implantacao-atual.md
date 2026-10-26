@@ -13,11 +13,16 @@ Consultar este registro antes de orientar o operador. Distinguir código dispon�
 
 ## Próxima ação na infraestrutura
 
-1. Operador executa `database/enable-user-management.sql` com identity_subject do proprietário. Pré-requisitos 001/002 já cumpridos. O instalador aplica 003/004 se ausentes e promove somente a conta explicitamente informada. Não repetir migrações manualmente sem conferir o estado.
-2. Aguardar deployment da main e recarregar a aplicação. Não há novo segredo nem alteração do workflow n8n. ADMIN_USER_IDS/ADMIN_PASSWORD_HASH, se cadastradas antes, podem ser removidas.
-3. Homologar menu Admin, criar Operador/Gerente e alterar acesso a empresas na VPS real. Testes locais passaram com os três perfis, limites por escritório, cadastro bcrypt atômico, auditoria, revogação e navegador real; isso não confirma ativação remota.
+Nova entrega solicitada: retirar Imprimir/PDF do cabeçalho (impressão da geração/navegador preservada), recolher/expandir menu com preferência local, cadastro de empresas por razão social/CNPJ para Gerente/Admin, seletores/busca por ambos e resolução da empresa no importador Domínio.
 
-Guia vigente: [administração de usuários](administracao-usuarios.md). Não orientar mais o fluxo da página secreta.
+1. Aplicação da migração 004 e promoção do proprietário ainda não foram confirmadas explicitamente no chat. Não presumir que foram executadas. A nova migração 005 acrescenta CNPJ nullable, unicidade por escritório, validação numérica/alfanumérica, resolução/cadastro e auditoria.
+2. Operador pode executar a versão atual de enable-user-management.sql com identidade do proprietário, tendo os arquivos 003, 004, **005** e promote-platform-admin.sql disponíveis. Ela verifica o que falta e promove somente a conta explicitamente informada. Se 001–004 já estiverem aplicadas, executar somente a 005 uma vez também é suficiente.
+3. Não há novas variáveis privadas nem alteração de n8n. ADMIN_USER_IDS/ADMIN_PASSWORD_HASH antigos podem ser removidos. Aguardar deployment e recarregar.
+4. Homologar cadastro/busca e importação na VPS real. Os testes locais passaram: 434 unitários, navegação/impressão e importação local, navegador com PostgreSQL/PostgREST para perfis/cadastro/busca, duplicidade concorrente e troca de contexto sem mistura. Esses resultados não confirmam implantação remota.
+
+A importação identifica CNPJ no escritório escolhido. Operador só utiliza cadastro autorizado; Gerente/Admin confirmam cadastro novo ou vínculo do CNPJ a cadastro antigo sem documento e nome único equivalente. Cancelamento preserva o estado. Outra empresa inicia preenchimento separado. Cadastro da empresa é remoto, mas colaboradores ainda exigem salvar o rascunho. Sem CNPJ válido, bloqueia vinculação remota; importação compartilhada/local segue disponível sem banco.
+
+Guias vigentes: [administração de usuários](administracao-usuarios.md) e [empresas e Domínio](cadastro-empresas.md). Não orientar mais o fluxo da página secreta.
 
 ## Infraestrutura confirmada pelo operador
 
@@ -31,9 +36,9 @@ Guia vigente: [administração de usuários](administracao-usuarios.md). Não or
 ## Limites e pendências preservados
 
 - Rotação da chave de RPC anteriormente exposta ainda não foi confirmada explicitamente; nunca registrar ou pedir seu valor.
-- CNPJ informado no chat não foi persistido: cadastro de empresas ainda não possui campo próprio.
+- O CNPJ informado no chat não foi gravado automaticamente. A entrega 005 passa a oferecer o campo e vínculo confirmado a cadastro antigo via importação/cadastro, após aplicar a migração.
 - Rascunhos exigem salvar manualmente. Salvar atualiza o aberto; Salvar como novo cria outro. Não há sincronização automática nem painel de histórico.
-- Não há edição de senha, convites, exclusão de contas, alteração de perfil existente ou cadastro de escritório/empresa na nova gestão. Vínculos legados de consulta conservam restrição de escrita.
+- Não há edição de senha, convites, exclusão de contas, alteração de perfil existente ou cadastro de escritório na nova gestão. Vínculos legados de consulta conservam restrição de escrita.
 - Permissões do servidor são autoritativas; retirada de acesso não apaga caches já vistos no navegador. Novas aberturas conferem acesso.
 
 ## Histórico técnico essencial

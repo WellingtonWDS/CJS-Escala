@@ -14,7 +14,8 @@ O fluxo principal está implementado e continua em evolução. Já permite impor
 | --- | --- |
 | Acesso | Modo compartilhado preservado; modo individual n8n configurável com cookie HttpOnly, sessão revogável no banco de até 12h, emissor/audiência explícitos e vínculo provisionado. Ativação depende de homologação. |
 | Administração | Menu lateral por perfil (Operador, Gerente, Admin), com nome do usuário, cadastro integrado e edição de empresas dos operadores. Senha bcrypt, operações auditadas e escopo validado no banco. Depende da migração 004 e promoção explícita do proprietário; sem senha administrativa adicional ou cadastro público. |
-| Navegação | Oito etapas com avançar/voltar, acesso direto pela barra horizontal fixa no topo e compacta durante a rolagem, sem rolagem automática na troca, e preservação dos dados. Tutorial guiado de nove passos e indicadores de preenchimento obrigatório pendente. |
+| Empresas | Cadastro por razão social/CNPJ para Gerente/Admin, unicidade por escritório, busca nos seletores e identificação na importação Domínio. Migração 005 necessária; empresas antigas sem CNPJ exigem confirmação do vínculo. |
+| Navegação | Menu lateral recolhível por perfil e oito etapas com avançar/voltar, acesso direto pela barra horizontal fixa no topo e compacta durante a rolagem, sem rolagem automática na troca, e preservação dos dados. Tutorial guiado de nove passos e indicadores de preenchimento obrigatório pendente. |
 | Colaboradores | Cadastro manual, modelo/importação CSV e importação Domínio, com lista única para revisar, editar e remover pessoas. Os painéis de entrada começam fechados. |
 | Importação Domínio | Relatórios Quadro de Horário de Trabalho em XLS/XLSX, prévia e confirmação, metadados da empresa, jornadas individuais, admissão e ciclos. Dias semanais omitidos são considerados folga; dados ambíguos exigem revisão. |
 | Sexo por prenome | Sugestão conservadora por base local de nomes, limiar de 99% e requisitos de volume/disponibilidade dos dados, indicação de preenchimento automático e preservação de escolhas manuais. |
@@ -30,7 +31,7 @@ O fluxo principal está implementado e continua em evolução. Já permite impor
 | Ajustes de cobertura | Sugestões de troca de folga, horário/turno e função habilitada; prévia antes/depois, aplicar e desfazer a última aplicação, validação de dados atuais e carregamento com progresso/cancelamento em segundo plano. |
 | Diagnóstico de pessoal | Lacunas agrupadas por função, dias, horário e quantidade, com datas; diferencia capacidade insuficiente, disponibilidade, habilitações compartilhadas e redistribuição. Verifica simultaneidade, horas e dias-pessoa sem duplicar a equipe. Presente na escala, comparação e CSV. |
 | Conversão e comparação | Origem 6×1 preservada, com contexto 44h da referência automática mantido na grade, resumo, CSV e ajustes; proposta 5×2 em período próprio, busca de distribuição de folgas e comparação de horas, dias e cobertura. Diagnóstico de suficiência, insuficiência demonstrável, necessidade de ajustes, incompatibilidade ou ausência de base para avaliação. |
-| Exportação e armazenamento | CSV detalhado, impressão/PDF da etapa aberta pelo cabeçalho ou navegador (incluindo painéis expandidos) e persistência local no navegador. Alterações invalidam resultados dependentes; versões antigas das regras exigem nova geração. |
+| Exportação e armazenamento | CSV detalhado, impressão/PDF da etapa aberta pelo navegador (incluindo painéis expandidos) e persistência local no navegador. Alterações invalidam resultados dependentes; versões antigas das regras exigem nova geração. |
 | Estrutura técnica | Módulos separados de domínio, interface, importação, exportação e estado; build dos arquivos públicos e autenticação no servidor da Vercel. |
 
 ## Limitações atuais
@@ -69,12 +70,12 @@ As implementações de restrições individuais, sugestões de ajustes de cobert
 
 ## Última validação registrada
 
-Na integração do login individual e da interface de persistência, em **26/10/2026**, foram registrados:
+Na entrega de cadastro/busca de empresas e importação Domínio com vínculo por CNPJ, em **26/10/2026**, foram registrados:
 
-- **432 testes unitários aprovados**, sem falhas, com `npm test`.
+- **434 testes unitários aprovados**, sem falhas, com `npm test`.
 - Integração real com PostgreSQL 17 e PostgREST 14.15 aprovada por `npm run test:persistence`: isolamento de escritórios/empresas, permissões, concorrência, idempotência, histórico/auditoria, FK cruzada, token inválido/expirado e sessão revogada.
 - Build atual aprovado com `npm run build`.
-- Suíte completa de interface e suíte específica do login compartilhado aprovadas novamente, além de `test:identity:browser` com provedor simulado e PostgreSQL/PostgREST reais. Login individual, migração explícita, reabertura em outro navegador, perda de resposta sem duplicação, conflito com recuperação local, troca de conta e revogação validados. A instância real do n8n não foi executada. As regressões também incluem os cenários abaixo.
+- `test:identity:browser` aprovado com PostgreSQL/PostgREST locais reais e provedor n8n simulado: perfis, menu recolhível, cadastro de empresas, CNPJ numérico/alfanumérico, duplicidade concorrente, busca e importação Domínio (existente/nova/cancelamento/sem acesso), isolamento de contextos e rascunhos. Testes de navegação/impressão e importação local dos três layouts também aprovados. O novo fluxo não foi executado na VPS real. Os cenários abaixo são registros de validações anteriores.
 - Edição de folga para trabalho com 48h/um repouso: aviso, alternativas próprias e com colega, respeito a restrições e habilitações, cobertura preservada, dados obsoletos bloqueados, aplicação e desfazer após recarga. Cartões uniformes em desktop, celular e impressão.
 - Prévia prioriza grade, mantém erros abertos antes dela e análises recolhidas depois. Barras sincronizadas e atalho para resumo testados em desktop, viewport equivalente a zoom ampliado e celular; impressão libera todas as semanas.
 - ACT/CCT real na origem: preservação das condições vigentes, não aplicação de instrumentos futuros/expirados, sinalização de vigência inválida e exibição do intervalo descontado nos avisos de jornada diária.

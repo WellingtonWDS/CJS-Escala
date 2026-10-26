@@ -29,6 +29,51 @@
   display: grid;
   gap: 8px;
 }
+.sidebar-icon {
+  display: inline-block;
+  width: 26px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.app-sidebar nav button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+#sidebar-toggle {
+  border: 1px solid #406184;
+  margin-bottom: 20px;
+  font-size: 0.8rem;
+}
+.sidebar-collapsed .app-sidebar {
+  width: 72px;
+  padding: 20px 8px;
+}
+.sidebar-collapsed.has-app-sidebar {
+  padding-left: 72px;
+}
+.sidebar-collapsed .sidebar-label,
+.sidebar-collapsed .sidebar-brand,
+.sidebar-collapsed #sidebar-user,
+.sidebar-collapsed #sidebar-role,
+.sidebar-collapsed #sidebar-toggle span {
+  display: none;
+}
+.sidebar-collapsed .app-sidebar nav button {
+  justify-content: center;
+  padding: 12px 4px;
+}
+@media (max-width: 900px) {
+  .sidebar-collapsed.has-app-sidebar {
+    padding-left: 0;
+  }
+  .sidebar-collapsed .app-sidebar {
+    width: auto;
+  }
+  .sidebar-collapsed .app-sidebar nav {
+    display: none;
+  }
+}
 .app-sidebar button {
   font: inherit;
   font-size: 0.9rem;
@@ -121,8 +166,7 @@
 }
 body[data-app-view="create"] #btn-tutorial,
 body[data-app-view="access"] #btn-tutorial,
-body[data-app-view="create"] #btn-imprimir-pagina,
-body[data-app-view="access"] #btn-imprimir-pagina {
+body[data-app-view="companies"] #btn-tutorial {
   display: none;
 }
 @media (max-width: 900px) {
@@ -155,4 +199,10 @@ body[data-app-view="access"] #btn-imprimir-pagina {
 }
 [hidden] {
   display: none !important;
+}
+
+@media print {
+  .has-app-sidebar.sidebar-collapsed {
+    padding-left: 0;
+  }
 }

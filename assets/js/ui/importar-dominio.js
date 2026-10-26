@@ -97,10 +97,25 @@ export function createImportarDominioUI({
         limpar();
         mensagem("Importação cancelada. Nenhum dado alterado.");
       };
-      el("confirmar").onclick = () => {
+      el("confirmar").onclick = async () => {
         if (!quadro) return;
+        el("confirmar").disabled = true;
         try {
-          const next = prepararDominio(state, quadro, el("modo").value);
+          const resolution = env.resolveDominioImport
+            ? await env.resolveDominioImport(quadro)
+            : undefined;
+          if (resolution === null) {
+            mensagem(
+              "Importação cancelada. O preenchimento atual foi preservado.",
+            );
+            return;
+          }
+          const base = resolution?.base ?? state;
+          const next = {
+            ...base,
+            ...prepararDominio(base, quadro, el("modo").value),
+          };
+          resolution?.commit(next);
           Object.assign(state, next);
           invalidarEscala();
           atualizarInterface();
@@ -110,11 +125,16 @@ export function createImportarDominioUI({
           mensagem(
             salvo === false
               ? "Importação aplicada nesta aba, mas não foi possível salvar no navegador. Exporte os dados antes de sair."
-              : "Quadro importado. Confira na lista de colaboradores cadastrados/importados sexo, dias não informados e datas de início dos ciclos. Os horários individuais serão usados na geração e na cobertura.",
+              : "Quadro importado. Confira na lista de colaboradores cadastrados/importados sexo, dias não informados e datas de início dos ciclos. Os horários individuais serão usados na geração e na cobertura." +
+                  (resolution
+                    ? " A empresa está vinculada; salve o rascunho para enviar os colaboradores ao servidor."
+                    : ""),
           );
           mostrarColaboradores(env.document, el("mensagem").textContent);
         } catch (error) {
           mensagem(error.message);
+        } finally {
+          if (quadro) el("confirmar").disabled = false;
         }
       };
     },

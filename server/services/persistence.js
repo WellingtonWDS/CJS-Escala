@@ -92,6 +92,13 @@ export function createPersistenceService({
   }
   // Não há método público que aceite nome arbitrário de RPC, papel ou identidade no corpo.
   return {
+    companyOptions: (identity) => call("company_options", {}, identity),
+    resolveCompany: (identity, { officeId, name, cnpj, apply = false }) =>
+      call(
+        "resolve_company",
+        { p_office_id: officeId, p_name: name, p_cnpj: cnpj, p_apply: apply },
+        identity,
+      ),
     managementOptions: (identity) => call("manage_options", {}, identity),
     createUser: (
       identity,

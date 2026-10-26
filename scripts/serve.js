@@ -79,7 +79,9 @@ export function createDevServer({
               }),
               { headers: { "Content-Type": "application/json" } },
             );
-      } else if (pathname === "/api/persistence" || pathname === "/api/admin")
+      } else if (
+        ["/api/persistence", "/api/admin", "/api/companies"].includes(pathname)
+      )
         response = await routes(webRequest);
       else if (auth) response = await guard(webRequest, env, now());
       if (response) {

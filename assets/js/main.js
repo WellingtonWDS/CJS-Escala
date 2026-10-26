@@ -65,6 +65,15 @@ if (session) {
   app.bindEvents();
   app.init();
   if (session.persistenceEnabled && workspace) {
+    const { createDominioCompanyResolver } = await import(
+      "./ui/dominio-company.js"
+    );
+    env.resolveDominioImport = createDominioCompanyResolver({
+      document,
+      window,
+      workspace,
+      state: app.state,
+    });
     document.getElementById("storage-description").textContent =
       "Preencha e salve rascunhos por empresa";
     const { initRemoteWorkspace } = await import("./ui/remote-workspace.js");

@@ -136,7 +136,7 @@ module.exports = async function testarEtapas({ browser, baseURL }) {
           1,
         );
       await page.emulateMedia({ media: "screen" });
-      assert.ok(await page.locator("#btn-imprimir-pagina").isVisible());
+      assert.equal(await page.locator("#btn-imprimir-pagina").count(), 0);
     }
     await page.locator('[data-etapa-link="sec-config"]').click();
     await page
@@ -147,12 +147,13 @@ module.exports = async function testarEtapas({ browser, baseURL }) {
     assert.ok(await page.locator("#dominio-arquivo").isVisible());
     await page.emulateMedia({ media: "screen" });
     await conferir(0);
-    // O botão global funciona fora da etapa de geração.
+    // O botão de impressão da geração permanece disponível.
     await page.evaluate(() => {
       window.__impressoes = 0;
       window.print = () => window.__impressoes++;
     });
-    await page.locator("#btn-imprimir-pagina").click();
+    await page.locator('[data-etapa-link="sec-gerar"]').click();
+    await page.locator("#btn-imprimir").click();
     assert.equal(await page.evaluate(() => window.__impressoes), 1);
     for (const width of [390, 320]) {
       await page.setViewportSize({ width, height: 844 });

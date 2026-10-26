@@ -1,3 +1,4 @@
+import { testCompanyIntegration } from "../tests/helpers/company-integration.mjs";
 import { testIdentityIntegration } from "../tests/helpers/identity-integration.mjs";
 import { testAdminIntegration } from "../tests/helpers/admin-integration.mjs";
 import { spawnSync } from "node:child_process";
@@ -394,6 +395,11 @@ try {
     browserTest: process.argv.includes("--browser"),
   });
   await testIdentityIntegration({
+    env,
+    sql,
+    browserTest: process.argv.includes("--browser"),
+  });
+  await testCompanyIntegration({
     env,
     sql,
     browserTest: process.argv.includes("--browser"),

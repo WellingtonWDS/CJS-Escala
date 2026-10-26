@@ -1,3 +1,4 @@
+import { createCompanyPicker } from "./company-picker.js";
 import { createRemotePersistence } from "../services/persistence.js";
 import { createDefaultState } from "../state/store.js";
 import { validateSnapshot } from "../state/workspace.js";
@@ -12,11 +13,15 @@ export async function initRemoteWorkspace({
   const button = document.getElementById("btn-remote-workspace"),
     dialog = document.getElementById("remote-workspace");
   button.hidden = false;
-  dialog.innerHTML = `<form method="dialog"><button class="remote-close" aria-label="Fechar">×</button></form><h2>Empresas e rascunhos</h2><p>Abra uma empresa para começar ou recuperar um preenchimento. Salvar no servidor é uma ação manual. “Salvar” atualiza o rascunho aberto, inclusive o título; “Salvar como novo” cria outro rascunho e preserva o anterior.</p><label>Escritório<select data-remote-office></select></label><label>Empresa<select data-remote-company></select></label><label>Rascunho<select data-remote-draft></select></label><label>Título<input data-remote-title maxlength="160" value="Planejamento de escala"></label><div class="remote-actions"><button type="button" data-remote-open>Abrir seleção</button><button type="button" data-remote-save>Salvar</button><button type="button" data-remote-new>Salvar como novo</button><button type="button" data-remote-restore>Recuperar cópia local anterior</button><button type="button" data-remote-import>Importar dados antigos deste navegador</button></div><p data-remote-status role="status" aria-live="polite"></p><p class="text-xs">O histórico é preservado no servidor. Uma gravação conflitante exige reabrir a versão atual. Abrir outra seleção mantém o preenchimento anterior no cache local.</p>`;
+  dialog.innerHTML = `<form method="dialog"><button class="remote-close" aria-label="Fechar">×</button></form><h2>Empresas e rascunhos</h2><p>Abra uma empresa para começar ou recuperar um preenchimento. Salvar no servidor é uma ação manual. “Salvar” atualiza o rascunho aberto, inclusive o título; “Salvar como novo” cria outro rascunho e preserva o anterior.</p><label>Escritório<select data-remote-office></select></label><label>Buscar empresa por razão social ou CNPJ<input data-remote-company-search type="search" placeholder="Digite a razão social ou CNPJ"></label><label>Empresa<select data-remote-company></select></label><label>Rascunho<select data-remote-draft></select></label><label>Título<input data-remote-title maxlength="160" value="Planejamento de escala"></label><div class="remote-actions"><button type="button" data-remote-open>Abrir seleção</button><button type="button" data-remote-save>Salvar</button><button type="button" data-remote-new>Salvar como novo</button><button type="button" data-remote-restore>Recuperar cópia local anterior</button><button type="button" data-remote-import>Importar dados antigos deste navegador</button></div><p data-remote-status role="status" aria-live="polite"></p><p class="text-xs">O histórico é preservado no servidor. Uma gravação conflitante exige reabrir a versão atual. Abrir outra seleção mantém o preenchimento anterior no cache local.</p>`;
   const field = (k) => dialog.querySelector(`[data-remote-${k}]`),
     status = (t) => (field("status").textContent = t);
+  const picker = createCompanyPicker({
+    input: field("company-search"),
+    select: field("company"),
+    onChange: () => run(drafts),
+  });
   let busy = false,
-    loaded = false,
     generation = 0;
   const selected = () => ({
     officeId: field("office").value,
@@ -99,35 +104,30 @@ export async function initRemoteWorkspace({
     field("draft").innerHTML = "";
     if (!office) return;
     const rows = await service.listCompanies(office);
-    field("company").innerHTML = rows.map((r) => option(r.id, r.name)).join("");
     const c = workspace.context();
-    if (c?.officeId === office && rows.some((r) => r.id === c.companyId))
-      field("company").value = c.companyId;
+    picker.setRows(rows, c?.officeId === office ? c.companyId : "");
     await drafts();
   }
   button.addEventListener("click", () => {
     dialog.showModal();
-    if (!loaded)
-      run(async () => {
-        status("Carregando empresas autorizadas…");
-        const rows = await service.listOffices();
-        field("office").innerHTML = rows
-          .map((r) => option(r.id, r.name))
-          .join("");
-        const c = workspace.context();
-        if (c && rows.some((r) => r.id === c.officeId))
-          field("office").value = c.officeId;
-        await companies();
-        loaded = true;
-        status(
-          rows.length
-            ? "Escolha a empresa e abra o rascunho ou um novo preenchimento."
-            : "Nenhum escritório autorizado. Solicite acesso ao administrador.",
-        );
-      });
+    run(async () => {
+      status("Carregando empresas autorizadas…");
+      const rows = await service.listOffices();
+      field("office").innerHTML = rows
+        .map((r) => option(r.id, r.name))
+        .join("");
+      const c = workspace.context();
+      if (c && rows.some((r) => r.id === c.officeId))
+        field("office").value = c.officeId;
+      await companies();
+      status(
+        rows.length
+          ? "Escolha a empresa e abra o rascunho ou um novo preenchimento."
+          : "Nenhum escritório autorizado. Solicite acesso ao administrador.",
+      );
+    });
   });
   field("office").addEventListener("change", () => run(companies));
-  field("company").addEventListener("change", () => run(drafts));
   field("open").addEventListener("click", () =>
     run(async () => {
       const s = selected();
@@ -215,7 +215,10 @@ export async function initRemoteWorkspace({
     } catch {
       // A gravação já foi confirmada; falhar ao listar não a desfaz.
       refreshFailed = true;
-      field("draft").innerHTML = option(result.id, `${body.title} · revisão ${result.revision}`);
+      field("draft").innerHTML = option(
+        result.id,
+        `${body.title} · revisão ${result.revision}`,
+      );
       field("draft").value = result.id;
     }
     status(

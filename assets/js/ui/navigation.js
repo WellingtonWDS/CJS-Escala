@@ -2,6 +2,37 @@ export function initNavigation({ session, document, window }) {
   const sidebar = document.getElementById("app-sidebar");
   sidebar.hidden = false;
   document.body.classList.add("has-app-sidebar");
+  const toggle = document.getElementById("sidebar-toggle");
+  function collapse(value) {
+    document.body.classList.toggle("sidebar-collapsed", value);
+    toggle.setAttribute("aria-expanded", String(!value));
+    toggle.title = value ? "Expandir menu" : "Recolher menu";
+    toggle.setAttribute("aria-label", toggle.title);
+    toggle.querySelector("span").textContent = toggle.title;
+    try {
+      window.localStorage.setItem("cjs-sidebar-collapsed", String(value));
+    } catch {}
+  }
+  try {
+    collapse(window.localStorage.getItem("cjs-sidebar-collapsed") === "true");
+  } catch {}
+  toggle.addEventListener("click", () =>
+    collapse(!document.body.classList.contains("sidebar-collapsed")),
+  );
+  sidebar.querySelectorAll("nav button").forEach((button, i) => {
+    const label = button.textContent;
+    button.replaceChildren();
+    const icon = document.createElement("span"),
+      text = document.createElement("span");
+    icon.className = "sidebar-icon";
+    icon.textContent = ["▦", "▤", "+", "♙", "⚿"][i] || "•";
+    icon.setAttribute("aria-hidden", "true");
+    text.className = "sidebar-label";
+    text.textContent = label;
+    button.setAttribute("aria-label", label);
+    button.title = label;
+    button.append(icon, text);
+  });
   const role = session.user.role || "operator";
   document.getElementById("sidebar-user").textContent = session.user.name;
   document.getElementById("sidebar-role").textContent =
@@ -20,17 +51,24 @@ export function initNavigation({ session, document, window }) {
       document.getElementById("btn-remote-workspace").click(),
     );
   let management,
+    companies,
     generation = 0;
   async function show(view) {
     if (
-      document.getElementById("user-management").getAttribute("aria-busy") ===
-      "true"
+      ["user-management", "company-management"].some(
+        (id) =>
+          document.getElementById(id).getAttribute("aria-busy") === "true",
+      )
     )
       return;
     if (view !== "schedule" && !canManage) return;
     const current = ++generation;
     document.getElementById("scheduler-view").hidden = view !== "schedule";
-    document.getElementById("user-management").hidden = view === "schedule";
+    document.getElementById("user-management").hidden = ![
+      "create",
+      "access",
+    ].includes(view);
+    document.getElementById("company-management").hidden = view !== "companies";
     document.body.dataset.appView = view;
     buttons.forEach((b) =>
       b.dataset.appView === view
@@ -40,6 +78,16 @@ export function initNavigation({ session, document, window }) {
     if (view === "schedule") return;
     buttons.forEach((button) => (button.disabled = true));
     try {
+      if (view === "companies") {
+        if (!companies) {
+          const { createCompanyRegistry } = await import(
+            "./company-registry.js"
+          );
+          companies = createCompanyRegistry({ document, window });
+        }
+        await companies.show();
+        return;
+      }
       if (!management) {
         const { createUserManagement } = await import("./user-management.js");
         if (current !== generation) return;

@@ -13,10 +13,12 @@
 </head>
 <body class="bg-slate-100 text-slate-800 text-[15px] leading-relaxed">
 <aside id="app-sidebar" class="app-sidebar no-print" hidden aria-label="Menu principal">
+  <button id="sidebar-toggle" type="button" aria-expanded="true" aria-controls="sidebar-navigation" title="Recolher menu">☰ <span>Recolher menu</span></button>
   <a class="sidebar-brand" href="/">Escala DP</a>
   <p id="sidebar-user"></p><p id="sidebar-role" class="sidebar-role"></p>
-  <nav><button type="button" data-app-view="schedule" aria-current="page">Gerar escala</button>
+  <nav id="sidebar-navigation"><button type="button" data-app-view="schedule" aria-current="page">Gerar escala</button>
   <button type="button" id="sidebar-companies">Empresas e rascunhos</button>
+  <button type="button" data-app-view="companies" hidden>Cadastrar empresas</button>
   <button type="button" data-app-view="create" hidden>Criar novo usuário</button>
   <button type="button" data-app-view="access" hidden>Acessos dos operadores</button></nav>
 </aside>
@@ -28,7 +30,6 @@
   </div>
   <div class="flex items-center gap-2 flex-wrap">
     <button id="btn-remote-workspace" hidden type="button" class="no-print text-white text-xs border border-white/50 rounded-md px-3 py-1.5">Empresas e rascunhos</button>
-    <button id="btn-imprimir-pagina" type="button" class="no-print text-white text-xs border border-white/50 hover:bg-white/10 rounded-md px-3 py-1.5" title="Imprimir a etapa aberta">Imprimir / PDF</button>
     <button id="btn-tutorial" type="button" class="no-print text-white text-xs border border-white/50 hover:bg-white/10 rounded-md px-3 py-1.5" aria-haspopup="dialog">Tutorial guiado</button>
     <button id="btn-sair" class="no-print text-slate-300 hover:text-white text-xs border border-white/25 rounded-md px-3 py-1.5">Sair</button>
     <button id="btn-limpar-dados" class="no-print text-slate-300 hover:text-white text-xs border border-white/25 hover:border-white/50 rounded-md px-3 py-1.5">Limpar dados salvos</button>
@@ -37,6 +38,7 @@
 <dialog id="remote-workspace" class="remote-workspace no-print" aria-label="Empresas e rascunhos"></dialog>
 
 <section id="user-management" class="user-management no-print" hidden aria-label="Gestão de usuários"></section>
+<section id="company-management" class="user-management no-print" hidden aria-label="Cadastro de empresas"></section>
 <div id="scheduler-view" class="w-full max-w-[1920px] mx-auto px-2 lg:px-4">
   <div id="etapas-marco" aria-hidden="true"></div>
   <nav id="etapas-nav" class="etapas-nav no-print" aria-label="Etapas de preenchimento">
