@@ -7,6 +7,7 @@ await rm(dist, { recursive: true, force: true });
 await mkdir(dist, { recursive: true });
 await cp(join(root, "index.html"), join(dist, "index.html"));
 await cp(join(root, "login.html"), join(dist, "login.html"));
+await cp(join(root, "admin.html"), join(dist, "admin.html"));
 await cp(join(root, "assets"), join(dist, "assets"), { recursive: true });
 await mkdir(join(dist, "assets/vendor"), { recursive: true });
 await cp(

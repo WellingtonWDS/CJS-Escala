@@ -1,6 +1,8 @@
 import { authResponse, readSession } from "./auth.js";
 import { createPersistenceHandler } from "./persistence-api.js";
+import { createAdminHandler } from "./admin.js";
 export function createRoutes({ env, fetchImpl = fetch, now = Date.now }) {
+  const admin = createAdminHandler({ env, fetchImpl, now });
   const persistence = createPersistenceHandler({
     env,
     fetchImpl,
@@ -18,6 +20,7 @@ export function createRoutes({ env, fetchImpl = fetch, now = Date.now }) {
     if (path === "/api/auth")
       return authResponse(request, env, now(), { fetchImpl, now });
     if (path === "/api/persistence") return persistence(request);
+    if (path === "/api/admin") return admin(request);
     return null;
   };
 }

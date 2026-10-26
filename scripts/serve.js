@@ -79,7 +79,7 @@ export function createDevServer({
               }),
               { headers: { "Content-Type": "application/json" } },
             );
-      } else if (pathname === "/api/persistence")
+      } else if (pathname === "/api/persistence" || pathname === "/api/admin")
         response = await routes(webRequest);
       else if (auth) response = await guard(webRequest, env, now());
       if (response) {
@@ -88,7 +88,9 @@ export function createDevServer({
         return;
       }
       if (
-        !["/", "/index.html", "/login.html"].includes(pathname) &&
+        !["/", "/index.html", "/login.html", "/admin.html"].includes(
+          pathname,
+        ) &&
         !pathname.startsWith("/assets/")
       ) {
         res.writeHead(404).end("Not found");

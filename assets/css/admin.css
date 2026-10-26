@@ -1,0 +1,119 @@
+:root {
+  font-family: system-ui, sans-serif;
+  color: #102b49;
+  background: #f1f5f9;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  padding: 32px 16px;
+}
+main {
+  max-width: 800px;
+  margin: auto;
+  background: white;
+  border: 1px solid #dbe4ef;
+  border-radius: 14px;
+  padding: 28px;
+}
+header,
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+h1 {
+  font-size: 1.5rem;
+  margin-top: 0;
+}
+h2 {
+  font-size: 1.15rem;
+}
+a {
+  color: #1d4ed8;
+}
+.eyebrow {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+form {
+  display: grid;
+  gap: 18px;
+}
+label {
+  display: grid;
+  gap: 7px;
+  font-weight: 600;
+}
+input,
+select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #b5c5d8;
+  border-radius: 7px;
+  font: inherit;
+  color: inherit;
+  background: white;
+}
+input:focus,
+select:focus,
+button:focus-visible {
+  outline: 3px solid #93c5fd;
+  outline-offset: 2px;
+}
+small {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: #52657c;
+}
+button {
+  border: 0;
+  border-radius: 7px;
+  background: #102b49;
+  color: white;
+  padding: 12px 18px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+button.secondary {
+  background: #e8eef6;
+  color: #102b49;
+  font-size: 0.85rem;
+}
+fieldset {
+  border: 1px solid #dbe4ef;
+  border-radius: 8px;
+  padding: 16px;
+}
+#admin-companies {
+  display: grid;
+  gap: 12px;
+}
+#admin-companies label {
+  display: flex;
+  align-items: center;
+  font-weight: 400;
+}
+input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #102b49;
+}
+#admin-status {
+  white-space: pre-wrap;
+  font-weight: 600;
+  padding-top: 12px;
+}
+[hidden] {
+  display: none !important;
+}

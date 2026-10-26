@@ -148,6 +148,21 @@ export function safeNext(value) {
 export async function guard(request, env, now = Date.now()) {
   const url = new URL(request.url);
   if (publicPath(url.pathname)) return null;
+  if (url.pathname === "/admin.html" || url.pathname === "/api/admin") {
+    const session = await readSession(request.headers.get("cookie"), env, now);
+    if (
+      env.AUTH_MODE !== "n8n" ||
+      session?.kind !== "individual" ||
+      !(env.ADMIN_USER_IDS || "")
+        .split(",")
+        .map((s) => s.trim())
+        .includes(session.userId)
+    )
+      return new Response("Not found", {
+        status: 404,
+        headers: { "Cache-Control": "no-store" },
+      });
+  }
   if (env.AUTH_MODE && !["shared", "n8n"].includes(env.AUTH_MODE))
     return new Response("Autenticação indisponível.", { status: 503 });
   if (!configured(env))

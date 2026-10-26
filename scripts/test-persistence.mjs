@@ -1,4 +1,5 @@
 import { testIdentityIntegration } from "../tests/helpers/identity-integration.mjs";
+import { testAdminIntegration } from "../tests/helpers/admin-integration.mjs";
 import { spawnSync } from "node:child_process";
 import { readFile, readdir } from "node:fs/promises";
 import { randomUUID, createHmac } from "node:crypto";
@@ -358,6 +359,11 @@ try {
     () => service.getDraft(admin, office, company, saved.id),
     (e) => e.status === 401,
   );
+  await testAdminIntegration({
+    env,
+    sql,
+    browserTest: process.argv.includes("--browser"),
+  });
   await testIdentityIntegration({
     env,
     sql,
