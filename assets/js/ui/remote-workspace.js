@@ -12,7 +12,7 @@ export async function initRemoteWorkspace({
   const button = document.getElementById("btn-remote-workspace"),
     dialog = document.getElementById("remote-workspace");
   button.hidden = false;
-  dialog.innerHTML = `<form method="dialog"><button class="remote-close" aria-label="Fechar">×</button></form><h2>Empresas e rascunhos</h2><p>Abra uma empresa para começar ou recuperar um preenchimento. Salvar no servidor é uma ação manual.</p><label>Escritório<select data-remote-office></select></label><label>Empresa<select data-remote-company></select></label><label>Rascunho<select data-remote-draft></select></label><label>Título<input data-remote-title maxlength="160" value="Planejamento de escala"></label><div class="remote-actions"><button type="button" data-remote-open>Abrir seleção</button><button type="button" data-remote-save>Salvar</button><button type="button" data-remote-new>Salvar como novo</button><button type="button" data-remote-restore>Recuperar cópia local anterior</button><button type="button" data-remote-import>Importar dados antigos deste navegador</button></div><p data-remote-status role="status" aria-live="polite"></p><p class="text-xs">O histórico é preservado no servidor. Uma gravação conflitante exige reabrir a versão atual. Abrir outra seleção mantém o preenchimento anterior no cache local.</p>`;
+  dialog.innerHTML = `<form method="dialog"><button class="remote-close" aria-label="Fechar">×</button></form><h2>Empresas e rascunhos</h2><p>Abra uma empresa para começar ou recuperar um preenchimento. Salvar no servidor é uma ação manual. “Salvar” atualiza o rascunho aberto, inclusive o título; “Salvar como novo” cria outro rascunho e preserva o anterior.</p><label>Escritório<select data-remote-office></select></label><label>Empresa<select data-remote-company></select></label><label>Rascunho<select data-remote-draft></select></label><label>Título<input data-remote-title maxlength="160" value="Planejamento de escala"></label><div class="remote-actions"><button type="button" data-remote-open>Abrir seleção</button><button type="button" data-remote-save>Salvar</button><button type="button" data-remote-new>Salvar como novo</button><button type="button" data-remote-restore>Recuperar cópia local anterior</button><button type="button" data-remote-import>Importar dados antigos deste navegador</button></div><p data-remote-status role="status" aria-live="polite"></p><p class="text-xs">O histórico é preservado no servidor. Uma gravação conflitante exige reabrir a versão atual. Abrir outra seleção mantém o preenchimento anterior no cache local.</p>`;
   const field = (k) => dialog.querySelector(`[data-remote-${k}]`),
     status = (t) => (field("status").textContent = t);
   let busy = false,
@@ -209,9 +209,18 @@ export async function initRemoteWorkspace({
       `${body.title} · revisão ${result.revision}`,
     );
     field("draft").value = result.id;
+    let refreshFailed = false;
+    try {
+      await drafts();
+    } catch {
+      // A gravação já foi confirmada; falhar ao listar não a desfaz.
+      refreshFailed = true;
+      field("draft").innerHTML = option(result.id, `${body.title} · revisão ${result.revision}`);
+      field("draft").value = result.id;
+    }
     status(
       JSON.stringify(body.state) === JSON.stringify(app.state)
-        ? `Salvo no servidor — revisão ${result.revision}.`
+        ? `Salvo no servidor — revisão ${result.revision}.${refreshFailed ? " Não foi possível atualizar a lista; reabra a página para tentar novamente." : ""}`
         : `Envio anterior salvo — revisão ${result.revision}. Há alterações locais posteriores; salve novamente para enviá-las.`,
     );
   }

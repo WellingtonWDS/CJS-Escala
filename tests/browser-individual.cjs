@@ -155,6 +155,21 @@ module.exports = async ({ browser, baseURL, sql }) => {
       await second.locator('[data-field="nome"]').first().inputValue(),
       "Alteração local preservada",
     );
+    // Criar uma cópia e atualizá-la mantém os demais rascunhos no seletor.
+    await a.locator("[data-remote-title]").fill("Cópia independente");
+    await a.locator("[data-remote-new]").click();
+    await a.waitForFunction(() => !document.querySelector("#remote-workspace").hasAttribute("aria-busy"));
+    const copyId = await a.locator("[data-remote-draft]").inputValue();
+    assert.notEqual(copyId, id);
+    for (const savedId of [id, copyId]) {
+      assert.equal(await a.locator(`[data-remote-draft] option[value="${savedId}"]`).count(), 1);
+    }
+    await a.locator("[data-remote-title]").fill("Cópia renomeada");
+    await a.locator("[data-remote-save]").click();
+    await a.waitForFunction(() => !document.querySelector("#remote-workspace").hasAttribute("aria-busy"));
+    assert.equal(await a.locator("[data-remote-draft]").inputValue(), copyId);
+    assert.equal(await a.locator(`[data-remote-draft] option[value="${id}"]`).count(), 1);
+    assert.match(await a.locator(`[data-remote-draft] option[value="${copyId}"]`).textContent(), /Cópia renomeada/);
     // Após logout, login de outro escritório no mesmo navegador não abre o cache anterior.
     await second.locator("#btn-sair").click();
     await second.waitForURL("**/login.html?**");
