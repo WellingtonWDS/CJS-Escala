@@ -50,6 +50,8 @@ O fluxo principal está implementado e continua em evolução. Já permite impor
 
 Definida a evolução para várias contabilidades, com isolamento por escritório e empresas, usuários provisionados por administração autorizada e sem autocadastro público. Os fluxos de login/cadastro do n8n foram analisados estaticamente; sua reutilização exige adaptar tokens, sessões, permissões e provisionamento. A API deve ser portátil para a futura mudança da Vercel para a VPS, no domínio fintria.com.br. A primeira entrega já implementa a base de banco, RLS, RPCs de rascunhos, revisão/idempotência e histórico/auditoria, junto aos serviços portáteis de servidor/frontend. Foi validada localmente em PostgreSQL 17 e PostgREST 14.15, versão confirmada na VPS. Essa base não está ativada na aplicação: a segunda entrega implementou autenticação individual n8n, abertura/revogação de sessões e seleção/salvamento na interface, mas a ativação depende de importar o novo fluxo e configurar/homologar os serviços. Nenhuma alteração foi aplicada na infraestrutura de produção. Operação e limites: [database/README.md](../database/README.md). Detalhes: [plano de persistência](planos/persistencia-postgresql.md) e [análise n8n](planos/autenticacao-n8n.md).
 
+O template de homologação usa o nó JWT nativo, com segredo em credencial e claims explícitos, sem exigir acesso às variáveis de ambiente nos nós Code. O caminho `auth/cjs-login` aproveita o proxy `/auth/*` existente.
+
 O [guia de homologação n8n](../integrations/n8n/README.md) e o template de login independente estão disponíveis. `AUTH_MODE=shared` e `PERSISTENCE_ENABLED=false` preservam a configuração atual até a ativação.
 
 ## Próximos passos propostos
@@ -66,7 +68,7 @@ As implementações de restrições individuais, sugestões de ajustes de cobert
 
 Na integração do login individual e da interface de persistência, em **26/10/2026**, foram registrados:
 
-- **428 testes unitários aprovados**, sem falhas, com `npm test`.
+- **429 testes unitários aprovados**, sem falhas, com `npm test`.
 - Integração real com PostgreSQL 17 e PostgREST 14.15 aprovada por `npm run test:persistence`: isolamento de escritórios/empresas, permissões, concorrência, idempotência, histórico/auditoria, FK cruzada, token inválido/expirado e sessão revogada.
 - Build atual aprovado com `npm run build`.
 - Suíte completa de interface e suíte específica do login compartilhado aprovadas novamente, além de `test:identity:browser` com provedor simulado e PostgreSQL/PostgREST reais. Login individual, migração explícita, reabertura em outro navegador, perda de resposta sem duplicação, conflito com recuperação local, troca de conta e revogação validados. A instância real do n8n não foi executada. As regressões também incluem os cenários abaixo.

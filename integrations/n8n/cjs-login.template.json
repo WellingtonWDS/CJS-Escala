@@ -4,7 +4,7 @@
     {
       "parameters": {
         "httpMethod": "POST",
-        "path": "cjs/auth/login",
+        "path": "auth/cjs-login",
         "authentication": "headerAuth",
         "responseMode": "responseNode",
         "options": {}
@@ -96,12 +96,17 @@
     },
     {
       "parameters": {
-        "jsCode": "const jwt=require(\"jsonwebtoken\");\nconst secret=$env.CJS_IDENTITY_JWT_SECRET;\nconst issuer=$env.CJS_IDENTITY_JWT_ISSUER;\nconst audience=$env.CJS_IDENTITY_JWT_AUDIENCE;\nif(typeof secret!==\"string\"||secret.length<32||!issuer||!audience)throw Error(\"Emissor não configurado\");\nconst token=jwt.sign({sub:String($json.user_id)},secret,{algorithm:\"HS256\",expiresIn:\"12h\",issuer,audience});\nreturn [{json:{success:true,token}}];"
+        "operation": "sign",
+        "useJson": true,
+        "claimsJson": "={{ (() => { const iat = Math.floor(Date.now() / 1000); return { sub: String($json.user_id), iss: \"fintria-cjs-identity\", aud: \"fintria-cjs-login\", iat, exp: iat + 43200 }; })() }}",
+        "options": {
+          "algorithm": "HS256"
+        }
       },
       "id": "e2573b55-2b07-49d5-896b-6918baf78ba5",
       "name": "Assinar identidade CJS",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "type": "n8n-nodes-base.jwt",
+      "typeVersion": 1,
       "position": [
         1100,
         -100
@@ -110,7 +115,7 @@
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ $json }}",
+        "responseBody": "={{ { success: true, token: $json.token } }}",
         "options": {
           "responseCode": 200
         }

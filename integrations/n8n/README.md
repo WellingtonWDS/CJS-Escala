@@ -16,10 +16,11 @@ Importar [cjs-login.template.json](cjs-login.template.json) como **novo fluxo**.
 
 Configurar:
 
-- No webhook **Login CJS**, credencial **Header Auth** com nome `X-CJS-Service-Key` e um valor aleatório próprio, de pelo menos 32 caracteres. O mesmo valor será `N8N_SERVICE_SECRET` no backend.
+- No webhook **Login CJS**, manter o caminho `auth/cjs-login`, atendido pela rota `/auth/*` já existente no Caddy, e configurar a credencial **Header Auth** com nome `X-CJS-Service-Key` e um valor aleatório próprio, de pelo menos 32 caracteres. O mesmo valor será `N8N_SERVICE_SECRET` no backend.
 - No nó **Buscar identidade**, credencial PostgreSQL restrita à consulta de `user_id`, `email` e `password_hash` do provedor atual. A consulta assume `public.users`, conforme os arquivos fornecidos; adaptar explicitamente se o provedor tiver outro schema. O banco de identidade pode ser diferente do banco de escalas.
-- No ambiente do n8n, `CJS_IDENTITY_JWT_SECRET`, `CJS_IDENTITY_JWT_ISSUER` e `CJS_IDENTITY_JWT_AUDIENCE`. A chave deve ser exclusiva deste login, diferente da chave de RPC e da chave do cookie. Sugestões de identificadores: `fintria-cjs-identity` e `fintria-cjs-login`.
-- O runner dos nós Code precisa disponibilizar `bcrypt` e `jsonwebtoken` e permitir acesso às variáveis específicas usadas no emissor. Verificar isso na versão/instalação do n8n antes de ativar; o template não altera essas permissões. Em instalações com ambiente bloqueado nos nós Code, adaptar o emissor para credenciais do nó JWT mantendo o mesmo contrato, em vez de desabilitar proteções indiscriminadamente.
+- No nó **Assinar identidade CJS**, criar uma credencial **JWT Auth**, com tipo de chave **Passphrase/Secret**, algoritmo **HS256** e chave aleatória exclusiva de pelo menos 32 caracteres. Guardar o valor para configurar `N8N_JWT_SECRET` no backend; não reutilizar a chave de RPC nem a do cookie. O template usa o nó JWT nativo e não lê a chave por `$env`.
+- Os identificadores do payload já estão definidos na expressão JSON: `iss=fintria-cjs-identity` e `aud=fintria-cjs-login`. Configurar esses mesmos valores no backend. A expressão calcula `iat` uma única vez e define `exp=iat+43200`.
+- O runner do nó **Conferir senha** precisa disponibilizar `bcrypt`, como no fluxo original. Verificar essa dependência na instalação antes de ativar. A assinatura não exige `jsonwebtoken` nos nós Code nem liberação de variáveis de ambiente.
 
 O template utiliza a senha existente do provedor (bcrypt), valida tipos/tamanho e responde genericamente em caso de credenciais incorretas. Não emite papéis SQL nem escritório com base no corpo recebido. O JWT contém `sub` string, `iat`, `exp` (até 12h), `iss` e `aud`, assinado em HS256. A aplicação verifica criptograficamente todos esses campos. Campos de gamificação não fazem parte do contrato.
 
@@ -35,11 +36,11 @@ Manter inicialmente `AUTH_MODE=shared` e `PERSISTENCE_ENABLED=false`. Preparar a
 | `APP_ORIGIN` | Origem pública completa, sem caminho, como `https://escala.fintria.com.br`. |
 | `PERSISTENCE_RPC_URL` | URL da instância dedicada de escalas, inclusive seu prefixo se houver. |
 | `PERSISTENCE_JWT_SECRET` | Chave da instância PostgREST de escalas; usada para tokens internos de 60s. |
-| `N8N_LOGIN_URL` | URL de produção do novo webhook, `/webhook/cjs/auth/login`. |
+| `N8N_LOGIN_URL` | URL pública do novo webhook. Com o Caddy informado, `https://api.fintria.com.br/auth/cjs-login` é reescrito para `/webhook/auth/cjs-login` no n8n. |
 | `N8N_SERVICE_SECRET` | Valor da credencial Header Auth do webhook. |
-| `N8N_JWT_SECRET` | Mesmo valor de `CJS_IDENTITY_JWT_SECRET` no n8n. |
-| `N8N_JWT_ISSUER` | Mesmo emissor de `CJS_IDENTITY_JWT_ISSUER`. |
-| `N8N_JWT_AUDIENCE` | Mesma audiência de `CJS_IDENTITY_JWT_AUDIENCE`. |
+| `N8N_JWT_SECRET` | Mesmo valor da chave na nova credencial JWT Auth do n8n. |
+| `N8N_JWT_ISSUER` | `fintria-cjs-identity`, conforme o payload do nó JWT. |
+| `N8N_JWT_AUDIENCE` | `fintria-cjs-login`, conforme o payload do nó JWT. |
 
 Depois de validar o novo fluxo e as migrações, ativar o modo de homologação com `AUTH_MODE=n8n` e `PERSISTENCE_ENABLED=true`. O formulário passa a exigir e-mail e senha. Não há fallback para a senha compartilhada se o n8n ou o banco falhar. A chave de assinatura de identidade nunca é a chave de RPC; a aplicação rejeita essa reutilização.
 
