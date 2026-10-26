@@ -1,6 +1,6 @@
 # Estado do projeto — CJS Escala
 
-Atualizado em **23/10/2026**. Referência funcional: versão de regras `ec141-2026-10-23-5` ([histórico do projeto](https://github.com/WellingtonWDS/CJS-Escala/commits/main/)). Esta página resume o andamento; o [README](../README.md) detalha operação, arquitetura, configuração e testes.
+Atualizado em **26/10/2026**. Referência funcional: versão de regras `ec141-2026-10-23-5` ([histórico do projeto](https://github.com/WellingtonWDS/CJS-Escala/commits/main/)). Esta página resume o andamento; o [README](../README.md) detalha operação, arquitetura, configuração e testes.
 
 ## Objetivo e estágio atual
 
@@ -46,6 +46,10 @@ O fluxo principal está implementado e continua em evolução. Já permite impor
 - **Publicação:** o login depende do middleware, da função de autenticação e de `AUTH_SESSION_SECRET` na Vercel. O build estático sozinho não fornece essa proteção. Fontes e Tailwind ainda dependem de CDN.
 - **Publicação de escalas:** ainda não há fluxo de rascunho → revisão → aprovação/publicação com registro de responsáveis.
 
+## Planejamento de persistência — 26/10/2026
+
+Definida a evolução para várias contabilidades, com isolamento por escritório e empresas, usuários provisionados por administração autorizada e sem autocadastro público. Os fluxos de login/cadastro do n8n foram analisados estaticamente; sua reutilização exige adaptar tokens, sessões, permissões e provisionamento. A API deve ser portátil para a futura mudança da Vercel para a VPS, no domínio fintria.com.br. A primeira entrega já implementa a base de banco, RLS, RPCs de rascunhos, revisão/idempotência e histórico/auditoria, junto aos serviços portáteis de servidor/frontend. Foi validada localmente em PostgreSQL 17 e PostgREST 14.15, versão confirmada na VPS. Essa base não está ativada na aplicação: faltam integrar autenticação individual n8n, abertura/revogação de sessões e seleção/salvamento na interface. Nenhuma alteração foi aplicada na infraestrutura de produção. Operação e limites: [database/README.md](../database/README.md). Detalhes: [plano de persistência](planos/persistencia-postgresql.md) e [análise n8n](planos/autenticacao-n8n.md).
+
 ## Próximos passos propostos
 
 As implementações de restrições individuais, sugestões de ajustes de cobertura e diagnóstico de pessoal foram concluídas no escopo acima. Os itens abaixo são propostas de evolução, **ainda não implementadas**, sem prazo definido. A ordem pode ser revista conforme os testes com usuários.
@@ -58,11 +62,12 @@ As implementações de restrições individuais, sugestões de ajustes de cobert
 
 ## Última validação registrada
 
-Na revisão da edição manual e da altura dos cartões, em **23/10/2026**, foram registrados:
+Na primeira entrega de persistência, em **26/10/2026**, foram registrados:
 
-- **407 testes unitários aprovados**, sem falhas, com `npm test`.
-- A suíte específica de autenticação foi aprovada na etapa anterior das sugestões de ajuste. Esta entrega não altera o login.
-- Build e suíte completa de interface aprovados com `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run test:browser`.
+- **416 testes unitários aprovados**, sem falhas, com `npm test`.
+- Integração real com PostgreSQL 17 e PostgREST 14.15 aprovada por `npm run test:persistence`: isolamento de escritórios/empresas, permissões, concorrência, idempotência, histórico/auditoria, FK cruzada, token inválido/expirado e sessão revogada.
+- Build atual aprovado com `npm run build`.
+- As suítes completas de interface e autenticação foram aprovadas nas entregas anteriores; não foram repetidas nesta etapa, que não ativa alterações no login nem na interface. As regressões anteriores incluíram os cenários abaixo.
 - Edição de folga para trabalho com 48h/um repouso: aviso, alternativas próprias e com colega, respeito a restrições e habilitações, cobertura preservada, dados obsoletos bloqueados, aplicação e desfazer após recarga. Cartões uniformes em desktop, celular e impressão.
 - Prévia prioriza grade, mantém erros abertos antes dela e análises recolhidas depois. Barras sincronizadas e atalho para resumo testados em desktop, viewport equivalente a zoom ampliado e celular; impressão libera todas as semanas.
 - ACT/CCT real na origem: preservação das condições vigentes, não aplicação de instrumentos futuros/expirados, sinalização de vigência inválida e exibição do intervalo descontado nos avisos de jornada diária.

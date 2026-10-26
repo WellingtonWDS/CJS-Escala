@@ -7,7 +7,8 @@
     "dev": "node scripts/serve.js",
     "build": "node scripts/build.js",
     "test:browser": "npm run build && node tests/browser.cjs",
-    "test:auth:browser": "npm run build && node tests/browser-auth.cjs"
+    "test:auth:browser": "npm run build && node tests/browser-auth.cjs",
+    "test:persistence": "node scripts/test-persistence.mjs"
   },
   "engines": {
     "node": ">=22"

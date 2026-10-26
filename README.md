@@ -164,10 +164,16 @@ Parser e validação: `assets/js/import/colaboradores.js`. Interface: `assets/js
 
 O botão **Tutorial guiado**, ao lado de **Limpar dados salvos**, inicia nove etapas com destaque da área correspondente, instruções e contador. É possível avançar, voltar, concluir ou encerrar com **Esc**. O tutorial não altera o cadastro nem gera uma escala; a cobertura continua opcional. A implementação fica em `assets/js/ui/tutorial.js`, com regressões em `tests/browser-tutorial.cjs` para desktop e celular, navegação por teclado e preservação dos dados.
 
+## Planejamento de persistência e hospedagem
+
+A evolução para PostgreSQL/PostgREST com isolamento por escritório está descrita no [plano de persistência](docs/planos/persistencia-postgresql.md), junto à [análise dos fluxos de autenticação n8n](docs/planos/autenticacao-n8n.md). O acesso será provisionado por administração autorizada, sem autocadastro público. A API será preparada para rodar na Vercel ou na VPS, com futura hospedagem no domínio fintria.com.br. A [primeira entrega técnica](database/README.md) já implementa migração SQL, RLS, RPCs de rascunhos, histórico/auditoria e serviços portáteis de API, testados em PostgreSQL 17 e PostgREST 14.15 (versão confirmada na VPS). A integração n8n/sessão individual, a interface remota e a implantação ainda serão feitas. A aplicação atual continua usando autenticação compartilhada e armazenamento local; a base remota fica desativada até concluir essa integração.
+
 ## Testes
 
 ```sh
 npm test
+# Integração opcional: requer Docker; cria apenas serviços locais descartáveis.
+npm run test:persistence
 npx playwright install chromium
 npm run test:browser
 ```
