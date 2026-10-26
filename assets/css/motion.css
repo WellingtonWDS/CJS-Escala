@@ -110,24 +110,6 @@ dialog[open].is-closing::backdrop {
   transform: rotate(45deg);
   animation: core-breathe 2s ease-in-out infinite;
 }
-.loading-visual i {
-  position: absolute;
-  width: 4px;
-  height: 4px;
-  background: #cce4ff;
-  border-radius: 50%;
-  bottom: 0;
-  left: 45%;
-  animation: dot-breathe 1.2s ease-in-out infinite;
-}
-.loading-visual i:nth-last-child(2) {
-  left: 53%;
-  animation-delay: 0.15s;
-}
-.loading-visual i:last-child {
-  left: 61%;
-  animation-delay: 0.3s;
-}
 @keyframes window-in {
   from {
     opacity: 0;
@@ -176,12 +158,6 @@ dialog[open].is-closing::backdrop {
   50% {
     transform: rotate(45deg) scale(0.85);
     box-shadow: 0 0 20px #8dc2ff33;
-  }
-}
-@keyframes dot-breathe {
-  50% {
-    opacity: 0.25;
-    transform: translateY(-3px);
   }
 }
 @media (prefers-reduced-motion: reduce) {
