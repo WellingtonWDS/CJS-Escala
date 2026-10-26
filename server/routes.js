@@ -16,7 +16,7 @@ export function createRoutes({ env, fetchImpl = fetch, now = Date.now }) {
   return async (request) => {
     const path = new URL(request.url).pathname;
     if (path === "/api/auth")
-      return authResponse(request, env, now(), { fetchImpl });
+      return authResponse(request, env, now(), { fetchImpl, now });
     if (path === "/api/persistence") return persistence(request);
     return null;
   };

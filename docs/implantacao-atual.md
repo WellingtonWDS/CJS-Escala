@@ -20,6 +20,8 @@ Este registro separa código disponível, infraestrutura confirmada pelo operado
 
 ## Pendente de confirmação
 
+O operador conseguiu abrir a tela individual após ajustar a configuração, mas o login retornou `Não foi possível validar a identidade recebida.`. Foi reproduzido localmente um bug no relógio: as rotas congelavam o instante usado pelo serviço de identidade no início da requisição; um token emitido pelo n8n depois desse instante falhava na validação de iat. Correção: repassar o relógio consultável ao serviço. Regressão com avanço simulado de 2,5 segundos falhou antes da correção com o mesmo erro e passou após. A assinatura, emissor, audiência e validação temporal permanecem obrigatórios. Aguardar novo teste em produção; correspondência dos segredos e claims reais não foi verificada independentemente.
+
 Atualização do operador: Vercel configurada para publicar a main; frontend em `https://cjs-escala.vercel.app`. A consulta pública a `/api/auth?config=1` retornou `Serviço indisponível.`. Esse texto é o catch do adaptador Vercel, não o erro explícito de segredo ausente ou AUTH_MODE inválido. Causa ainda não identificada. O adaptador passa a registrar `CJS_API_FAILURE` com rota e etapa, sem valores de configuração, cabeçalhos, corpos ou exceções. Consultar os logs da função após o próximo deployment. A tentativa de acesso deste ambiente foi bloqueada pelo proxy de saída (403), portanto não houve reprodução remota independente.
 
 1. Confirmar substituição da chave de RPC anteriormente exposta; nunca registrar seu valor.

@@ -210,7 +210,7 @@ export async function authResponse(
       try {
         const user = await createIdentityService(env, {
           ...options,
-          now: () => now,
+          now: options.now ?? (() => now),
         }).getIdentity(session);
         return json({
           expiresAt: session.exp,
@@ -258,7 +258,7 @@ export async function authResponse(
     try {
       const identityService = createIdentityService(env, {
         ...options,
-        now: () => now,
+        now: options.now ?? (() => now),
       });
       if (body?.action === "logout") {
         const session = await readSession(

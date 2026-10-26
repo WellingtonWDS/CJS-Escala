@@ -142,6 +142,25 @@ test("login individual valida n8n, abre sessão e devolve apenas cookie HttpOnly
   );
   assert.ok(records.some((r) => r.url.endsWith("/revoke_session")));
 });
+test("login aceita identidade emitida depois do início da requisição", async () => {
+  let clock = now;
+  const fallback = upstream("unused", []);
+  const handler = routes({
+    env,
+    now: () => clock,
+    fetchImpl: async (url, opts) => {
+      if (url === env.N8N_LOGIN_URL) {
+        clock += 2500;
+        const issued = Math.floor(clock / 1000);
+        return Response.json({ success: true, token: await sign({ ...claims, iat: issued, exp: issued + 3600 }, env.N8N_JWT_SECRET) });
+      }
+      return fallback(url, opts);
+    },
+  });
+  const result = await handler(request({ email: "user@example.test", password: "correct-pass" }));
+  assert.equal(result.status, 200, await result.clone().text());
+  assert.ok(result.headers.get("set-cookie"));
+});
 test("cookie compartilhado não autentica modo individual, nem libera persistência", async () => {
   const legacy = await issue({ ...env, AUTH_MODE: "shared" }, now);
   assert.equal(await read(`cjs_session=${legacy}`, env, now), null);
