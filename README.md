@@ -168,6 +168,12 @@ O botão **Tutorial guiado**, ao lado de **Limpar dados salvos**, inicia nove et
 
 A evolução para PostgreSQL/PostgREST com isolamento por escritório está descrita no [plano de persistência](docs/planos/persistencia-postgresql.md), junto à [análise dos fluxos de autenticação n8n](docs/planos/autenticacao-n8n.md). O acesso será provisionado por administração autorizada, sem autocadastro público. A API será preparada para rodar na Vercel ou na VPS, com futura hospedagem no domínio fintria.com.br. A [primeira entrega técnica](database/README.md) já implementa migração SQL, RLS, RPCs de rascunhos, histórico/auditoria e serviços portáteis de API, testados em PostgreSQL 17 e PostgREST 14.15 (versão confirmada na VPS). A segunda entrega já inclui login individual, abertura/revogação de sessões, rotas HTTP e interface de empresas/rascunhos com cache separado e migração local explícita. O operador já confirmou o login individual na Vercel e iniciou a validação de rascunhos no servidor. O modo padrão do código continua compartilhado até configurar as variáveis. O [registro de implantação](docs/implantacao-atual.md) distingue os resultados reais das verificações locais. O [guia n8n](integrations/n8n/README.md) documenta a configuração.
 
+## Interface e manutenção visual
+
+A interface usa navegação lateral, cabeçalho claro, etapas compactas durante a rolagem, cartões com hierarquia de títulos e ações principais em verde. Login, formulários, cadastros, modais, seleção de empresa, salvamento e grades compartilham a mesma linguagem visual. No celular, os controles de formulário têm tamanho adequado para toque e fonte de 16px para evitar zoom automático; a grade mantém rolagem própria. Foco de teclado, estados desabilitados, movimento reduzido e impressão são preservados.
+
+A camada visual compartilhada fica em `assets/css/interface.css`; estilos específicos permanecem nos arquivos de navegação, workspace, diálogos, movimento e login. A paleta das classes utilitárias fica em `tailwind.config.cjs`, com entrada em `assets/css/utilities-source.css`. Depois de alterar classes ou configuração, execute `npm run build`. Não editar o CSS gerado. Guia: [interface e revisão visual](docs/interface.md).
+
 ## Administração de usuários
 
 O menu lateral pode ser recolhido/expandido e mostra nome, perfil, geração de escala e empresas/rascunhos. Gerentes e Admins têm a janela **Usuários**, com lista e pesquisa por nome, e-mail ou escritório, cadastro, edição de nome/e-mail/perfil, toggles de situação e empresas autorizadas dentro da edição. Admin vê todos os usuários; Gerente vê os vínculos do próprio escritório e não edita Admins. Operador não tem acesso à gestão. A migração **008** habilita a nova janela; não há mais uma entrada separada de Acessos dos operadores. Operadores acessam somente as empresas atribuídas; Gerentes administram seu escritório; Admin tem acesso global. A migração 004 e a promoção explícita da identidade do proprietário habilitam o novo modelo: [guia de ativação](docs/administracao-usuarios.md). Não há senha administrativa adicional nem cadastro público. Cadastro e vínculos são atômicos, com bcrypt e auditoria; o servidor valida o escopo de cada operação.
@@ -212,7 +218,7 @@ npx playwright install chromium
 npm run test:browser
 ```
 
-Os testes de regressão importam os módulos reais. O teste de navegador prepara e serve a saída de produção e verifica modelos de escala, edição, persistência, turnos, comparativo, invalidação e download CSV. Fontes e Tailwind externos são simulados nesse teste para isolar a aplicação da rede; ele não valida esses serviços nem a aparência completa.
+Os testes de regressão importam os módulos reais. O teste de navegador prepara e serve a saída de produção e verifica modelos de escala, edição, persistência, turnos, comparativo, invalidação e download CSV. O CSS Tailwind é compilado localmente no build e servido pela aplicação. As fontes externas ficam bloqueadas nos testes, que usam o fallback do sistema; isso não comprova a disponibilidade do Google Fonts. A suíte inclui oito etapas em 320/375/768/1440 px, contraste do cabeçalho, impressão e login móvel.
 
 Para usar um Chromium já instalado:
 
@@ -226,7 +232,7 @@ PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run test:browser
 
 A implantação também precisa do middleware da raiz, de `api/auth.js` e do módulo de autenticação em `server/`, processados pela Vercel separadamente dos arquivos estáticos. Publicar somente `dist/` em um servidor estático não reproduz a proteção de acesso. Configure `AUTH_SESSION_SECRET` nos ambientes utilizados e faça novo deploy, conforme [Login e sessão de 12 horas](#login-e-sessão-de-12-horas).
 
-O site continua carregando Tailwind e fontes por CDN, como na versão anterior. Os dados permanecem no navegador e na origem do site; mudar o domínio da implantação não transfere o `localStorage` de uma origem para outra.
+O Tailwind não é mais carregado por CDN: `npm run build` compila as classes usadas em HTML/JavaScript, gerando `assets/css/utilities.css` e copiando-o para `dist`. `npm run dev` executa esse preparo automaticamente. O arquivo gerado não é versionado; a versão do compilador está fixada no projeto. As fontes do Google continuam opcionais, com fallback local. Os dados permanecem no navegador e na origem do site; mudar o domínio da implantação não transfere o `localStorage` de uma origem para outra.
 
 O painel **Preencher colaboradores manualmente** contém somente o formulário de inclusão (nome, sexo, cargo e carga contratual). Confirmar um cadastro adiciona a pessoa à lista **Colaboradores cadastrados/importados**, limpa o formulário e leva o foco para essa lista, onde todos os registros podem ser editados ou removidos. Confirmar uma importação CSV ou Domínio recolhe os painéis de importação e leva à mesma lista, com a mensagem de resultado visível. Prévia, cancelamento e erros não disparam essa navegação.
 

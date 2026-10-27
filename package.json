@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "test": "node --test tests/*.test.cjs",
+    "predev": "npm run build",
     "dev": "node scripts/serve.js",
     "build": "node scripts/build.js",
     "test:browser": "npm run build && node tests/browser.cjs",
@@ -16,7 +17,8 @@
     "node": ">=22"
   },
   "devDependencies": {
-    "playwright": "1.62.1"
+    "playwright": "1.62.1",
+    "tailwindcss": "3.4.19"
   },
   "dependencies": {
     "@e965/xlsx": "0.20.3",

@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { cp, mkdir, rm } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
@@ -16,5 +17,23 @@ await cp(
 await cp(
   join(root, "node_modules/@e965/xlsx/LICENSE"),
   join(dist, "assets/vendor/LICENSE-xlsx.txt"),
+);
+execFileSync(
+  process.execPath,
+  [
+    join(root, "node_modules/tailwindcss/lib/cli.js"),
+    "--config",
+    join(root, "tailwind.config.cjs"),
+    "--input",
+    join(root, "assets/css/utilities-source.css"),
+    "--output",
+    join(root, "assets/css/utilities.css"),
+    "--minify",
+  ],
+  { cwd: root, stdio: "inherit" },
+);
+await cp(
+  join(root, "assets/css/utilities.css"),
+  join(dist, "assets/css/utilities.css"),
 );
 console.log("Publicação estática preparada em dist/.");

@@ -71,3 +71,84 @@ button:disabled {
   color: #b91c1c;
   margin-bottom: 0;
 }
+/* Acesso com a mesma linguagem visual do espaço de trabalho. */
+body {
+  background:
+    radial-gradient(ellipse at 10% 0%, #dceee5, transparent 55%),
+    radial-gradient(ellipse at 100% 100%, #dde8f1, transparent 55%), #f3f6f8;
+  line-height: 1.6;
+}
+.login-card {
+  max-width: 440px;
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 24px 80px #18384d12;
+  border-color: #dae5e9;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 16px;
+  letter-spacing: -0.3px;
+  color: #164532;
+}
+.brand::before {
+  content: "";
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #2b916e, #12583f);
+  box-shadow: inset 0 0 0 8px #ffffff14;
+}
+h1 {
+  font-size: 28px;
+  letter-spacing: -0.8px;
+  margin-top: 30px;
+  line-height: 1.25;
+}
+#login-description {
+  margin-bottom: 26px;
+}
+label {
+  font-size: 13px;
+  color: #3e5668;
+  margin-top: 20px;
+}
+input {
+  min-height: 48px;
+  border-radius: 10px;
+  border-color: #bdcdd9;
+  background: #fcfefe;
+  font-size: 16px;
+}
+button {
+  min-height: 48px;
+  background: #167455;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px #16745520;
+  font-size: 14px;
+  transition: background 0.15s;
+}
+button:hover {
+  background: #105c43;
+}
+#login-message {
+  font-size: 13px;
+}
+@media (max-width: 480px) {
+  body {
+    padding: 18px;
+  }
+  .login-card {
+    padding: 28px 24px;
+  }
+  h1 {
+    font-size: 25px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  button {
+    transition: none;
+  }
+}

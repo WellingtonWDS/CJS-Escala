@@ -19,13 +19,24 @@ export function initNavigation({ session, document, window }) {
   toggle.addEventListener("click", () =>
     collapse(!document.body.classList.contains("sidebar-collapsed")),
   );
-  sidebar.querySelectorAll("nav button").forEach((button, i) => {
+  sidebar.querySelectorAll("nav button").forEach((button) => {
     const label = button.textContent;
     button.replaceChildren();
     const icon = document.createElement("span"),
       text = document.createElement("span");
     icon.className = "sidebar-icon";
-    icon.textContent = ["▦", "▤", "+", "♙", "⚿"][i] || "•";
+    const paths = {
+      schedule:
+        '<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M16 3v4M8 3v4M3 11h18M8 15h2M14 15h2"/>',
+      workspace:
+        '<path d="M3 7a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/>',
+      companies:
+        '<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M10 21v-5h4v5"/>',
+      offices: '<path d="m12 3 10 5-10 5L2 8Zm-9 9 9 5 9-5M3 17l9 5 9-5"/>',
+      users:
+        '<circle cx="9" cy="7" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3M16 4a3 3 0 0 1 0 6M21 21v-3a6 6 0 0 0-3-5"/>',
+    };
+    icon.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${paths[button.dataset.appView || "workspace"] || paths.workspace}</svg>`;
     icon.setAttribute("aria-hidden", "true");
     text.className = "sidebar-label";
     text.textContent = label;

@@ -1,5 +1,5 @@
-// Paleta placeholder no estilo Fintria — troque os hex abaixo pelos oficiais quando tiver em mãos.
-tailwind.config = {
+module.exports = {
+  content: ["./index.html", "./assets/js/**/*.js", "!./assets/js/data/**"],
   theme: {
     extend: {
       fontFamily: {

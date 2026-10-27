@@ -14,6 +14,8 @@ Novos nomes de preenchimento incluem data/hora local, sem renomear registros exi
 
 Janela **Usuários** unifica listagem, pesquisa por nome/escritório, cadastro, edição de nome/e-mail/perfil, situação por toggle e empresas autorizadas na edição. Admin global vê todos; Gerente gerencia seus vínculos, preservando outros escritórios; Operador não acessa. Revisão, auditoria e revogação de sessão protegem as alterações. Requer migração 008; aplicação na VPS ainda não confirmada.
 
+Revisão visual aplicada a desktop e celular: cabeçalho claro, navegação e etapas, hierarquia de cartões/formulários, ações principais, modais, cadastros, grades, salvamento e login. CSS utilitário compilado localmente; lógica e dados preservados. [Guia de interface](interface.md).
+
 ## Funcionalidades implementadas
 
 | Área | O que já está disponível |
@@ -54,7 +56,7 @@ Janela **Usuários** unifica listagem, pesquisa por nome/escritório, cadastro, 
 - **Ausências:** férias e afastamentos ajustam a meta operacional de alocação; não há cálculo de folha, benefícios ou efeitos previdenciários.
 - **Regimes importados:** a conversão atende à origem 6×1 compatível. Importar um ciclo diferente não significa convertê-lo automaticamente para 5×2; âncoras e informações ambíguas precisam ser conferidas.
 - **Conferência normativa:** a implementação usa o texto da EC 141 fornecido para o projeto. Cláusulas coletivas, exceções e efeitos específicos do trabalho noturno continuam sujeitos às verificações indicadas no relatório. A análise individual avançada de enquadramento permanece oculta e desativada por padrão.
-- **Publicação:** na Vercel, o login depende do middleware, das funções de API e das variáveis privadas. Há também adaptador Node.js para futura VPS, dependente de configuração HTTPS/proxy/supervisão; essa migração não foi executada. O build estático sozinho não fornece proteção. Fontes e Tailwind ainda dependem de CDN.
+- **Publicação:** na Vercel, o login depende do middleware, das funções de API e das variáveis privadas. Há também adaptador Node.js para futura VPS, dependente de configuração HTTPS/proxy/supervisão; essa migração não foi executada. O build estático sozinho não fornece proteção. Fontes do Google são opcionais, com fallback; o Tailwind agora é compilado e servido localmente.
 - **Publicação de escalas:** ainda não há fluxo de rascunho → revisão → aprovação/publicação com registro de responsáveis.
 
 ## Planejamento de persistência — 26/10/2026

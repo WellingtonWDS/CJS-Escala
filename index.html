@@ -6,13 +6,13 @@
 <title>Escala DP — Fintria</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="./assets/js/config/tema.js"></script>
+<link rel="stylesheet" href="./assets/css/utilities.css">
 <link rel="stylesheet" href="./assets/css/styles.css">
 <link rel="stylesheet" href="./assets/css/navigation.css">
 <link rel="stylesheet" href="./assets/css/dialogs.css">
 <link rel="stylesheet" href="./assets/css/motion.css">
 <link rel="stylesheet" href="./assets/css/workspace.css">
+<link rel="stylesheet" href="./assets/css/interface.css">
 </head>
 <body class="bg-slate-100 text-slate-800 text-[15px] leading-relaxed">
 <aside id="app-sidebar" class="app-sidebar no-print" hidden aria-label="Menu principal">
@@ -26,7 +26,7 @@
   <button type="button" data-app-view="users" hidden>Usuários</button></nav>
 </aside>
 
-<header class="no-print bg-fintria-navy text-white px-4 md:px-10 py-5 flex items-center justify-between gap-3 flex-wrap">
+<header class="app-header no-print bg-fintria-navy text-white px-4 md:px-10 py-5 flex items-center justify-between gap-3 flex-wrap">
   <div class="flex items-baseline gap-3 flex-wrap">
     <h1 class="font-display text-white text-xl font-semibold">Escala DP</h1>
     <span id="storage-description" class="text-slate-300 text-sm">Calculadora de horas e migração 6×1 → 5×2 · dados salvos apenas neste navegador</span>
@@ -219,14 +219,14 @@
       <div class="flex items-center justify-between gap-3.5 py-2.5 border-t border-slate-200 mt-4">
         <div><div class="font-semibold text-sm text-slate-800">Horário diferente por dia da semana</div><div class="text-xs text-slate-500 mt-0.5">Útil para sábados, sextas ou turnos mistos diferentes</div></div>
         <label class="relative inline-flex items-center cursor-pointer shrink-0">
-          <input type="checkbox" id="tg-horario-dia" class="sr-only peer">
+          <input type="checkbox" id="tg-horario-dia" class="ui-switch peer">
           <span class="w-10 h-6 bg-slate-300 rounded-full peer-checked:bg-fintria-verde transition-colors relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:w-5 after:h-5 after:rounded-full after:transition-transform peer-checked:after:translate-x-4"></span>
         </label>
       </div>
       <div class="flex items-center justify-between gap-3.5 py-2.5 border-t border-slate-200">
         <div><div class="font-semibold text-sm text-slate-800">Jornada em 2 turnos (revezamento)</div><div class="text-xs text-slate-500 mt-0.5">Divide a equipe em Turno A e Turno B, trocando semanalmente</div></div>
         <label class="relative inline-flex items-center cursor-pointer shrink-0">
-          <input type="checkbox" id="tg-turnos" class="sr-only peer">
+          <input type="checkbox" id="tg-turnos" class="ui-switch peer">
           <span class="w-10 h-6 bg-slate-300 rounded-full peer-checked:bg-fintria-verde transition-colors relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:w-5 after:h-5 after:rounded-full after:transition-transform peer-checked:after:translate-x-4"></span>
         </label>
       </div>
@@ -275,7 +275,7 @@
     <section id="sec-cobertura" data-etapa hidden class="scroll-mt-4 bg-white border border-slate-200 rounded-xl p-5 md:p-7 mb-5">
       <div class="flex items-start justify-between gap-4">
         <div><h2 class="font-display text-fintria-navy text-lg font-semibold mb-1">Cobertura operacional</h2><p class="text-slate-500 text-sm">Ative para definir o mínimo de pessoas por função, horário e dia. É opcional para gerar a proposta, mas necessário para concluir se o quadro atual atende à operação.</p></div>
-        <label class="relative inline-flex items-center cursor-pointer shrink-0 mt-1"><input id="tg-cobertura" aria-label="Ativar cobertura operacional" aria-controls="cobertura-conteudo" type="checkbox" class="sr-only peer"><span class="w-10 h-6 bg-slate-300 rounded-full peer-checked:bg-fintria-verde transition-colors relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:w-5 after:h-5 after:rounded-full after:transition-transform peer-checked:after:translate-x-4"></span></label>
+        <label class="relative inline-flex items-center cursor-pointer shrink-0 mt-1"><input id="tg-cobertura" aria-label="Ativar cobertura operacional" aria-controls="cobertura-conteudo" type="checkbox" class="ui-switch peer"><span class="w-10 h-6 bg-slate-300 rounded-full peer-checked:bg-fintria-verde transition-colors relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:w-5 after:h-5 after:rounded-full after:transition-transform peer-checked:after:translate-x-4"></span></label>
       </div>
       <div id="cobertura-conteudo" hidden class="mt-5 border-t border-slate-200 pt-4">
       <div id="cobertura-lista"></div>
