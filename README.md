@@ -6,9 +6,31 @@ Ferramenta para configurar, gerar e revisar escalas de trabalho e comparar a esc
 
 ## Andamento do projeto
 
-Consulte [Estado do projeto](docs/estado-do-projeto.md) para uma visão consolidada das funcionalidades implementadas, limitações, últimas validações e próximos passos propostos. O documento reflete o código atual; auditorias e relatórios datados em `docs/` são registros históricos.
+Consulte [Estado do projeto](docs/estado-do-projeto.md) para uma visão consolidada das funcionalidades implementadas, limitações e últimas validações. O [plano das próximas funcionalidades](docs/planos/evolucao-escalas.md) detalha escala fixa, quadro diário e exportações por público, ainda não implementados. O documento reflete o código atual; auditorias e relatórios datados em `docs/` são registros históricos.
 
-O fluxo principal já inclui cadastro manual e por planilhas, importação Domínio, restrições individuais, habilitações por função, geração, conversão 6×1 → 5×2, comparação de cobertura, sugestões de ajustes com prévia/aplicação/desfazer, edição da grade, CSV e impressão. O acesso usa login compartilhado com sessão de 12 horas. Os detalhes de funcionamento e configuração estão nas seções abaixo.
+O fluxo principal já inclui cadastro manual e por planilhas, importação Domínio, restrições individuais, habilitações por função, geração, conversão 6×1 → 5×2, comparação de cobertura, sugestões de ajustes com prévia/aplicação/desfazer, edição da grade, CSV e impressão. O acesso oferece login individual por e-mail/senha integrado ao n8n e ao banco, com sessão de até 12 horas, menu por perfil, gestão de usuários e empresas e preenchimentos compartilhados por empresa autorizada. O modo compartilhado/local permanece disponível por configuração. Os detalhes de funcionamento e configuração estão nas seções abaixo.
+
+## Atualizações consolidadas em 27/10/2026
+
+- Identidade **Reescala**, logos oficiais no login/cabeçalho/menu/carregamento/escala/impressão e favicon, com limites de tamanho também no HTML.
+- Modal **Empresa atual e Preenchimentos** com 85% da largura da tela no desktop e uma coluna com margens reduzidas no celular; barra de salvamento, cópias e exclusão de preenchimentos preservadas.
+- Horários individuais, meio período sem quatro campos obrigatórios, sábado compensado/reposição do saldo, conferência contratual e sugestões de redistribuição de intervalos para cobertura.
+- Explicações longas dos colaboradores em ícones **?**, tutorial arrastável e etapa 7 somente informativa, sem o antigo comparativo de três referências.
+- Geração da escala atual e da proposta em Worker local, overlay imediato, bloqueio de cliques duplicados e descarte de resultados se o preenchimento mudar. Resumo da busca de cobertura primeiro em modal e depois abaixo do botão.
+- Instaladores do DEMO original e de quatro empresas por segmento com onze modelos de cobertura, readequação e contratação; dados existentes e edições são preservados. Instalação remota depende do comando administrativo dos guias.
+- Domínio informado pelo proprietário: **https://reescala.fintria.com.br**, com hospedagem ainda na Vercel. `APP_ORIGIN` deve acompanhar o domínio; alterar a variável exige novo deploy.
+
+Última validação funcional: **460 testes unitários**, build, suíte completa de navegador e integração PostgreSQL 17/PostgREST 14.15 com navegador aprovados localmente. Isso não confirma execução de migrações, instaladores DEMO ou correções de configuração na VPS/Vercel.
+
+## Próximos passos — planejados
+
+| Ordem | Funcionalidade | Escopo solicitado |
+| --- | --- | --- |
+| 1 | Escala fixa com folgas fixas | Padrão semanal recorrente, independente de mês, feriados e datas específicas, adequado à referência da nova legislação. |
+| 2 | Quadro diário detalhado | Visualizar colaboradores, funções, jornadas, intervalos, folgas e cobertura ao longo de uma data ou dia do padrão fixo. |
+| 3 | Exportação por público | Arquivo completo para o empregador e um arquivo separado para cada funcionário. Formatos e download em lote serão definidos na implementação. |
+
+Esses recursos **ainda não estão implementados**. A geração mensal, as folgas fixas dentro dela, o CSV e a impressão/PDF atuais continuam disponíveis. Escopo, critérios de aceite e limites: [próximas funcionalidades](docs/planos/evolucao-escalas.md).
 
 ## Conversão da escala atual 6×1 para uma proposta 5×2
 
@@ -65,17 +87,18 @@ assets/js/
   session.js                    Controle da expiração na interface
   login.js                      Envio do formulário de login
   app.js                        Montagem da aplicação e coordenação dos módulos
-  config/                       Regras de jornada, constantes e tema Tailwind
+  config/                       Regras de jornada e constantes
   domain/                       Datas, feriados, cálculo e validação das escalas
   state/                        Estado inicial e persistência
-  ui/                           Formulários, colaboradores, calendário e transição
+  ui/                           Formulários, colaboradores, calendários e comparação
   workers/                      Geração, conversão e busca de ajustes em segundo plano
   shared/                       Formatação de texto e escape
   import/                       Leitura e validação de CSV e relatórios Domínio
   export/                       Geração e download de CSV
 scripts/                        Servidor local e preparação da publicação
 tests/                          Regressões e fluxos no navegador
-docs/estado-do-projeto.md        Implementado, limitações e próximos passos
+docs/estado-do-projeto.md        Implementado, limitações e validações
+docs/planos/evolucao-escalas.md   Escala fixa, quadro diário e novas exportações (planejados)
 ```
 
 O domínio recebe a configuração explicitamente, por meio de `createDomain(state)`, e não acessa HTML, armazenamento ou variáveis globais da aplicação. `gerarDadosEscala()` devolve a escala e suas validações; a interface decide quando exibi-la e salvá-la. Cada instância da aplicação possui seu próprio estado. O toggle de dois turnos mostra os grupos A/B para duas semanas e atualiza os horários da escala existente, inclusive ao mudar a entrada do Turno B, preservando status, folgas e horas ajustadas manualmente.
@@ -166,7 +189,7 @@ Parser e validação: `assets/js/import/colaboradores.js`. Interface: `assets/js
 
 O botão **Tutorial guiado**, ao lado de **Limpar dados salvos**, inicia nove etapas com destaque da área correspondente, instruções e contador. É possível avançar, voltar, concluir ou encerrar com **Esc**. O tutorial não altera o cadastro nem gera uma escala; a cobertura continua opcional. A implementação fica em `assets/js/ui/tutorial.js`, com regressões em `tests/browser-tutorial.cjs` para desktop e celular, navegação por teclado e preservação dos dados.
 
-## Planejamento de persistência e hospedagem
+## Persistência e hospedagem
 
 A evolução para PostgreSQL/PostgREST com isolamento por escritório está descrita no [plano de persistência](docs/planos/persistencia-postgresql.md), junto à [análise dos fluxos de autenticação n8n](docs/planos/autenticacao-n8n.md). O acesso será provisionado por administração autorizada, sem autocadastro público. A API será preparada para rodar na Vercel ou na VPS, com futura hospedagem no domínio fintria.com.br. A [primeira entrega técnica](database/README.md) já implementa migração SQL, RLS, RPCs de rascunhos, histórico/auditoria e serviços portáteis de API, testados em PostgreSQL 17 e PostgREST 14.15 (versão confirmada na VPS). A segunda entrega já inclui login individual, abertura/revogação de sessões, rotas HTTP e interface de empresas/rascunhos com cache separado e migração local explícita. O operador já confirmou o login individual na Vercel e iniciou a validação de rascunhos no servidor. O modo padrão do código continua compartilhado até configurar as variáveis. O [registro de implantação](docs/implantacao-atual.md) distingue os resultados reais das verificações locais. O [guia n8n](integrations/n8n/README.md) documenta a configuração.
 
@@ -247,6 +270,8 @@ A implantação também precisa do middleware da raiz, de `api/auth.js` e do mó
 O Tailwind não é mais carregado por CDN: `npm run build` compila as classes usadas em HTML/JavaScript, gerando `assets/css/utilities.css` e copiando-o para `dist`. `npm run dev` executa esse preparo automaticamente. O arquivo gerado não é versionado; a versão do compilador está fixada no projeto. As fontes do Google continuam opcionais, com fallback local. Os dados permanecem no navegador e na origem do site; mudar o domínio da implantação não transfere o `localStorage` de uma origem para outra.
 
 O painel **Preencher colaboradores manualmente** contém somente o formulário de inclusão (nome, sexo, cargo e carga contratual). Confirmar um cadastro adiciona a pessoa à lista **Colaboradores cadastrados/importados**, limpa o formulário e leva o foco para essa lista, onde todos os registros podem ser editados ou removidos. Confirmar uma importação CSV ou Domínio recolhe os painéis de importação e leva à mesma lista, com a mensagem de resultado visível. Prévia, cancelamento e erros não disparam essa navegação.
+
+O domínio público informado pelo proprietário é `https://reescala.fintria.com.br`. Na Vercel, configure `APP_ORIGIN=https://reescala.fintria.com.br` para **Production** e faça novo deployment. O backend compara essa origem com o cabeçalho `Origin`; manter o domínio antigo causa **Origem inválida** no login e em outras operações. A troca de domínio não implica migração da hospedagem para a VPS. Detalhes e estado de confirmação: [registro de implantação](docs/implantacao-atual.md).
 
 ## Navegação por etapas
 

@@ -1,4 +1,4 @@
-# Login individual — preparação e homologação
+# Reescala — login individual e homologação
 
 A aplicação já tem login individual, sessão revogável no PostgreSQL, rotas de autenticação/persistência na Vercel e no servidor Node.js e interface de empresas/rascunhos. A ativação depende da configuração abaixo. O login compartilhado continua sendo o padrão; nenhum serviço real foi alterado.
 
@@ -33,7 +33,7 @@ Manter inicialmente `AUTH_MODE=shared` e `PERSISTENCE_ENABLED=false`. Preparar a
 | Variável | Conteúdo |
 | --- | --- |
 | `AUTH_SESSION_SECRET` | Chave exclusiva do cookie assinado (>=32 caracteres). |
-| `APP_ORIGIN` | Origem pública completa, sem caminho, como `https://escala.fintria.com.br`. |
+| `APP_ORIGIN` | Origem pública completa, sem caminho, como `https://reescala.fintria.com.br`. |
 | `PERSISTENCE_RPC_URL` | URL da instância dedicada de escalas, inclusive seu prefixo se houver. |
 | `PERSISTENCE_JWT_SECRET` | Chave da instância PostgREST de escalas; usada para tokens internos de 60s. |
 | `N8N_LOGIN_URL` | URL pública do novo webhook. Com o Caddy informado, `https://api.fintria.com.br/auth/cjs-login` é reescrito para `/webhook/auth/cjs-login` no n8n. |
@@ -47,6 +47,12 @@ Depois de validar o novo fluxo e as migrações, ativar o modo de homologação 
 O JWT do n8n é consumido pelo backend e não é armazenado no navegador. A aplicação abre uma sessão no banco e fornece cookie HttpOnly/Secure/SameSite. O banco confere titularidade, validade, usuário ativo, escritório e empresa a cada operação. Logout revoga a sessão antes de remover o cookie; se o serviço estiver indisponível, o cookie é removido e o navegador informa que a revogação remota não foi confirmada. A sessão continua limitada à expiração original.
 
 Não é necessário transmitir segredos pelo chat. Configurá-los no ambiente privado da hospedagem e nas credenciais do n8n.
+
+### Troca do domínio público
+
+O proprietário informou o domínio **https://reescala.fintria.com.br**, ainda hospedado na Vercel. Configure `APP_ORIGIN=https://reescala.fintria.com.br` no ambiente Production e faça novo deployment. O backend compara `Origin` com essa origem; manter o endereço antigo pode retornar **Origem inválida** antes de validar as credenciais. O valor real da variável e a correção após redeploy precisam ser confirmados na hospedagem. Essa troca não implica migrar o frontend para a VPS.
+
+O login individual já foi confirmado anteriormente pelo operador. O guia também atende novas implantações; não é uma instrução para recriar contas ou substituir o workflow que já está funcionando. Estado operacional: [registro de implantação](../../docs/implantacao-atual.md).
 
 ## 4. Uso e migração dos dados locais
 

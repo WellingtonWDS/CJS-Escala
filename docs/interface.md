@@ -12,6 +12,10 @@ Revisão de 27/10/2026, preservando os fluxos, dados e regras de negócio.
 - Importações e opções avançadas continuam recolhíveis. Cadastros, edição, modais e salvamento usam a mesma linguagem visual.
 - A grade conserva altura uniforme dos colaboradores, horários completos e rolagem própria. A impressão mantém os controles de visibilidade existentes.
 
+## Empresa atual e Preenchimentos
+
+O modal ocupa **85vw** no desktop, com duas colunas para seleção e preenchimentos. Até 650px, conserva uma coluna e largura da tela menos 24px. A barra de salvamento permanece fora do modal; fechar ou trocar uma seleção sem abrir não altera o contexto salvo.
+
 ## Ajuda contextual nos colaboradores
 
 Explicações longas de carga contratual, horários individuais, funções e restrições ficam em ícones circulares escuros de **?**. A ajuda abre ao passar o mouse, focar pelo teclado ou tocar/clicar, e fecha com Escape, clique fora ou rolagem. O balão fica dentro da tela e acima dos elementos, sem ser cortado pelos quadros. Não aparece na impressão.
@@ -54,3 +58,7 @@ npm run test:identity:browser
 A suíte `browser-interface.cjs` verifica estilos locais, contraste do cabeçalho, ausência do script Tailwind remoto, oito etapas em 320/375/768/1440px sem rolagem horizontal da página, impressão e login móvel. Os demais testes conferem importação, tutorial, modais, loading, geração, edição, empresas e preenchimentos. Integração usa PostgreSQL/PostgREST locais; não atesta implantação remota.
 
 Conferir visualmente também com fontes reais, zoom do navegador, nomes longos e dados da empresa. Testes automatizados de layout não equivalem a uma auditoria completa de acessibilidade nem a testes em todos os aparelhos físicos.
+
+## Evoluções de interface planejadas
+
+O modo de escala fixa, o quadro diário e as novas exportações para empregador/funcionário constam no [plano de evolução](planos/evolucao-escalas.md). Ainda não existem telas ou controles desses recursos. A proposta deve reaproveitar o resultado comum das escalas, preservar o modo mensal e a leitura móvel, sem confundir folgas fixas mensais com um padrão sem calendário.

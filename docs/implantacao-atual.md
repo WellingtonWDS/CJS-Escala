@@ -1,17 +1,35 @@
-# Registro de implantação — 26/10/2026
+# Registro de implantação — atualizado em 27/10/2026
 
 Consultar este registro antes de orientar o operador. Distinguir código disponível, testes locais e resultados informados pelo operador. Não contém senhas, chaves ou identificadores pessoais.
 
 ## Estado vigente
 
-- Vercel publica automaticamente a main em `https://cjs-escala.vercel.app`. Uma alteração de variável ainda exige novo deployment.
+- Hospedagem permanece na Vercel, com publicação automática da `main`. O proprietário informou o novo domínio público **https://reescala.fintria.com.br**; `cjs-escala.vercel.app` é o endereço anterior. A troca do domínio não representa migração para a VPS. Uma alteração de variável exige novo deployment.
+- Após a troca de domínio, o proprietário relatou **Origem inválida**. O código valida o cabeçalho `Origin` contra a origem reconstruída com `APP_ORIGIN`. Orientado atualizar `APP_ORIGIN=https://reescala.fintria.com.br` em Production e refazer o deploy. O valor real do ambiente e o sucesso após essa correção ainda não foram confirmados neste registro.
 - Login individual pela aplicação **confirmado pelo operador** após corrigir o relógio de verificação do token (`6309a5a`). A tela de e-mail/senha já está ativa; não orientar novamente a configuração inicial de login.
 - Operador utilizou seleção de empresa e salvamento de rascunho; relatou lista com apenas um item. Correção `d0679db` recarrega a lista sem esconder outros rascunhos. Testada localmente; aguarda confirmação específica em produção.
 - A proposta de página secreta `/admin.html` com senha adicional (`7baa2d3`) foi **substituída a pedido do usuário**. Não configurar ADMIN_USER_IDS nem ADMIN_PASSWORD_HASH. O código atual não lê essas variáveis.
 - Novo modelo: menu lateral dentro do sistema, nome e perfil; Operador acessa suas empresas, Gerente gera escalas e gerencia usuários no escritório, Admin tem acesso global. Não há senha adicional nem página separada. Gerente não cria Admin e não edita empresas de outro escritório. Admin/gerentes podem criar Gerentes nos escritórios autorizados; alteração de empresas vale para Operadores.
 - O proprietário deve ser promovido explicitamente usando o **identity_subject informado no chat**. Esse ID é do provedor de login, não o UUID interno de cjs_private.users. Não presumir que o vínculo antigo membership.admin já seja Admin global: ele agora representa Gerente.
 
-## Atualização vigente — horários, compensação e intervalos (27/10/2026)
+## Últimas entregas de código — 27/10/2026
+
+| Referência | Entrega |
+| --- | --- |
+| `373c51e` | Carregamento imediato na geração atual/proposta, cálculo em Worker, bloqueio de duplicação e descarte de resultado obsoleto; retorno de Buscar ajustes em modal antes da mensagem/prévia abaixo do botão, inclusive sem sugestões e em erro. |
+| `228dd18` | Modal Empresa atual e Preenchimentos com 85% da largura no desktop; celular com uma coluna e margens reduzidas. |
+| `e9d5d9d` | Quatro empresas DEMO por segmento, onze preenchimentos e instalador independente/idempotente; casos de cobertura, readequação e contratação. |
+| `2cd31cb` | Limites de tamanho das logos também no HTML/CSS antigo e instalador do DEMO original com cinco colaboradores. |
+| `7d0c1e3` | Nome e logos oficiais Reescala no sistema, impressão e ícones; publicação da pasta logos e imagens necessárias ao login acessíveis sem sessão. |
+| `e40dc9b` | Ficha de colaboradores simplificada e ajuda contextual por mouse/teclado/toque; validações e dados importados preservados. |
+
+Última validação funcional: **460 testes unitários**, build, suíte completa de navegador e integração PostgreSQL 17/PostgREST 14.15 com navegador real **locais** aprovados, na entrega `373c51e`. A atualização deste documento não é uma nova execução de testes. As entregas acima não acrescentaram migrações após a 008. Execução dos instaladores DEMO na VPS ainda não foi confirmada; não presumir que as empresas já estejam cadastradas.
+
+Guias atuais: [interface](interface.md), [DEMO original](empresa-demo.md), [DEMO por segmento](cenarios-demo-segmentos.md). Nos exemplos, a entidade mista 12×36/administrativo tem prévia atual; a conversão automática continua limitada aos grupos 6×1 compatíveis.
+
+As novas solicitações de escala fixa sem calendário, quadro diário e documentos completos/individuais estão **planejadas, sem implementação**: [escopo e critérios](planos/evolucao-escalas.md).
+
+## Entrega anterior — horários, compensação e intervalos (27/10/2026)
 
 Implementados horários individuais para cadastro manual/CSV via perfil compartilhado com a Domínio. Normalização aceita Entrada/Saída sem pausa ou Entrada/primeiro fim com os dois últimos vazios, preservando meia-noite e legado zerado. Sábado Compensado tem disponibilidade opcional de reposição; perfil conta o dia como compensável, sem crédito de trabalho/abono fictício. Geração usa apenas o saldo até o alvo, respeitando janela, bloqueios, pausas, limite diário, 11h de descanso e sequência de trabalho. Referência atual preserva reposição parcial; proposta não amplia a janela de sábado e não inventa disponibilidade ausente. Descansos Compensado em ciclos importados mantêm a interpretação de folga.
 
@@ -87,7 +105,7 @@ Pedido seguinte do usuário: substituir alert/confirm/prompt nativos por modais 
 
 Validação local: 434 testes unitários, build, suíte completa de interface, teste dedicado de modais (fila, Escape/Enter, texto seguro, foco, janela sobreposta e celular), login compartilhado e integração individual com PostgreSQL/PostgREST passaram. A troca de modais não requer migração nova nem variável. A entrega anterior de edição/criação de escritórios foi enviada à main em c5c4744, mas a migração 006 na VPS ainda não foi confirmada pelo operador. Ao responder, distinguir a interface nova da ativação do banco pendente e explicar que compartilhar escalas ainda exige Salvar manualmente.
 
-## Atualização mais recente — edição, escritórios e compartilhamento
+## Entrega anterior — edição, escritórios e compartilhamento
 
 Nova entrega: Gerente/Admin editam razão social/CNPJ das empresas autorizadas sem mudar ID/escritório, preservando rascunhos e permissões. Conflito entre edições e CNPJ duplicado são bloqueados, com auditoria. Admin cria novos escritórios no menu; Gerente/Operador não têm essa operação. Requer migração 006; não afirmar que já foi aplicada na VPS.
 
@@ -97,16 +115,14 @@ Instalador atual inclui 003–006. Se todas as anteriores já foram aplicadas, e
 
 ## Próxima ação na infraestrutura
 
-Nova entrega solicitada: retirar Imprimir/PDF do cabeçalho (impressão da geração/navegador preservada), recolher/expandir menu com preferência local, cadastro de empresas por razão social/CNPJ para Gerente/Admin, seletores/busca por ambos e resolução da empresa no importador Domínio.
+1. Conferir a origem do domínio novo em `APP_ORIGIN`/Production e refazer o deployment; validar login, salvamento e administração em `reescala.fintria.com.br`. O login individual já foi confirmado anteriormente: não orientar a recomeçar o provisionamento inicial.
+2. Para funcionalidades administrativas ainda não homologadas, conferir as migrações **003–008** e a promoção explícita do proprietário. O instalador `enable-user-management.sql` verifica todas elas; disponibilizar os arquivos 003, 004, 005, 006, 007, 008 e `promote-platform-admin.sql`, conforme [administração de usuários](administracao-usuarios.md). Não tratar somente a 005 como suficiente para o código atual. Não há confirmação explícita de execução de todas as migrações remotas neste registro.
+3. Para ativar os exemplos, executar os instaladores administrativos dos guias [DEMO original](empresa-demo.md) e [cenários por segmento](cenarios-demo-segmentos.md). São testados localmente e não executados automaticamente na VPS. Os dois preservam os dados já instalados/alterados e não concedem acesso a Operadores de outros escritórios.
+4. Conferir Usuários, cadastro/edição/importação por CNPJ, seleção de empresa e preenchimentos compartilhados, cópia/exclusão e conflito de revisão após o deploy. A validação local não confirma a homologação remota.
 
-1. Aplicação da migração 004 e promoção do proprietário ainda não foram confirmadas explicitamente no chat. Não presumir que foram executadas. A nova migração 005 acrescenta CNPJ nullable, unicidade por escritório, validação numérica/alfanumérica, resolução/cadastro e auditoria.
-2. Operador pode executar a versão atual de enable-user-management.sql com identidade do proprietário, tendo os arquivos 003, 004, 005, **006** e promote-platform-admin.sql disponíveis. Ela verifica o que falta e promove somente a conta explicitamente informada. Se 001–004 já estiverem aplicadas, executar somente a 005 uma vez também é suficiente.
-3. Não há novas variáveis privadas nem alteração de n8n. ADMIN_USER_IDS/ADMIN_PASSWORD_HASH antigos podem ser removidos. Aguardar deployment e recarregar.
-4. Homologar cadastro/busca e importação na VPS real. Os testes locais passaram: 434 unitários, navegação/impressão e importação local, navegador com PostgreSQL/PostgREST para perfis/cadastro/busca, duplicidade concorrente e troca de contexto sem mistura. Esses resultados não confirmam implantação remota.
+Não configurar novamente ADMIN_USER_IDS/ADMIN_PASSWORD_HASH nem a antiga página secreta: a administração usa o menu lateral por perfil. A troca do domínio público não exigiu alteração de código de origem, credenciais n8n ou schema; a variável e o novo deployment continuam sujeitos à configuração do operador.
 
-A importação identifica CNPJ no escritório escolhido. Operador só utiliza cadastro autorizado; Gerente/Admin confirmam cadastro novo ou vínculo do CNPJ a cadastro antigo sem documento e nome único equivalente. Cancelamento preserva o estado. Outra empresa inicia preenchimento separado. Cadastro da empresa é remoto, mas colaboradores ainda exigem salvar o rascunho. Sem CNPJ válido, bloqueia vinculação remota; importação compartilhada/local segue disponível sem banco.
-
-Guias vigentes: [administração de usuários](administracao-usuarios.md) e [empresas e Domínio](cadastro-empresas.md). Não orientar mais o fluxo da página secreta.
+A importação identifica CNPJ no escritório escolhido. Operador só utiliza cadastro autorizado; Gerente/Admin confirmam cadastro novo ou vínculo a cadastro legado sem documento, quando há nome único equivalente. Cancelamento preserva o estado; outra empresa inicia preenchimento separado. Cadastro da empresa é remoto; os colaboradores exigem salvar o preenchimento. Sem CNPJ válido, a vinculação remota é bloqueada; importação compartilhada/local continua disponível.
 
 ## Infraestrutura confirmada pelo operador
 
@@ -120,8 +136,8 @@ Guias vigentes: [administração de usuários](administracao-usuarios.md) e [emp
 ## Limites e pendências preservados
 
 - Rotação da chave de RPC anteriormente exposta ainda não foi confirmada explicitamente; nunca registrar ou pedir seu valor.
-- O CNPJ informado no chat não foi gravado automaticamente. A entrega 005 passa a oferecer o campo e vínculo confirmado a cadastro antigo via importação/cadastro, após aplicar a migração.
-- Rascunhos exigem salvar manualmente. Salvar atualiza o aberto; Salvar como novo cria outro. Não há sincronização automática nem painel de histórico.
+- O cadastro e o vínculo de CNPJ são oferecidos desde a migração 005. O conteúdo atual do cadastro remoto não foi consultado neste ambiente; não presumir atualização automática a partir de valores informados no chat.
+- Rascunhos exigem salvar manualmente. **Salvar preenchimento** atualiza o aberto; **Salvar uma cópia** cria outro. Não há sincronização automática nem painel de histórico.
 - Não há edição de senha, convites, exclusão definitiva de contas ou edição de escritório na nova gestão. Vínculos legados de consulta conservam restrição de escrita.
 - Permissões do servidor são autoritativas; retirada de acesso não apaga caches já vistos no navegador. Novas aberturas conferem acesso.
 

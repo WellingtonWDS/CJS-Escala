@@ -36,12 +36,12 @@ Horários individuais disponíveis também para cadastro manual/CSV, turnos cont
 
 | Área | O que já está disponível |
 | --- | --- |
-| Acesso | Modo compartilhado preservado; modo individual n8n configurável com cookie HttpOnly, sessão revogável no banco de até 12h, emissor/audiência explícitos e vínculo provisionado. Ativação depende de homologação. |
+| Acesso | Modo compartilhado preservado; modo individual n8n configurável com cookie HttpOnly, sessão revogável no banco de até 12h, emissor/audiência explícitos e vínculo provisionado. Login individual já confirmado pelo operador; novas implantações dependem de configuração e homologação. |
 | Administração | Menu lateral por perfil e janela Usuários: diretório, pesquisa/filtros, cadastro, edição de nome/e-mail/perfil/situação e empresas autorizadas na edição. Senha bcrypt preservada, auditoria e conflito de revisão. Depende das migrações 004/008 e promoção explícita do proprietário; sem senha administrativa adicional ou cadastro público. |
 | Empresas | Cadastro e edição de razão social/CNPJ para Gerente/Admin, criação de escritórios por Admin, unicidade por escritório, busca nos seletores e identificação na importação Domínio. Migrações 005/006 necessárias; empresas antigas sem CNPJ exigem confirmação do vínculo. |
-| Carregamento e movimento | Overlay central animado, fundo escurecido/desfocado e bloqueio durante operações demoradas. Cancelamento de buscas preservado, confirmações não encobertas, saída em sucesso/erro e suporte a movimento reduzido; transições nas janelas e navegação. |
+| Carregamento e movimento | Geração atual/proposta em Worker com indicação imediata e proteção contra resultados obsoletos. Overlay central animado, fundo escurecido/desfocado e bloqueio durante operações demoradas. Cancelamento de buscas preservado, confirmações não encobertas, saída em sucesso/erro e suporte a movimento reduzido; transições nas janelas e navegação. |
 | Modais | Alertas, confirmações e prompts substituídos por janelas com estilo do sistema, fila de mensagens, foco/teclado e cancelamento preservado. Status do dia por select; horas por campo próprio. |
-| Empresa atual e Preenchimentos | Barra inferior com razão social/CNPJ, escritório, nome e ações Salvar preenchimento/Salvar uma cópia. Janela separada para escolher e abrir; cópia pede nome e recuperação fica recolhida. Selecionar outra empresa sem abrir não muda o destino do salvamento. |
+| Empresa atual e Preenchimentos | Modal com 85% da tela no desktop e coluna única no celular. Barra inferior com razão social/CNPJ, escritório, nome e ações Salvar preenchimento/Salvar uma cópia. Janela separada para escolher e abrir; cópia pede nome e recuperação fica recolhida. Selecionar outra empresa sem abrir não muda o destino do salvamento. |
 | Navegação | Menu lateral recolhível por perfil e oito etapas com avançar/voltar, acesso direto pela barra horizontal fixa no topo e compacta durante a rolagem, sem rolagem automática na troca, e preservação dos dados. Tutorial guiado de nove passos e indicadores de preenchimento obrigatório pendente. |
 | Colaboradores | Cadastro manual, modelo/importação CSV e importação Domínio, com lista única para revisar, editar e remover pessoas. Os painéis de entrada começam fechados. |
 | Importação Domínio | Relatórios Quadro de Horário de Trabalho em XLS/XLSX, prévia e confirmação, metadados da empresa, jornadas individuais, admissão e ciclos. Dias semanais omitidos são considerados folga; dados ambíguos exigem revisão. |
@@ -55,7 +55,7 @@ Horários individuais disponíveis também para cadastro manual/CSV, turnos cont
 | Geração e revisão | Grade mensal prioritária, erros antes da grade e análises recolhidas; rolagem nos dois eixos, barra superior e atalho para resumo; cartões de altura uniforme com nome e intervalo nas duas escalas; semanas civis completas, resumo semanal com horas, abonos e ausências, ocorrências por colaborador e ajustes manuais com recálculo. Bloqueios individuais não podem ser ultrapassados pela edição. |
 | Cobertura operacional | Cadastro opcional de mínimos por função, horário e dia; identificação de faixas descobertas, considerando pausas e viradas de dia. As funções vêm do cadastro dos colaboradores. |
 | Revisão manual | Aviso imediato de repousos/horas, busca de outra folga e de ajustes com colegas habilitados na mesma semana, prévia antes de aplicar, cancelamento e desfazer a última edição. Preserva o dia editado, demais edições e a cobertura anterior quando avaliada. |
-| Ajustes de cobertura | Sugestões de troca de folga, horário/turno e função habilitada; prévia antes/depois, aplicar e desfazer a última aplicação, validação de dados atuais e carregamento com progresso/cancelamento em segundo plano. |
+| Ajustes de cobertura | Resumo em modal antes do retorno/prévia abaixo do botão. Sugestões de troca de folga, horário/turno e função habilitada; prévia antes/depois, aplicar e desfazer a última aplicação, validação de dados atuais e carregamento com progresso/cancelamento em segundo plano. |
 | Diagnóstico de pessoal | Lacunas agrupadas por função, dias, horário e quantidade, com datas; diferencia capacidade insuficiente, disponibilidade, habilitações compartilhadas e redistribuição. Verifica simultaneidade, horas e dias-pessoa sem duplicar a equipe. Presente na escala, comparação e CSV. |
 | Conversão e comparação | Origem 6×1 preservada, com contexto 44h da referência automática mantido na grade, resumo, CSV e ajustes; proposta 5×2 em período próprio, busca de distribuição de folgas e comparação de horas, dias e cobertura. Diagnóstico de suficiência, insuficiência demonstrável, necessidade de ajustes, incompatibilidade ou ausência de base para avaliação. |
 | Exportação e armazenamento | CSV detalhado, impressão/PDF da etapa aberta pelo navegador (incluindo painéis expandidos) e persistência local no navegador. Alterações invalidam resultados dependentes; versões antigas das regras exigem nova geração. |
@@ -73,31 +73,44 @@ Horários individuais disponíveis também para cadastro manual/CSV, turnos cont
 - **Regimes importados:** a conversão atende à origem 6×1 compatível. Importar um ciclo diferente não significa convertê-lo automaticamente para 5×2; âncoras e informações ambíguas precisam ser conferidas.
 - **Conferência normativa:** a implementação usa o texto da EC 141 fornecido para o projeto. Cláusulas coletivas, exceções e efeitos específicos do trabalho noturno continuam sujeitos às verificações indicadas no relatório. A análise individual avançada de enquadramento permanece oculta e desativada por padrão.
 - **Publicação:** na Vercel, o login depende do middleware, das funções de API e das variáveis privadas. Há também adaptador Node.js para futura VPS, dependente de configuração HTTPS/proxy/supervisão; essa migração não foi executada. O build estático sozinho não fornece proteção. Fontes do Google são opcionais, com fallback; o Tailwind agora é compilado e servido localmente.
+- **Novos modos e documentos:** escala fixa sem calendário, quadro diário dedicado e arquivos separados por colaborador ainda não foram implementados; ver o planejamento.
 - **Publicação de escalas:** ainda não há fluxo de rascunho → revisão → aprovação/publicação com registro de responsáveis.
 
 ## Planejamento de persistência — 26/10/2026
 
 O [registro de implantação](implantacao-atual.md) distingue código disponível, resultados confirmados pelo operador na VPS e validações de produção ainda pendentes. Consultá-lo antes de continuar a ativação.
 
-Definida a evolução para várias contabilidades, com isolamento por escritório e empresas, usuários provisionados por administração autorizada e sem autocadastro público. Os fluxos de login/cadastro do n8n foram analisados estaticamente; sua reutilização exige adaptar tokens, sessões, permissões e provisionamento. A API deve ser portátil para a futura mudança da Vercel para a VPS, no domínio fintria.com.br. A primeira entrega já implementa a base de banco, RLS, RPCs de rascunhos, revisão/idempotência e histórico/auditoria, junto aos serviços portáteis de servidor/frontend. Foi validada localmente em PostgreSQL 17 e PostgREST 14.15, versão confirmada na VPS. O operador confirmou o login individual na Vercel e iniciou a validação de salvar rascunhos. A integração ponta a ponta continua sendo acompanhada pelo registro de implantação; não presumir homologação das funções novas. A infraestrutura foi configurada manualmente pelo operador; o registro de homologação abaixo distingue os resultados confirmados das etapas pendentes. Operação e limites: [database/README.md](../database/README.md). Detalhes: [plano de persistência](planos/persistencia-postgresql.md) e [análise n8n](planos/autenticacao-n8n.md).
+Definida a evolução para várias contabilidades, com isolamento por escritório e empresas, usuários provisionados por administração autorizada e sem autocadastro público. Os fluxos de login/cadastro do n8n foram analisados estaticamente; sua reutilização exige adaptar tokens, sessões, permissões e provisionamento. A API é portátil para a futura mudança da Vercel para a VPS. O proprietário informou o domínio público reescala.fintria.com.br; a hospedagem continua na Vercel e `APP_ORIGIN` precisa acompanhar essa origem após novo deploy. A primeira entrega já implementa a base de banco, RLS, RPCs de rascunhos, revisão/idempotência e histórico/auditoria, junto aos serviços portáteis de servidor/frontend. Foi validada localmente em PostgreSQL 17 e PostgREST 14.15, versão confirmada na VPS. O operador confirmou o login individual na Vercel e iniciou a validação de salvar rascunhos. A integração ponta a ponta continua sendo acompanhada pelo registro de implantação; não presumir homologação das funções novas. A infraestrutura foi configurada manualmente pelo operador; o registro de homologação abaixo distingue os resultados confirmados das etapas pendentes. Operação e limites: [database/README.md](../database/README.md). Detalhes: [plano de persistência](planos/persistencia-postgresql.md) e [análise n8n](planos/autenticacao-n8n.md).
 
 O template de homologação usa o nó JWT nativo, com segredo em credencial e claims explícitos, sem exigir acesso às variáveis de ambiente nos nós Code. O caminho `auth/cjs-login` aproveita o proxy `/auth/*` existente.
 
-O [guia de homologação n8n](../integrations/n8n/README.md) e o template de login independente estão disponíveis. `AUTH_MODE=shared` e `PERSISTENCE_ENABLED=false` preservam a configuração atual até a ativação.
+O [guia de homologação n8n](../integrations/n8n/README.md) e o template de login independente estão disponíveis. `AUTH_MODE=shared` e `PERSISTENCE_ENABLED=false` preservam o modo local de compatibilidade. O login individual já foi confirmado pelo operador; novas implantações precisam configurar esse modo e a persistência conforme os guias.
 
 ## Próximos passos propostos
 
-As implementações de restrições individuais, sugestões de ajustes de cobertura e diagnóstico de pessoal foram concluídas no escopo acima. Os itens abaixo são propostas de evolução, **ainda não implementadas**, sem prazo definido. A ordem pode ser revista conforme os testes com usuários.
+As três próximas funcionalidades solicitadas em **27/10/2026** estão registradas abaixo e **ainda não foram implementadas**. Não têm prazo definido. O [plano detalhado](planos/evolucao-escalas.md) contém escopo, critérios de aceite e pontos a definir.
 
 | Prioridade | Evolução | Resultado esperado |
 | --- | --- | --- |
-| 1 | Comparação visual mais detalhada | Destacar as mudanças de cada dia e colaborador entre origem e proposta, além das tabelas e grades já disponíveis. |
-| 2 | Empresas, contas e versões salvas | Adicionar banco de dados, separação de empresas e usuários, persistência central e recuperação de versões. |
-| 3 | Revisão e publicação da escala | Registrar revisão, aprovação e publicação, com histórico de alterações e identificação dos responsáveis. |
+| 1 | Escala fixa com folgas fixas | Padrão recorrente por dia da semana, sem feriados nem datas específicas, com adequação à referência legal escolhida. Mantém o modo mensal existente. |
+| 2 | Quadro diário detalhado | Exibir colaboradores, funções, entradas, intervalos, saídas, folgas e cobertura por horário de uma data ou dia do padrão fixo. |
+| 3 | Exportação para empregador e colaboradores | Arquivo completo da equipe para o empregador e arquivos separados por funcionário, com conteúdo próprio e identificação do período/padrão. Formatos finais ainda a definir. |
+| 4 | Comparação visual mais detalhada | Destacar mudanças de cada dia/colaborador entre origem e proposta, além das grades e tabelas existentes. |
+| 5 | Evolução de versões e persistência | Histórico navegável/recuperação de versões, política de retenção e eventual sincronização automática. Banco, contas, empresas e salvamento central já estão implementados. |
+| 6 | Revisão e publicação da escala | Registrar revisão, aprovação e publicação, com identificação dos responsáveis. |
+
+O padrão fixo não é apenas marcar sábado/domingo no gerador mensal ou ocultar seus feriados; exige um modo próprio sem calendário. A visão diária ainda não tem uma tela dedicada. CSV completo e impressão/PDF pelo navegador já existem; os novos documentos por público permanecem no planejamento. Ciclos 12×36 exigem tratamento explícito e não são convertidos automaticamente por este plano.
 
 ## Última validação registrada
 
-Na entrega de cadastro/busca de empresas e importação Domínio com vínculo por CNPJ, em **26/10/2026**, foram registrados:
+Última execução funcional em **27/10/2026**, na entrega de geração em Worker e resultado da busca em modal (`373c51e`): **460 testes unitários**, build, suíte completa de navegador e integração PostgreSQL/PostgREST com navegador aprovados localmente. A presente atualização é documental e não representa uma nova execução desses testes.
+
+- Geração atual/proposta: overlay antes do cálculo, bloqueio de duplicação, Worker, fallback local, falha de rede, descarte de resultados quando os dados mudam e liberação da interface.
+- Busca de cobertura: resumo em modal antes da mensagem/prévia, sucesso, ausência de sugestões, erro, preservação dos dados e aplicação separada.
+- Onze modelos DEMO em quatro segmentos: geração atual, propostas compatíveis, diagnóstico, 12×36/administrativo, readequação e contratação; instaladores com idempotência, auditoria e isolamento validados em banco local.
+- Modal de empresa/preenchimentos conferido em 1920/1440/1024px com 85% da largura; 390/320px com margens reduzidas. Logos também verificadas com CSS antigo.
+
+O histórico de validações dos demais recursos implementados é mantido abaixo:
 
 - Janela Usuários validada em banco e navegador reais locais: pesquisa/filtros, edição, toggles com cancelamento, conta compartilhada, perfis, Consulta legada, escopos, e-mail duplicado com rollback, concorrência, revogação global, auditoria e layout móvel.
 - **460 testes unitários aprovados**, sem falhas, com `npm test`.
@@ -116,7 +129,7 @@ Na entrega de cadastro/busca de empresas e importação Domínio com vínculo po
 - Cenários de ajustes de horário/turno, habilitações e alocação sem duplicação, manutenção da cobertura existente, troca de folga, 11h de interjornada, sete dias consecutivos, janelas importadas, dados obsoletos, aplicar/desfazer e progresso/cancelamento na interface.
 - Cenários de férias parciais e integrais, afastamentos, feriados durante ausências, folgas fixas, janelas diurnas/noturnas, plantões 12×36/CCT, turnos A/B, virada de mês, admissão, importação Domínio, cobertura, conversão, CSV, persistência e bloqueio de edição incompatível.
 
-Este é o registro daquela validação, não uma execução contínua nem uma confirmação do estado do deploy na Vercel. Os comandos para novas execuções e para a suíte específica de autenticação estão no [README](../README.md#testes). Os testes de interface simulam serviços externos e não validam integralmente a aparência ou a disponibilidade das CDNs.
+Estes são registros de validação local, não uma execução contínua nem confirmação do estado do deploy na Vercel ou das instalações na VPS. Os comandos para novas execuções e para a suíte específica de autenticação estão no [README](../README.md#testes). Os testes de interface simulam serviços externos e não validam integralmente a aparência ou a disponibilidade das CDNs.
 
 ## Documentos de referência e manutenção
 
