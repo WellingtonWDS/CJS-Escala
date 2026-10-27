@@ -1,3 +1,4 @@
+const { clicarCalculo } = require("./helpers/calculo.cjs");
 const { irParaEtapa } = require("./helpers/etapas.cjs");
 const assert = require("node:assert/strict");
 module.exports = async function testarSabado({ browser, baseURL }) {
@@ -51,7 +52,7 @@ module.exports = async function testarSabado({ browser, baseURL }) {
       assert.match(await resumo.innerText(), /total 44:00 \/ alvo 44:00/);
     };
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     await verificar();
     await page.reload();
     await page.waitForFunction(
@@ -59,7 +60,7 @@ module.exports = async function testarSabado({ browser, baseURL }) {
     );
     await verificar();
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     await verificar();
     await irParaEtapa(page, "#cadastro-manual-colaboradores > summary");
     await page.locator("#cadastro-manual-colaboradores > summary").click();
@@ -67,7 +68,7 @@ module.exports = async function testarSabado({ browser, baseURL }) {
     await horas.fill("60");
     await horas.dispatchEvent("change");
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     assert.equal(
       (await saved()).escalaGerada.resultado[0].dias.find(
         (d) => d.data === "2026-10-31",

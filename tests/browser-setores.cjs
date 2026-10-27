@@ -1,3 +1,4 @@
+const { clicarCalculo } = require("./helpers/calculo.cjs");
 const { irParaEtapa } = require("./helpers/etapas.cjs");
 const assert = require("node:assert/strict");
 module.exports = async function testarSetores({ browser, baseURL }) {
@@ -61,7 +62,7 @@ module.exports = async function testarSetores({ browser, baseURL }) {
     await horas.fill("40");
     await horas.dispatchEvent("change");
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     let state = await saved();
     let d = state.escalaGerada.resultado[0].dias.find(
       (d) => d.data === "2026-10-19",
@@ -97,7 +98,7 @@ module.exports = async function testarSetores({ browser, baseURL }) {
     await irParaEtapa(page, "[data-remove-feriado]");
     await page.locator("[data-remove-feriado]").click();
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     state = await saved();
     assert.equal(
       state.escalaGerada.resultado[0].dias.find((d) => d.data === "2026-10-12")
@@ -119,7 +120,7 @@ module.exports = async function testarSetores({ browser, baseURL }) {
     await irParaEtapa(page, "#btn-add-feriado");
     await page.locator("#btn-add-feriado").click();
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     state = await saved();
     assert.equal(
       state.escalaGerada.resultado[0].dias.find((d) => d.data === "2026-10-12")

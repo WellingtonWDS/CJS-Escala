@@ -1,3 +1,4 @@
+const { clicarCalculo } = require("./helpers/calculo.cjs");
 const assert = require("node:assert/strict");
 const { irParaEtapa } = require("./helpers/etapas.cjs");
 module.exports = async ({ browser, baseURL }) => {
@@ -74,7 +75,7 @@ module.exports = async ({ browser, baseURL }) => {
       "44",
     );
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     let s = await saved();
     assert.equal(
       s.escalaGerada.resultado[0].dias.find((d) => d.data === "2026-10-10")
@@ -102,7 +103,7 @@ module.exports = async ({ browser, baseURL }) => {
       /Carga incoerente/,
     );
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     s = await saved();
     const sat = s.escalaGerada.resultado[0].dias.find(
       (d) => d.data === "2026-10-10",

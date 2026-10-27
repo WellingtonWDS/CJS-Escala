@@ -1,3 +1,4 @@
+const { clicarCalculo } = require("./helpers/calculo.cjs");
 const { irParaEtapa } = require("./helpers/etapas.cjs");
 const assert = require("node:assert/strict");
 module.exports = async function testarFimSemana({ browser, baseURL }) {
@@ -36,7 +37,7 @@ module.exports = async function testarFimSemana({ browser, baseURL }) {
       false,
     );
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     const saved = () =>
       page.evaluate(() =>
         JSON.parse(localStorage.getItem("fintria-escala-dp-v2")),
@@ -53,7 +54,7 @@ module.exports = async function testarFimSemana({ browser, baseURL }) {
       /Todos os colaboradores folgam aos sábados e domingos/,
     );
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     const conferir = async () => {
       const state = await saved();
       assert.equal(state.folgasFimSemana, true);
@@ -84,7 +85,7 @@ module.exports = async function testarFimSemana({ browser, baseURL }) {
     await irParaEtapa(page, "#folga-dias-wrap");
     assert.equal(await page.locator("#folga-dias-wrap").isVisible(), false);
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     await conferir();
     await irParaEtapa(page, '[data-tipo="6x1"]');
     await page.locator('[data-tipo="6x1"]').click();
@@ -106,7 +107,7 @@ module.exports = async function testarFimSemana({ browser, baseURL }) {
     );
     assert.equal((await saved()).folgasFimSemana, false);
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     assert.ok(
       (await saved()).escalaGerada.resultado[0].dias.some(
         (d) => d.weekday === 6 && d.status === "T",

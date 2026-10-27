@@ -1,3 +1,4 @@
+const { clicarCalculo } = require("./helpers/calculo.cjs");
 const { irParaEtapa } = require("./helpers/etapas.cjs");
 const assert = require("node:assert/strict");
 const { readFile } = require("node:fs/promises");
@@ -22,7 +23,7 @@ module.exports = async function testarImportacao({ browser, baseURL }) {
       () => document.getElementById("cfg-mes").options.length === 12,
     );
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     const saved = () =>
       page.evaluate(() =>
         JSON.parse(localStorage.getItem("fintria-escala-dp-v2")),
@@ -156,7 +157,7 @@ module.exports = async function testarImportacao({ browser, baseURL }) {
     assert.deepEqual(replaced.jornada, original.jornada);
     assert.deepEqual(replaced.demandasCobertura, original.demandasCobertura);
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     assert.equal((await saved()).escalaGerada.resultado.length, 1);
     assert.equal(
       (await saved()).escalaGerada.resultado[0].colaborador.nome,

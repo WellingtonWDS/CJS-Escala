@@ -1,3 +1,4 @@
+const { clicarCalculo } = require("./helpers/calculo.cjs");
 const { irParaEtapa } = require("./helpers/etapas.cjs");
 const assert = require("node:assert/strict");
 
@@ -23,7 +24,7 @@ module.exports = async function testarTutorial({ browser, baseURL }) {
       () => document.getElementById("cfg-mes").options.length === 12,
     );
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     const saved = await page.evaluate(() => JSON.stringify(localStorage));
     const result = await page.locator("#resultado-gerar").innerHTML();
     assert.equal(await page.locator("#tutorial-guiado").count(), 0);

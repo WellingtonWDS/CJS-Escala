@@ -1,3 +1,4 @@
+const { clicarCalculo } = require("./helpers/calculo.cjs");
 const assert = require("node:assert/strict");
 const path = require("node:path");
 const fs = require("node:fs/promises");
@@ -75,7 +76,7 @@ module.exports = async function testarComputoCct({ browser, baseURL }) {
       .locator('#colab-list [data-field="sexo"]')
       .selectOption("masculino");
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     s = await saved();
     const d = s.escalaGerada.resultado[0].dias.find(
       (d) => d.data === "2026-10-01",
@@ -144,7 +145,7 @@ module.exports = async function testarComputoCct({ browser, baseURL }) {
     await page.locator("#act-fim").fill("2026-09-30");
     await page.locator("#act-fim").dispatchEvent("change");
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     const vencido = (await saved()).escalaGerada.resultado[0].dias.find(
       (d) => d.data === "2026-10-01",
     );

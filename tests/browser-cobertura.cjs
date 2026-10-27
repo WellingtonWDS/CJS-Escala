@@ -1,3 +1,4 @@
+const { clicarCalculo } = require("./helpers/calculo.cjs");
 const {
   respondToDialogs,
   waitForDialogs,
@@ -88,7 +89,7 @@ module.exports = async function testarCobertura({ browser, baseURL }) {
     await cadastrar("Atendente", 2);
     assert.equal((await saved()).demandasCobertura.length, 1);
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     await waitForDialogs(page);
     let r = (await saved()).escalaGerada.coberturaOperacional;
     assert.ok(
@@ -110,7 +111,7 @@ module.exports = async function testarCobertura({ browser, baseURL }) {
     await waitForDialogs(page);
     assert.equal((await saved()).escalaGerada, null);
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     await waitForDialogs(page);
     r = (await saved()).escalaGerada.coberturaOperacional;
     assert.deepEqual(
@@ -137,7 +138,7 @@ module.exports = async function testarCobertura({ browser, baseURL }) {
     );
     assert.equal(await page.locator("[data-cobertura-editar]").count(), 2);
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     await waitForDialogs(page);
     assert.ok(
       (await saved()).escalaGerada.coberturaOperacional.lacunas.every(
@@ -205,7 +206,7 @@ module.exports = async function testarCobertura({ browser, baseURL }) {
     }
     assert.equal((await saved()).demandasCobertura.length, 0);
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     await waitForDialogs(page);
     await irParaEtapa(page, "#relatorio-cobertura");
     assert.match(

@@ -1,3 +1,4 @@
+const { clicarCalculo } = require("./helpers/calculo.cjs");
 const assert = require("node:assert/strict");
 module.exports = async function testarEtapas({ browser, baseURL }) {
   const context = await browser.newContext({ timezoneId: "America/Sao_Paulo" });
@@ -106,7 +107,7 @@ module.exports = async function testarEtapas({ browser, baseURL }) {
     await page.goto(baseURL + "/#%E0%A4%A");
     await conferir(0);
     await page.locator('[data-etapa-link="sec-gerar"]').click();
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     assert.match(
       await page.locator("#resultado-gerar").innerText(),
       /Escala mensal/,

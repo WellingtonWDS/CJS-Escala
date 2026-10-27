@@ -1,3 +1,4 @@
+const { clicarCalculo } = require("./helpers/calculo.cjs");
 const { irParaEtapa } = require("./helpers/etapas.cjs");
 const assert = require("node:assert/strict");
 module.exports = async function testarFeriadoFolga({ browser, baseURL }) {
@@ -79,20 +80,20 @@ module.exports = async function testarFeriadoFolga({ browser, baseURL }) {
       }
     };
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     await conferir();
     await page.reload();
     await page.waitForFunction(
       () => document.documentElement.dataset.ready === "true",
     );
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     await conferir();
     await irParaEtapa(page, "#sec-feriados");
     await checkbox.check();
     assert.equal((await saved()).escalaGerada, null);
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     const state = await saved();
     for (const r of state.escalaGerada.resultado) {
       const semana = r.dias.filter(
@@ -114,7 +115,7 @@ module.exports = async function testarFeriadoFolga({ browser, baseURL }) {
     await irParaEtapa(page, "#sec-feriados");
     await checkbox.uncheck();
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     await conferir();
     assert.deepEqual(errors, []);
     console.log(

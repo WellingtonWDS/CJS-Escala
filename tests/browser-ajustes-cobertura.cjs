@@ -1,3 +1,4 @@
+const { clicarCalculo } = require("./helpers/calculo.cjs");
 const assert = require("node:assert/strict");
 const { irParaEtapa } = require("./helpers/etapas.cjs");
 module.exports = async function ({ browser, baseURL }) {
@@ -71,7 +72,7 @@ module.exports = async function ({ browser, baseURL }) {
         JSON.parse(localStorage.getItem("fintria-escala-dp-v2")),
       );
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     const inicial = (await saved()).escalaGerada;
     const diagnostico = page.locator(
       "#resultado-gerar [data-diagnostico-equipe]",
@@ -82,6 +83,18 @@ module.exports = async function ({ browser, baseURL }) {
     );
     assert.ok(await diagnostico.locator("[data-diagnostico-faixa]").count());
     const painel = page.locator("#resultado-gerar-ajustes");
+    async function confirmarResultado(painelAtual) {
+      const modal = page.locator('dialog[data-app-dialog][open]');
+      await modal.waitFor({ state: "visible" });
+      const resumo = await modal.locator("#app-dialog-message").textContent();
+      assert.match(await modal.locator("h2").textContent(), /cobertura/);
+      assert.notEqual(await painelAtual.locator("[data-ajuste-mensagem]").textContent(), resumo);
+      assert.equal(await painelAtual.locator("[data-ajuste-aplicar]").count(), 0);
+      await modal.locator("[data-dialog-accept]").click();
+      await modal.waitFor({ state: "hidden" });
+      assert.equal(await painelAtual.locator("[data-ajuste-mensagem]").textContent(), resumo);
+      return resumo;
+    }
     // Hold the worker request to exercise visible loading and cancellation without sleep.
     let liberar;
     const bloqueado = new Promise((resolve) => (liberar = resolve));
@@ -110,6 +123,7 @@ module.exports = async function ({ browser, baseURL }) {
     );
     assert.deepEqual((await saved()).escalaGerada, inicial);
     await painel.locator("[data-ajuste-buscar]").click();
+    await confirmarResultado(painel);
     await painel.locator("[data-ajuste-aplicar]").waitFor({ state: "visible" });
     assert.deepEqual((await saved()).escalaGerada, inicial);
     assert.match(
@@ -122,6 +136,10 @@ module.exports = async function ({ browser, baseURL }) {
     assert.ok(s.escalaGerada.ajustesCobertura);
     assert.equal(await diagnostico.getAttribute("data-status"), "coberta");
     assert.ok(await painel.locator("[data-ajuste-desfazer]").isEnabled());
+    const aplicado = structuredClone((await saved()).escalaGerada);
+    await painel.locator("[data-ajuste-buscar]").click();
+    assert.match(await confirmarResultado(painel), /Nenhum ajuste seguro/);
+    assert.deepEqual((await saved()).escalaGerada, aplicado);
     await page.reload();
     await page.waitForFunction(
       () => document.documentElement.dataset.ready === "true",
@@ -205,13 +223,14 @@ module.exports = async function ({ browser, baseURL }) {
     await page.locator("#conversao-periodo").fill("2026-10");
     await page.locator("#conversao-fase").selectOption("definitivo40");
     await page.locator("#conversao-folgas").selectOption("fim_semana");
-    await page.locator("#btn-converter").click();
+    await clicarCalculo(page, "#btn-converter");
     s = await saved();
     assert.ok(s.conversao);
     const origem = structuredClone(s.conversao.origem),
       faltantes = s.conversao.comparacao.faltantesDepois;
     const proposta = page.locator("#resultado-proposta-ajustes");
     await proposta.locator("[data-ajuste-buscar]").click();
+    await confirmarResultado(proposta);
     await proposta
       .locator("[data-ajuste-aplicar]")
       .waitFor({ state: "visible" });
@@ -237,6 +256,7 @@ module.exports = async function ({ browser, baseURL }) {
     await page.locator("#tg-cobertura").uncheck();
     await irParaEtapa(page, "#btn-converter");
     await proposta.locator("[data-ajuste-buscar]").click();
+    await confirmarResultado(proposta);
     assert.match(
       await proposta.locator("[data-ajuste-mensagem]").textContent(),
       /desatualizada/,
@@ -265,7 +285,7 @@ module.exports = async function ({ browser, baseURL }) {
       };
     });
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     let liberarEdicao;
     const bloqueioEdicao = new Promise((resolve) => (liberarEdicao = resolve));
     await page.route(

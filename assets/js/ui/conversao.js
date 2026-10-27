@@ -1,3 +1,4 @@
+import { executarCalculoEscala } from "./calculo-escala.js";
 import { renderDiagnosticoEquipe } from "./diagnostico-equipe.js";
 import { converterEscala, compararConversao } from "../domain/conversao.js";
 import { createCalendarioUI } from "./calendario.js";
@@ -133,7 +134,7 @@ export function createConversaoUI({
           marcarDesatualizada();
           salvar();
         };
-      el("btn-converter").onclick = () => {
+      el("btn-converter").onclick = async () => {
         el("conversao-mensagem").textContent = "";
         if (!validarPreenchimento()) return;
         try {
@@ -142,15 +143,20 @@ export function createConversaoUI({
             fase: el("conversao-fase").value,
             folgas: el("conversao-folgas").value,
           };
-          state.conversao = converterEscala(state, opcoes);
-          state.destinoConversao = opcoes;
-          state.escalaGerada = structuredClone(state.conversao.origem.escala);
-          renderEscalaGerada();
-          renderConversao();
-          salvar();
-          el("conversao-resultados").scrollIntoView({
-            behavior: "instant",
-            block: "start",
+          await executarCalculoEscala({ state, env, botao: el("btn-converter"), operacao: "converter", opcoes,
+            fallback: () => converterEscala(state, opcoes),
+            aplicar: (resultado) => {
+              state.conversao = resultado;
+              state.destinoConversao = opcoes;
+              state.escalaGerada = structuredClone(state.conversao.origem.escala);
+              renderEscalaGerada();
+              renderConversao();
+              salvar();
+              el("conversao-resultados").scrollIntoView({
+                behavior: "instant",
+                block: "start",
+              });
+            },
           });
         } catch (error) {
           el("conversao-mensagem").textContent = error.message;

@@ -1,3 +1,4 @@
+const { clicarCalculo } = require("./helpers/calculo.cjs");
 const {
   respondToDialogs,
   waitForDialogs,
@@ -129,7 +130,7 @@ module.exports = async function ({ browser, baseURL }) {
       /10:00–17:00/,
     );
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     await waitForDialogs(page);
     let s = await salvo();
     const dias = s.escalaGerada.resultado[0].dias;

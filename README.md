@@ -69,7 +69,7 @@ assets/js/
   domain/                       Datas, feriados, cálculo e validação das escalas
   state/                        Estado inicial e persistência
   ui/                           Formulários, colaboradores, calendário e transição
-  workers/                      Busca de ajustes de cobertura em segundo plano
+  workers/                      Geração, conversão e busca de ajustes em segundo plano
   shared/                       Formatação de texto e escape
   import/                       Leitura e validação de CSV e relatórios Domínio
   export/                       Geração e download de CSV
@@ -214,7 +214,7 @@ Componente: `assets/js/ui/dialogs.js` e `assets/css/dialogs.css`. `getDialogs(do
 
 ## Carregamento e animações
 
-Operações demoradas de cadastro, rascunhos, login, importação e buscas de ajuste mostram um overlay modal com fundo escurecido/desfocado e animação central nas cores do sistema. A indicação só aparece após 180 ms, evita piscar em chamadas rápidas e acompanha o término real da operação. Confirmações não ficam encobertas; buscas canceláveis mantêm Cancelar busca no overlay. Sucesso, falha e cancelamento liberam a interface, e uma operação não esconde o carregamento de outra ainda ativa.
+Operações demoradas de cadastro, rascunhos, login, importação e buscas de ajuste mostram um overlay modal com fundo escurecido/desfocado e animação central nas cores do sistema. Nas chamadas comuns, a indicação aparece após 180 ms para evitar piscar em operações rápidas. Ao gerar a escala atual ou a proposta 5×2, aparece imediatamente antes do cálculo, com o botão bloqueado até terminar. Geração e conversão usam um Worker local para manter a animação fluida; navegadores sem Worker mantêm um fallback com pintura do overlay antes do cálculo. Resultados de preenchimentos alterados durante o processamento são descartados. A indicação acompanha o término real da operação. Confirmações não ficam encobertas; buscas canceláveis mantêm Cancelar busca no overlay. Sucesso, falha e cancelamento liberam a interface, e uma operação não esconde o carregamento de outra ainda ativa.
 
 Janelas têm entrada/saída suaves; painéis de gestão, login, tutorial e menu lateral também recebem transições. Movimento reduzido do navegador remove rotações e transições. Componentes: assets/js/ui/loading.js, assets/js/ui/motion.js e assets/css/motion.css. O loading acompanha aria-busy=true dos fluxos assíncronos; sempre remover esse atributo em finally, inclusive em erros e descarte de leitura de arquivo. O overlay não representa progresso percentual nem inventa duração de processamento. Não requer alteração de banco ou novas variáveis.
 
@@ -314,7 +314,7 @@ Regras em `assets/js/domain/restricoes.js`; formulário em `assets/js/ui/restric
 
 1. Na ficha do colaborador, abra **Funções habilitadas para cobertura** e marque outras funções que ele pode exercer. A função principal já está habilitada. As opções vêm dos cargos e habilitações cadastrados, sem campo livre na cobertura. O sistema não infere qualificação profissional por nome ou semelhança de cargos.
 2. Ative a cobertura, cadastre os mínimos e gere a escala ou a proposta 5×2. Na grade correspondente, use **Buscar ajustes de cobertura**.
-3. Acompanhe o carregamento, o número de alternativas avaliadas e os ajustes encontrados. **Cancelar busca** encerra o processamento sem alterar a escala. A busca ocorre em um Web Worker local, sem enviar cadastros ou planilhas a serviços externos.
+3. Acompanhe o carregamento, o número de alternativas avaliadas e os ajustes encontrados. O resumo abre primeiro em um modal; ao fechar, a mesma mensagem fica abaixo do botão e a prévia é liberada. O retorno também destaca buscas sem ajustes e falhas. Nenhuma alteração é aplicada ao fechar o modal. **Cancelar busca** encerra o processamento sem alterar a escala. A busca ocorre em um Web Worker local, sem enviar cadastros ou planilhas a serviços externos.
 4. Confira a prévia por pessoa e data: trabalho/folga, função, entrada, saída, intervalo e horas antes/depois, redução de horas-pessoa descobertas, lacunas restantes e conferências da escala sugerida. **Aplicar ajustes sugeridos** atualiza grade, validações, cobertura, CSV e comparação. A origem da conversão é preservada quando os ajustes são feitos na proposta.
 5. **Desfazer último ajuste** restaura o estado anterior à última aplicação, inclusive após recarregar. Alterações posteriores na escala ou configuração desabilitam o desfazer para preservar essas alterações. Não é um histórico completo de versões.
 

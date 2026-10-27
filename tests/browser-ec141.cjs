@@ -1,3 +1,4 @@
+const { clicarCalculo } = require("./helpers/calculo.cjs");
 const { irParaEtapa } = require("./helpers/etapas.cjs");
 const assert = require("node:assert/strict");
 module.exports = async function testarEc141({ browser, baseURL }) {
@@ -25,7 +26,7 @@ module.exports = async function testarEc141({ browser, baseURL }) {
       );
     assert.equal(await page.locator("[data-ec141]").count(), 0);
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     assert.ok(
       !(await saved()).escalaGerada.validacoes.some((v) =>
         v.issues.some((i) =>
@@ -58,7 +59,7 @@ module.exports = async function testarEc141({ browser, baseURL }) {
       /Vigência automática/,
     );
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     let state = await saved();
     for (const r of state.escalaGerada.resultado) {
       const semana = r.dias.filter(
@@ -94,7 +95,7 @@ module.exports = async function testarEc141({ browser, baseURL }) {
       await input.dispatchEvent("change");
     }
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     state = await saved();
     assert.ok(
       !state.escalaGerada.validacoes[0].issues.some((i) =>
@@ -107,7 +108,7 @@ module.exports = async function testarEc141({ browser, baseURL }) {
       .locator('[data-ec141="salarioAtual"]')
       .dispatchEvent("change");
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     state = await saved();
     assert.ok(
       state.escalaGerada.validacoes[0].issues.some(
@@ -128,7 +129,7 @@ module.exports = async function testarEc141({ browser, baseURL }) {
     await irParaEtapa(page, "#regime-alerta");
     assert.match(await page.locator("#regime-alerta").innerText(), /SIMULAÇÃO/);
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     state = await saved();
     assert.equal(state.modoRegime, "simulacao");
     assert.ok(
@@ -143,7 +144,7 @@ module.exports = async function testarEc141({ browser, baseURL }) {
     await irParaEtapa(page, "#cfg-mes");
     await page.locator("#cfg-mes").selectOption("11");
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     state = await saved();
     assert.ok(
       state.escalaGerada.resultado[0].dias.some(
@@ -178,7 +179,7 @@ module.exports = async function testarEc141({ browser, baseURL }) {
     await irParaEtapa(page, "#act-diaria");
     await page.locator("#act-diaria").check();
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     assert.ok(
       (await saved()).escalaGerada.validacoes[0].issues.some(
         (i) => i.tipo === "INSTRUMENTO_FORA_VIGENCIA",
@@ -214,7 +215,7 @@ module.exports = async function testarEc141({ browser, baseURL }) {
       await art8.locator(`[data-ec141="${field}"]`).dispatchEvent("change");
     }
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     assert.ok(
       (await saved()).escalaGerada.validacoes[0].issues.some(
         (i) => i.tipo === "ART8_ENQUADRAMENTO",
@@ -231,7 +232,7 @@ module.exports = async function testarEc141({ browser, baseURL }) {
       .locator('[data-ec141="dataAditamento"]')
       .dispatchEvent("change");
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     assert.ok(
       (await saved()).escalaGerada.validacoes[0].issues.some(
         (i) => i.tipo === "ART9_ENQUADRAMENTO",

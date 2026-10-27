@@ -1,3 +1,4 @@
+const { clicarCalculo } = require("./helpers/calculo.cjs");
 const assert = require('node:assert/strict');
 module.exports = async ({browser,baseURL}) => {
  const {criarCenariosSegmentos}=await import('../database/demo/segmentos.mjs');
@@ -15,12 +16,12 @@ module.exports = async ({browser,baseURL}) => {
    await page.waitForFunction(()=>document.documentElement.dataset.ready==='true');
    assert.equal(await page.locator('#colab-list > div').count(),modelo.state.colaboradores.length);
    await page.locator('[data-etapa-link="sec-gerar"]').click();
-   await page.locator('#btn-gerar').click();
+   await clicarCalculo(page, "#btn-gerar");
    await page.locator('#resultado-gerar .escala-mensal').first().waitFor();
    const estado=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('fintria-escala-dp-v2')));
    assert.equal((await estado()).escalaGerada.resultado.length,modelo.state.colaboradores.length);
    if(!empresa.name.startsWith('Entidade')){
-    await page.locator('#btn-converter').click();
+    await clicarCalculo(page, "#btn-converter");
     await page.locator('#resultado-proposta .escala-mensal').first().waitFor();
     const s=await estado();
     if(modelo.tipo==='contratacao')assert.equal(s.conversao.comparacao.status,'insuficiente');

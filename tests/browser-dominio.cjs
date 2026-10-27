@@ -1,3 +1,4 @@
+const { clicarCalculo } = require("./helpers/calculo.cjs");
 const { irParaEtapa } = require("./helpers/etapas.cjs");
 const assert = require("node:assert/strict");
 const path = require("node:path");
@@ -129,7 +130,7 @@ module.exports = async function testarDominio({ browser, baseURL }) {
       true,
     );
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     s = await saved();
     assert.equal(s.escalaGerada.resultado.length, 6);
     const dia = (r, data) => r.dias.find((d) => d.data === data);
@@ -178,7 +179,7 @@ module.exports = async function testarDominio({ browser, baseURL }) {
     assert.equal(s.colaboradores[0].quadroDominio.semana[0].status, "folga");
     assert.equal(s.colaboradores[1].horasSemana, null);
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     await irParaEtapa(page, "#resultado-gerar");
     assert.match(
       await page.locator("#resultado-gerar").innerText(),
@@ -203,7 +204,7 @@ module.exports = async function testarDominio({ browser, baseURL }) {
     assert.equal(s.colaboradores.length, 17);
     assert.equal(s.tipoEscala, "custom");
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     await irParaEtapa(page, "#resultado-gerar");
     assert.match(
       await page.locator("#resultado-gerar").innerText(),
@@ -253,7 +254,7 @@ module.exports = async function testarDominio({ browser, baseURL }) {
         ),
     );
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     s = await saved();
     assert.equal(s.escalaGerada.resultado.length, 17);
     assert.equal(dia(s.escalaGerada.resultado[0], "2026-10-01").status, "T");

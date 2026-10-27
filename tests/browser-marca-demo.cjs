@@ -1,3 +1,4 @@
+const { clicarCalculo } = require("./helpers/calculo.cjs");
 const assert = require('node:assert/strict');
 module.exports = async ({browser,baseURL}) => {
  const {criarEstadoDemo}=await import('../database/demo/state.mjs');
@@ -33,9 +34,9 @@ module.exports = async ({browser,baseURL}) => {
     await page.locator('#sidebar-toggle').click();
    }
    await page.locator('[data-etapa-link="sec-gerar"]').click();
-   await page.locator('#btn-gerar').click();
+   await clicarCalculo(page, "#btn-gerar");
    await page.locator('#resultado-gerar .escala-marca').first().waitFor();
-   await page.locator('#btn-converter').click();
+   await clicarCalculo(page, "#btn-converter");
    await page.locator('#resultado-proposta .escala-marca').first().waitFor();
    for(const img of await page.locator('.escala-identidade img').all()) {
     await img.evaluate(el=>el.decode());

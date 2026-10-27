@@ -30,6 +30,20 @@ export function createAjustesCoberturaUI({
     worker?.terminate();
     worker = null;
   }
+  function terminarBusca() {
+    parar();
+    if (campo("buscar")) {
+      campo("buscar").disabled = false;
+      campo("cancelar").hidden = true;
+      campo("progresso").hidden = true;
+      elemento().removeAttribute("aria-busy");
+    }
+  }
+  async function informarErro(texto, raiz = elemento()) {
+    if (elemento() !== raiz) return;
+    await env.alert(texto, { title: "Busca de ajustes de cobertura", confirmText: "Entendi" });
+    if (elemento() === raiz) mensagem(texto);
+  }
   function renderPainel() {
     parar();
     plano = null;
@@ -66,15 +80,16 @@ export function createAjustesCoberturaUI({
       return d.status === "F" ? "Folga" : d.status;
     return `${horarioComDia(d.entradaMin)}–${horarioComDia(d.saidaMin)} · ${funcaoDoDia(c, d)} · ${fmtHoras(d.horas)} de trabalho${d.intervaloMin ? ` · intervalo ${horarioComDia(d.intervaloInicioMin)}–${horarioComDia(d.intervaloFimMin)}` : ""}`;
   }
-  function mostrarPrevia() {
-    const pessoas = state.escalaGerada.resultado;
+  function resumoBusca() {
     const reducao =
       (plano.antes.minutosFaltantes - plano.depois.minutosFaltantes) / 60;
-    mensagem(
-      plano.alteracoes.length
+    return plano.alteracoes.length
         ? `Sugestão encontrada: redução de ${fmtHoras(reducao)} horas-pessoa descobertas. ${fmtHoras(plano.depois.minutosFaltantes / 60)} continuam sem cobertura. Confira as alterações abaixo.`
-        : "Nenhum ajuste seguro foi encontrado nesta busca. A escala permanece igual.",
-    );
+        : "Nenhum ajuste seguro foi encontrado nesta busca. A escala permanece igual.";
+  }
+  function mostrarPrevia(texto) {
+    const pessoas = state.escalaGerada.resultado;
+    mensagem(texto);
     campo("previa").innerHTML =
       `${plano.explicacoes.map((t) => `<p class="text-sm text-slate-600 mt-2">${escapeHtml(t)}</p>`).join("")}${
         plano.alteracoes.length
@@ -113,7 +128,7 @@ export function createAjustesCoberturaUI({
   }
   function bindEvents() {
     if (!state.coberturaAtiva) return;
-    campo("buscar")?.addEventListener("click", () => {
+    campo("buscar")?.addEventListener("click", async () => {
       try {
         checar();
         parar();
@@ -139,16 +154,7 @@ export function createAjustesCoberturaUI({
         campo("contador").textContent = "Preparando a busca…";
         elemento().setAttribute("aria-busy", "true");
         mensagem("Buscando alternativas de cobertura…");
-        const terminar = () => {
-          parar();
-          if (campo("buscar")) {
-            campo("buscar").disabled = false;
-            campo("cancelar").hidden = true;
-            campo("progresso").hidden = true;
-            elemento().removeAttribute("aria-busy");
-          }
-        };
-        worker.onmessage = (event) => {
+        worker.onmessage = async (event) => {
           if (worker !== atual) return;
           if (elemento() !== raiz) {
             parar();
@@ -162,7 +168,7 @@ export function createAjustesCoberturaUI({
               `${p.tentativas} alternativas avaliadas · ${p.ajustes} ajustes encontrados`;
             return;
           }
-          terminar();
+          terminarBusca();
           try {
             checar();
             if (event.data.erro) throw new Error(event.data.erro);
@@ -171,27 +177,35 @@ export function createAjustesCoberturaUI({
                 "Os dados mudaram durante a busca. Busque novas sugestões.",
               );
             plano = event.data.plano;
-            mostrarPrevia();
+            const texto = resumoBusca(), encontrado = plano;
+            await env.alert(texto, {
+              title: plano.alteracoes.length ? "Ajustes de cobertura encontrados" : "Resultado da busca de cobertura",
+              confirmText: plano.alteracoes.length ? "Ver sugestões" : "Entendi",
+            });
+            if (elemento() !== raiz || plano !== encontrado) return;
+            checar();
+            if (plano.assinaturaAntes !== assinaturaAjustes(state))
+              throw new Error("Os dados mudaram. Busque novas sugestões antes de aplicar ajustes.");
+            mostrarPrevia(texto);
           } catch (error) {
-            mensagem(error.message);
+            await informarErro(error.message, raiz);
           }
         };
-        worker.onerror = () => {
+        worker.onerror = async () => {
           if (worker !== atual) return;
           if (elemento() !== raiz) {
             parar();
             return;
           }
-          terminar();
-          mensagem(
-            "Não foi possível concluir a busca. Confira a conexão e tente novamente.",
+          terminarBusca();
+          await informarErro(
+            "Não foi possível concluir a busca. Confira a conexão e tente novamente.", raiz,
           );
         };
         worker.postMessage({ config });
       } catch (error) {
-        parar();
-        if (campo("buscar")) campo("buscar").disabled = false;
-        mensagem(error.message);
+        terminarBusca();
+        await informarErro(error.message);
       }
     });
     campo("cancelar")?.addEventListener("click", () => {

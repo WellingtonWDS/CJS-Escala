@@ -22,6 +22,12 @@ Série, visto fiscal e a linha de origem do arquivo não são exibidos no cadast
 
 Os arquivos originais de `logos/` são copiados integralmente para a publicação. Símbolo colorido no login/cabeçalho e favicon; branco transparente no menu e no centro do carregamento; preto transparente na impressão da escala. O nome Reescala acompanha o símbolo, que permanece visível no menu recolhido. As versões com fundo sólido ficam disponíveis para usos externos; a versão preta sobre branco é usada no ícone Apple. Somente os três arquivos necessários antes do login são públicos; módulos e dados continuam protegidos. As chaves internas de armazenamento, API e permissões mantêm seus nomes para preservar os dados existentes.
 
+## Cálculos e retorno das buscas
+
+Geração da escala atual e da proposta 5×2 exibem o overlay imediatamente, antes do processamento, com rótulo específico e bloqueio de duplicação. O cálculo roda em `assets/js/workers/calculo-escala.js`; aplicação, renderização e salvamento permanecem no fluxo de UI existente. Falhas liberam o botão/overlay e os dados que mudaram durante o cálculo não recebem resultados antigos. Sem Worker, a geração mantém fallback local após dar oportunidade de pintura ao carregamento.
+
+Buscar ajustes de cobertura abre o resumo em um modal do sistema antes de liberar a prévia. Depois de fechar, o mesmo texto aparece abaixo do botão. Sucesso, ausência de sugestões e erros recebem destaque; cancelar a busca conserva o retorno discreto existente. Aplicar continua sendo uma ação separada e o estado é conferido novamente após o modal.
+
 ## Organização dos estilos
 
 `interface.css` é a camada visual compartilhada e vem depois dos arquivos específicos. As regras de tela ficam em `@media screen`; não substituir regras de impressão com seletores globais indiscriminados. `login.css` mantém o acesso independente dos estilos internos. `motion.css` continua responsável por animações e movimento reduzido.

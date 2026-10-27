@@ -1,3 +1,4 @@
+import { executarCalculoEscala } from "./calculo-escala.js";
 import { createEdicaoManualUI } from "./edicao-manual.js";
 import {
   assinaturaAjustes,
@@ -614,13 +615,13 @@ export function createCalendarioUI({
     });
   }
 
-  function gerarEscala() {
+  function gerarEscala(resultado = null) {
     if (!state.colaboradores.length) {
       alert("Cadastre ao menos um colaborador.");
       return;
     }
     try {
-      state.escalaGerada = gerarDadosEscala();
+      state.escalaGerada = resultado || gerarDadosEscala();
     } catch (error) {
       document.getElementById(containerId).textContent = error.message;
       return;
@@ -638,6 +639,15 @@ export function createCalendarioUI({
     bindEvents,
   };
   function bindEvents() {
-    document.getElementById("btn-gerar").onclick = gerarEscala;
+    const botao = document.getElementById("btn-gerar");
+    botao.onclick = async () => {
+      if (!state.colaboradores.length) return gerarEscala();
+      try {
+        await executarCalculoEscala({ state, env, botao, operacao: "gerar",
+          fallback: gerarDadosEscala, aplicar: gerarEscala });
+      } catch (error) {
+        document.getElementById(containerId).textContent = error.message;
+      }
+    };
   }
 }

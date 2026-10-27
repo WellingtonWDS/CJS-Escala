@@ -1,3 +1,4 @@
+const { clicarCalculo } = require("./helpers/calculo.cjs");
 const assert = require("node:assert/strict");
 module.exports = async function testarPendencias({ browser, baseURL }) {
   const context = await browser.newContext({ timezoneId: "America/Sao_Paulo" });
@@ -54,7 +55,7 @@ module.exports = async function testarPendencias({ browser, baseURL }) {
         .evaluate((el) => getComputedStyle(el).animationName),
       "none",
     );
-    await page.locator("#btn-converter").click();
+    await clicarCalculo(page, "#btn-converter");
     assert.equal((await salvo()).conversao, null);
     assert.match(
       await page.locator("#preenchimento-bloqueio").innerText(),
@@ -81,7 +82,7 @@ module.exports = async function testarPendencias({ browser, baseURL }) {
       await page.locator("#preenchimento-bloqueio").isVisible(),
       false,
     );
-    await page.locator("#btn-converter").click();
+    await clicarCalculo(page, "#btn-converter");
     assert.ok((await salvo()).conversao);
     await ir("sec-jornada");
     await page.locator("#j-entrada").fill("");
@@ -103,7 +104,7 @@ module.exports = async function testarPendencias({ browser, baseURL }) {
     await page.locator("#instrumento-compensacao").selectOption("act_cct");
     await ir("sec-gerar");
     assert.deepEqual(await marcadas(), ["sec-tipo"]);
-    await page.locator("#btn-converter").click();
+    await clicarCalculo(page, "#btn-converter");
     await page
       .locator(
         '#preenchimento-bloqueio [data-pendencia-seletor="#act-identificacao"]',
@@ -144,7 +145,7 @@ module.exports = async function testarPendencias({ browser, baseURL }) {
     await page.locator("#btn-tutorial").click();
     for (let i = 0; i < 9; i++) await page.locator("#tutorial-proximo").click();
     assert.deepEqual(await marcadas(), []);
-    await page.locator("#btn-converter").click();
+    await clicarCalculo(page, "#btn-converter");
     assert.equal(
       await page.locator("#preenchimento-bloqueio").isVisible(),
       true,

@@ -1,3 +1,4 @@
+const { clicarCalculo } = require("./helpers/calculo.cjs");
 const { irParaEtapa } = require("./helpers/etapas.cjs");
 const assert = require("node:assert/strict");
 module.exports = async function testarFolgas({ browser, baseURL }) {
@@ -28,7 +29,7 @@ module.exports = async function testarFolgas({ browser, baseURL }) {
       await page.locator(`#folga-dias-permitidos [data-day="${day}"]`).click();
     }
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     const saved = () =>
       page.evaluate(() =>
         JSON.parse(localStorage.getItem("fintria-escala-dp-v2")),
@@ -73,7 +74,7 @@ module.exports = async function testarFolgas({ browser, baseURL }) {
       () => document.documentElement.dataset.ready === "true",
     );
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     await conferir();
     assert.deepEqual(errors, []);
     console.log(

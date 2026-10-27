@@ -1,3 +1,4 @@
+const { clicarCalculo } = require("./helpers/calculo.cjs");
 const {
   respondToDialogs,
   waitForDialogs,
@@ -68,7 +69,7 @@ const { chromium } = require("playwright");
         type === "12x36",
       );
       await irParaEtapa(page, "#btn-gerar");
-      await page.locator("#btn-gerar").click();
+      await clicarCalculo(page, "#btn-gerar");
       await waitForDialogs(page);
       await irParaEtapa(page, "#resultado-gerar");
       assert.match(
@@ -158,7 +159,7 @@ const { chromium } = require("playwright");
       "OK: persistência compatível com a chave e o formato anteriores",
     );
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     await waitForDialogs(page);
     const horariosAntes = (await saved()).escalaGerada.resultado.map((r) =>
       r.dias.map((d) => [d.data, d.status, d.horas]),
@@ -206,7 +207,7 @@ const { chromium } = require("playwright");
       "OK: toggle aplica turnos imediatamente, mostra grupos e preserva horas/folgas",
     );
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     await waitForDialogs(page);
     await irParaEtapa(page, "#resultado-gerar");
     assert.match(await page.locator("#resultado-gerar").innerText(), /14:00/);
@@ -319,6 +320,7 @@ const { chromium } = require("playwright");
       browser,
       baseURL: `http://127.0.0.1:${server.address().port}`,
     });
+    await require("./browser-calculo-loading.cjs")({ browser, baseURL: `http://127.0.0.1:${server.address().port}` });
     await require("./browser-loading.cjs")({
       browser,
       baseURL: `http://127.0.0.1:${server.address().port}`,

@@ -1,3 +1,4 @@
+const { clicarCalculo } = require("./helpers/calculo.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs/promises");
 const path = require("node:path");
@@ -172,7 +173,7 @@ module.exports = async function testarSexoNomes({ browser, baseURL }) {
     await page.locator("#btn-sugerir-sexos").click();
     assert.equal((await saved()).colaboradores[2].sexo, "nao_informado");
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     const promessa = page.waitForEvent("download");
     await page.locator("#btn-exportar-csv").click();
     const d = await promessa;

@@ -1,3 +1,4 @@
+const { clicarCalculo } = require("./helpers/calculo.cjs");
 const {
   respondToDialogs,
   waitForDialogs,
@@ -41,7 +42,7 @@ module.exports = async function testarFeriados({ browser, baseURL }) {
     await horas.fill("40");
     await horas.dispatchEvent("change");
     await irParaEtapa(page, "#btn-gerar");
-    await page.locator("#btn-gerar").click();
+    await clicarCalculo(page, "#btn-gerar");
     await waitForDialogs(page);
     const resumo = page.locator(
       '[data-resumo-semanal][data-colaborador="1"][data-semana="2026-10-12"]',

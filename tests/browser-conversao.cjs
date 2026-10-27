@@ -1,3 +1,4 @@
+const { clicarCalculo } = require("./helpers/calculo.cjs");
 const {
   respondToDialogs,
   waitForDialogs,
@@ -69,7 +70,7 @@ module.exports = async function testarConversao({ browser, baseURL }) {
     await irParaEtapa(page, "#conversao-periodo");
     await page.locator("#conversao-periodo").fill("2028-02");
     await irParaEtapa(page, "#btn-converter");
-    await page.locator("#btn-converter").click();
+    await clicarCalculo(page, "#btn-converter");
     await waitForDialogs(page);
     await page.waitForFunction(
       () =>
@@ -165,7 +166,7 @@ module.exports = async function testarConversao({ browser, baseURL }) {
       true,
     );
     await irParaEtapa(page, "#btn-converter");
-    await page.locator("#btn-converter").click();
+    await clicarCalculo(page, "#btn-converter");
     await waitForDialogs(page);
     assert.ok((await saved()).conversao.comparacao.lacunas.length);
     assert.ok(
@@ -180,7 +181,7 @@ module.exports = async function testarConversao({ browser, baseURL }) {
     await page.locator("#colab-list [data-remove]").last().click();
     await waitForDialogs(page);
     await irParaEtapa(page, "#btn-converter");
-    await page.locator("#btn-converter").click();
+    await clicarCalculo(page, "#btn-converter");
     await waitForDialogs(page);
     assert.equal((await saved()).conversao.comparacao.status, "insuficiente");
     await irParaEtapa(page, "#conversao-comparacao");
@@ -191,7 +192,7 @@ module.exports = async function testarConversao({ browser, baseURL }) {
     await irParaEtapa(page, "#tg-cobertura");
     await page.locator("#tg-cobertura").uncheck();
     await irParaEtapa(page, "#btn-converter");
-    await page.locator("#btn-converter").click();
+    await clicarCalculo(page, "#btn-converter");
     await waitForDialogs(page);
     assert.equal((await saved()).conversao.comparacao.status, "nao_avaliada");
     await irParaEtapa(page, "#conversao-diagnostico");
@@ -203,7 +204,7 @@ module.exports = async function testarConversao({ browser, baseURL }) {
     await page.locator('[data-tipo="5x2"]').click();
     await waitForDialogs(page);
     await irParaEtapa(page, "#btn-converter");
-    await page.locator("#btn-converter").click();
+    await clicarCalculo(page, "#btn-converter");
     await waitForDialogs(page);
     await irParaEtapa(page, "#conversao-mensagem");
     assert.match(
@@ -267,7 +268,7 @@ module.exports = async function testarConversao({ browser, baseURL }) {
       () => document.documentElement.dataset.ready === "true",
     );
     await irParaEtapa(page, "#btn-converter");
-    await page.locator("#btn-converter").click();
+    await clicarCalculo(page, "#btn-converter");
     await waitForDialogs(page);
     s = await saved();
     assert.equal(s.regimeJornada, "transicao42");
@@ -302,7 +303,7 @@ module.exports = async function testarConversao({ browser, baseURL }) {
       };
     });
     await irParaEtapa(page, "#btn-converter");
-    await page.locator("#btn-converter").click();
+    await clicarCalculo(page, "#btn-converter");
     await waitForDialogs(page);
     await irParaEtapa(page, "#conversao-mensagem");
     assert.match(
