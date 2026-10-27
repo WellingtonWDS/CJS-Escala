@@ -33,7 +33,7 @@ export function createAdminHandler({ env, fetchImpl = fetch, now = Date.now }) {
       if (!request.headers.get("content-type")?.startsWith("application/json"))
         return json({ error: "Formato inválido." }, 415);
       const raw = await request.text();
-      if (raw.length > 4096)
+      if (raw.length > 65536)
         return json({ error: "Requisição muito grande." }, 413);
       let body;
       try {
@@ -47,11 +47,36 @@ export function createAdminHandler({ env, fetchImpl = fetch, now = Date.now }) {
           value,
         );
       if (
-        !uuid(body?.officeId) ||
+        !(
+          uuid(body?.officeId) ||
+          (body?.action === "updateUser" && body.officeId === null)
+        ) ||
         !Array.isArray(body.companyIds) ||
         !body.companyIds.every(uuid)
       )
         return json({ error: "Confira o escritório e as empresas." }, 400);
+      if (body.action === "updateUser") {
+        if (
+          !uuid(body.userId) ||
+          !Number.isSafeInteger(body.revision) ||
+          body.revision < 1 ||
+          typeof body.name !== "string" ||
+          !body.name.trim() ||
+          body.name.length > 160 ||
+          !(
+            body.email === null ||
+            (typeof body.email === "string" &&
+              body.email.length <= 254 &&
+              /^\S+@\S+\.\S+$/.test(body.email.trim()))
+          ) ||
+          !["admin", "manager", "operator", "viewer"].includes(body.role) ||
+          typeof body.active !== "boolean" ||
+          typeof body.accountActive !== "boolean" ||
+          body.companyIds.length > 1000
+        )
+          return json({ error: "Confira os dados do usuário." }, 400);
+        return json(await service.updateUser(identity, body));
+      }
       if (body.action === "updateAccess") {
         if (!uuid(body.userId))
           return json({ error: "Selecione um operador." }, 400);
@@ -83,21 +108,23 @@ export function createAdminHandler({ env, fetchImpl = fetch, now = Date.now }) {
         201,
       );
     } catch (error) {
-      const status = [400, 401, 403, 409, 429].includes(error.status)
+      const status = [400, 401, 403, 404, 409, 429].includes(error.status)
         ? error.status
         : 503;
       return json(
         {
           error:
             status === 409
-              ? "Já existe uma conta com esse e-mail."
-              : status === 400
-                ? "Confira os dados, escritório e empresas selecionados."
-                : status === 403
-                  ? "Seu perfil não permite esta operação neste escritório."
-                  : status === 401
-                    ? "Sessão expirada ou revogada."
-                    : "Gestão de usuários indisponível. Confira a migração do banco e tente novamente.",
+              ? "O cadastro mudou ou o e-mail já está em uso. Atualize a lista e confira os dados."
+              : status === 404
+                ? "Usuário não encontrado."
+                : status === 400
+                  ? "Confira os dados. Não é permitido inativar ou alterar o próprio perfil; mantenha ao menos um Admin ativo."
+                  : status === 403
+                    ? "Seu perfil não permite esta operação neste escritório."
+                    : status === 401
+                      ? "Sessão expirada ou revogada."
+                      : "Gestão de usuários indisponível. Confira a migração do banco e tente novamente.",
         },
         status,
       );

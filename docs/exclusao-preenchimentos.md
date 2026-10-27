@@ -15,7 +15,7 @@ Se a resposta se perder na rede, o sistema mantém a seleção até obter confir
 
 Requer a migração **007_delete_drafts.sql**. Os testes locais não aplicam alterações na VPS. Não há nova variável de ambiente nem alteração no n8n.
 
-Para o banco dedicado `cjs_escala`, com 001/002 já executadas, o instalador abaixo verifica e aplica somente as migrações ausentes de 003 a 007. A promoção de Admin exige informar explicitamente o subject da identidade proprietária já cadastrada; use o mesmo UUID informado no provisionamento inicial. Não é o UUID interno de `cjs_private.users`.
+Para o banco dedicado `cjs_escala`, com 001/002 já executadas, o instalador abaixo verifica e aplica somente as migrações ausentes de 003 a 008. A promoção de Admin exige informar explicitamente o subject da identidade proprietária já cadastrada; use o mesmo UUID informado no provisionamento inicial. Não é o UUID interno de `cjs_private.users`.
 
 ```bash
 (
@@ -29,7 +29,8 @@ for arquivo in \
   migrations/004_roles_and_user_management.sql \
   migrations/005_company_registry.sql \
   migrations/006_registry_management.sql \
-  migrations/007_delete_drafts.sql
+  migrations/007_delete_drafts.sql \
+  migrations/008_users_directory.sql
 do
   curl -fsSL \
     "https://raw.githubusercontent.com/WellingtonWDS/CJS-Escala/main/database/$arquivo" \

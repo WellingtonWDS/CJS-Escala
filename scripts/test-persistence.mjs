@@ -1,3 +1,4 @@
+import { testUsersIntegration } from "../tests/helpers/users-integration.mjs";
 import { testDeleteIntegration } from "../tests/helpers/delete-integration.mjs";
 import { testRegistryIntegration } from "../tests/helpers/registry-integration.mjs";
 import { testCompanyIntegration } from "../tests/helpers/company-integration.mjs";
@@ -412,6 +413,11 @@ try {
     browserTest: process.argv.includes("--browser"),
   });
   await testDeleteIntegration({
+    env,
+    sql,
+    browserTest: process.argv.includes("--browser"),
+  });
+  await testUsersIntegration({
     env,
     sql,
     browserTest: process.argv.includes("--browser"),

@@ -97,6 +97,39 @@ test("gestão usa sessão normal, verifica origem e encaminha apenas operações
     200,
   );
   assert.equal(calls.at(-1).payload.p_user_id, userId);
+  const update = {
+    action: "updateUser",
+    userId,
+    officeId: fields.officeId,
+    revision: 1,
+    name: "Editado",
+    email: "editado@example.test",
+    role: "operator",
+    active: true,
+    accountActive: true,
+    companyIds: [],
+  };
+  for (const patch of [
+    { revision: 0 },
+    { active: "true" },
+    { role: "owner" },
+    { email: "invalid" },
+    { userId: "invalid" },
+    { officeId: undefined },
+  ])
+    assert.equal((await handler(req({ ...update, ...patch }))).status, 400);
+  assert.equal(
+    (await handler(req({ ...update, platformAdmin: true, actorId: "forged" })))
+      .status,
+    200,
+  );
+  assert.ok(calls.at(-1).url.endsWith("manage_update_user"));
+  assert.equal(calls.at(-1).payload.p_user_id, userId);
+  assert.ok(!("platformAdmin" in calls.at(-1).payload));
+  assert.equal(
+    (await handler(req({ ...update, officeId: null, email: null }))).status,
+    200,
+  );
   const redirect = await guard(
     new Request("https://app.example/admin.html"),
     env,

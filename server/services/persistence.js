@@ -145,6 +145,35 @@ export function createPersistenceService({
         },
         identity,
       ),
+    updateUser: (
+      identity,
+      {
+        userId,
+        officeId,
+        revision,
+        name,
+        email,
+        role,
+        active,
+        accountActive,
+        companyIds,
+      },
+    ) =>
+      call(
+        "manage_update_user",
+        {
+          p_user_id: userId,
+          p_office_id: officeId,
+          p_revision: revision,
+          p_name: name.trim(),
+          p_email: email === null ? null : email.trim().toLowerCase(),
+          p_role: role,
+          p_active: active,
+          p_account_active: accountActive,
+          p_company_ids: companyIds,
+        },
+        identity,
+      ),
     updateUserAccess: (identity, { userId, officeId, companyIds }) =>
       call(
         "manage_update_access",

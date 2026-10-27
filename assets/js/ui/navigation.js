@@ -75,10 +75,9 @@ export function initNavigation({ session, document, window }) {
     if (view === "offices" && role !== "admin") return;
     const current = ++generation;
     document.getElementById("scheduler-view").hidden = view !== "schedule";
-    document.getElementById("user-management").hidden = ![
-      "create",
-      "access",
-    ].includes(view);
+    document.getElementById("user-management").hidden = !["users"].includes(
+      view,
+    );
     document.getElementById("company-management").hidden = view !== "companies";
     document.getElementById("office-management").hidden = view !== "offices";
     document.body.dataset.appView = view;
@@ -124,5 +123,5 @@ export function initNavigation({ session, document, window }) {
   buttons.forEach((button) =>
     button.addEventListener("click", () => show(button.dataset.appView)),
   );
-  if (window.location.hash === "#usuarios" && canManage) show("create");
+  if (window.location.hash === "#usuarios" && canManage) show("users");
 }

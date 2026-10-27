@@ -2,7 +2,7 @@
 
 ## Cadastro e busca
 
-Gerente e Admin têm a opção **Cadastrar empresas** no menu lateral. Selecionam o escritório e informam razão social e CNPJ. Gerente cadastra apenas nos escritórios que gerencia; Admin pode cadastrar em qualquer escritório ativo. Operador não cria empresas. O cadastro não concede automaticamente empresas novas aos Operadores: Gerente/Admin usam Acessos dos operadores para atribuí-las.
+Gerente e Admin têm a opção **Cadastrar empresas** no menu lateral. Selecionam o escritório e informam razão social e CNPJ. Gerente cadastra apenas nos escritórios que gerencia; Admin pode cadastrar em qualquer escritório ativo. Operador não cria empresas. O cadastro não concede automaticamente empresas novas aos Operadores: Gerente/Admin abrem **Usuários → Editar** para atribuí-las.
 
 O CNPJ é armazenado sem pontuação e exibido formatado junto da razão social. Os dígitos verificadores são conferidos no servidor e banco, com suporte a CNPJ numérico e alfanumérico. A unicidade é por escritório: o mesmo cliente pode pertencer a contabilidades distintas, sem compartilhar dados. Repetir um cadastro ou confirmar duas vezes o mesmo CNPJ não cria duplicidade.
 

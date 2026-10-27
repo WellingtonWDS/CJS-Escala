@@ -11,7 +11,15 @@ Consultar este registro antes de orientar o operador. Distinguir código dispon�
 - Novo modelo: menu lateral dentro do sistema, nome e perfil; Operador acessa suas empresas, Gerente gera escalas e gerencia usuários no escritório, Admin tem acesso global. Não há senha adicional nem página separada. Gerente não cria Admin e não edita empresas de outro escritório. Admin/gerentes podem criar Gerentes nos escritórios autorizados; alteração de empresas vale para Operadores.
 - O proprietário deve ser promovido explicitamente usando o **identity_subject informado no chat**. Esse ID é do provedor de login, não o UUID interno de cjs_private.users. Não presumir que o vínculo antigo membership.admin já seja Admin global: ele agora representa Gerente.
 
-## Atualização vigente — nomes, saída e seleção de empresa (27/10/2026)
+## Atualização vigente — Usuários (27/10/2026)
+
+Unificadas Criar novo usuário e Acessos dos operadores em **Usuários**: lista ativos/inativos, pesquisa por nome/e-mail/escritório, filtro de escritório, novo cadastro e edição de nome/e-mail/perfil/situação/empresas no mesmo painel. Admin vê todos (incluindo contas sem vínculo); Gerente vê apenas vínculos do escritório e não edita Admin; Operador não entra na gestão. Gerente pode editar outro Gerente do mesmo escritório. Cadastro existente não troca senha.
+
+Migração **008_users_directory.sql** necessária; instalador verifica 003–008. Aplicação na VPS ainda não confirmada. Guia atualizado: [administração de usuários](administracao-usuarios.md). Sem nova variável ou webhook. Situação local é membership.active; Admin também controla users.active global, revogando sessões ao inativar. Próprio perfil/acesso não podem ser retirados. Nome/e-mail de contas multi-escritório são somente leitura para Gerentes; perfil/situação/empresas são editáveis no vínculo autorizado. Consulta legada não vira editor sem mudança explícita de perfil. Revisão por usuário impede sobrescrita e a auditoria não guarda senha/hash. O caminho legado de atualizar empresas também participa da revisão.
+
+Validação local concluída: 436 testes unitários, build, suíte completa de interface e integração PostgreSQL 17/PostgREST 14.15 com navegador real passaram. Inclui isolamento de escritórios, Operador sem gestão, edição atômica de nome/e-mail sem trocar senha, duplicidade, perfil, Consulta legada preservada, conta compartilhada, ativação/inativação local e global, sessões revogadas, concorrência, auditoria sem credenciais e criação. Interface testada com pesquisa, filtros, edição, empresas, toggles, cancelamento e conflito; conferência visual em desktop/celular, sem nomes comprimidos ou rolagem horizontal. Estes resultados não comprovam implantação remota.
+
+## Entrega anterior — nomes, saída e seleção de empresa (27/10/2026)
 
 Novos preenchimentos e sugestões de cópia incluem data/hora local com segundos no nome automático, mantendo o limite de 160 caracteres. Nomes já salvos e edição manual são preservados. No modo individual, Sair passa ao rodapé do menu lateral, com ícone/nome acessível no menu recolhido; o modo compartilhado sem menu mantém a saída disponível.
 
@@ -82,7 +90,7 @@ Guias vigentes: [administração de usuários](administracao-usuarios.md) e [emp
 - Rotação da chave de RPC anteriormente exposta ainda não foi confirmada explicitamente; nunca registrar ou pedir seu valor.
 - O CNPJ informado no chat não foi gravado automaticamente. A entrega 005 passa a oferecer o campo e vínculo confirmado a cadastro antigo via importação/cadastro, após aplicar a migração.
 - Rascunhos exigem salvar manualmente. Salvar atualiza o aberto; Salvar como novo cria outro. Não há sincronização automática nem painel de histórico.
-- Não há edição de senha, convites, exclusão de contas, alteração de perfil existente ou edição de escritório na nova gestão. Vínculos legados de consulta conservam restrição de escrita.
+- Não há edição de senha, convites, exclusão definitiva de contas ou edição de escritório na nova gestão. Vínculos legados de consulta conservam restrição de escrita.
 - Permissões do servidor são autoritativas; retirada de acesso não apaga caches já vistos no navegador. Novas aberturas conferem acesso.
 
 ## Histórico técnico essencial

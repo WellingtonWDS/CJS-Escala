@@ -12,12 +12,14 @@ Exclusão de preenchimentos implementada na seleção de empresa: confirmação 
 
 Novos nomes de preenchimento incluem data/hora local, sem renomear registros existentes. Seleção de empresa na janela usa um único controle com busca interna por razão social/CNPJ e teclado. Sair fica no final do menu lateral, inclusive recolhido. Alterações de interface não exigem migração adicional.
 
+Janela **Usuários** unifica listagem, pesquisa por nome/escritório, cadastro, edição de nome/e-mail/perfil, situação por toggle e empresas autorizadas na edição. Admin global vê todos; Gerente gerencia seus vínculos, preservando outros escritórios; Operador não acessa. Revisão, auditoria e revogação de sessão protegem as alterações. Requer migração 008; aplicação na VPS ainda não confirmada.
+
 ## Funcionalidades implementadas
 
 | Área | O que já está disponível |
 | --- | --- |
 | Acesso | Modo compartilhado preservado; modo individual n8n configurável com cookie HttpOnly, sessão revogável no banco de até 12h, emissor/audiência explícitos e vínculo provisionado. Ativação depende de homologação. |
-| Administração | Menu lateral por perfil (Operador, Gerente, Admin), com nome do usuário, cadastro integrado e edição de empresas dos operadores. Senha bcrypt, operações auditadas e escopo validado no banco. Depende da migração 004 e promoção explícita do proprietário; sem senha administrativa adicional ou cadastro público. |
+| Administração | Menu lateral por perfil e janela Usuários: diretório, pesquisa/filtros, cadastro, edição de nome/e-mail/perfil/situação e empresas autorizadas na edição. Senha bcrypt preservada, auditoria e conflito de revisão. Depende das migrações 004/008 e promoção explícita do proprietário; sem senha administrativa adicional ou cadastro público. |
 | Empresas | Cadastro e edição de razão social/CNPJ para Gerente/Admin, criação de escritórios por Admin, unicidade por escritório, busca nos seletores e identificação na importação Domínio. Migrações 005/006 necessárias; empresas antigas sem CNPJ exigem confirmação do vínculo. |
 | Carregamento e movimento | Overlay central animado, fundo escurecido/desfocado e bloqueio durante operações demoradas. Cancelamento de buscas preservado, confirmações não encobertas, saída em sucesso/erro e suporte a movimento reduzido; transições nas janelas e navegação. |
 | Modais | Alertas, confirmações e prompts substituídos por janelas com estilo do sistema, fila de mensagens, foco/teclado e cancelamento preservado. Status do dia por select; horas por campo próprio. |
@@ -79,6 +81,7 @@ As implementações de restrições individuais, sugestões de ajustes de cobert
 
 Na entrega de cadastro/busca de empresas e importação Domínio com vínculo por CNPJ, em **26/10/2026**, foram registrados:
 
+- Janela Usuários validada em banco e navegador reais locais: pesquisa/filtros, edição, toggles com cancelamento, conta compartilhada, perfis, Consulta legada, escopos, e-mail duplicado com rollback, concorrência, revogação global, auditoria e layout móvel.
 - **436 testes unitários aprovados**, sem falhas, com `npm test`.
 - Integração real com PostgreSQL 17 e PostgREST 14.15 aprovada por `npm run test:persistence`: isolamento de escritórios/empresas, permissões, concorrência, idempotência, histórico/auditoria, FK cruzada, token inválido/expirado e sessão revogada.
 - Edição de empresa e criação de escritório validadas em navegador e banco reais locais. Dois Operadores distintos abriram e atualizaram a mesma escala salva; revisão antiga foi bloqueada, edição da empresa preservou os rascunhos e retirada de acesso impediu nova leitura.

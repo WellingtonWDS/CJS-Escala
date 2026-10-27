@@ -54,9 +54,7 @@ export async function testAdminIntegration({ env, sql, browserTest }) {
   assert.equal(options.platformAdmin, false);
   assert.equal(options.offices.length, 1);
   assert.equal(options.companies.length, 2);
-  assert.ok(
-    options.users.every((u) => u.officeId === office && u.role === "operator"),
-  );
+  assert.ok(options.users.every((u) => u.officeId === office));
   assert.equal((await handler(req({ ...fields, role: "admin" }))).status, 403);
   assert.equal(
     (
@@ -289,7 +287,8 @@ export async function testAdminIntegration({ env, sql, browserTest }) {
         () => document.documentElement.dataset.ready === "true",
       );
       assert.equal(await page.locator("#sidebar-role").textContent(), "Admin");
-      await page.locator('[data-app-view="create"]').click();
+      await page.locator('[data-app-view="users"]').click();
+      await page.locator("[data-user-new]").click();
       await page.locator("#manage-create").waitFor({ state: "visible" });
       await page
         .locator('#manage-create [name="name"]')
@@ -305,7 +304,7 @@ export async function testAdminIntegration({ env, sql, browserTest }) {
       await page
         .locator(`[data-create-companies] input[value="${company}"]`)
         .check();
-      await page.locator("#manage-create button").click();
+      await page.locator("#manage-create button[type=submit]").click();
       await page.waitForFunction(() =>
         document
           .querySelector("[data-management-status]")
@@ -314,25 +313,21 @@ export async function testAdminIntegration({ env, sql, browserTest }) {
       const browserId = sql(
         "SELECT u.id FROM cjs_private.users u JOIN public.users i ON i.user_id::text=u.identity_subject WHERE i.email='browser-provision@example.test';",
       );
-      await page.locator('[data-app-view="access"]').click();
-      await page.locator("#manage-access").waitFor({ state: "visible" });
       await page
-        .locator('#manage-access [name="officeId"]')
-        .selectOption(office);
+        .locator(`[data-user-id="${browserId}"] [data-user-edit]`)
+        .click();
+      await page.locator("#manage-edit").waitFor({ state: "visible" });
       await page
-        .locator('#manage-access [name="userId"]')
-        .selectOption(browserId);
-      await page
-        .locator(`[data-access-companies] input[value="${company}"]`)
+        .locator(`[data-edit-companies] input[value="${company}"]`)
         .uncheck();
       await page
-        .locator(`[data-access-companies] input[value="${restricted}"]`)
+        .locator(`[data-edit-companies] input[value="${restricted}"]`)
         .check();
-      await page.locator("#manage-access button").click();
+      await page.locator("#manage-edit button[type=submit]").click();
       await page.waitForFunction(() =>
         document
           .querySelector("[data-management-status]")
-          .textContent.includes("Acessos atualizados"),
+          .textContent.includes("Usuário e acessos atualizados"),
       );
       assert.equal(
         sql(
@@ -360,7 +355,7 @@ export async function testAdminIntegration({ env, sql, browserTest }) {
         "Operador",
       );
       assert.equal(
-        await page.locator('[data-app-view="create"]').isVisible(),
+        await page.locator('[data-app-view="users"]').isVisible(),
         false,
       );
       // Gerente vê apenas o próprio escritório e não pode criar Admin.
@@ -379,7 +374,8 @@ export async function testAdminIntegration({ env, sql, browserTest }) {
         await page.locator("#sidebar-role").textContent(),
         "Gerente",
       );
-      await page.locator('[data-app-view="create"]').click();
+      await page.locator('[data-app-view="users"]').click();
+      await page.locator("[data-user-new]").click();
       await page.locator("#manage-create").waitFor({ state: "visible" });
       assert.equal(
         await page.locator('#manage-create [name="officeId"] option').count(),
