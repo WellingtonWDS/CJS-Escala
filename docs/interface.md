@@ -12,6 +12,12 @@ Revisão de 27/10/2026, preservando os fluxos, dados e regras de negócio.
 - Importações e opções avançadas continuam recolhíveis. Cadastros, edição, modais e salvamento usam a mesma linguagem visual.
 - A grade conserva altura uniforme dos colaboradores, horários completos e rolagem própria. A impressão mantém os controles de visibilidade existentes.
 
+## Ajuda contextual nos colaboradores
+
+Explicações longas de carga contratual, horários individuais, funções e restrições ficam em ícones circulares escuros de **?**. A ajuda abre ao passar o mouse, focar pelo teclado ou tocar/clicar, e fecha com Escape, clique fora ou rolagem. O balão fica dentro da tela e acima dos elementos, sem ser cortado pelos quadros. Não aparece na impressão.
+
+Série, visto fiscal e a linha de origem do arquivo não são exibidos no cadastro. Os dados importados são preservados; avisos de inconsistência, pendências e resultados calculados que exigem análise continuam visíveis.
+
 ## Organização dos estilos
 
 `interface.css` é a camada visual compartilhada e vem depois dos arquivos específicos. As regras de tela ficam em `@media screen`; não substituir regras de impressão com seletores globais indiscriminados. `login.css` mantém o acesso independente dos estilos internos. `motion.css` continua responsável por animações e movimento reduzido.

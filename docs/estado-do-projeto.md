@@ -16,6 +16,8 @@ Janela **Usuários** unifica listagem, pesquisa por nome/escritório, cadastro, 
 
 Revisão visual aplicada a desktop e celular: cabeçalho claro, navegação e etapas, hierarquia de cartões/formulários, ações principais, modais, cadastros, grades, salvamento e login. CSS utilitário compilado localmente; lógica e dados preservados. [Guia de interface](interface.md).
 
+Cadastro de colaboradores com explicações longas em ajuda contextual **?** (mouse, teclado e toque), sem série/visto fiscal e identificação da linha/arquivo na tela. Alertas de preenchimento e validação permanecem visíveis; dados importados são preservados.
+
 Tutorial com janela arrastável pelo cabeçalho (mouse/toque), movimento por teclado, posição preservada entre etapas e limites da tela. Reabertura reinicia posicionamento automático; dados e visitas às etapas continuam preservados.
 
 A etapa 7 mantém somente a orientação sobre a EC 141 e sua linha do tempo; o simulador de três referências foi removido. A comparação da escala atual com a proposta permanece na etapa 8.

@@ -1,3 +1,4 @@
+import { bindAjudas } from "./ajuda-campo.js";
 import { camposHabilitacoes, bindHabilitacoes } from "./habilitacoes.js";
 import { camposRestricoes, bindRestricoes } from "./restricoes.js";
 import { preencherSexoPorNome } from "../domain/sexo-por-nome.js";
@@ -69,6 +70,7 @@ export function createColaboradoresUI({
         .join("") ||
       '<p class="text-slate-500 text-sm">Nenhum colaborador cadastrado ainda.</p>';
 
+    bindAjudas(list);
     list
       .querySelectorAll("[data-field], [data-dominio], [data-ec141]")
       .forEach((el) => {
@@ -138,11 +140,6 @@ export function createColaboradoresUI({
                   Number(c.horasSemana) > 44
                     ? "Jornada contratual acima de 44h semanais: corrija a referência; horas extras não devem ser cadastradas como carga contratual."
                     : "";
-              const calculadas = list.querySelector(
-                `[data-horas-dominio="${c.id}"]`,
-              );
-              if (calculadas)
-                calculadas.textContent = p.horasCalculadas ?? "indeterminadas";
               const computo = list.querySelector(
                 `[data-resumo-computo-dominio="${c.id}"]`,
               );

@@ -1,3 +1,4 @@
+import { ajudaCampo } from "./ajuda-campo.js";
 import { TIPOS_RESTRICAO, validarRestricoes } from "../domain/restricoes.js";
 import { escapeHtml } from "../shared/formatacao.js";
 const DIAS = [
@@ -42,8 +43,8 @@ export function camposRestricoes(c) {
   return `<details data-restricoes="${c.id}" class="md:col-span-5 border border-slate-200 rounded-lg bg-white">
   <summary class="cursor-pointer px-3 py-2 text-sm font-semibold text-fintria-navy">Restrições individuais <span class="font-normal text-slate-500">· ${total ? `${total} condição(ões)` : "opcional"}</span></summary>
   <div class="p-3 border-t border-slate-100 space-y-4">
-    <p class="text-xs text-slate-500">Informe apenas as condições deste colaborador. Datas incluem o primeiro e o último dia; períodos e dias bloqueados também impedem plantões iniciados na véspera que avancem sobre eles. Estas condições valem na escala atual e na proposta, nas datas correspondentes.</p>
-    <div class="restricao-bloco"><h4 class="font-semibold text-sm text-fintria-navy">Férias, afastamentos e bloqueios por período</h4>
+    <div class="text-xs flex items-center gap-2">Como aplicar as restrições ${ajudaCampo(`restricoes-${c.id}`, "Restrições individuais", "Informe apenas as condições deste colaborador. Datas incluem o primeiro e o último dia; períodos e dias bloqueados também impedem plantões iniciados na véspera que avancem sobre eles. Estas condições valem na escala atual e na proposta, nas datas correspondentes.")}</div>
+    <div class="restricao-bloco"><h4 class="font-semibold text-sm text-fintria-navy">Férias, afastamentos e bloqueios por período ${ajudaCampo(`periodos-${c.id}`, "Férias e afastamentos", "Férias e afastamentos retiram da meta de alocação apenas as horas originalmente previstas no período, sem compensação automática. Esta informação não calcula remuneração ou benefícios.")}</h4>
       <form data-restricao-form="periodo" class="restricao-form">
       <label class="text-xs font-semibold">Tipo<select name="tipo" class="${inputClass}">${Object.entries(
         TIPOS_RESTRICAO,
@@ -51,12 +52,12 @@ export function camposRestricoes(c) {
         .map(([v, l]) => `<option value="${v}">${l}</option>`)
         .join("")}</select></label>
       <label class="text-xs font-semibold">De<input name="inicio" type="date" required class="${inputClass}"></label><label class="text-xs font-semibold">Até<input name="fim" type="date" required class="${inputClass}"></label><button type="submit" class="${buttonClass}">Adicionar período</button>
-      </form><p class="text-xs text-slate-500 mt-2">Férias e afastamentos retiram da meta de alocação apenas as horas originalmente previstas no período, sem compensação automática. Esta informação não calcula remuneração ou benefícios.</p>
+      </form>
       <ul data-restricoes-periodos class="mt-2 text-xs">${periodos || '<li class="text-slate-500">Nenhum período informado.</li>'}</ul>
     </div>
     <div class="restricao-bloco"><h4 class="font-semibold text-sm text-fintria-navy">Dias da semana indisponíveis</h4><p class="text-xs text-slate-500 mb-2">Não alocar trabalho nestes dias. A indisponibilidade não gera abono de horas.</p><div class="restricao-dias">${dias("diasIndisponiveis")}</div></div>
-    <div class="restricao-bloco"><h4 class="font-semibold text-sm text-fintria-navy">Folgas obrigatórias toda semana</h4><p class="text-xs text-slate-500 mb-2">Usadas antes de distribuir as demais folgas. Se as condições exigirem mais dias sem trabalho do que o modelo permite, a escala apontará o conflito.</p><div class="restricao-dias">${dias("folgasObrigatorias")}</div></div>
-    <div class="restricao-bloco"><h4 class="font-semibold text-sm text-fintria-navy">Horários permitidos</h4><p class="text-xs text-slate-500 mb-2">Opcional: uma janela por dia da semana. Dias sem janela mantêm o horário configurado. O trabalho é limitado à interseção com o expediente, sem ampliar a saída ou mover o intervalo. Plantões 12×36 incompatíveis são retirados inteiros, sem mudar a referência do ciclo.</p>
+    <div class="restricao-bloco"><h4 class="font-semibold text-sm text-fintria-navy">Folgas obrigatórias toda semana ${ajudaCampo(`folgas-${c.id}`, "Folgas obrigatórias", "Usadas antes de distribuir as demais folgas. Se as condições exigirem mais dias sem trabalho do que o modelo permite, a escala apontará o conflito.")}</h4><div class="restricao-dias">${dias("folgasObrigatorias")}</div></div>
+    <div class="restricao-bloco"><h4 class="font-semibold text-sm text-fintria-navy">Horários permitidos ${ajudaCampo(`permitidos-${c.id}`, "Horários permitidos", "Opcional: uma janela por dia da semana. Dias sem janela mantêm o horário configurado. O trabalho é limitado à interseção com o expediente, sem ampliar a saída ou mover o intervalo. Plantões 12×36 incompatíveis são retirados inteiros, sem mudar a referência do ciclo.")}</h4>
       <form data-restricao-form="horario" class="restricao-form"><label class="text-xs font-semibold">Dia<select name="dia" class="${inputClass}">${ORDEM.map((d) => `<option value="${d}">${DIAS[d]}</option>`).join("")}</select></label><label class="text-xs font-semibold">A partir de<input name="entrada" type="time" required class="${inputClass}"></label><label class="text-xs font-semibold">Até<input name="saida" type="time" required class="${inputClass}"></label><button type="submit" class="${buttonClass}">Salvar horário</button></form>
       <ul data-restricoes-horarios class="mt-2 text-xs">${horarios || '<li class="text-slate-500">Nenhuma janela adicional.</li>'}</ul>
     </div>
