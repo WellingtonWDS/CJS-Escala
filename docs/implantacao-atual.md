@@ -11,7 +11,13 @@ Consultar este registro antes de orientar o operador. Distinguir código dispon�
 - Novo modelo: menu lateral dentro do sistema, nome e perfil; Operador acessa suas empresas, Gerente gera escalas e gerencia usuários no escritório, Admin tem acesso global. Não há senha adicional nem página separada. Gerente não cria Admin e não edita empresas de outro escritório. Admin/gerentes podem criar Gerentes nos escritórios autorizados; alteração de empresas vale para Operadores.
 - O proprietário deve ser promovido explicitamente usando o **identity_subject informado no chat**. Esse ID é do provedor de login, não o UUID interno de cjs_private.users. Não presumir que o vínculo antigo membership.admin já seja Admin global: ele agora representa Gerente.
 
-## Atualização vigente — tutorial arrastável (27/10/2026)
+## Atualização vigente — remoção do comparativo da etapa 7 (27/10/2026)
+
+Removida toda a seção Comparar as três referências, seu botão/resultado e o módulo de UI transicao.js, incluindo registro de eventos e limpeza de resultado no app. O tutorial não sugere mais essa ação. A etapa 7 conserva orientações e linha do tempo; conversão e comparação de origem/proposta na etapa 8 são preservadas. Não altera regras de cálculo, dados, APIs ou banco.
+
+Build, 436 testes unitários e suíte completa de navegador aprovados, incluindo abertura da etapa 7 sem comparativo, geração, edição, conversão, importações, tutorial, modais e layout responsivo. Nenhuma migração ou variável nova.
+
+## Entrega anterior — tutorial arrastável (27/10/2026)
 
 Janela do tutorial arrastável pelo cabeçalho via Pointer Events e captura de ponteiro (mouse/toque). Texto do corpo continua rolável; botões não iniciam arraste. Posição manual preservada entre etapas, limitada à viewport e reajustada em resize. Cabeçalho focável aceita setas, participa da contenção de Tab e tem indicação visual/instrução. Fechar encerra o arraste e reabrir restaura posicionamento automático. Não altera geração, dados nem registro de visitas.
 

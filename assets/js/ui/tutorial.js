@@ -37,7 +37,7 @@ const ETAPAS = [
   [
     "sec-pec",
     "Consulte a transição da EC 141",
-    "Revise as fases, os prazos e as condições descritas nesta seção. Use Comparar etapas para avaliar as referências de jornada. Confira as pendências e os documentos aplicáveis antes de utilizar a escala.",
+    "Revise as fases, os prazos e as condições descritas nesta seção. Confira as pendências e os documentos aplicáveis antes de utilizar a escala.",
   ],
   [
     "sec-gerar",

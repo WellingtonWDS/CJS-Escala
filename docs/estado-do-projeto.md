@@ -18,6 +18,8 @@ Revisão visual aplicada a desktop e celular: cabeçalho claro, navegação e et
 
 Tutorial com janela arrastável pelo cabeçalho (mouse/toque), movimento por teclado, posição preservada entre etapas e limites da tela. Reabertura reinicia posicionamento automático; dados e visitas às etapas continuam preservados.
 
+A etapa 7 mantém somente a orientação sobre a EC 141 e sua linha do tempo; o simulador de três referências foi removido. A comparação da escala atual com a proposta permanece na etapa 8.
+
 ## Funcionalidades implementadas
 
 | Área | O que já está disponível |

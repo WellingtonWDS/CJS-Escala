@@ -136,7 +136,7 @@ test("mudanças de mês e regime invalidam dados, grade e comparativo", () => {
     const run = app();
     assert.equal(
       run(
-        `state.escalaGerada={validacoes:['antiga']};document.getElementById('resultado-gerar').innerHTML='ANTIGA';document.getElementById('pec-resultado').innerHTML='ANTIGO';document.getElementById('${id}').onchange({target:{value:'${value}'}});state.escalaGerada===null && !document.getElementById('resultado-gerar').innerHTML.includes('ANTIGA') && document.getElementById('pec-resultado').innerHTML===''`,
+        `state.escalaGerada={validacoes:['antiga']};document.getElementById('resultado-gerar').innerHTML='ANTIGA';document.getElementById('${id}').onchange({target:{value:'${value}'}});state.escalaGerada===null && !document.getElementById('resultado-gerar').innerHTML.includes('ANTIGA')`,
       ),
       true,
     );
@@ -228,13 +228,10 @@ test("restauração abre no mês atual preservando equipe, horários e feriados 
     true,
   );
 });
-test("comparativo informa datas da EC 141 e prazos relativos à publicação no DOU", () => {
-  const run = app();
-  assert.equal(
-    run(
-      `renderSimuladorPec();const texto=document.getElementById('pec-resultado').innerHTML;texto.includes('2 meses após a publicação no DOU') && texto.includes('14 meses após a publicação no DOU') && texto.includes('Sem redução salarial') && texto.includes('16/12/2026') && texto.includes('16/12/2027') && !texto.includes('fase simulada')`,
-    ),
-    true,
+test("etapa EC 141 conserva orientações e datas sem comparativo interativo", () => {
+  assert.ok(html.includes("16/12/2026") && html.includes("16/12/2027"));
+  assert.ok(
+    !html.includes("btn-simular-pec") && !html.includes("pec-resultado"),
   );
   assert.ok(!html.includes("a proposta ainda está em tramitação no Senado"));
 });

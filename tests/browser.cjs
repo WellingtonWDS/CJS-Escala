@@ -210,14 +210,10 @@ const { chromium } = require("playwright");
     await waitForDialogs(page);
     await irParaEtapa(page, "#resultado-gerar");
     assert.match(await page.locator("#resultado-gerar").innerText(), /14:00/);
-    await irParaEtapa(page, "#btn-simular-pec");
-    await page.locator("#btn-simular-pec").click();
-    await waitForDialogs(page);
-    await irParaEtapa(page, "#pec-resultado");
-    assert.match(
-      await page.locator("#pec-resultado").innerText(),
-      /16\/12\/2027/,
-    );
+    await irParaEtapa(page, "#sec-pec");
+    assert.equal(await page.locator("#btn-simular-pec").count(), 0);
+    assert.equal(await page.locator("#pec-resultado").count(), 0);
+    assert.match(await page.locator("#sec-pec").innerText(), /16\/12\/2027/);
 
     let answers = ["T", "08:30"];
     await respondToDialogs(page, (dialog) => dialog.accept(answers.shift()));
@@ -259,8 +255,6 @@ const { chromium } = require("playwright");
       await page.locator("#resultado-gerar").innerText(),
       /Configuração alterada/,
     );
-    await irParaEtapa(page, "#pec-resultado");
-    assert.equal(await page.locator("#pec-resultado").innerText(), "");
     assert.deepEqual(errors, []);
     assert.deepEqual(failedAssets, []);
     console.log(

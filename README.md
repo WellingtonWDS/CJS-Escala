@@ -170,6 +170,8 @@ A evolução para PostgreSQL/PostgREST com isolamento por escritório está desc
 
 A janela do tutorial pode ser arrastada pelo cabeçalho com mouse ou toque. A posição escolhida é mantida entre as etapas e ajustada aos limites da tela, inclusive ao redimensionar. Pelo teclado, foque o cabeçalho e use as setas; Esc continua encerrando o tutorial. Ao reabrir, o posicionamento volta a ser automático.
 
+A etapa 7 é apenas informativa: mantém as orientações e a linha do tempo da EC 141, sem o antigo simulador “Comparar as três referências”. A conversão e a comparação entre escala atual e proposta continuam na etapa 8.
+
 ## Interface e manutenção visual
 
 A interface usa navegação lateral, cabeçalho claro, etapas compactas durante a rolagem, cartões com hierarquia de títulos e ações principais em verde. Login, formulários, cadastros, modais, seleção de empresa, salvamento e grades compartilham a mesma linguagem visual. No celular, os controles de formulário têm tamanho adequado para toque e fonte de 16px para evitar zoom automático; a grade mantém rolagem própria. Foco de teclado, estados desabilitados, movimento reduzido e impressão são preservados.

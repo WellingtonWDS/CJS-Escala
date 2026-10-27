@@ -9,7 +9,6 @@ import { createColaboradoresUI } from "./ui/colaboradores.js";
 import { createJornadaFolgasUI } from "./ui/jornada-folgas.js";
 import { createConfiguracaoUI } from "./ui/configuracao.js";
 import { createCalendarioUI } from "./ui/calendario.js";
-import { createTransicaoUI } from "./ui/transicao.js";
 import { bindExportEvents } from "./export/download.js";
 import { createTutorialUI } from "./ui/tutorial.js";
 import { createImportarColaboradoresUI } from "./ui/importar-colaboradores.js";
@@ -36,7 +35,6 @@ export function createApplication({ env, now = () => new Date() }) {
     state.escalaGerada = null;
     document.getElementById("resultado-gerar").innerHTML =
       "Configuração alterada. Gere a escala para atualizar os resultados.";
-    document.getElementById("pec-resultado").innerHTML = "";
     conversaoUI?.marcarDesatualizada();
   }
   const deps = { state, domain, storage, env, invalidarEscala };
@@ -88,7 +86,6 @@ export function createApplication({ env, now = () => new Date() }) {
     validarPreenchimento: etapas.validarGeracao,
     renderEscalaGerada: calendario.renderEscalaGerada,
   });
-  const transicao = createTransicaoUI(deps);
   const tutorial = createTutorialUI({ ...env, etapas });
   const importacao = createImportarColaboradoresUI({
     ...deps,
@@ -122,7 +119,6 @@ export function createApplication({ env, now = () => new Date() }) {
       colaboradores,
       jornada,
       calendario,
-      transicao,
       cobertura,
       tutorial,
       importacao,
@@ -214,7 +210,6 @@ export function createApplication({ env, now = () => new Date() }) {
     ...jornada,
     ...configuracao,
     ...calendario,
-    ...transicao,
     ...cobertura,
     bindEvents,
   };
