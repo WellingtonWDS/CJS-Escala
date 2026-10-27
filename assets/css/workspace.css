@@ -132,7 +132,8 @@ body {
 }
 #remote-workspace {
   box-sizing: border-box;
-  width: min(700px, calc(100vw - 24px));
+  width: 85vw;
+  max-width: calc(100vw - 24px);
   max-height: 85dvh;
 }
 #remote-workspace[open] {
@@ -179,6 +180,9 @@ body {
   grid-column: 1/-1;
 }
 @media (max-width: 650px) {
+  #remote-workspace {
+    width: calc(100vw - 24px);
+  }
   .workspace-selector-scroll {
     grid-template-columns: 1fr;
     gap: 0;
