@@ -159,17 +159,6 @@
     font-size: 24px;
     margin: 8px 12px 28px;
   }
-  .sidebar-brand::before {
-    content: "";
-    display: inline-block;
-    width: 11px;
-    height: 24px;
-    background: #68c7a5;
-    border-radius: 4px;
-    margin-right: 10px;
-    vertical-align: -3px;
-    box-shadow: 6px -5px 0 -1px #68c7a548;
-  }
   #sidebar-toggle {
     font-size: 12px;
     border-color: #ffffff20;
@@ -621,10 +610,6 @@
       margin: 0;
       font-size: 20px;
     }
-    .sidebar-collapsed .sidebar-brand::before {
-      height: 18px;
-      width: 8px;
-    }
     #sidebar-user,
     .sidebar-role {
       grid-column: 1/-1;
@@ -879,4 +864,44 @@ label:has(> .ui-switch) {
 }
 @media print {
   .campo-ajuda { display: none !important; }
+}
+
+/* Identidade Reescala: originais preservados, variantes conforme o contraste. */
+.app-brand, .sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.app-brand img, .sidebar-brand img {
+  width: 44px;
+  height: auto;
+  flex-shrink: 0;
+}
+.sidebar-brand img { width: 42px; }
+.sidebar-collapsed .sidebar-brand {
+  display: flex;
+  justify-content: center;
+  margin: 8px 0 20px;
+}
+.sidebar-collapsed .sidebar-brand > span { display: none; }
+.escala-identidade {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.escala-marca { width: 42px; height: auto; flex-shrink: 0; }
+.escala-marca-impressao { display: none; }
+@media (max-width: 900px) {
+  .sidebar-brand, .sidebar-collapsed .sidebar-brand {
+    display: flex;
+    justify-content: flex-start;
+    margin: 0;
+    gap: 8px;
+  }
+  .sidebar-collapsed .sidebar-brand > span { display: inline; }
+  .sidebar-brand img { width: 36px; }
+}
+@media print {
+  .escala-marca { display: none; }
+  .escala-marca-impressao { display: block; width: 36px; height: auto; }
 }

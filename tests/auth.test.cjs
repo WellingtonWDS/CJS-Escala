@@ -84,15 +84,14 @@ test("páginas e módulos exigem sessão; login público; redirect externo e ori
     "/assets/js/app.js",
     "/assets/js/main.js",
     "/assets/js/data/nomes.json",
+    "/logos/arquivo-privado.png",
   ])
     assert.equal(
       (await guard(new Request("https://example.com" + path), env)).status,
       303,
     );
-  assert.equal(
-    await guard(new Request("https://example.com/login.html"), env),
-    null,
-  );
+  for (const path of ["/login.html", "/logos/Reescala_original_transparente.png", "/logos/Reescala_branco_transparente.png", "/logos/Reescala_preto_fundo_branco.png"])
+    assert.equal(await guard(new Request("https://example.com" + path), env), null);
   assert.equal(
     (
       await authResponse(

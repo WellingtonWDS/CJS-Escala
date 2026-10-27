@@ -388,7 +388,7 @@ export function createCalendarioUI({
 
       html += `<div data-escala-quadro class="escala-quadro border border-slate-200 rounded-xl mb-5">
       <div class="bg-fintria-navy text-white px-4 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-1">
-        <div><div class="font-display font-bold text-base">Escala mensal</div><div class="text-xs opacity-85">Dias na horizontal · semanas do mês na vertical · resumo da semana na última coluna</div></div>
+        <div class="escala-identidade"><img class="escala-marca" src="/logos/Reescala_branco_transparente.png" alt="" width="741" height="650"><img class="escala-marca-impressao" src="/logos/Reescala_preto_transparente.png" alt="" width="741" height="650"><div><div class="font-display font-bold text-base">Reescala <span class="font-normal">· Escala mensal</span></div><div class="text-xs opacity-85">Dias na horizontal · semanas do mês na vertical · resumo da semana na última coluna</div></div></div>
         <div class="text-xs opacity-85">Clique em um colaborador para alterar o status</div>
       </div>
       <div class="escala-ferramentas no-print"><span>Role para ver os dias e as semanas. O resumo fica na última coluna.</span><button type="button" data-ver-resumo class="border rounded px-3 py-1 text-fintria-navy">Ver resumo da semana →</button></div>

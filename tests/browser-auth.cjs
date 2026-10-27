@@ -43,6 +43,12 @@ const { chromium } = require("playwright");
     await page.goto(base);
     await page.waitForURL("**/login.html?**");
     assert.equal(await page.locator("#password").count(), 1);
+    assert.equal(await page.locator(".brand img").evaluate(async (el) => { await el.decode(); return el.naturalWidth > 0; }), true);
+    for (const file of ["Reescala_original_transparente.png", "Reescala_branco_transparente.png", "Reescala_preto_fundo_branco.png"]) {
+      const response = await context.request.get(base + "/logos/" + file, { maxRedirects: 0 });
+      assert.equal(response.status(), 200);
+      assert.match(response.headers()["content-type"], /image\/png/);
+    }
     assert.equal(
       (
         await context.request.get(base + "/assets/js/app.js", {

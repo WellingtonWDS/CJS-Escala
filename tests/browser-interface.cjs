@@ -12,6 +12,10 @@ module.exports = async ({ browser, baseURL }) => {
     await page.waitForFunction(
       () => document.documentElement.dataset.ready === "true",
     );
+    assert.match(await page.title(), /Reescala/);
+    for (const image of [".app-brand img", ".sidebar-brand img"]) {
+      assert.equal(await page.locator(image).evaluate(async (el) => { await el.decode(); return el.naturalWidth > 0; }), true);
+    }
     assert.equal(
       await page
         .locator(".app-header")
@@ -30,6 +34,16 @@ module.exports = async ({ browser, baseURL }) => {
     );
     const css = await page.request.get(baseURL + "/assets/css/utilities.css");
     assert.equal(css.status(), 200);
+    await page.evaluate(() => {
+      document.getElementById("app-sidebar").hidden = false;
+      document.body.classList.add("has-app-sidebar", "sidebar-collapsed");
+    });
+    assert.equal(await page.locator(".sidebar-brand img").isVisible(), true);
+    assert.equal(await page.locator(".sidebar-brand > span").isVisible(), false);
+    await page.evaluate(() => {
+      document.getElementById("app-sidebar").hidden = true;
+      document.body.classList.remove("has-app-sidebar", "sidebar-collapsed");
+    });
     for (const width of [1440, 768, 375, 320]) {
       await page.setViewportSize({ width, height: 900 });
       for (const step of [
@@ -55,6 +69,8 @@ module.exports = async ({ browser, baseURL }) => {
     assert.equal(await page.locator("#etapas-nav").isVisible(), false);
     await page.emulateMedia({ media: "screen", reducedMotion: "reduce" });
     await page.goto(baseURL + "/login.html");
+    assert.match(await page.title(), /Reescala/);
+    assert.equal(await page.locator(".brand img").evaluate(async (el) => { await el.decode(); return el.naturalWidth > 0; }), true);
     const input = page.locator("#password");
     await input.waitFor();
     assert.ok((await input.boundingBox()).height >= 44);

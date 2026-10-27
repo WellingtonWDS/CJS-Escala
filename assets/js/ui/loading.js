@@ -44,7 +44,7 @@ export function initLoading(document) {
       overlay.className = "loading-overlay no-print";
       overlay.dataset.loadingOverlay = "";
       overlay.setAttribute("aria-label", "Operação em andamento");
-      overlay.innerHTML = `<div class="loading-visual" aria-hidden="true"><span class="loading-orbit"></span><span class="loading-orbit loading-orbit-inner"></span><span class="loading-core"></span></div><h2 data-loading-label></h2><p role="status" aria-live="polite">Aguarde um instante…</p><button type="button" hidden data-loading-cancel>Cancelar busca</button>`;
+      overlay.innerHTML = `<div class="loading-visual" aria-hidden="true"><span class="loading-orbit"></span><span class="loading-orbit loading-orbit-inner"></span><img class="loading-core" src="/logos/Reescala_branco_transparente.png" alt="" width="741" height="650"></div><h2 data-loading-label></h2><p role="status" aria-live="polite">Aguarde um instante…</p><button type="button" hidden data-loading-cancel>Cancelar busca</button>`;
       overlay.addEventListener("cancel", (event) => event.preventDefault());
       overlay.querySelector("button").addEventListener("click", () => {
         const action = cancelAction;

@@ -102,13 +102,12 @@ dialog[open].is-closing::backdrop {
   animation: orbit 2.1s linear infinite reverse;
 }
 .loading-core {
-  width: 34px;
-  height: 34px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #d7eaff, #7ab2ed);
-  box-shadow: 0 0 35px #8dc2ff66;
-  transform: rotate(45deg);
-  animation: core-breathe 2s ease-in-out infinite;
+  width: 48px;
+  height: auto;
+  animation: brand-breathe 2s ease-in-out infinite;
+}
+@keyframes brand-breathe {
+  50% { opacity: 0.75; transform: scale(0.92); }
 }
 @keyframes window-in {
   from {
@@ -152,12 +151,6 @@ dialog[open].is-closing::backdrop {
 @keyframes orbit {
   to {
     transform: rotate(360deg);
-  }
-}
-@keyframes core-breathe {
-  50% {
-    transform: rotate(45deg) scale(0.85);
-    box-shadow: 0 0 20px #8dc2ff33;
   }
 }
 @media (prefers-reduced-motion: reduce) {

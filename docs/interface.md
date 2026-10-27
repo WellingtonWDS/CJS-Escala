@@ -18,6 +18,10 @@ Explicações longas de carga contratual, horários individuais, funções e res
 
 Série, visto fiscal e a linha de origem do arquivo não são exibidos no cadastro. Os dados importados são preservados; avisos de inconsistência, pendências e resultados calculados que exigem análise continuam visíveis.
 
+## Identidade Reescala
+
+Os arquivos originais de `logos/` são copiados integralmente para a publicação. Símbolo colorido no login/cabeçalho e favicon; branco transparente no menu e no centro do carregamento; preto transparente na impressão da escala. O nome Reescala acompanha o símbolo, que permanece visível no menu recolhido. As versões com fundo sólido ficam disponíveis para usos externos; a versão preta sobre branco é usada no ícone Apple. Somente os três arquivos necessários antes do login são públicos; módulos e dados continuam protegidos. As chaves internas de armazenamento, API e permissões mantêm seus nomes para preservar os dados existentes.
+
 ## Organização dos estilos
 
 `interface.css` é a camada visual compartilhada e vem depois dos arquivos específicos. As regras de tela ficam em `@media screen`; não substituir regras de impressão com seletores globais indiscriminados. `login.css` mantém o acesso independente dos estilos internos. `motion.css` continua responsável por animações e movimento reduzido.

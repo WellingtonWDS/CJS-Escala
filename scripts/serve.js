@@ -13,6 +13,7 @@ const types = {
   ".mjs": "text/javascript; charset=utf-8",
   ".css": "text/css; charset=utf-8",
   ".json": "application/json",
+  ".png": "image/png",
 };
 const developmentEnv = {
   ...process.env,
@@ -93,7 +94,8 @@ export function createDevServer({
         !["/", "/index.html", "/login.html", "/admin.html"].includes(
           pathname,
         ) &&
-        !pathname.startsWith("/assets/")
+        !pathname.startsWith("/assets/") &&
+        !pathname.startsWith("/logos/")
       ) {
         res.writeHead(404).end("Not found");
         return;

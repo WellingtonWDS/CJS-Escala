@@ -129,6 +129,9 @@ export async function readSession(cookie, env, now = Date.now()) {
 export function publicPath(path) {
   return [
     "/login.html",
+    "/logos/Reescala_original_transparente.png",
+    "/logos/Reescala_branco_transparente.png",
+    "/logos/Reescala_preto_fundo_branco.png",
     "/assets/css/login.css",
     "/assets/css/motion.css",
     "/assets/js/login.js",

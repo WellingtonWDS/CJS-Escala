@@ -1,6 +1,8 @@
-# Estado do projeto — CJS Escala
+# Estado do projeto — Reescala
 
 Atualizado em **27/10/2026**. Referência funcional: versão de regras `ec141-2026-10-27-6` ([histórico do projeto](https://github.com/WellingtonWDS/CJS-Escala/commits/main/)). Esta página resume o andamento; o [README](../README.md) detalha operação, arquitetura, configuração e testes.
+
+Identidade **Reescala** aplicada no login, cabeçalho, menu expandido/recolhido, carregamento, quadros de escala/impressão e ícone do navegador, usando os arquivos originais de `logos/`. A publicação inclui essa pasta e o login carrega suas imagens sem sessão; dados, chaves internas e permissões são preservados.
 
 ## Objetivo e estágio atual
 
