@@ -2,6 +2,8 @@
 
 Dados fictícios para experimentar o Reescala: escritório **DEMO**, **Empresa Demo — FICTÍCIA**, CNPJ sintético `00.000.000/0001-91`, e um preenchimento com cinco colaboradores. Não é necessário criar usuário/senha novos: o instalador vincula o Admin global existente ao escritório de testes. Outros operadores não ganham acesso automaticamente; outros Admins globais mantêm o acesso previsto por seu perfil.
 
+Para mais atividades e cenários de readequação/contratação, veja [quatro empresas por segmento e onze modelos](cenarios-demo-segmentos.md). Eles são adicionados ao mesmo escritório sem alterar este exemplo.
+
 ## Instalar na VPS
 
 Requer as migrações 001–008 aplicadas no banco `cjs_escala` e identidade de Admin global ativo. A execução precisa ocorrer no servidor do banco, pois o ambiente de desenvolvimento não possui conexão administrativa com a VPS. Não há RPC pública de provisionamento.
