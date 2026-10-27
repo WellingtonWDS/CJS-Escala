@@ -1,3 +1,4 @@
+import selectCompany from "./company-picker.cjs";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { createPersistenceService } from "../../server/services/persistence.js";
@@ -216,7 +217,7 @@ export async function testDeleteIntegration({ env, sql, browserTest }) {
               .querySelector("#remote-workspace")
               .hasAttribute("aria-busy"),
         );
-        await page.locator("[data-remote-company]").selectOption(company);
+        await selectCompany(page, company);
         await page.waitForFunction(
           () =>
             !document

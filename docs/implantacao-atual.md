@@ -11,7 +11,15 @@ Consultar este registro antes de orientar o operador. Distinguir código dispon�
 - Novo modelo: menu lateral dentro do sistema, nome e perfil; Operador acessa suas empresas, Gerente gera escalas e gerencia usuários no escritório, Admin tem acesso global. Não há senha adicional nem página separada. Gerente não cria Admin e não edita empresas de outro escritório. Admin/gerentes podem criar Gerentes nos escritórios autorizados; alteração de empresas vale para Operadores.
 - O proprietário deve ser promovido explicitamente usando o **identity_subject informado no chat**. Esse ID é do provedor de login, não o UUID interno de cjs_private.users. Não presumir que o vínculo antigo membership.admin já seja Admin global: ele agora representa Gerente.
 
-## Atualização vigente — exclusão de preenchimentos (27/10/2026)
+## Atualização vigente — nomes, saída e seleção de empresa (27/10/2026)
+
+Novos preenchimentos e sugestões de cópia incluem data/hora local com segundos no nome automático, mantendo o limite de 160 caracteres. Nomes já salvos e edição manual são preservados. No modo individual, Sair passa ao rodapé do menu lateral, com ícone/nome acessível no menu recolhido; o modo compartilhado sem menu mantém a saída disponível.
+
+Em Empresa atual e Preenchimentos, a busca externa e o select visível foram substituídos por um único seletor com lista e busca internas. Filtra razão social sem distinguir acentos/caixa e CNPJ com/sem pontuação, sem incluir a seleção atual artificialmente nos resultados. A busca não seleciona sozinha; clique ou setas/Enter confirmam. Escape fecha primeiro a lista, Tab e clique externo encerram sem mudar o UUID. Select interno oculto mantém contrato da persistência, e a lista respeita bloqueio durante operações. Cadastro administrativo mantém seu seletor atual.
+
+Não requer nova migração, variável ou alteração no n8n. A migração 007 da exclusão continua pendente de confirmação na VPS. Validação local concluída: 436 testes unitários, build, suíte completa de interface e integração PostgreSQL 17/PostgREST 14.15 com navegador real passaram. Conferidos nomes datados, preservação de nomes existentes, cópia, busca sem resultados/por acentos/CNPJ, seleção explícita por teclado, Escape, ausência de controles duplicados visíveis, posição de Sair e menu recolhido. Conferência visual realizada em desktop e celular.
+
+## Entrega anterior — exclusão de preenchimentos (27/10/2026)
 
 Implementada **Excluir preenchimento selecionado** na janela Empresa atual e Preenchimentos. Operadores com acesso de escrita, Gerentes e Admin podem excluir registros autorizados. Confirmação mostra título/empresa e alcance para os colegas. Revisão desatualizada bloqueia; repetição após falha de rede é segura. Excluir o aberto limpa apenas seu cache/contexto neste navegador e fecha o preenchimento; excluir outro preserva o aberto. Envio pendente do aberto precisa ser concluído antes. Histórico interno/auditoria ficam preservados, sem restauração pela interface.
 

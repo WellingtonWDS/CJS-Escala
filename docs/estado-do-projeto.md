@@ -10,6 +10,8 @@ O fluxo principal está implementado e continua em evolução. Já permite impor
 
 Exclusão de preenchimentos implementada na seleção de empresa: confirmação por nome, permissão de edição, conflito de revisão, fechamento do aberto e preservação dos demais. Migração 007 necessária na VPS; aplicação remota ainda não confirmada. Validada com PostgreSQL/PostgREST e navegador reais locais, incluindo falha de rede, repetição, exclusão por colega e bloqueio de salvamento antigo. [Operação e ativação](exclusao-preenchimentos.md).
 
+Novos nomes de preenchimento incluem data/hora local, sem renomear registros existentes. Seleção de empresa na janela usa um único controle com busca interna por razão social/CNPJ e teclado. Sair fica no final do menu lateral, inclusive recolhido. Alterações de interface não exigem migração adicional.
+
 ## Funcionalidades implementadas
 
 | Área | O que já está disponível |

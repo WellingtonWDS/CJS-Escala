@@ -1,4 +1,5 @@
-import { createCompanyPicker } from "./company-picker.js";
+import { createCompanyCombobox } from "./company-combobox.js";
+import { draftTitle } from "../shared/draft-title.js";
 import { getDialogs } from "./dialogs.js";
 import { createRemotePersistence } from "../services/persistence.js";
 import { createDefaultState } from "../state/store.js";
@@ -21,7 +22,7 @@ export async function initRemoteWorkspace({
   dialog.dataset.loadingLabel = "Carregando empresas e preenchimentos";
   bar.dataset.loadingLabel = "Salvando o preenchimento da empresa";
   bar.innerHTML = `<div class="workspace-context"><span class="workspace-eyebrow">Empresa atual e Preenchimentos</span><strong data-current-company>Nenhuma empresa selecionada</strong><span data-current-office></span><button type="button" data-current-open>Trocar empresa ou abrir preenchimento</button></div><div class="workspace-saving"><label>Nome do preenchimento<input data-remote-title maxlength="160" placeholder="Ex.: Escala de outubro" autocomplete="off"></label><div class="workspace-buttons"><button type="button" data-remote-save>Salvar preenchimento</button><button type="button" data-remote-new>Salvar uma cópia</button></div><p data-current-status role="status" aria-live="polite"></p></div>`;
-  dialog.innerHTML = `<form method="dialog"><button class="remote-close" aria-label="Fechar">×</button></form><h2>Empresa atual e Preenchimentos</h2><p>Escolha a empresa e o preenchimento que deseja abrir.</p><div class="workspace-selector-scroll"><div class="workspace-choice-group"><h3>1. Escolha a empresa</h3><label>Escritório<select data-remote-office></select></label><label>Buscar por razão social ou CNPJ<input data-remote-company-search type="search" placeholder="Digite a razão social ou CNPJ"></label><label>Empresa<select data-remote-company></select></label></div><div class="workspace-choice-group"><h3>2. Escolha o preenchimento</h3><label>Preenchimentos desta empresa<select data-remote-draft></select></label><button type="button" class="workspace-delete" data-remote-delete disabled>Excluir preenchimento selecionado</button><p data-remote-preview>Comece um novo preenchimento ou abra um dos anteriores.</p></div><details class="workspace-recovery"><summary>Recuperação e importação de dados</summary><p>Estas ações usam a empresa e o preenchimento que já estão abertos no sistema.</p><div class="remote-actions"><button type="button" data-remote-restore>Recuperar preenchimento local anterior</button><button type="button" data-remote-import>Importar dados antigos deste navegador</button></div></details></div><p data-remote-status role="status" aria-live="polite"></p><div class="remote-actions workspace-open-actions"><button type="button" data-remote-open>Usar esta empresa</button></div>`;
+  dialog.innerHTML = `<form method="dialog"><button class="remote-close" aria-label="Fechar">×</button></form><h2>Empresa atual e Preenchimentos</h2><p>Escolha a empresa e o preenchimento que deseja abrir.</p><div class="workspace-selector-scroll"><div class="workspace-choice-group"><h3>1. Escolha a empresa</h3><label>Escritório<select data-remote-office></select></label><div class="company-combobox" data-company-combobox><span id="workspace-company-label">Empresa</span><select data-remote-company hidden aria-hidden="true" tabindex="-1"></select><button type="button" data-company-trigger aria-labelledby="workspace-company-label workspace-company-value" id="workspace-company-value" aria-haspopup="listbox" aria-expanded="false" aria-controls="workspace-company-options">Selecione a empresa</button><div class="company-combobox-popup" data-company-popup hidden><label>Buscar empresa<input data-remote-company-search type="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="workspace-company-options" autocomplete="off" placeholder="Razão social ou CNPJ"></label><div id="workspace-company-options" role="listbox" aria-label="Empresas"></div><p role="status" aria-live="polite"></p></div></div></div><div class="workspace-choice-group"><h3>2. Escolha o preenchimento</h3><label>Preenchimentos desta empresa<select data-remote-draft></select></label><button type="button" class="workspace-delete" data-remote-delete disabled>Excluir preenchimento selecionado</button><p data-remote-preview>Comece um novo preenchimento ou abra um dos anteriores.</p></div><details class="workspace-recovery"><summary>Recuperação e importação de dados</summary><p>Estas ações usam a empresa e o preenchimento que já estão abertos no sistema.</p><div class="remote-actions"><button type="button" data-remote-restore>Recuperar preenchimento local anterior</button><button type="button" data-remote-import>Importar dados antigos deste navegador</button></div></details></div><p data-remote-status role="status" aria-live="polite"></p><div class="remote-actions workspace-open-actions"><button type="button" data-remote-open>Usar esta empresa</button></div>`;
   const field = (k) => document.querySelector(`[data-remote-${k}]`),
     current = (k) => bar.querySelector(`[data-current-${k}]`);
   let busy = false,
@@ -37,9 +38,8 @@ export async function initRemoteWorkspace({
   const status = (text) => {
     (dialog.open ? field("status") : current("status")).textContent = text;
   };
-  const picker = createCompanyPicker({
-    input: field("company-search"),
-    select: field("company"),
+  const picker = createCompanyCombobox({
+    root: dialog.querySelector("[data-company-combobox]"),
     onChange: () => run(drafts),
   });
   const selected = () => ({
@@ -124,8 +124,7 @@ export async function initRemoteWorkspace({
       officeName = "";
       titleKnown = !c?.draftId || !!workspace.pending();
       field("title").value =
-        workspace.pending()?.title ||
-        (c?.draftId ? "" : "Planejamento de escala");
+        workspace.pending()?.title || (c?.draftId ? "" : draftTitle());
     }
     updateButtons();
     if (!c) return;
@@ -221,7 +220,7 @@ export async function initRemoteWorkspace({
     preview();
   }
   async function companies() {
-    field("company").replaceChildren();
+    picker.setRows([]);
     field("draft").replaceChildren();
     const office = field("office").value;
     if (!office) return;
@@ -461,9 +460,8 @@ export async function initRemoteWorkspace({
         throw Error("Conclua o envio pendente antes de criar uma cópia.");
       const title = await dialogs.prompt(
         "A cópia será salva na mesma empresa e preservará o preenchimento original.",
-        `${field("title").value || "Planejamento de escala"} — cópia`.slice(
-          0,
-          160,
+        draftTitle(
+          `${field("title").value || "Planejamento de escala"} — cópia`,
         ),
         {
           title: "Salvar uma cópia",

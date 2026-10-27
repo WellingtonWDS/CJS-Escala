@@ -1,3 +1,4 @@
+import selectCompany from "./company-picker.cjs";
 import dialogTools from "./dialogs.cjs";
 const { respondToDialogs, waitForDialogs } = dialogTools;
 import assert from "node:assert/strict";
@@ -321,7 +322,7 @@ export async function testRegistryIntegration({ env, sql, browserTest }) {
             .querySelector("#remote-workspace")
             .hasAttribute("aria-busy"),
       );
-      await page.locator("[data-remote-company]").selectOption(company);
+      await selectCompany(page, company);
       await page.waitForFunction(
         () =>
           !document

@@ -139,9 +139,47 @@ module.exports = async ({ browser, baseURL }) => {
       await page.locator("#remote-workspace [data-remote-save]").count(),
       0,
     );
-    await page
-      .locator("[data-remote-company]")
-      .selectOption("30000000-0000-0000-0000-000000000002");
+    const search = page.locator("[data-remote-company-search]"),
+      trigger = page.locator("[data-company-trigger]");
+    assert.equal(await search.isVisible(), false);
+    assert.equal(
+      await page.locator("[data-remote-company]").isVisible(),
+      false,
+    );
+    await trigger.click();
+    await search.fill("empresa inexistente");
+    assert.equal(
+      await page.locator("[data-company-popup]").getByRole("option").count(),
+      0,
+    );
+    assert.match(
+      await page.locator("[data-company-popup] [role=status]").textContent(),
+      /Nenhuma empresa/,
+    );
+    assert.equal(
+      await page.locator("[data-remote-company]").inputValue(),
+      "30000000-0000-0000-0000-000000000001",
+    );
+    await page.keyboard.press("Escape");
+    assert.equal(await search.isVisible(), false);
+    assert.equal(
+      await page.locator("#remote-workspace").evaluate((el) => el.open),
+      true,
+    );
+    await trigger.click();
+    await search.fill("ÉMPRESA b");
+    assert.equal(
+      await page.locator("[data-company-popup]").getByRole("option").count(),
+      1,
+    );
+    await search.fill("11.222.333/0001-81");
+    assert.equal(
+      await page.locator("[data-company-popup]").getByRole("option").count(),
+      1,
+    );
+    await page.keyboard.press("Enter");
+    assert.equal(await search.isVisible(), false);
+    assert.match(await trigger.textContent(), /Empresa B/);
     await page.waitForFunction(
       () =>
         !document.querySelector("#remote-workspace").hasAttribute("aria-busy"),
@@ -174,6 +212,10 @@ module.exports = async ({ browser, baseURL }) => {
     await modal.waitFor({ state: "hidden" });
     assert.equal(await page.evaluate(() => window.__saved.length), 2);
     await page.locator("[data-remote-new]").click();
+    assert.match(
+      await modal.locator("[data-dialog-input]").inputValue(),
+      /cópia — \d{2}\/\d{2}\/\d{4}, \d{2}:\d{2}:\d{2}$/,
+    );
     await modal.locator("[data-dialog-input]").fill("Cópia para testar");
     await modal.locator("[data-dialog-accept]").click();
     await page.waitForFunction(
@@ -210,6 +252,16 @@ module.exports = async ({ browser, baseURL }) => {
     }
     await page.evaluate(() => (document.body.dataset.appView = "companies"));
     assert.equal(await bar.isVisible(), false);
+    const dated = await page.evaluate(async () => {
+      const { draftTitle } = await import("/assets/js/shared/draft-title.js");
+      return [
+        draftTitle(undefined, new Date(2026, 9, 27, 14, 5, 6)),
+        draftTitle("A".repeat(200), new Date(2026, 9, 27, 14, 5, 6)),
+      ];
+    });
+    assert.equal(dated[0], "Planejamento de escala — 27/10/2026, 14:05:06");
+    assert.equal(dated[1].length, 160);
+    assert.ok(dated[1].endsWith("27/10/2026, 14:05:06"));
     assert.deepEqual(errors, []);
     console.log(
       "OK: empresa atual e preenchimentos — barra acessível, salvar sem modal, cópia/cancelamento, troca de seleção sem alterar empresa/título abertos e layout móvel",

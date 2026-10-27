@@ -219,6 +219,80 @@ body {
   opacity: 0.45;
   cursor: not-allowed;
 }
+.company-combobox {
+  margin-top: 14px;
+  min-width: 0;
+  font-size: 0.8rem;
+}
+.company-combobox > span {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+.company-combobox [data-company-trigger] {
+  width: 100%;
+  padding: 10px 30px 10px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  background: white;
+  color: #102b49;
+  text-align: left;
+  font: inherit;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+  position: relative;
+}
+.company-combobox [data-company-trigger]::after {
+  content: "⌄";
+  position: absolute;
+  right: 10px;
+  top: 10px;
+}
+.company-combobox [data-company-trigger]:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.company-combobox-popup {
+  padding: 10px;
+  margin-top: 5px;
+  border: 1px solid #b5c5d8;
+  border-radius: 8px;
+  background: white;
+  box-shadow: 0 8px 24px #102b491a;
+}
+.company-combobox-popup label {
+  margin: 0 0 8px;
+}
+.company-combobox [role="listbox"] {
+  max-height: 180px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.company-combobox [role="option"] {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  border: 0;
+  border-radius: 5px;
+  background: white;
+  color: #102b49;
+  font: inherit;
+  text-align: left;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+.company-combobox [role="option"]:hover,
+.company-combobox [role="option"].is-active {
+  background: #eff6ff;
+}
+.company-combobox [aria-selected="true"] {
+  font-weight: 700;
+}
+.company-combobox button:focus-visible,
+.company-combobox input:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
 .workspace-choice-group input,
 .workspace-choice-group select {
   box-sizing: border-box;

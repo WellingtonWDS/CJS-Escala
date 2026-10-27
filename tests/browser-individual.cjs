@@ -1,3 +1,4 @@
+const selectCompany = require("./helpers/company-picker.cjs");
 const {
   respondToDialogs,
   waitForDialogs,
@@ -51,9 +52,7 @@ module.exports = async ({ browser, baseURL, sql }) => {
   };
   const openSelection = async (page, draft = "") => {
     await openPanel(page);
-    await page
-      .locator("[data-remote-company]")
-      .selectOption("30000000-0000-0000-0000-000000000001");
+    await selectCompany(page, "30000000-0000-0000-0000-000000000001");
     await page.waitForFunction(
       () =>
         !document.querySelector("#remote-workspace").hasAttribute("aria-busy"),
@@ -68,6 +67,19 @@ module.exports = async ({ browser, baseURL, sql }) => {
   };
   try {
     const a = await login("admin-a@example.test");
+    assert.equal(await a.locator("header #btn-sair").count(), 0);
+    assert.equal(
+      await a.locator("#app-sidebar > :last-child").getAttribute("id"),
+      "btn-sair",
+    );
+    assert.equal(await a.locator("#btn-sair").isVisible(), true);
+    await a.locator("#sidebar-toggle").click();
+    assert.equal(await a.locator("#btn-sair").isVisible(), true);
+    assert.equal(
+      await a.locator("#btn-sair").getAttribute("aria-label"),
+      "Sair",
+    );
+    await a.locator("#sidebar-toggle").click();
     assert.equal(await a.locator('[data-field="nome"]').count(), 0);
     const legacy = cenario();
     legacy.mes = 8;
@@ -77,6 +89,10 @@ module.exports = async ({ browser, baseURL, sql }) => {
       legacy,
     );
     await openSelection(a);
+    assert.match(
+      await a.locator("[data-remote-title]").inputValue(),
+      /^Planejamento de escala — \d{2}\/\d{2}\/\d{4}, \d{2}:\d{2}:\d{2}$/,
+    );
     await openPanel(a);
     await a.locator(".workspace-recovery summary").click();
     await a.locator("[data-remote-import]").click();

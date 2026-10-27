@@ -6,7 +6,7 @@ Gerente e Admin têm a opção **Cadastrar empresas** no menu lateral. Seleciona
 
 O CNPJ é armazenado sem pontuação e exibido formatado junto da razão social. Os dígitos verificadores são conferidos no servidor e banco, com suporte a CNPJ numérico e alfanumérico. A unicidade é por escritório: o mesmo cliente pode pertencer a contabilidades distintas, sem compartilhar dados. Repetir um cadastro ou confirmar duas vezes o mesmo CNPJ não cria duplicidade.
 
-Empresa atual e Preenchimentos e a listagem de cadastro têm select e busca digitada por razão social (inclusive sem acentos) ou CNPJ (com/sem pontuação). Digitar um CNPJ completo seleciona a correspondência exata; busca parcial filtra as opções e preserva a seleção atual. Nas atribuições de empresas aos usuários, as opções de checkbox também mostram razão social/CNPJ e têm campo de busca. Filtrar não desmarca empresas já selecionadas.
+Em Empresa atual e Preenchimentos há um único seletor visível de empresa. Ao abrir, a lista apresenta a busca por razão social (inclusive sem acentos) ou CNPJ (com/sem pontuação). Digitar filtra somente as opções; clicar numa opção ou usar as setas e Enter confirma a escolha. Escape fecha a lista sem trocar a empresa nem fechar a janela. A listagem administrativa de cadastro mantém seus controles próprios de busca e seleção. Nas atribuições de empresas aos usuários, as opções de checkbox também mostram razão social/CNPJ e têm campo de busca. Filtrar não desmarca empresas já selecionadas.
 
 ## Importação Domínio no modo individual
 

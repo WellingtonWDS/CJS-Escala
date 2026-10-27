@@ -237,7 +237,9 @@ export async function testCompanyIntegration({ env, sql, browserTest }) {
             .querySelector("#remote-workspace")
             .hasAttribute("aria-busy"),
       );
+      await page.locator("[data-company-trigger]").click();
       await page.locator("[data-remote-company-search]").fill("48956412000126");
+      await page.locator('[role="option"]').click();
       await page.waitForFunction(
         () =>
           !document
