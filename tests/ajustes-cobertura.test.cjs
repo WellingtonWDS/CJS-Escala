@@ -271,7 +271,14 @@ test("janela permitida e limite operacional impedem prolongar expediente", () =>
     },
   });
   gerar(fechado);
-  assert.equal(buscar(fechado).alteracoes.length, 0);
+  assert.ok(
+    buscar(fechado).alteracoes.every(
+      (a) =>
+        a.depois.entradaMin === a.antes.entradaMin &&
+        a.depois.saidaMin === a.antes.saidaMin &&
+        a.depois.horas === a.antes.horas,
+    ),
+  );
 });
 test("folgas de fim de semana e dias editados manualmente não são mudados", () => {
   const s = config(1, {
@@ -580,7 +587,14 @@ test("cadastro Domínio preserva a janela individual na busca de horários", () 
       pendencias: [],
     };
   gerar(s);
-  assert.equal(buscar(s).alteracoes.length, 0);
+  assert.ok(
+    buscar(s).alteracoes.every(
+      (a) =>
+        a.depois.entradaMin >= 480 &&
+        a.depois.saidaMin <= 1020 &&
+        a.depois.horas === a.antes.horas,
+    ),
+  );
 });
 
 test("feriado dispensado e admissão não são convertidos em disponibilidade para cobertura", () => {

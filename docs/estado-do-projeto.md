@@ -1,6 +1,6 @@
 # Estado do projeto — CJS Escala
 
-Atualizado em **27/10/2026**. Referência funcional: versão de regras `ec141-2026-10-23-5` ([histórico do projeto](https://github.com/WellingtonWDS/CJS-Escala/commits/main/)). Esta página resume o andamento; o [README](../README.md) detalha operação, arquitetura, configuração e testes.
+Atualizado em **27/10/2026**. Referência funcional: versão de regras `ec141-2026-10-27-6` ([histórico do projeto](https://github.com/WellingtonWDS/CJS-Escala/commits/main/)). Esta página resume o andamento; o [README](../README.md) detalha operação, arquitetura, configuração e testes.
 
 ## Objetivo e estágio atual
 
@@ -19,6 +19,8 @@ Revisão visual aplicada a desktop e celular: cabeçalho claro, navegação e et
 Tutorial com janela arrastável pelo cabeçalho (mouse/toque), movimento por teclado, posição preservada entre etapas e limites da tela. Reabertura reinicia posicionamento automático; dados e visitas às etapas continuam preservados.
 
 A etapa 7 mantém somente a orientação sobre a EC 141 e sua linha do tempo; o simulador de três referências foi removido. A comparação da escala atual com a proposta permanece na etapa 8.
+
+Horários individuais disponíveis também para cadastro manual/CSV, turnos contínuos com campos vazios, sábado compensado/reposição do saldo com disponibilidade e descanso, conferência entre contrato/horários e teto contratual de 44h. A proposta redistribui intervalos para cobertura e a busca de ajustes também sugere pausas; origem, duração, jornada e edição manual são preservadas. [Operação e limites](horarios-individuais.md). Resultados antigos precisam ser gerados novamente; cadastros são preservados.
 
 ## Funcionalidades implementadas
 
@@ -88,7 +90,7 @@ As implementações de restrições individuais, sugestões de ajustes de cobert
 Na entrega de cadastro/busca de empresas e importação Domínio com vínculo por CNPJ, em **26/10/2026**, foram registrados:
 
 - Janela Usuários validada em banco e navegador reais locais: pesquisa/filtros, edição, toggles com cancelamento, conta compartilhada, perfis, Consulta legada, escopos, e-mail duplicado com rollback, concorrência, revogação global, auditoria e layout móvel.
-- **436 testes unitários aprovados**, sem falhas, com `npm test`.
+- **445 testes unitários aprovados**, sem falhas, com `npm test`.
 - Integração real com PostgreSQL 17 e PostgREST 14.15 aprovada por `npm run test:persistence`: isolamento de escritórios/empresas, permissões, concorrência, idempotência, histórico/auditoria, FK cruzada, token inválido/expirado e sessão revogada.
 - Edição de empresa e criação de escritório validadas em navegador e banco reais locais. Dois Operadores distintos abriram e atualizaram a mesma escala salva; revisão antiga foi bloqueada, edição da empresa preservou os rascunhos e retirada de acesso impediu nova leitura.
 - Modais validados em navegador: Escape/Enter, foco restaurado, texto tratado sem HTML, fila, janelas sobrepostas, limpeza confirmada/cancelada e celular. Suíte completa de interface, login compartilhado e integração individual/banco passaram após a troca dos diálogos nativos.

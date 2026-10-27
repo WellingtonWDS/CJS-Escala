@@ -71,7 +71,15 @@ export function interpretarDias(label) {
   return { dias: dias.map((d) => DIA[d]) };
 }
 export function interpretarHorario(entrada, intervalo, saida, situacao) {
-  if (/folga|compensado|repouso/.test(norm(situacao)))
+  if (/compensado/.test(norm(situacao))) {
+    const h = interpretarHorario(entrada, intervalo, saida, "");
+    return {
+      status: "compensado",
+      situacao: texto(situacao),
+      ...(h.status === "trabalho" ? { jornada: h.jornada } : {}),
+    };
+  }
+  if (/folga|repouso/.test(norm(situacao)))
     return { status: "folga", situacao: texto(situacao) };
   const a = texto(entrada),
     b = texto(saida),
@@ -143,7 +151,10 @@ export function atualizarPerfilDominio(c, config) {
         p.pendencias.push(
           `Dia ${key}: jornada de ${h.horas}h sem intervalo informado.`,
         );
-    } else if (h.status !== "folga")
+    } else if (
+      h.status !== "folga" &&
+      !(p.tipo === "semanal" && key === "6" && h.status === "compensado")
+    )
       p.pendencias.push(
         `Dia ${key}: ${h.motivo || "horário não informado; defina trabalho ou folga."}`,
       );
@@ -163,6 +174,9 @@ export function atualizarPerfilDominio(c, config) {
   const completos = entradas.every(
     (h) =>
       h.status === "folga" ||
+      (p.tipo === "semanal" &&
+        p.semana?.[6] === h &&
+        h.status === "compensado") ||
       (h.status === "trabalho" && jornadaValidaEstrutural(h.jornada)),
   );
   p.horasCalculadas = completos
@@ -201,8 +215,22 @@ export function atualizarPerfilDominio(c, config) {
       : null;
   if (!p.cargaConfirmada)
     c.horasSemana = p.horasComputadasCalculadas ?? p.horasCalculadas;
+  if (Number(c.horasSemana) > 44)
+    p.pendencias.push(
+      "ERRO: jornada contratual de referência acima de 44h semanais. Corrija a carga contratual; horas extras não integram este campo.",
+    );
+  const calculadas = p.horasComputadasCalculadas ?? p.horasCalculadas;
+  if (
+    p.cargaConfirmada &&
+    Number.isFinite(calculadas) &&
+    Number.isFinite(c.horasSemana) &&
+    Math.abs(calculadas - c.horasSemana) > 0.01
+  )
+    p.pendencias.push(
+      `Carga incoerente: os horários somam ${calculadas}h/semana e a carga contratual mantida é ${c.horasSemana}h. Revise os horários, o contrato e eventual reposição no sábado; marcar a confirmação não elimina a diferença.`,
+    );
   const dias = Object.entries(p.semana)
-    .filter(([, h]) => h.status === "trabalho")
+    .filter(([, h]) => h.status === "trabalho" || h.status === "compensado")
     .map(([d]) => Number(d));
   p.modelo =
     p.tipo === "ciclo"
@@ -369,20 +397,25 @@ export function analisarQuadroDominio(abas, arquivo = "") {
         if (dias.ciclo > 31)
           throw new Error("Ciclo com mais de 31 dias não suportado.");
         atual.quadroDominio.tipo = "ciclo";
-        atual.quadroDominio.ciclo[dias.ciclo] = structuredClone(horario);
+        atual.quadroDominio.ciclo[dias.ciclo] = structuredClone(
+          horario.status === "compensado"
+            ? { ...horario, status: "folga" }
+            : horario,
+        );
       } else
         for (const dia of dias.dias) {
+          const doDia =
+            horario.status === "compensado" && dia !== 6
+              ? { ...horario, status: "folga" }
+              : horario;
           const anterior = atual.quadroDominio.semana[dia];
-          if (
-            anterior &&
-            JSON.stringify(anterior) !== JSON.stringify(horario)
-          ) {
+          if (anterior && JSON.stringify(anterior) !== JSON.stringify(doDia)) {
             atual.quadroDominio.semana[dia] = {
               status: "nao_informado",
               motivo:
                 "Linhas do relatório divergem para este dia; confira os dados originais.",
             };
-          } else atual.quadroDominio.semana[dia] = structuredClone(horario);
+          } else atual.quadroDominio.semana[dia] = structuredClone(doDia);
         }
     }
   }

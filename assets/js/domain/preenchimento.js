@@ -65,12 +65,12 @@ export function pendenciasPreenchimento(state, destino) {
     if (
       !Number.isFinite(c.horasSemana) ||
       c.horasSemana <= 0 ||
-      c.horasSemana > 60
+      c.horasSemana > 44
     )
       add(
         "sec-config",
         campo("horasSemana"),
-        `${nome || "Colaborador"}: informe a carga contratual entre 1 e 60 horas.`,
+        `${nome || "Colaborador"}: informe a carga contratual entre 1 e 44 horas.`,
       );
     if (perfilAtivo(c)) {
       try {

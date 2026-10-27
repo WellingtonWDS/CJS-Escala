@@ -1,7 +1,8 @@
 const { test, before } = require("node:test");
 const assert = require("node:assert/strict");
-let converter, comparar, base, domain;
+let converter, comparar, base, domain, csv;
 before(async () => {
+  ({ gerarCsv: csv } = await import("../assets/js/export/csv.js"));
   ({ converterEscala: converter, compararConversao: comparar } = await import(
     "../assets/js/domain/conversao.js"
   ));
@@ -95,13 +96,19 @@ test("insuficiência de horas e função ausente têm explicação; outra funç�
     m.funcoes[1].insuficiencias.some((s) => s.includes("Nenhum colaborador")),
   );
 });
-test("saldo de horas não garante atendimento de pausa e saída; lacunas não são prova de falta de pessoal", () => {
+test("intervalos escalonados na proposta atendem demanda durante a pausa original", () => {
   const s = empresa(3);
   s.demandasCobertura[0].inicio = "12:00";
   s.demandasCobertura[0].fim = "13:00";
-  const m = converter(s, op).comparacao;
-  assert.equal(m.status, "ajustes");
-  assert.ok(m.lacunas.length);
+  const proposta = converter(s, op);
+  const m = proposta.comparacao;
+  assert.equal(m.status, "suficiente");
+  assert.equal(m.lacunas.length, 0);
+  assert.ok(proposta.proposta.config.escalaGerada.sugestoesIntervalos.length);
+  assert.match(
+    csv(proposta.proposta.config),
+    /Início do intervalo;Fim do intervalo;Intervalo sugerido para cobertura/,
+  );
   assert.equal(m.funcoes[0].insuficiencias.length, 0);
 });
 test("cobertura desativada, vazia ou exigida em dia fechado nunca produz falsa suficiência", () => {

@@ -6,6 +6,7 @@ import {
 } from "../domain/diagnostico-equipe.js";
 import { funcaoDoDia } from "../domain/funcoes.js";
 import {
+  horarioComDia,
   dateFromKey,
   minToTime,
   fmtHoras,
@@ -18,6 +19,9 @@ import { csvCell } from "../shared/formatacao.js";
 export function gerarCsv(state) {
   state = configDaEscala(state);
   const { resultado } = state.escalaGerada;
+  const intervalosSugeridos = resultado.some((r) =>
+    r.dias.some((d) => d.intervaloSugerido),
+  );
   const ajustes = resultado.some((r) =>
     r.dias.some((d) => d.funcaoAlocada || d.ajusteAutomatico),
   );
@@ -78,6 +82,13 @@ export function gerarCsv(state) {
       "Enquadramento",
       "Aditamento informado",
       "Data da saída",
+      ...(intervalosSugeridos
+        ? [
+            "Início do intervalo",
+            "Fim do intervalo",
+            "Intervalo sugerido para cobertura",
+          ]
+        : []),
       ...(ajustes
         ? ["Função alocada no dia", "Ajuste de cobertura aplicado"]
         : []),
@@ -124,7 +135,11 @@ export function gerarCsv(state) {
         r.colaborador.nome,
         r.colaborador.cargo,
         d.data,
-        d.status,
+        d.sabadoCompensado
+          ? "FC — Sábado compensado"
+          : d.reposicaoSabado
+            ? "T — Reposição de sábado"
+            : d.status,
         trabalha ? minToTime(d.entradaMin) : "",
         trabalha ? minToTime(d.saidaMin) : "",
         trabalha ? fmtHoras(d.intervaloMin / 60) : "",
@@ -152,6 +167,17 @@ export function gerarCsv(state) {
               );
             })()
           : "",
+        ...(intervalosSugeridos
+          ? [
+              trabalha && d.intervaloInicioMin != null
+                ? horarioComDia(d.intervaloInicioMin)
+                : "",
+              trabalha && d.intervaloFimMin != null
+                ? horarioComDia(d.intervaloFimMin)
+                : "",
+              d.intervaloSugerido ? "Sim" : "",
+            ]
+          : []),
         ...(ajustes
           ? [
               trabalha ? funcaoDoDia(r.colaborador, d) : "",

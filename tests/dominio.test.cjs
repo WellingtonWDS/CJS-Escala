@@ -254,6 +254,17 @@ test("conversão 6x1 usa disponibilidades individuais e não declara suficiênci
       incluirFeriados: false,
     },
   ];
+  assert.throws(() =>
+    converter(s, {
+      periodo: "2028-02",
+      fase: "automatico",
+      folgas: "distribuir",
+    }),
+  );
+  for (const pessoa of s.colaboradores) {
+    pessoa.horasSemana = 44;
+    pessoa.quadroDominio.cargaConfirmada = true;
+  }
   const c = converter(s, {
     periodo: "2028-02",
     fase: "automatico",

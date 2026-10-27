@@ -39,6 +39,14 @@ export function createValidacao(state, jornada, feriados) {
 
   function validarJornadaDiaria(colab, dias) {
     const out = [];
+    if (Number(colab.horasSemana) > 44)
+      out.push(
+        issue(
+          "CARGA_CONTRATUAL",
+          "erro",
+          `${colab.nome}: jornada contratual de referência acima de 44h semanais. Corrija o cadastro; horas extras não integram a carga contratual.`,
+        ),
+      );
     const datas = dias.filter((x) => x.status === "T" || x.status === "FE");
     datas.forEach((d) => {
       const h = d.horas;
@@ -380,6 +388,18 @@ export function createValidacao(state, jornada, feriados) {
 
     for (const [key, semana] of porSemana.entries()) {
       const apuracao = apurarSemana(colab, semana, state);
+      if (
+        semana.some((d) => d.sabadoCompensado) &&
+        apuracao.completa &&
+        apuracao.computadas < apuracao.alvo - 0.01
+      )
+        out.push(
+          issue(
+            "COMPENSACAO_SABADO",
+            "alerta",
+            `${semana[0]?.data}: faltam ${fmtHoras(apuracao.alvo - apuracao.computadas)} para a carga semanal. O sábado compensado não gera abono; informe disponibilidade de reposição ou revise os horários e as restrições.`,
+          ),
+        );
       const referencia = referenciaSemana(state, semana, colab);
       const referenciaLegal = referencia.horas;
       const total =

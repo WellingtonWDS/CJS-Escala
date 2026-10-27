@@ -1,3 +1,4 @@
+import { apurarSemana } from "./resumo-semanal.js";
 import {
   aplicarRestricoesDia,
   validarRestricoes,
@@ -10,6 +11,7 @@ import {
 } from "./computo-cct.js";
 import {
   referenciaDia,
+  limiteDiario,
   referenciaSemana,
   instrumentoValido,
   VERSAO_REGRAS,
@@ -24,10 +26,12 @@ import {
 import { distribuirCargaComAbonos } from "./distribuicao-horas.js";
 import { calcularPausaEfetiva, analisarCobertura } from "./cobertura.js";
 import {
+  jornadaValidaEstrutural,
   diasNoMes,
   isoDate,
   dateFromKey,
   timeToMin,
+  minToTime,
   intervaloMin,
   getMonday,
   weekKey,
@@ -194,6 +198,7 @@ export function createGerador(state, jornada, feriados, validacao) {
         }
       }
 
+      if (state.sabadoCompensado && weekday === 6) status = "F";
       const bloqueio = bloqueioNaData(colab, key);
       if (bloqueio && ["folga", "indisponivel"].includes(bloqueio.tipo))
         status = "F";
@@ -242,7 +247,7 @@ export function createGerador(state, jornada, feriados, validacao) {
         feriado,
         previsto: status === "NC" ? false : previsto,
         previstoOriginal:
-          status === "NC"
+          status === "NC" || (state.sabadoCompensado && weekday === 6)
             ? false
             : state.tipoEscala === "12x36" || state.cicloQuadro
               ? previsto
@@ -271,7 +276,124 @@ export function createGerador(state, jornada, feriados, validacao) {
         aplicarRestricoesDia(colab, d, state, (dia) =>
           Object.assign(dia, apurarComputoCCT(state, dia)),
         );
+    ajustarSabadoCompensado(colab, periodo);
     return periodo;
+  }
+
+  function ajustarSabadoCompensado(colab, dias) {
+    if (state.sabadoCompensado) {
+      const semanas = new Map();
+      for (const d of dias) {
+        const k = weekKey(dateFromKey(d.data));
+        if (!semanas.has(k)) semanas.set(k, []);
+        semanas.get(k).push(d);
+      }
+      for (const semana of semanas.values()) {
+        const sabado = semana.find((d) => d.weekday === 6);
+        if (
+          !sabado ||
+          !(
+            sabado.status === "F" ||
+            sabado.sabadoCompensado ||
+            sabado.reposicaoSabado
+          ) ||
+          sabado.restricao ||
+          bloqueioNaData(colab, sabado.data) ||
+          sabado.feriado
+        )
+          continue;
+        sabado.status = "FC";
+        sabado.horas = 0;
+        sabado.previsto = false;
+        sabado.previstoOriginal = false;
+        sabado.horasPrevistas = 0;
+        sabado.reposicaoSabado = false;
+        atualizarHorarioEfetivo(sabado);
+        const a = apurarSemana(colab, semana, state),
+          falta = Math.max(0, a.alvo - a.computadas);
+        sabado.sabadoCompensado = true;
+        sabado.status = "FC";
+        const j = normalizarJornada(state.jornadaPorDia[6]);
+        if (
+          falta > 0.001 &&
+          j &&
+          jornadaValidaEstrutural(state.jornadaPorDia[6])
+        ) {
+          const minutoData = (data) => Date.parse(`${data}T00:00:00Z`) / 60000;
+          const base = minutoData(sabado.data);
+          const trabalhos = dias.filter(
+            (d) =>
+              d !== sabado &&
+              ["T", "FE"].includes(d.status) &&
+              Number.isFinite(d.entradaMin) &&
+              Number.isFinite(d.saidaMin),
+          );
+          const anterior = Math.max(
+            -Infinity,
+            ...trabalhos
+              .filter((d) => d.data < sabado.data)
+              .map((d) => minutoData(d.data) + d.saidaMin),
+          );
+          const proximo = Math.min(
+            Infinity,
+            ...trabalhos
+              .filter((d) => d.data > sabado.data)
+              .map((d) => minutoData(d.data) + d.entradaMin),
+          );
+          const inicio = Math.max(j.entrada, anterior + 660 - base),
+            fim = Math.min(j.saida, proximo - 660 - base);
+          const capacidade = (fim - inicio - j.intervalo) / 60;
+          const ordem = dias
+              .slice()
+              .sort((a, b) => a.data.localeCompare(b.data)),
+            idx = ordem.indexOf(sabado);
+          let seguidos = 0;
+          for (
+            let i = idx - 1;
+            i >= 0 && ["T", "FE"].includes(ordem[i].status);
+            i--
+          )
+            seguidos++;
+          for (
+            let i = idx + 1;
+            i < ordem.length && ["T", "FE"].includes(ordem[i].status);
+            i++
+          )
+            seguidos++;
+          if (capacidade <= 0 || seguidos >= 6) continue;
+          const margem = Math.min(15, capacidade * 30);
+          const pausa = j.intervalo
+            ? Math.max(
+                inicio + margem,
+                Math.min(j.intInicio, fim - j.intervalo - margem),
+              )
+            : fim;
+          sabado.jornadaAplicada = {
+            entrada: minToTime(inicio),
+            intInicio: minToTime(pausa),
+            intFim: minToTime(j.intervalo ? pausa + j.intervalo : fim),
+            saida: minToTime(fim),
+          };
+          sabado.status = "T";
+          sabado.reposicaoSabado = true;
+          sabado.sabadoCompensado = false;
+          sabado.horas = Math.min(
+            falta,
+            capacidade,
+            limiteDiario(state, sabado.data),
+            j.intervalo < 15 ? 4 : j.intervalo < 60 ? 6 : Infinity,
+          );
+          sabado.previsto = true;
+          sabado.previstoOriginal = true;
+          sabado.horasPrevistas = sabado.horas;
+          atualizarHorarioEfetivo(sabado);
+          if (!state.adiarRestricoes)
+            aplicarRestricoesDia(colab, sabado, state, (d) =>
+              Object.assign(d, apurarComputoCCT(state, d)),
+            );
+        }
+      }
+    }
   }
 
   function atualizarHorarioEfetivo(d) {
@@ -466,5 +588,6 @@ export function createGerador(state, jornada, feriados, validacao) {
     gerarEscalaColaborador,
     atualizarHorarioEfetivo,
     distribuirHorasIndividuais,
+    ajustarSabadoCompensado,
   };
 }

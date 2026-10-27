@@ -11,7 +11,19 @@ Consultar este registro antes de orientar o operador. Distinguir código dispon�
 - Novo modelo: menu lateral dentro do sistema, nome e perfil; Operador acessa suas empresas, Gerente gera escalas e gerencia usuários no escritório, Admin tem acesso global. Não há senha adicional nem página separada. Gerente não cria Admin e não edita empresas de outro escritório. Admin/gerentes podem criar Gerentes nos escritórios autorizados; alteração de empresas vale para Operadores.
 - O proprietário deve ser promovido explicitamente usando o **identity_subject informado no chat**. Esse ID é do provedor de login, não o UUID interno de cjs_private.users. Não presumir que o vínculo antigo membership.admin já seja Admin global: ele agora representa Gerente.
 
-## Atualização vigente — remoção do comparativo da etapa 7 (27/10/2026)
+## Atualização vigente — horários, compensação e intervalos (27/10/2026)
+
+Implementados horários individuais para cadastro manual/CSV via perfil compartilhado com a Domínio. Normalização aceita Entrada/Saída sem pausa ou Entrada/primeiro fim com os dois últimos vazios, preservando meia-noite e legado zerado. Sábado Compensado tem disponibilidade opcional de reposição; perfil conta o dia como compensável, sem crédito de trabalho/abono fictício. Geração usa apenas o saldo até o alvo, respeitando janela, bloqueios, pausas, limite diário, 11h de descanso e sequência de trabalho. Referência atual preserva reposição parcial; proposta não amplia a janela de sábado e não inventa disponibilidade ausente. Descansos Compensado em ciclos importados mantêm a interpretação de folga.
+
+Checkbox explica manutenção do contrato versus estimativa; divergência aparece na ficha. Manual/CSV até 44h; referências acima disso geram erro e bloqueiam conversão. Horários físicos importados são preservados para diagnóstico. Compensado não substitui fundamento de compensação nem suprime excessos/erros legais.
+
+Nova busca limitada de intervalos na geração da proposta: mantém entrada/saída, horas, duração da pausa, função/dias, não piora outras lacunas, preserva origem e dias manuais. Intervalos sinalizados na grade/comparação e CSV. A busca de ajustes também inclui pausas e deduplicação considera seus horários. Ciclos/12×36 e créditos específicos permanecem fora desse ajuste automático.
+
+Versão de regras ec141-2026-10-27-6 invalida resultados antigos; dados de cadastro/configuração são preservados. Sem migração nova ou variável. Guia: [horários individuais](horarios-individuais.md). A aplicação da migração 008 da entrega de Usuários segue sem confirmação explícita na VPS.
+
+Validação concluída: 445 testes unitários, build, suíte completa de navegador e integração PostgreSQL 17/PostgREST 14.15 com navegador real aprovados. Novos cenários cobrem meio período, cadastro manual individual, confirmação/estimativa/mismatch, teto 44h, sábado compensado 9/9/9/9/8h, reposição integral/parcial/sem disponibilidade, feriados, bloqueios, 11h após turno noturno, pausas mínimas, janela curta na proposta, importação de compensado sem quebrar ciclos, escalonamento com/sem solução, CSV e preservação de origem/dias manuais. Um timeout intermitente de sincronização de rolagem ocorreu na primeira suíte, passou isoladamente e na suíte completa final; não se alterou a rolagem nem se relaxaram suas asserções.
+
+## Entrega anterior — remoção do comparativo da etapa 7 (27/10/2026)
 
 Removida toda a seção Comparar as três referências, seu botão/resultado e o módulo de UI transicao.js, incluindo registro de eventos e limpeza de resultado no app. O tutorial não sugere mais essa ação. A etapa 7 conserva orientações e linha do tempo; conversão e comparação de origem/proposta na etapa 8 são preservadas. Não altera regras de cálculo, dados, APIs ou banco.
 

@@ -1,3 +1,4 @@
+import { sugerirIntervalosCobertura } from "./intervalos-cobertura.js";
 import { configDaEscala } from "./contexto-escala.js";
 import { diagnosticarEquipe } from "./diagnostico-equipe.js";
 import { aplicarRestricoesDia, validarRestricoes } from "./restricoes.js";
@@ -109,7 +110,11 @@ export function gerarReferenciaAtual(state) {
       const j = normalizarJornada(
         d.jornadaAplicada || proprio.obterJornadaDoDia(d.weekday),
       );
-      const horas = j ? (j.saida - j.entrada - j.intervalo) / 60 : 0;
+      const horas = d.reposicaoSabado
+        ? d.horas
+        : j
+          ? (j.saida - j.entrada - j.intervalo) / 60
+          : 0;
       d.horas = ["T", "FE"].includes(d.status) ? horas : 0;
       d.horasPrevistas = d.previstoOriginal ? horas : 0;
       domain.atualizarHorarioEfetivo(d);
@@ -127,6 +132,18 @@ export function gerarReferenciaAtual(state) {
           ),
       );
     }
+  for (const r of escala.resultado) {
+    const proprio = configDoPerfil(config, r.colaborador) || config;
+    if (proprio.sabadoCompensado)
+      createDomain(proprio).ajustarSabadoCompensado(r.colaborador, [
+        ...new Map(
+          [...r.diasContexto, ...r.diasApuracao, ...r.dias].map((d) => [
+            d.data,
+            d,
+          ]),
+        ).values(),
+      ]);
+  }
   escala.referenciaAtual44 = true;
   escala.instrumentoReferencia = {
     base: config.instrumentoCompensacao,
@@ -259,7 +276,7 @@ export function converterEscala(state, opcoes = {}) {
       !String(c.cargo).trim() ||
       !Number.isFinite(Number(c.horasSemana)) ||
       c.horasSemana <= 0 ||
-      c.horasSemana > 60
+      c.horasSemana > 44
     )
       throw new Error(
         "Confira nome, função e carga contratual de todos os colaboradores.",
@@ -357,7 +374,7 @@ export function converterEscala(state, opcoes = {}) {
   config.colaboradores.forEach(
     (c, i) => (config.planoFolgasConversao[c.id] = planos[i % planos.length]),
   );
-  const escala = createDomain(config).gerarDadosEscala();
+  let escala = createDomain(config).gerarDadosEscala();
   const feriados = feriadosDaEscala(escala);
   let score = pontuacao(config, escala),
     tentativas = 0;
@@ -398,6 +415,7 @@ export function converterEscala(state, opcoes = {}) {
       )
         break;
     }
+  escala = sugerirIntervalosCobertura(config, escala);
   config.escalaGerada = recalcular(config, escala);
   const conversao = {
     versaoRegras: VERSAO_REGRAS,

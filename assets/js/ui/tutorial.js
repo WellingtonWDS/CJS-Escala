@@ -7,7 +7,7 @@ const ETAPAS = [
   [
     "config-colaboradores",
     "Cadastre os colaboradores",
-    "Escolha o modelo CSV, o cadastro manual ou Importar planilha da Domínio — Quadro de Horário de Trabalho. Confira a prévia antes de importar. Na Domínio, os horários são individuais; revise campos ausentes e datas iniciais de ciclos na lista Colaboradores cadastrados/importados, ao final da seção. As três áreas abrem ao clicar no título. Na lista, marque Funções habilitadas para cobertura quando a pessoa puder exercer outros cargos. Abra Restrições individuais para informar férias, afastamentos, indisponibilidades, folgas obrigatórias e horários permitidos, quando houver.",
+    "Use Definir horário individual por dia quando necessário. Escolha o modelo CSV, o cadastro manual ou Importar planilha da Domínio — Quadro de Horário de Trabalho. Confira a prévia antes de importar. Na Domínio, os horários são individuais; revise campos ausentes e datas iniciais de ciclos na lista Colaboradores cadastrados/importados, ao final da seção. As três áreas abrem ao clicar no título. Na lista, marque Funções habilitadas para cobertura quando a pessoa puder exercer outros cargos. Abra Restrições individuais para informar férias, afastamentos, indisponibilidades, folgas obrigatórias e horários permitidos, quando houver.",
   ],
   [
     "sec-tipo",

@@ -57,9 +57,10 @@ export function createColaboradoresUI({
         <p id="sexo-estimativa-${c.id}" data-sexo-estimativa="${c.id}" class="text-[11px] text-slate-500 mt-1">${escapeHtml(descricaoSexo(c))}</p>
       </div>
       <div><label class="block text-xs font-semibold text-fintria-navySoft mb-1.5">Cargo / função</label><input data-id="${c.id}" data-field="cargo" value="${escapeHtml(c.cargo)}" class="w-full px-2.5 py-2 border border-slate-300 rounded-md text-sm bg-white"></div>
-      <div><label class="block text-xs font-semibold text-fintria-navySoft mb-1.5">Jornada contratual de referência</label><div class="relative"><input type="number" min="1" max="60" step="0.5" data-id="${c.id}" data-field="horasSemana" value="${c.quadroDominio ? (c.horasSemana ?? "") : Number(c.horasSemana) || 44}" placeholder="Conferir" class="w-full px-2.5 py-2 pr-8 border border-slate-300 rounded-md text-sm bg-white"><span class="absolute right-2.5 top-2.5 text-xs text-slate-400">h</span></div></div>
+      <div><label class="block text-xs font-semibold text-fintria-navySoft mb-1.5">Jornada contratual de referência</label><div class="relative"><input type="number" min="1" max="44" step="0.5" data-id="${c.id}" data-field="horasSemana" value="${c.quadroDominio ? (c.horasSemana ?? "") : Number(c.horasSemana) || 44}" placeholder="Conferir" class="w-full px-2.5 py-2 pr-8 border border-slate-300 rounded-md text-sm bg-white"><span class="absolute right-2.5 top-2.5 text-xs text-slate-400">h</span></div></div>
       <button data-remove="${c.id}" title="Remover" class="text-fintria-vermelho bg-transparent text-base px-2 py-2 rounded hover:bg-red-50">✕</button>
       ${state.analiseEnquadramentoAtiva === true ? camposEnquadramento(c) : ""}
+      <p data-carga-alerta="${c.id}" class="col-span-full text-xs text-fintria-vermelho" role="status">${Number(c.horasSemana) > 44 ? "Jornada contratual acima de 44h semanais: corrija a referência; horas extras não devem ser cadastradas como carga contratual." : ""}</p>
       ${camposDominio(c, state)}
       ${camposHabilitacoes(c, state.colaboradores)}
       ${camposRestricoes(c)}
@@ -80,8 +81,15 @@ export function createColaboradoresUI({
             if (key === "horario" || key === "status") {
               const mapa = p.tipo === "ciclo" ? p.ciclo : p.semana;
               const h = mapa[e.target.dataset.dia];
-              if (key === "status") h.status = e.target.value;
-              else {
+              if (key === "status") {
+                h.status = e.target.value;
+                if (
+                  h.status === "compensado" &&
+                  Number.isFinite(c.horasSemana) &&
+                  c.horasSemana <= 44
+                )
+                  p.cargaConfirmada = true;
+              } else {
                 h.jornada ??= {
                   entrada: "",
                   intInicio: "",
@@ -122,6 +130,14 @@ export function createColaboradoresUI({
                 `[data-id="${c.id}"][data-field="horasSemana"]`,
               );
               if (horas) horas.value = c.horasSemana ?? "";
+              const alertaCarga = list.querySelector(
+                `[data-carga-alerta="${c.id}"]`,
+              );
+              if (alertaCarga)
+                alertaCarga.textContent =
+                  Number(c.horasSemana) > 44
+                    ? "Jornada contratual acima de 44h semanais: corrija a referência; horas extras não devem ser cadastradas como carga contratual."
+                    : "";
               const calculadas = list.querySelector(
                 `[data-horas-dominio="${c.id}"]`,
               );
@@ -192,6 +208,14 @@ export function createColaboradoresUI({
               if (conferido)
                 conferido.checked = c.quadroDominio.cargaConfirmada;
             }
+            const alertaCarga = list.querySelector(
+              `[data-carga-alerta="${c.id}"]`,
+            );
+            if (alertaCarga)
+              alertaCarga.textContent =
+                Number(c.horasSemana) > 44
+                  ? "Jornada contratual acima de 44h semanais: corrija a referência; horas extras não devem ser cadastradas como carga contratual."
+                  : "";
             invalidarEscala();
             saveState();
             onFuncoesChange();
@@ -199,6 +223,42 @@ export function createColaboradoresUI({
           }
         };
       });
+    list.querySelectorAll("[data-horario-individual]").forEach((button) => {
+      button.onclick = () => {
+        const c = state.colaboradores.find(
+          (c) => c.id === Number(button.dataset.horarioIndividual),
+        );
+        c.quadroDominio = {
+          origem: "manual",
+          ativo: true,
+          tipo: "semanal",
+          cargaConfirmada: true,
+          semana: Object.fromEntries(
+            [0, 1, 2, 3, 4, 5, 6].map((d) => [
+              d,
+              state.diasTrabalho.includes(d)
+                ? {
+                    status: "trabalho",
+                    jornada: structuredClone(
+                      state.horarioPorDia
+                        ? state.jornadaPorDia?.[d] || state.jornada
+                        : state.jornada,
+                    ),
+                  }
+                : { status: "folga" },
+            ]),
+          ),
+          ciclo: {},
+          pendencias: [],
+          linhasOriginais: [],
+        };
+        atualizarPerfilDominio(c, state);
+        invalidarEscala();
+        saveState();
+        renderColaboradores();
+        list.querySelector(`[data-perfil-dominio="${c.id}"]`).open = true;
+      };
+    });
     list.querySelectorAll("[data-remove]").forEach((btn) => {
       btn.onclick = () => {
         state.colaboradores = state.colaboradores.filter(

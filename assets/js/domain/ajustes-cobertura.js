@@ -1,3 +1,4 @@
+import { alternativasIntervalo } from "./intervalos-cobertura.js";
 import { configDaEscala } from "./contexto-escala.js";
 import { janelasDeclaradas as janelas } from "./disponibilidade.js";
 import { analisarCobertura, normalizarFuncao } from "./cobertura.js";
@@ -322,6 +323,8 @@ function* candidatos(config, escala, lacuna) {
         depois: { ...depois, ajusteAutomatico: true },
       });
       if (trabalha(d)) {
+        for (const novo of alternativasIntervalo(c, d))
+          yield { tipo: "intervalo", alteracoes: [alterar(novo)] };
         // A realocação para outra função vale pelo plantão, sem contagem simultânea.
         if (
           normalizarFuncao(funcaoDoDia(c, d)) !==
@@ -480,6 +483,8 @@ export function buscarAjustesCobertura(config, opcoes = {}) {
             a.data,
             a.depois.status,
             a.depois.entradaMin,
+            a.depois.intervaloInicioMin,
+            a.depois.intervaloFimMin,
             a.depois.funcaoAlocada,
           ]),
         );

@@ -1,5 +1,10 @@
 import { ciclo12x36 } from "./computo-cct.js";
-import { normalizarJornada, minToTime, dateFromKey } from "./datas-horas.js";
+import {
+  normalizarJornada,
+  jornadaValidaEstrutural,
+  minToTime,
+  dateFromKey,
+} from "./datas-horas.js";
 import { limiteDiario, dataValida } from "./ec141.js";
 export function perfilAtivo(c) {
   return c?.quadroDominio && c.quadroDominio.ativo !== false;
@@ -12,7 +17,11 @@ export function verificarPerfil(c) {
     !dias.length ||
     dias.some(
       (h) =>
-        !["folga", "trabalho"].includes(h.status) ||
+        ![
+          "folga",
+          "trabalho",
+          ...(p.tipo === "semanal" && p.semana[6] === h ? ["compensado"] : []),
+        ].includes(h.status) ||
         (h.status === "trabalho" && !normalizarJornada(h.jornada)),
     )
   )
@@ -66,9 +75,16 @@ export function configDoPerfil(state, c) {
     folgasFimSemana: proposta ? state.folgasFimSemana : false,
     folgaTipo: "fixa",
     usarHorasQuadro: !proposta,
+    sabadoCompensado:
+      !proposta && p.tipo === "semanal" && p.semana[6]?.status === "compensado",
   };
   const dias = Object.entries(p.semana)
-    .filter(([, h]) => h.status === "trabalho")
+    .filter(
+      ([, h]) =>
+        h.status === "trabalho" ||
+        (h.status === "compensado" &&
+          (!proposta || jornadaValidaEstrutural(h.jornada))),
+    )
     .map(([d]) => Number(d));
   config.diasTrabalho = p.tipo === "ciclo" ? [0, 1, 2, 3, 4, 5, 6] : dias;
   config.folgaDiasPermitidos = proposta
@@ -87,10 +103,20 @@ export function configDoPerfil(state, c) {
     );
   }
   for (const [d, h] of Object.entries(p.semana))
-    if (h.status === "trabalho")
+    if (
+      h.status === "trabalho" ||
+      (h.status === "compensado" && jornadaValidaEstrutural(h.jornada))
+    )
       config.jornadaPorDia[d] = proposta
         ? limitarJornada(h.jornada, limite)
         : h.jornada;
+  if (config.sabadoCompensado)
+    config.jornadaPorDia[6] = p.semana[6].jornada || {
+      entrada: "",
+      intInicio: "",
+      intFim: "",
+      saida: "",
+    };
   if (p.tipo === "ciclo" && !proposta)
     config.cicloQuadro = { dias: p.ciclo, ancora: p.ancora };
   if (plantao12) {

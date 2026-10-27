@@ -185,11 +185,11 @@ export function analisarPlanilhaColaboradores(source) {
     if (
       !/^\d+(?:\.\d+)?$/.test(hours) ||
       person.horasSemana < 1 ||
-      person.horasSemana > 60 ||
+      person.horasSemana > 44 ||
       !Number.isInteger(person.horasSemana * 2)
     )
       erros.push(
-        `Linha ${linha}: Horas semanais deve ser um número de 1 a 60, em múltiplos de 0,5 (por exemplo, 40 ou 42,5).`,
+        `Linha ${linha}: Horas semanais deve ser um número de 1 a 44, em múltiplos de 0,5 (por exemplo, 40 ou 42,5).`,
       );
     colaboradores.push(person);
   }

@@ -34,6 +34,11 @@ export function timeToMin(value) {
 
 export function normalizarJornada(j) {
   if (!j) return null;
+  // Turno contínuo: entrada/saída ou entrada/primeiro horário final.
+  if (j.entrada && !j.intFim && !j.saida && j.intInicio)
+    j = { ...j, intFim: j.intInicio, saida: j.intInicio };
+  else if (j.entrada && j.saida && !j.intInicio && !j.intFim)
+    j = { ...j, intInicio: j.saida, intFim: j.saida };
   const entrada = timeToMin(j.entrada),
     inicio = timeToMin(j.intInicio),
     fim = timeToMin(j.intFim),
