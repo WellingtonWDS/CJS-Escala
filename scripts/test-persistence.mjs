@@ -1,3 +1,4 @@
+import { testDemoIntegration } from "../tests/helpers/demo-integration.mjs";
 import { testUsersIntegration } from "../tests/helpers/users-integration.mjs";
 import { testDeleteIntegration } from "../tests/helpers/delete-integration.mjs";
 import { testRegistryIntegration } from "../tests/helpers/registry-integration.mjs";
@@ -422,6 +423,7 @@ try {
     sql,
     browserTest: process.argv.includes("--browser"),
   });
+  await testDemoIntegration({ sql });
   console.log(
     "OK: PostgreSQL 17 + PostgREST 14.15 reais: migração, isolamento entre escritórios/empresas, consulta/edição, revisão, idempotência, concorrência, histórico/auditoria, rollback, RLS, FK cruzada, JWT e sessão revogada; API portátil nega identidade não autenticada.",
   );

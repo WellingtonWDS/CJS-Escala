@@ -905,3 +905,20 @@ label:has(> .ui-switch) {
   .escala-marca { display: none; }
   .escala-marca-impressao { display: block; width: 36px; height: auto; }
 }
+
+/* A marca não pode crescer no eixo vertical do menu flexível. */
+.app-sidebar { overflow-x: hidden; }
+.app-sidebar .sidebar-brand {
+  flex: 0 0 auto;
+  min-width: 0;
+  max-width: 100%;
+  line-height: 1.2;
+}
+.app-sidebar .sidebar-brand img {
+  flex: 0 0 40px;
+  max-height: 35px;
+  object-fit: contain;
+}
+.escala-identidade { min-width: 0; }
+.escala-identidade > div { min-width: 0; }
+.escala-identidade img { max-height: 32px; object-fit: contain; }

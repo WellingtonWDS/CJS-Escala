@@ -304,6 +304,7 @@ const { chromium } = require("playwright");
       browser,
       baseURL: `http://127.0.0.1:${server.address().port}/`,
     });
+    await require("./browser-marca-demo.cjs")({ browser, baseURL: `http://127.0.0.1:${server.address().port}` });
     await require("./browser-interface.cjs")({
       browser,
       baseURL: `http://127.0.0.1:${server.address().port}`,
