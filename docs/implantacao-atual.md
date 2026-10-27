@@ -11,7 +11,15 @@ Consultar este registro antes de orientar o operador. Distinguir código dispon�
 - Novo modelo: menu lateral dentro do sistema, nome e perfil; Operador acessa suas empresas, Gerente gera escalas e gerencia usuários no escritório, Admin tem acesso global. Não há senha adicional nem página separada. Gerente não cria Admin e não edita empresas de outro escritório. Admin/gerentes podem criar Gerentes nos escritórios autorizados; alteração de empresas vale para Operadores.
 - O proprietário deve ser promovido explicitamente usando o **identity_subject informado no chat**. Esse ID é do provedor de login, não o UUID interno de cjs_private.users. Não presumir que o vínculo antigo membership.admin já seja Admin global: ele agora representa Gerente.
 
-## Atualização vigente — Empresa atual e Preenchimentos
+## Atualização vigente — exclusão de preenchimentos (27/10/2026)
+
+Implementada **Excluir preenchimento selecionado** na janela Empresa atual e Preenchimentos. Operadores com acesso de escrita, Gerentes e Admin podem excluir registros autorizados. Confirmação mostra título/empresa e alcance para os colegas. Revisão desatualizada bloqueia; repetição após falha de rede é segura. Excluir o aberto limpa apenas seu cache/contexto neste navegador e fecha o preenchimento; excluir outro preserva o aberto. Envio pendente do aberto precisa ser concluído antes. Histórico interno/auditoria ficam preservados, sem restauração pela interface.
+
+Migração **007_delete_drafts.sql** necessária; instalador agora verifica 003–007. Não foi aplicada automaticamente na VPS. Não presumir 003–006 executadas: o [guia de exclusão](exclusao-preenchimentos.md) contém instalador para banco com 001/002 já confirmadas. Nenhuma variável ou webhook novo. A exclusão bloqueia consulta, versões, atualização e repetição de salvamento antigo. Cópias locais já vistas por colegas não são apagadas remotamente; salvar após exclusão retorna erro e permite somente cópia explícita com novo ID.
+
+Validação local: 436 testes unitários, build, suíte completa de interface e integração PostgreSQL 17/PostgREST 14.15 com navegador real passaram. Inclui permissões, leitura legada sem escrita, concorrência, sessão revogada, auditoria única, histórico preservado, cancelamento, resposta perdida na rede, exclusão atual/selecionada e salvamento de cópia após exclusão por colega. Implantação de banco remoto continua dependendo do operador.
+
+## Entrega anterior — Empresa atual e Preenchimentos
 
 Nome atual da seção/menu: **Empresa atual e Preenchimentos**. Os botões frequentes saíram da janela: barra fixa inferior nas etapas mostra empresa (razão social/CNPJ), escritório, nome e **Salvar preenchimento** / **Salvar uma cópia**. Cópia pede nome e preserva o original. A janela só escolhe/abre a empresa e o preenchimento, com CTA visível no rodapé; recuperação/importação de dados antigos fica recolhida. Não orientar mais a abrir a janela para salvar nem usar os rótulos Abrir seleção/Salvar como novo.
 

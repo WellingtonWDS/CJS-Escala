@@ -203,6 +203,22 @@ body {
   font-weight: 700;
   font-size: 0.9rem;
 }
+.workspace-delete {
+  display: block;
+  margin-top: 12px;
+  padding: 8px 10px;
+  border: 1px solid #fecaca;
+  border-radius: 7px;
+  background: #fff7f7;
+  color: #b91c1c;
+  font: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+.workspace-delete:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
 .workspace-choice-group input,
 .workspace-choice-group select {
   box-sizing: border-box;

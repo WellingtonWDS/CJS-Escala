@@ -184,6 +184,8 @@ Durante o preenchimento das oito etapas, uma barra fixa inferior mostra razão s
 
 Escolher outra empresa ou outro preenchimento no seletor não altera os dados nem o nome do que já está aberto. Salvar usa o contexto efetivamente aberto; cancelar a seleção mantém a empresa anterior como destino. Só o botão de abertura confirmado troca esse contexto. A barra se adapta ao celular, reserva espaço de rolagem, fica fora da impressão e não aparece nos painéis de gestão de cadastros. O contrato de persistência/idempotência/revisão permanece o mesmo; não há nova migração.
 
+Na janela, selecione um registro salvo e use **Excluir preenchimento selecionado**. A confirmação identifica o nome e a empresa: a exclusão vale para todos os usuários autorizados, fecha o registro se estiver aberto e preserva os demais. Exige permissão de edição na empresa e bloqueia revisão desatualizada. O histórico interno é preservado; não há restauração pela interface. Requer a migração **007**: [operação e atualização do banco](docs/exclusao-preenchimentos.md).
+
 ## Avisos e confirmações
 
 Alertas, confirmações e edição de valores usam modais com o estilo do sistema, incluindo os fluxos de limpeza local, rascunhos e calendário. O editor do dia apresenta um select de status e um campo para horas. Há cancelamento por Escape, confirmação por teclado, foco contido na janela e restauração do foco sem rolagem. Mensagens são inseridas como texto, e avisos simultâneos são exibidos em fila.

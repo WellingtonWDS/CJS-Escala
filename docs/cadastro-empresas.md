@@ -53,3 +53,7 @@ docker exec postgres_apps psql -U postgres -d cjs_escala -v ON_ERROR_STOP=1 -f /
 Se ainda não aplicou alguma das etapas recentes, usar a versão atualizada de enable-user-management.sql, com os arquivos 003, 004, 005, **006** e promote-platform-admin.sql disponíveis nos caminhos relativos. Verifica o que falta e promove somente a identidade explicitamente fornecida. Não há novas variáveis privadas nem webhook.
 
 Testes: npm test; npm run test:identity:browser. Usam banco/PostgREST locais descartáveis e relatórios fictícios. Cobrem edição/conflito/CNPJ duplicado, preservação de ID/rascunhos/permissões, cadastro de escritório só por Admin e acesso de dois Operadores diferentes à mesma escala gerada, atualização por ambos e bloqueio de revisão antiga. Também validam cadastro/importação/busca e isolamento entre escritórios.
+
+## Exclusão de preenchimentos
+
+A seleção agora permite **Excluir preenchimento selecionado**, com confirmação e permissão de edição na empresa. A exclusão vale para os colegas autorizados e fecha o registro se estiver aberto; os outros preenchimentos e o cadastro da empresa são preservados. Exige migração 007. Consulte [operação e atualização](exclusao-preenchimentos.md).

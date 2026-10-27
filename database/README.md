@@ -10,6 +10,7 @@ Implementados banco, sessões individuais, serviços portáteis e interface de r
 - `migrations/004_roles_and_user_management.sql`: Admin global e Gerente/Operador por escritório, gestão integrada com isolamento e auditoria de alterações de empresas. Substitui a senha e as RPCs administrativas da entrega 003.
 - `migrations/005_company_registry.sql`: cadastro de empresas por escritório, CNPJ validado/único, resolução no importador Domínio e auditoria. [Guia](../docs/cadastro-empresas.md).
 - `migrations/006_registry_management.sql`: edição de razão social/CNPJ com conflito otimista e auditoria; criação de escritórios somente por Admin, sem alterar os vínculos dos rascunhos.
+- `migrations/007_delete_drafts.sql`: exclusão lógica por empresa/revisão, bloqueio de acesso e reenvio de salvamentos de registros excluídos, preservando histórico/auditoria. [Operação e ativação](../docs/exclusao-preenchimentos.md).
 - `enable-user-management.sql` e `promote-platform-admin.sql`: ativação administrativa explícita da identidade do proprietário; nunca expostos como RPC. Ver [guia](../docs/administracao-usuarios.md).
 - `provision-office.sql`: criação administrativa de escritório, primeiro administrador e empresa. Não cria senha nem sessão e não substitui a integração com o provedor de identidade. A variável `identity_subject` identifica um usuário já provisionado nesse provedor. A primeira fase usa um único emissor de identidade configurado para o produto; adicionar outro emissor exige mudar a chave de identidade para `(emissor, subject)`.
 - `tests/seed.sql`: exemplos descartáveis; inclui credenciais exclusivamente locais de teste. Nunca executar em produção.
@@ -25,7 +26,7 @@ A criação de sessões ocorre pela RPC `open_session`, exclusiva do papel `cjs_
 
 Sessões duram no máximo 12h no banco. O `db-pre-request` confere existência, titularidade, expiração e revogação em cada requisição. Funções de RLS repetem a checagem, inclusive se chamadas fora do PostgREST por uma conexão que assuma o papel da aplicação. Administradores têm acesso às empresas do próprio escritório; editores/consulta precisam de vínculo em `company_access`. Perfil consulta não grava. Um mesmo usuário pode ter vínculos explícitos com mais de um escritório.
 
-Helpers SECURITY DEFINER com proprietário NOLOGIN consultam a identidade e os vínculos; não recebem o usuário como argumento. São a fronteira confiável e não têm FORCE RLS para evitar recursão. Os proprietários/migradores continuam sendo administradores de infraestrutura. As RPCs de negócio são SECURITY INVOKER e passam por RLS. Histórico/auditoria são gerados por trigger, sem permissão de escrita pelo papel da API.
+Helpers SECURITY DEFINER com proprietário NOLOGIN consultam a identidade e os vínculos; não recebem o usuário como argumento. São a fronteira confiável e não têm FORCE RLS para evitar recursão. Os proprietários/migradores continuam sendo administradores de infraestrutura. As RPCs de rascunhos usam SECURITY INVOKER e RLS, exceto delete_draft: SECURITY DEFINER valida ator, permissão de escrita e revisão antes de marcar a exclusão. Histórico/auditoria são gerados por trigger, sem permissão de escrita pelo papel da API.
 
 ## Testes locais com serviços reais
 
@@ -59,7 +60,7 @@ Os parâmetros do backend estão em `.env.example`. `PERSISTENCE_ENABLED` fica f
 
 ## Fluxo de rascunhos e limites desta etapa
 
-A API oferece `listOffices`, `listCompanies`, `listDrafts`, `getDraft` e `saveDraft`. O salvamento recebe escritório, empresa, título, objeto de estado, chave UUID de idempotência e, nas atualizações, ID e revisão esperada. Uma repetição exata da operação devolve a mesma resposta; conteúdo diferente com a mesma chave ou revisão desatualizada retorna 409. Manter a chave ao repetir uma gravação cujo resultado se perdeu na rede.
+A API oferece `listOffices`, `listCompanies`, `listDrafts`, `getDraft`, `saveDraft` e `deleteDraft`. Exclusão exige permissão de escrita na empresa e revisão esperada; é lógica, auditada e idempotente. Registros excluídos e suas versões deixam de ser acessíveis ao papel da aplicação, sem apagar o histórico interno. Repetir um salvamento antigo não reabre nem confirma sucesso para o registro excluído. O salvamento recebe escritório, empresa, título, objeto de estado, chave UUID de idempotência e, nas atualizações, ID e revisão esperada. Uma repetição exata da operação devolve a mesma resposta; conteúdo diferente com a mesma chave ou revisão desatualizada retorna 409. Manter a chave ao repetir uma gravação cujo resultado se perdeu na rede.
 
 Estados são rascunhos JSONB com `schema_version=1`, limitados a 1 MiB na representação JSONB textual do PostgreSQL. Não são escalas aprovadas. Resultados incluídos no estado são entradas não certificadas do cliente. Dados sensíveis dos colaboradores não são reproduzidos na auditoria; as versões guardam o rascunho para recuperação e exigirão política de retenção antes de produção.
 

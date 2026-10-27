@@ -40,5 +40,6 @@ export function createRemotePersistence({ fetchImpl = fetch } = {}) {
     getDraft: (officeId, companyId, draftId) =>
       call("getDraft", { officeId, companyId, draftId }),
     saveDraft: (draft) => call("saveDraft", draft),
+    deleteDraft: (draft) => call("deleteDraft", draft),
   };
 }

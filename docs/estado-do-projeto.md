@@ -1,12 +1,14 @@
 # Estado do projeto — CJS Escala
 
-Atualizado em **26/10/2026**. Referência funcional: versão de regras `ec141-2026-10-23-5` ([histórico do projeto](https://github.com/WellingtonWDS/CJS-Escala/commits/main/)). Esta página resume o andamento; o [README](../README.md) detalha operação, arquitetura, configuração e testes.
+Atualizado em **27/10/2026**. Referência funcional: versão de regras `ec141-2026-10-23-5` ([histórico do projeto](https://github.com/WellingtonWDS/CJS-Escala/commits/main/)). Esta página resume o andamento; o [README](../README.md) detalha operação, arquitetura, configuração e testes.
 
 ## Objetivo e estágio atual
 
 Ajudar o escritório e suas empresas clientes a preencher a escala praticada atualmente, principalmente no modelo 6×1, e gerar uma proposta 5×2, respeitando as condições cadastradas e explicando a cobertura e as incompatibilidades encontradas.
 
 O fluxo principal está implementado e continua em evolução. Já permite importar colaboradores, conferir jornadas, declarar restrições, gerar e ajustar a proposta e avaliar a suficiência do quadro nas faixas informadas. Isso não representa conclusão de todo o produto nem aprovação automática das condições jurídicas de uma escala.
+
+Exclusão de preenchimentos implementada na seleção de empresa: confirmação por nome, permissão de edição, conflito de revisão, fechamento do aberto e preservação dos demais. Migração 007 necessária na VPS; aplicação remota ainda não confirmada. Validada com PostgreSQL/PostgREST e navegador reais locais, incluindo falha de rede, repetição, exclusão por colega e bloqueio de salvamento antigo. [Operação e ativação](exclusao-preenchimentos.md).
 
 ## Funcionalidades implementadas
 
@@ -75,7 +77,7 @@ As implementações de restrições individuais, sugestões de ajustes de cobert
 
 Na entrega de cadastro/busca de empresas e importação Domínio com vínculo por CNPJ, em **26/10/2026**, foram registrados:
 
-- **434 testes unitários aprovados**, sem falhas, com `npm test`.
+- **436 testes unitários aprovados**, sem falhas, com `npm test`.
 - Integração real com PostgreSQL 17 e PostgREST 14.15 aprovada por `npm run test:persistence`: isolamento de escritórios/empresas, permissões, concorrência, idempotência, histórico/auditoria, FK cruzada, token inválido/expirado e sessão revogada.
 - Edição de empresa e criação de escritório validadas em navegador e banco reais locais. Dois Operadores distintos abriram e atualizaram a mesma escala salva; revisão antiga foi bloqueada, edição da empresa preservou os rascunhos e retirada de acesso impediu nova leitura.
 - Modais validados em navegador: Escape/Enter, foco restaurado, texto tratado sem HTML, fila, janelas sobrepostas, limpeza confirmada/cancelada e celular. Suíte completa de interface, login compartilhado e integração individual/banco passaram após a troca dos diálogos nativos.

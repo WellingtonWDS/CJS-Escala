@@ -21,7 +21,7 @@ export async function initRemoteWorkspace({
   dialog.dataset.loadingLabel = "Carregando empresas e preenchimentos";
   bar.dataset.loadingLabel = "Salvando o preenchimento da empresa";
   bar.innerHTML = `<div class="workspace-context"><span class="workspace-eyebrow">Empresa atual e Preenchimentos</span><strong data-current-company>Nenhuma empresa selecionada</strong><span data-current-office></span><button type="button" data-current-open>Trocar empresa ou abrir preenchimento</button></div><div class="workspace-saving"><label>Nome do preenchimento<input data-remote-title maxlength="160" placeholder="Ex.: Escala de outubro" autocomplete="off"></label><div class="workspace-buttons"><button type="button" data-remote-save>Salvar preenchimento</button><button type="button" data-remote-new>Salvar uma cópia</button></div><p data-current-status role="status" aria-live="polite"></p></div>`;
-  dialog.innerHTML = `<form method="dialog"><button class="remote-close" aria-label="Fechar">×</button></form><h2>Empresa atual e Preenchimentos</h2><p>Escolha a empresa e o preenchimento que deseja abrir.</p><div class="workspace-selector-scroll"><div class="workspace-choice-group"><h3>1. Escolha a empresa</h3><label>Escritório<select data-remote-office></select></label><label>Buscar por razão social ou CNPJ<input data-remote-company-search type="search" placeholder="Digite a razão social ou CNPJ"></label><label>Empresa<select data-remote-company></select></label></div><div class="workspace-choice-group"><h3>2. Escolha o preenchimento</h3><label>Preenchimentos desta empresa<select data-remote-draft></select></label><p data-remote-preview>Comece um novo preenchimento ou abra um dos anteriores.</p></div><details class="workspace-recovery"><summary>Recuperação e importação de dados</summary><p>Estas ações usam a empresa e o preenchimento que já estão abertos no sistema.</p><div class="remote-actions"><button type="button" data-remote-restore>Recuperar preenchimento local anterior</button><button type="button" data-remote-import>Importar dados antigos deste navegador</button></div></details></div><p data-remote-status role="status" aria-live="polite"></p><div class="remote-actions workspace-open-actions"><button type="button" data-remote-open>Usar esta empresa</button></div>`;
+  dialog.innerHTML = `<form method="dialog"><button class="remote-close" aria-label="Fechar">×</button></form><h2>Empresa atual e Preenchimentos</h2><p>Escolha a empresa e o preenchimento que deseja abrir.</p><div class="workspace-selector-scroll"><div class="workspace-choice-group"><h3>1. Escolha a empresa</h3><label>Escritório<select data-remote-office></select></label><label>Buscar por razão social ou CNPJ<input data-remote-company-search type="search" placeholder="Digite a razão social ou CNPJ"></label><label>Empresa<select data-remote-company></select></label></div><div class="workspace-choice-group"><h3>2. Escolha o preenchimento</h3><label>Preenchimentos desta empresa<select data-remote-draft></select></label><button type="button" class="workspace-delete" data-remote-delete disabled>Excluir preenchimento selecionado</button><p data-remote-preview>Comece um novo preenchimento ou abra um dos anteriores.</p></div><details class="workspace-recovery"><summary>Recuperação e importação de dados</summary><p>Estas ações usam a empresa e o preenchimento que já estão abertos no sistema.</p><div class="remote-actions"><button type="button" data-remote-restore>Recuperar preenchimento local anterior</button><button type="button" data-remote-import>Importar dados antigos deste navegador</button></div></details></div><p data-remote-status role="status" aria-live="polite"></p><div class="remote-actions workspace-open-actions"><button type="button" data-remote-open>Usar esta empresa</button></div>`;
   const field = (k) => document.querySelector(`[data-remote-${k}]`),
     current = (k) => bar.querySelector(`[data-current-${k}]`);
   let busy = false,
@@ -31,7 +31,9 @@ export async function initRemoteWorkspace({
     companyName = "",
     officeName = "",
     dirty = false,
-    titleKnown = false;
+    titleKnown = false,
+    unavailable = false;
+  const loadedDrafts = new Map();
   const status = (text) => {
     (dialog.open ? field("status") : current("status")).textContent = text;
   };
@@ -48,7 +50,9 @@ export async function initRemoteWorkspace({
   function updateButtons() {
     const c = workspace.context(),
       pending = workspace.pending();
-    field("save").disabled = busy || !c || !titleKnown;
+    field("save").disabled = busy || !c || !titleKnown || unavailable;
+    field("delete").disabled =
+      busy || !selected().draftId || !loadedDrafts.has(selected().draftId);
     field("new").disabled = busy || !c || !!pending || !titleKnown;
     field("title").disabled = busy || !c;
     field("save").textContent = pending
@@ -115,6 +119,7 @@ export async function initRemoteWorkspace({
     if (key !== contextKey) {
       contextKey = key;
       dirty = false;
+      unavailable = false;
       companyName = "";
       officeName = "";
       titleKnown = !c?.draftId || !!workspace.pending();
@@ -158,9 +163,18 @@ export async function initRemoteWorkspace({
             ? "Preenchimento aberto. Use Salvar preenchimento após alterar os dados ou gerar a escala."
             : "Novo preenchimento. Salve para disponibilizá-lo aos usuários desta empresa.";
     } catch (error) {
-      if (request === contextGeneration)
-        current("status").textContent =
-          error.message || "Não foi possível atualizar a empresa atual.";
+      if (request === contextGeneration) {
+        if (error.status === 404 && c.draftId) {
+          unavailable = true;
+          titleKnown = true;
+          if (!field("title").value)
+            field("title").value = "Cópia do preenchimento local";
+          updateButtons();
+        }
+        current("status").textContent = unavailable
+          ? "Este preenchimento foi excluído ou não está mais disponível. Abra outro ou salve uma cópia dos dados locais."
+          : error.message || "Não foi possível atualizar a empresa atual.";
+      }
     }
   }
   function option(value, label) {
@@ -174,10 +188,12 @@ export async function initRemoteWorkspace({
     field("preview").textContent = saved
       ? "Abre os dados salvos deste preenchimento."
       : "Usa um preenchimento ainda não salvo nesta empresa. Os preenchimentos já salvos permanecem preservados.";
+    updateButtons();
   }
   async function drafts() {
     const request = ++generation,
       s = selected();
+    loadedDrafts.clear();
     field("draft").replaceChildren(option("", "Novo preenchimento"));
     if (!s.officeId || !s.companyId) {
       preview();
@@ -185,6 +201,7 @@ export async function initRemoteWorkspace({
     }
     const rows = await service.listDrafts(s.officeId, s.companyId);
     if (request !== generation) return;
+    rows.forEach((row) => loadedDrafts.set(row.id, row));
     field("draft").append(
       ...rows.map((row) =>
         option(row.id, `${row.title} · revisão ${row.revision}`),
@@ -194,6 +211,7 @@ export async function initRemoteWorkspace({
     if (c?.officeId === s.officeId && c.companyId === s.companyId) {
       if (c.draftId && !rows.some((row) => row.id === c.draftId)) {
         const row = await service.getDraft(c.officeId, c.companyId, c.draftId);
+        loadedDrafts.set(row.id, row);
         field("draft").append(
           option(row.id, `${row.title} · revisão ${row.revision}`),
         );
@@ -272,6 +290,10 @@ export async function initRemoteWorkspace({
   );
   async function save(asNew, title) {
     const c = activeContext();
+    if (!asNew && unavailable)
+      throw Error(
+        "Este preenchimento não está mais disponível. Abra outro ou salve uma cópia.",
+      );
     if (!titleKnown)
       throw Error(
         "Aguarde o nome atual ou informe um nome para confirmar o salvamento.",
@@ -308,6 +330,12 @@ export async function initRemoteWorkspace({
     } catch (error) {
       if ([400, 403, 404, 409, 413].includes(error.status))
         workspace.clearPending();
+      if (error.status === 404) {
+        unavailable = true;
+        throw Error(
+          "O preenchimento foi excluído ou não está mais disponível. Use Salvar uma cópia para preservar os dados locais em outro registro.",
+        );
+      }
       if (error.status === 409)
         throw Error(
           "Outra pessoa alterou este preenchimento. Seus dados locais foram preservados. Abra a versão atual antes de salvar novamente.",
@@ -322,6 +350,7 @@ export async function initRemoteWorkspace({
     contextKey = `${c.officeId}:${c.companyId}:${result.id}`;
     field("title").value = body.title;
     titleKnown = true;
+    unavailable = false;
     dirty = JSON.stringify(body.state) !== JSON.stringify(app.state);
     if (selected().companyId === c.companyId) {
       const existing = [...field("draft").options].find(
@@ -343,6 +372,87 @@ export async function initRemoteWorkspace({
     );
     updateButtons();
   }
+  field("delete").addEventListener("click", () =>
+    run(async () => {
+      const target = selected(),
+        row = loadedDrafts.get(target.draftId),
+        active = workspace.context();
+      if (!row) throw Error("Selecione um preenchimento salvo para excluir.");
+      const isActive =
+        active?.officeId === target.officeId &&
+        active?.companyId === target.companyId &&
+        active?.draftId === target.draftId;
+      if (isActive && workspace.pending())
+        throw Error(
+          "Conclua o envio pendente antes de excluir este preenchimento.",
+        );
+      const company =
+        field("company").selectedOptions[0]?.textContent ||
+        "empresa selecionada";
+      if (
+        !(await dialogs.confirm(
+          `Excluir “${row.title}” de ${company}?\n\nEle será removido da lista para todos os usuários desta empresa. Se estiver aberto, será fechado. Os demais preenchimentos não serão alterados; o histórico interno de auditoria será preservado.`,
+          {
+            title: "Excluir preenchimento",
+            confirmText: "Excluir preenchimento",
+            cancelText: "Manter preenchimento",
+          },
+        ))
+      )
+        return;
+      let result;
+      try {
+        result = await service.deleteDraft({
+          ...target,
+          revision: row.revision,
+        });
+      } catch (error) {
+        if (error.status === 409)
+          throw Error(
+            "Outra pessoa alterou o preenchimento. Reabra a janela para atualizar a lista antes de excluir.",
+          );
+        throw error;
+      }
+      if (result?.id !== target.draftId || result.deleted !== true)
+        throw Error("O servidor não confirmou a exclusão. Tente novamente.");
+      if (isActive) unavailable = true;
+      loadedDrafts.delete(target.draftId);
+      [...field("draft").options]
+        .find((option) => option.value === target.draftId)
+        ?.remove();
+      try {
+        workspace.forgetDraft(target);
+      } catch {
+        status(
+          "Excluído no servidor. Não foi possível limpar a cópia local; recarregue a página para conferir.",
+        );
+        return;
+      }
+      if (isActive) {
+        try {
+          workspace.storage.setItem(
+            "deleted-notice",
+            `Preenchimento “${row.title}” excluído da empresa e fechado neste navegador.`,
+          );
+        } catch {
+          /* A exclusão no servidor já foi confirmada. */
+        }
+        window.location.reload();
+        return;
+      }
+      try {
+        await drafts();
+        status(
+          `Preenchimento “${row.title}” excluído. Os demais foram preservados.`,
+        );
+      } catch {
+        preview();
+        status(
+          "Preenchimento excluído no servidor. Reabra a janela para atualizar a lista.",
+        );
+      }
+    }),
+  );
   field("save").addEventListener("click", () => run(() => save(false)));
   field("new").addEventListener("click", () =>
     run(async () => {
@@ -425,6 +535,11 @@ export async function initRemoteWorkspace({
   bar.setAttribute("aria-busy", "true");
   try {
     await refreshCurrent();
+    const notice = workspace.storage.getItem("deleted-notice");
+    if (notice) {
+      current("status").textContent = notice;
+      workspace.storage.removeItem("deleted-notice");
+    }
   } finally {
     bar.removeAttribute("aria-busy");
     bar.dataset.loadingLabel = "Salvando o preenchimento da empresa";

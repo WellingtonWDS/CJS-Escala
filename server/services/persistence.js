@@ -92,6 +92,17 @@ export function createPersistenceService({
   }
   // Não há método público que aceite nome arbitrário de RPC, papel ou identidade no corpo.
   return {
+    deleteDraft: (identity, { officeId, companyId, draftId, revision }) =>
+      call(
+        "delete_draft",
+        {
+          p_office_id: officeId,
+          p_company_id: companyId,
+          p_draft_id: draftId,
+          p_revision: revision,
+        },
+        identity,
+      ),
     updateCompany: (
       identity,
       { officeId, companyId, name, cnpj, previousName, previousCnpj },

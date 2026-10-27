@@ -69,6 +69,7 @@ export function createPersistenceHandler({
         listDrafts: ["officeId", "companyId"],
         getDraft: ["officeId", "companyId", "draftId"],
         saveDraft: ["officeId", "companyId", "key"],
+        deleteDraft: ["officeId", "companyId", "draftId"],
       };
       if (!Object.hasOwn(actions, b.action))
         return json({ error: "Operação inválida." }, 400);
@@ -88,6 +89,11 @@ export function createPersistenceHandler({
       )
         return json({ error: "Rascunho inválido." }, 400);
       const service = createPersistenceService({ env, fetchImpl, now });
+      if (b.action === "deleteDraft") {
+        if (!Number.isSafeInteger(b.revision) || b.revision < 1)
+          return json({ error: "Revisão inválida." }, 400);
+        return json(await service.deleteDraft(identity, b));
+      }
       if (b.action === "saveDraft")
         return json(await service.saveDraft(identity, b));
       return json(

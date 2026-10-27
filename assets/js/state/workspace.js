@@ -81,6 +81,22 @@ export function createWorkspace(raw, userId) {
       raw.removeItem(contextKey);
       context = null;
     },
+    forgetDraft(c) {
+      if (!uuid(c.officeId) || !uuid(c.companyId) || !uuid(c.draftId))
+        throw Error("Preenchimento inválido.");
+      const active =
+        context?.officeId === c.officeId &&
+        context?.companyId === c.companyId &&
+        context?.draftId === c.draftId;
+      if (active) {
+        raw.removeItem(contextKey);
+        context = null;
+      }
+      const key = cacheKey(c);
+      for (const suffix of ["", ":previous", ":pending"])
+        raw.removeItem(`${key}${suffix}`);
+      return active;
+    },
     legacy: () => raw.getItem(STORAGE_KEY),
     cached: (c) => {
       const value = raw.getItem(cacheKey(c));
