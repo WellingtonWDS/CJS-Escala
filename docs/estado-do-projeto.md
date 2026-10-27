@@ -16,6 +16,8 @@ Janela **Usuários** unifica listagem, pesquisa por nome/escritório, cadastro, 
 
 Revisão visual aplicada a desktop e celular: cabeçalho claro, navegação e etapas, hierarquia de cartões/formulários, ações principais, modais, cadastros, grades, salvamento e login. CSS utilitário compilado localmente; lógica e dados preservados. [Guia de interface](interface.md).
 
+Tutorial com janela arrastável pelo cabeçalho (mouse/toque), movimento por teclado, posição preservada entre etapas e limites da tela. Reabertura reinicia posicionamento automático; dados e visitas às etapas continuam preservados.
+
 ## Funcionalidades implementadas
 
 | Área | O que já está disponível |

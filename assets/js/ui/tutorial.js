@@ -54,7 +54,22 @@ export function createTutorialUI({ document, window, etapas }) {
     previousFocus,
     previousOverflow;
   let inertElements = [];
-  let etapaAnterior;
+  let etapaAnterior,
+    manualPosition = null,
+    drag = null;
+
+  function moveCard(x, y) {
+    const card = dialog.getBoundingClientRect();
+    manualPosition = {
+      x: Math.max(
+        8,
+        Math.min(x, document.documentElement.clientWidth - card.width - 8),
+      ),
+      y: Math.max(8, Math.min(y, window.innerHeight - card.height - 8)),
+    };
+    dialog.style.left = `${manualPosition.x}px`;
+    dialog.style.top = `${manualPosition.y}px`;
+  }
 
   function position() {
     if (!root) return;
@@ -73,6 +88,10 @@ export function createTutorialUI({ document, window, etapas }) {
       height: `${Math.max(0, bottom - top)}px`,
     });
     const card = dialog.getBoundingClientRect();
+    if (manualPosition) {
+      moveCard(manualPosition.x, manualPosition.y);
+      return;
+    }
     const below = bottom + 16;
     const y =
       below + card.height <= height - 16
@@ -113,6 +132,8 @@ export function createTutorialUI({ document, window, etapas }) {
     window.removeEventListener("resize", position);
     window.removeEventListener("scroll", position, true);
     document.removeEventListener("keydown", onKeydown, true);
+    drag = null;
+    manualPosition = null;
     root.remove();
     root = null;
     for (const [element, inert] of inertElements) element.inert = inert;
@@ -132,8 +153,27 @@ export function createTutorialUI({ document, window, etapas }) {
       event.preventDefault();
       close();
     }
+    if (
+      event.target.matches?.("[data-tutorial-drag]") &&
+      ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key)
+    ) {
+      event.preventDefault();
+      const card = dialog.getBoundingClientRect();
+      moveCard(
+        card.left +
+          (event.key === "ArrowRight"
+            ? 16
+            : event.key === "ArrowLeft"
+              ? -16
+              : 0),
+        card.top +
+          (event.key === "ArrowDown" ? 16 : event.key === "ArrowUp" ? -16 : 0),
+      );
+    }
     if (event.key !== "Tab") return;
-    const buttons = [...dialog.querySelectorAll("button:not(:disabled)")];
+    const buttons = [
+      ...dialog.querySelectorAll("[data-tutorial-drag], button:not(:disabled)"),
+    ];
     const first = buttons[0],
       last = buttons.at(-1);
     if (
@@ -161,9 +201,9 @@ export function createTutorialUI({ document, window, etapas }) {
     root.className = "tutorial-overlay no-print";
     root.innerHTML = `<div class="tutorial-highlight" aria-hidden="true"></div>
       <div class="tutorial-card" role="dialog" aria-modal="true" aria-labelledby="tutorial-titulo" aria-describedby="tutorial-contador tutorial-texto" tabindex="-1">
-        <div class="tutorial-top"><span id="tutorial-contador"></span><button type="button" id="tutorial-fechar" aria-label="Encerrar tutorial">Fechar ×</button></div>
+        <div class="tutorial-top" data-tutorial-drag tabindex="0" role="group" aria-label="Mover janela do tutorial. Arraste ou use as setas do teclado."><span id="tutorial-contador"></span><button type="button" id="tutorial-fechar" aria-label="Encerrar tutorial">Fechar ×</button></div>
         <div aria-live="polite" aria-atomic="true"><h2 id="tutorial-titulo"></h2><p id="tutorial-texto"></p></div>
-        <p class="tutorial-dica">Use os botões para navegar. Esc encerra o tutorial.</p>
+        <p class="tutorial-dica">Arraste pelo cabeçalho para mover esta janela. Com o cabeçalho em foco, use as setas. Esc encerra o tutorial.</p>
         <div class="tutorial-acoes"><button type="button" id="tutorial-anterior">Anterior</button><button type="button" id="tutorial-proximo">Próxima</button></div>
       </div>`;
     inertElements = [...document.body.children]
@@ -174,6 +214,41 @@ export function createTutorialUI({ document, window, etapas }) {
     document.body.style.overflow = "hidden";
     dialog = root.querySelector(".tutorial-card");
     highlight = root.querySelector(".tutorial-highlight");
+    const handle = root.querySelector("[data-tutorial-drag]");
+    handle.addEventListener("pointerdown", (event) => {
+      if (
+        !event.isPrimary ||
+        event.button !== 0 ||
+        event.target.closest("button")
+      )
+        return;
+      const card = dialog.getBoundingClientRect();
+      drag = {
+        id: event.pointerId,
+        x: event.clientX,
+        y: event.clientY,
+        left: card.left,
+        top: card.top,
+      };
+      handle.setPointerCapture(event.pointerId);
+      handle.classList.add("is-dragging");
+      event.preventDefault();
+      handle.focus({ preventScroll: true });
+    });
+    handle.addEventListener("pointermove", (event) => {
+      if (!drag || drag.id !== event.pointerId) return;
+      moveCard(
+        drag.left + event.clientX - drag.x,
+        drag.top + event.clientY - drag.y,
+      );
+    });
+    const stopDrag = () => {
+      drag = null;
+      handle.classList.remove("is-dragging");
+    };
+    handle.addEventListener("pointerup", stopDrag);
+    handle.addEventListener("pointercancel", stopDrag);
+    handle.addEventListener("lostpointercapture", stopDrag);
     root.querySelector("#tutorial-fechar").onclick = close;
     root.querySelector("#tutorial-anterior").onclick = () => {
       if (index > 0) {

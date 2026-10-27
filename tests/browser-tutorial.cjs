@@ -2,7 +2,10 @@ const { irParaEtapa } = require("./helpers/etapas.cjs");
 const assert = require("node:assert/strict");
 
 module.exports = async function testarTutorial({ browser, baseURL }) {
-  const context = await browser.newContext({ timezoneId: "America/Sao_Paulo" });
+  const context = await browser.newContext({
+    timezoneId: "America/Sao_Paulo",
+    hasTouch: true,
+  });
   try {
     const page = await context.newPage();
     const errors = [];
@@ -87,6 +90,48 @@ module.exports = async function testarTutorial({ browser, baseURL }) {
           assert.ok(box.x + box.width <= viewport.width + 1);
           assert.ok(box.y + box.height <= viewport.height + 1);
         }
+        if (index === 0 && viewport.width > 1000) {
+          const handle = page.locator("[data-tutorial-drag]");
+          await handle.hover();
+          const before = await page.locator(".tutorial-card").boundingBox();
+          const grip = await handle.boundingBox();
+          await page.mouse.move(grip.x + 30, grip.y + 12);
+          await page.mouse.down();
+          await page.mouse.move(grip.x + 160, grip.y - 70, { steps: 8 });
+          await page.mouse.up();
+          const moved = await page.locator(".tutorial-card").boundingBox();
+          assert.ok(moved.x > before.x + 80);
+          await handle.focus();
+          await page.keyboard.press("ArrowLeft");
+          assert.equal(
+            Math.round((await page.locator(".tutorial-card").boundingBox()).x),
+            Math.round(moved.x - 16),
+          );
+        }
+        if (index === 0 && viewport.width === 390) {
+          const handle = page.locator("[data-tutorial-drag]");
+          await handle.hover();
+          const grip = await handle.boundingBox(),
+            before = await page.locator(".tutorial-card").boundingBox();
+          const cdp = await context.newCDPSession(page);
+          await cdp.send("Input.dispatchTouchEvent", {
+            type: "touchStart",
+            touchPoints: [{ x: grip.x + 30, y: grip.y + 12 }],
+          });
+          await cdp.send("Input.dispatchTouchEvent", {
+            type: "touchMove",
+            touchPoints: [{ x: grip.x + 30, y: Math.max(20, grip.y - 100) }],
+          });
+          await cdp.send("Input.dispatchTouchEvent", {
+            type: "touchEnd",
+            touchPoints: [],
+          });
+          assert.ok(
+            (await page.locator(".tutorial-card").boundingBox()).y <
+              before.y - 30,
+          );
+          await cdp.detach();
+        }
         if (index === 6) {
           await irParaEtapa(page, "#tutorial-texto");
           assert.match(
@@ -144,7 +189,7 @@ module.exports = async function testarTutorial({ browser, baseURL }) {
     await page.keyboard.press("Tab");
     assert.equal(
       await page
-        .locator("#tutorial-fechar")
+        .locator("[data-tutorial-drag]")
         .evaluate((el) => el === document.activeElement),
       true,
     );

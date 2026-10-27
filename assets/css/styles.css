@@ -443,3 +443,20 @@ body {
 .remote-actions [data-remote-save] { background: #0b2545; color: white; }
 .remote-actions button:disabled { opacity: .5; }
 .remote-close { float: right; font-size: 24px; }
+
+.tutorial-top[data-tutorial-drag] {
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  padding: 8px 0;
+  border-bottom: 1px solid #dce5ec;
+  margin-bottom: 10px;
+}
+.tutorial-top[data-tutorial-drag]::before {
+  content: "⠿";
+  color: #718698;
+  font-size: 20px;
+}
+.tutorial-top[data-tutorial-drag].is-dragging { cursor: grabbing; }
+.tutorial-top[data-tutorial-drag]:focus-visible { outline: 3px solid #237cbe; outline-offset: 3px; border-radius: 6px; }
+.tutorial-top[data-tutorial-drag] button { cursor: pointer; touch-action: manipulation; }

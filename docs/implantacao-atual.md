@@ -11,7 +11,13 @@ Consultar este registro antes de orientar o operador. Distinguir código dispon�
 - Novo modelo: menu lateral dentro do sistema, nome e perfil; Operador acessa suas empresas, Gerente gera escalas e gerencia usuários no escritório, Admin tem acesso global. Não há senha adicional nem página separada. Gerente não cria Admin e não edita empresas de outro escritório. Admin/gerentes podem criar Gerentes nos escritórios autorizados; alteração de empresas vale para Operadores.
 - O proprietário deve ser promovido explicitamente usando o **identity_subject informado no chat**. Esse ID é do provedor de login, não o UUID interno de cjs_private.users. Não presumir que o vínculo antigo membership.admin já seja Admin global: ele agora representa Gerente.
 
-## Atualização vigente — revisão de interface (27/10/2026)
+## Atualização vigente — tutorial arrastável (27/10/2026)
+
+Janela do tutorial arrastável pelo cabeçalho via Pointer Events e captura de ponteiro (mouse/toque). Texto do corpo continua rolável; botões não iniciam arraste. Posição manual preservada entre etapas, limitada à viewport e reajustada em resize. Cabeçalho focável aceita setas, participa da contenção de Tab e tem indicação visual/instrução. Fechar encerra o arraste e reabrir restaura posicionamento automático. Não altera geração, dados nem registro de visitas.
+
+Validação: build e 436 testes unitários passaram; teste de tutorial em Chromium passou com arraste de mouse, toque real via CDP, setas/Tab/Escape, nove etapas em 1366/390/320px, limites, fechamento/reabertura, resize e preservação de dados/escala. Nenhuma migração ou variável nova.
+
+## Entrega anterior — revisão de interface (27/10/2026)
 
 Revisão de UI/UX autorizada sem alterar funcionalidades: nova camada interface.css, cabeçalho branco, navegação lateral com ícones SVG, etapas, cartões, campos/botões, cadastros, seleção de empresa, salvamento, modais e grade. Login com linguagem visual correspondente. Controles maiores no celular, fonte de formulário de 16px, foco visível e trilhos de toggle com input transparente ocupando a área clicável. CSS visual principal restrito à tela para conservar impressão. Regras de escala, dados, APIs e permissões não foram alterados.
 
