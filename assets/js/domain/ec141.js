@@ -1,6 +1,6 @@
 import { REGIMES } from "../config/regras-jornada.js";
 import { dateFromKey, isoDate } from "./datas-horas.js";
-export const VERSAO_REGRAS = "ec141-2026-10-28-7";
+export const VERSAO_REGRAS = "ec141-2026-10-28-8";
 export const PUBLICACAO = "2026-10-16";
 export const PRIMEIRA_FASE = "2026-12-16";
 export const SEGUNDA_FASE = "2027-12-16";

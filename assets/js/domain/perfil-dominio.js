@@ -5,7 +5,7 @@ import {
   minToTime,
   dateFromKey,
 } from "./datas-horas.js";
-import { limiteDiario, dataValida } from "./ec141.js";
+import { dataValida } from "./ec141.js";
 export function perfilAtivo(c) {
   return c?.quadroDominio && c.quadroDominio.ativo !== false;
 }
@@ -90,26 +90,12 @@ export function configDoPerfil(state, c) {
   config.folgaDiasPermitidos = proposta
     ? state.folgaDiasPermitidos
     : [0, 1, 2, 3, 4, 5, 6].filter((d) => !dias.includes(d));
-  let limite = 8;
-  if (proposta) {
-    const total = new Date(state.ano, state.mes + 1, 0).getDate();
-    limite = Math.min(
-      ...Array.from({ length: total }, (_, i) =>
-        limiteDiario(
-          state,
-          `${state.ano}-${String(state.mes + 1).padStart(2, "0")}-${String(i + 1).padStart(2, "0")}`,
-        ),
-      ),
-    );
-  }
   for (const [d, h] of Object.entries(p.semana))
     if (
       h.status === "trabalho" ||
       (h.status === "compensado" && jornadaValidaEstrutural(h.jornada))
     )
-      config.jornadaPorDia[d] = proposta
-        ? limitarJornada(h.jornada, limite)
-        : h.jornada;
+      config.jornadaPorDia[d] = h.jornada;
   if (config.sabadoCompensado)
     config.jornadaPorDia[6] = p.semana[6].jornada || {
       entrada: "",

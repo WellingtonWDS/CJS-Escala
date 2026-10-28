@@ -6,7 +6,7 @@ Consultar este registro antes de orientar o operador. Distinguir código dispon�
 
 Escolha inicial mensal dinâmica/fixa, referência jurídica do padrão, navegação/tutorial sem Feriados no fixo, validação semanal recorrente, cobertura/comparação por semana, intervalos sugeridos recorrentes, grade semanal, CSV fixo e impressão. Preenchimentos antigos continuam dinâmicos; feriados e parâmetros mensais são preservados. Eventos datados e admissão não são aplicados ao padrão; ciclos 12×36 e apurações coletivas por datas ficam no dinâmico. A edição de status/horários nos cards já está disponível nos dois modos: por data na dinâmica, por dia da semana em todo o padrão fixo. Resumo semanal compartilhado com cores e desfazer da última edição recorrente.
 
-Não exige nova migração SQL nem variável de ambiente. `modeloEscala` e `dataReferenciaFixa` usam o JSONB existente (`schema_version=1`). Regras `ec141-2026-10-28-7` exigem nova geração de resultados antigos. A entrega depende do deploy do código; validações locais não comprovam homologação no domínio público. Quadro diário e novos documentos por público permanecem no planejamento.
+Não exige nova migração SQL nem variável de ambiente. `modeloEscala` e `dataReferenciaFixa` usam o JSONB existente (`schema_version=1`). Regras `ec141-2026-10-28-8` exigem nova geração de resultados antigos. A entrega depende do deploy do código; validações locais não comprovam homologação no domínio público. Quadro diário e novos documentos por público permanecem no planejamento.
 
 ## Estado vigente
 

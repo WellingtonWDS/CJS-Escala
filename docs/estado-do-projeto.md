@@ -1,6 +1,6 @@
 # Estado do projeto — Reescala
 
-Atualizado em **28/10/2026**. Referência funcional: versão de regras `ec141-2026-10-28-7` ([histórico do projeto](https://github.com/WellingtonWDS/CJS-Escala/commits/main/)). Esta página resume o andamento; o [README](../README.md) detalha operação, arquitetura, configuração e testes.
+Atualizado em **28/10/2026**. Referência funcional: versão de regras `ec141-2026-10-28-8` ([histórico do projeto](https://github.com/WellingtonWDS/CJS-Escala/commits/main/)). Esta página resume o andamento; o [README](../README.md) detalha operação, arquitetura, configuração e testes.
 
 Identidade **Reescala** aplicada no login, cabeçalho, menu expandido/recolhido, carregamento, quadros de escala/impressão e ícone do navegador, usando os arquivos originais de `logos/`. A publicação inclui essa pasta e o login carrega suas imagens sem sessão; dados, chaves internas e permissões são preservados.
 
@@ -17,6 +17,10 @@ Escolha inicial entre **mensal dinâmica** e **mensal fixa**. O modo fixo repres
 Cobertura e comparação semanais, grade segunda–domingo com horas/intervalos/folgas e resumo semanal, diagnóstico, sugestões recorrentes de intervalo, CSV fixo e impressão. Jornadas, descansos na virada semanal, restrições semanais e condições coletivas continuam verificados. Cadastros antigos permanecem dinâmicos; modo e referência são salvos no JSON do preenchimento, sem migração SQL. A mudança da versão de regras invalida cálculos antigos para nova geração.
 
 Limites desta primeira entrega: eventos por data (inclusive admissão) não são aplicados ao padrão; 12×36/ciclos e compensações com apuração datada usam o dinâmico. A busca avulsa de cobertura continua no dinâmico. A edição nos cards já funciona nos dois modos: por data no dinâmico e por dia da semana em todo o padrão fixo, com revisão e desfazer. Domingos fixos trabalhados em comércio/por colaboradoras exigem rever o revezamento. Referência legal/CCT exige revisão quando mudar sua validade. Ignorar feriados no modelo não autoriza trabalhar em qualquer feriado real.
+
+## Revisão da precisão — 28/10/2026
+
+Conversão aprimorada para buscar carga compatível mesmo sem cobertura, considerando dias por perfil, sábado reduzido, limites diários por data do ACT/CCT, pausa e janela individual antes da distribuição. Prioridades: erros, lacunas e déficit. Busca com orçamento proporcional e cota por pessoa, sinalização de pesquisa parcial e cache de análises inalteradas. Nove novos testes incluem 24 combinações, contrato curto sem redução proporcional e semana de transição/Natal. [Relatório](auditorias/precisao-5x2-2026-10-28.md). Regras `ec141-2026-10-28-8` exigem nova geração; sem migração SQL.
 
 ## Objetivo e estágio atual
 
@@ -110,7 +114,7 @@ O modo fixo tem apresentação semanal e referência jurídica próprias, sem ap
 
 ## Última validação registrada
 
-Última execução funcional em **28/10/2026**, na entrega da edição de horários nos dois modos: **484 testes unitários**, build e suíte completa de navegador aprovados localmente. A integração PostgreSQL 17/PostgREST 14.15 com navegador passou na entrega anterior do modo fixo; não foi repetida nesta alteração de edição/interface, sem mudança de API ou schema. A cobertura inclui os 16 testes do modelo fixo (oito cenários setoriais e rejeição dos três ciclos) e oito testes adicionais da edição de horários, além do navegador dedicado nos dois modos. A integração confirma também o round-trip do JSON fixo por RPC autenticada; não exige migração adicional.
+Última execução funcional em **28/10/2026**, na revisão da precisão de geração/conversão: **493 testes unitários**, build e suíte completa de navegador aprovados localmente. A integração PostgreSQL 17/PostgREST 14.15 com navegador passou na entrega anterior do modo fixo; não foi repetida nesta alteração de edição/interface, sem mudança de API ou schema. A revisão acrescentou nove testes de precisão com matriz de 24 combinações, além da suíte existente. A cobertura inclui os 16 testes do modelo fixo (oito cenários setoriais e rejeição dos três ciclos) e oito testes adicionais da edição de horários, além do navegador dedicado nos dois modos. A integração confirma também o round-trip do JSON fixo por RPC autenticada; não exige migração adicional.
 
 - Edição de horários: formulário com quatro relógios e intervalo opcional, validação sem mutação, meio período, noite/meia-noite, restrições, cópias por data e recorrência semanal, desfazer, cores do resumo semanal, feriado/abono sem alterar colegas, CSV com pausas, preservação da origem, cancelamento, recarga e modal em 320px.
 - Modo fixo: independência de mês/feriados, padrão repetido, fases 44/42/40h, ACT válido somente na referência, limites diários, descanso domingo–segunda, domingos com revezamento, eventos datados fora do padrão, restrições semanais, turnos, comparação/cobertura semanal, intervalos recorrentes, diagnóstico, CSV e persistência. Navegador: etapas/tutorial sem Feriados, volta ao dinâmico sem apagar campos mensais, loading/Worker, quadro/resumo, rolagem móvel, impressão e reabertura.
@@ -122,7 +126,7 @@ O modo fixo tem apresentação semanal e referência jurídica próprias, sem ap
 O histórico de validações dos demais recursos implementados é mantido abaixo:
 
 - Janela Usuários validada em banco e navegador reais locais: pesquisa/filtros, edição, toggles com cancelamento, conta compartilhada, perfis, Consulta legada, escopos, e-mail duplicado com rollback, concorrência, revogação global, auditoria e layout móvel.
-- **484 testes unitários aprovados**, sem falhas, com `npm test`.
+- **493 testes unitários aprovados**, sem falhas, com `npm test`.
 - Integração real com PostgreSQL 17 e PostgREST 14.15 aprovada por `npm run test:persistence`: isolamento de escritórios/empresas, permissões, concorrência, idempotência, histórico/auditoria, FK cruzada, token inválido/expirado e sessão revogada.
 - Edição de empresa e criação de escritório validadas em navegador e banco reais locais. Dois Operadores distintos abriram e atualizaram a mesma escala salva; revisão antiga foi bloqueada, edição da empresa preservou os rascunhos e retirada de acesso impediu nova leitura.
 - Modais validados em navegador: Escape/Enter, foco restaurado, texto tratado sem HTML, fila, janelas sobrepostas, limpeza confirmada/cancelada e celular. Suíte completa de interface, login compartilhado e integração individual/banco passaram após a troca dos diálogos nativos.

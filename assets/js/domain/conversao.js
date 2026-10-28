@@ -17,12 +17,9 @@ import {
   dateFromKey,
   getMonday,
   diasNoMes,
-  minToTime,
-  timeToMin,
 } from "./datas-horas.js";
 import {
   PRIMEIRA_FASE,
-  limiteDiario,
   VERSAO_REGRAS,
   dataValida,
 } from "./ec141.js";
@@ -158,7 +155,9 @@ export function gerarReferenciaAtual(state) {
   return { config, escala: recalcular(config, escala) };
 }
 
-function planosPossiveis(config, origem) {
+function planosPossiveis(config, origem, colaborador) {
+  config = configDoPerfil(config, colaborador) || config;
+  origem = configDoPerfil(origem, colaborador) || origem;
   if (config.folgasFimSemana) return [[0, 6]];
   const operacionais = [...new Set(config.diasTrabalho)];
   const quantidade = Math.max(0, operacionais.length - 5);
@@ -215,24 +214,26 @@ function gerarPessoa(config, escala, indice, feriados) {
     diasApuracao: todos.filter((d) => dateFromKey(d.data) >= mes),
   };
 }
-function pontuacao(config, escala) {
+function pontuacao(config, escala, cache) {
   const cobertura = analisarCobertura(config, escala.resultado);
-  const faltantes = cobertura.lacunas.reduce(
-    (sum, l) => sum + (l.fimMin - l.inicioMin) * l.faltantes,
-    0,
-  );
+  const faltantes = cobertura.lacunas.reduce((s, l) => s + (l.fimMin - l.inicioMin) * l.faltantes, 0);
   const domain = createDomain(config);
-  const erros = escala.resultado.reduce(
-    (sum, r) =>
-      sum +
-      domain
-        .validarLegal(r.colaborador, r.dias, r.diasContexto, r.diasApuracao)
+  let erros = 0, deficit = 0;
+  for (const r of escala.resultado) {
+    let valor = cache.get(r);
+    if (!valor) {
+      valor = [domain.validarLegal(r.colaborador, r.dias, r.diasContexto, r.diasApuracao)
         .filter((i) => i.severidade === "erro").length,
-    0,
-  );
-  return [erros, faltantes];
+      [...semanas(r.dias).values()].map((dias) => apurarSemana(r.colaborador, dias, config))
+        .filter((a) => a.completa)
+        .reduce((s, a) => s + Math.max(0, Math.round((a.alvo - a.computadas) * 60)), 0)];
+      cache.set(r, valor);
+    }
+    erros += valor[0]; deficit += valor[1];
+  }
+  return [erros, faltantes, deficit];
 }
-const melhor = (a, b) => a[0] < b[0] || (a[0] === b[0] && a[1] < b[1]);
+const melhor = (a, b) => a.some((v, i) => v < b[i] && a.slice(0, i).every((n, j) => n === b[j]));
 
 export function converterEscala(state, opcoes = {}) {
   conferirSuporteFixo(state);
@@ -353,79 +354,61 @@ export function converterEscala(state, opcoes = {}) {
   // A disponibilidade atual é um teto; não estender saídas nem presumir ACT/CCT.
   config.horarioPorDia = true;
   config.jornadaPorDia = {};
-  const limite = Math.min(
-    ...Array.from({ length: diasNoMes(config.mes, ano) }, (_, i) =>
-      limiteDiario(config, isoDate(ano, config.mes, i + 1)),
-    ),
-  );
   for (let dia = 0; dia < 7; dia++) {
-    const fonte = state.horarioPorDia
-      ? state.jornadaPorDia[dia] || state.jornada
-      : state.jornada;
-    const j = normalizarJornada(fonte);
-    if (!j) {
-      config.jornadaPorDia[dia] = structuredClone(fonte);
-      continue;
-    }
-    const horas = Math.min(limite, (j.saida - j.entrada - j.intervalo) / 60);
-    const fim = j.entrada + horas * 60 + j.intervalo;
-    const inicioPausa = Math.min(j.intInicio, fim - j.intervalo);
-    config.jornadaPorDia[dia] = {
-      ...fonte,
-      intInicio: minToTime(j.turnoUnico ? fim : inicioPausa),
-      intFim: minToTime(j.turnoUnico ? fim : inicioPausa + j.intervalo),
-      saida: minToTime(fim),
-    };
+    const fonte = state.horarioPorDia ? state.jornadaPorDia[dia] || state.jornada : state.jornada;
+    config.jornadaPorDia[dia] = structuredClone(fonte);
   }
-  const planos = planosPossiveis(config, state);
-  if (!planos.length)
+  const planosPorPessoa = config.colaboradores.map((c) => planosPossiveis(config, state, c));
+  if (planosPorPessoa.some((p) => !p.length))
     throw new Error(
       "Os dias permitidos para folga não comportam o 5×2. Revise as restrições de folga.",
     );
   config.colaboradores.forEach(
-    (c, i) => (config.planoFolgasConversao[c.id] = planos[i % planos.length]),
+    (c, i) => (config.planoFolgasConversao[c.id] = planosPorPessoa[i][i % planosPorPessoa[i].length]),
   );
   let escala = createDomain(config).gerarDadosEscala();
   const feriados = feriadosDaEscala(escala);
-  let score = pontuacao(config, escala),
+  const cache = new WeakMap();
+  let score = pontuacao(config, escala, cache),
     tentativas = 0;
   // Busca limitada e determinística. Lacunas remanescentes não provam inviabilidade.
-  const limiteBusca = 120;
-  if (config.coberturaAtiva && config.demandasCobertura.length)
-    for (let rodada = 0; rodada < 2; rodada++) {
-      let mudou = false;
-      for (
-        let i = 0;
-        i < config.colaboradores.length && tentativas < limiteBusca;
-        i++
-      ) {
-        const c = config.colaboradores[i],
-          anterior = escala.resultado[i];
-        let escolhido = anterior,
-          planoEscolhido = config.planoFolgasConversao[c.id];
-        for (const plano of planos) {
-          if (tentativas >= limiteBusca) break;
-          tentativas++;
-          config.planoFolgasConversao[c.id] = plano;
-          escala.resultado[i] = gerarPessoa(config, escala, i, feriados);
-          const atual = pontuacao(config, escala);
-          if (melhor(atual, score)) {
-            score = atual;
-            escolhido = escala.resultado[i];
-            planoEscolhido = plano;
-            mudou = true;
-          }
+  const limiteBusca = Math.max(120, Math.min(2400, config.colaboradores.length * 42));
+  const cotaPorPessoa = Math.max(1, Math.floor(limiteBusca / (config.colaboradores.length * 2)));
+  for (let rodada = 0; rodada < 2; rodada++) {
+    let mudou = false;
+    for (
+      let i = 0;
+      i < config.colaboradores.length && tentativas < limiteBusca;
+      i++
+    ) {
+      const c = config.colaboradores[i],
+        anterior = escala.resultado[i];
+      let escolhido = anterior,
+        planoEscolhido = config.planoFolgasConversao[c.id];
+      const planos = planosPorPessoa[i];
+      for (const plano of planos.slice(0, cotaPorPessoa)) {
+        if (tentativas >= limiteBusca) break;
+        tentativas++;
+        config.planoFolgasConversao[c.id] = plano;
+        escala.resultado[i] = gerarPessoa(config, escala, i, feriados);
+        const atual = pontuacao(config, escala, cache);
+        if (melhor(atual, score)) {
+          score = atual;
+          escolhido = escala.resultado[i];
+          planoEscolhido = plano;
+          mudou = true;
         }
-        config.planoFolgasConversao[c.id] = planoEscolhido;
-        escala.resultado[i] = escolhido;
       }
-      if (
-        !mudou ||
-        tentativas >= limiteBusca ||
-        (score[0] === 0 && score[1] === 0)
-      )
-        break;
+      config.planoFolgasConversao[c.id] = planoEscolhido;
+      escala.resultado[i] = escolhido;
     }
+    if (
+      !mudou ||
+      tentativas >= limiteBusca ||
+      (score[0] === 0 && score[1] === 0 && score[2] === 0)
+    )
+      break;
+  }
   escala = sugerirIntervalosCobertura(config, escala);
   config.escalaGerada = recalcular(config, escala);
   const conversao = {
@@ -436,6 +419,7 @@ export function converterEscala(state, opcoes = {}) {
     opcoes: structuredClone(opcoes),
     tentativas,
     limiteBusca,
+    buscaParcial: planosPorPessoa.some((p) => p.length > cotaPorPessoa) || tentativas >= limiteBusca,
   };
   conversao.comparacao = compararConversao(conversao);
   return conversao;

@@ -25,6 +25,10 @@ A proposta fixa busca folgas e redistribui intervalos, sempre repetindo a mesma 
 
 A referência jurídica não é validade permanente: reavaliar ao mudar a legislação ou vencer o instrumento coletivo. O padrão sem feriados não autoriza automaticamente trabalho em feriados quando aplicado a datas reais. Detalhes e critérios: [evolução das escalas](docs/planos/evolucao-escalas.md).
 
+## Precisão da conversão — 28/10/2026
+
+Busca de folgas também sem cobertura, desempate pelo fechamento semanal, planos por colaborador importado, ACT/CCT limitado por data, restrições de horário consideradas antes da distribuição e capacidade coerente com o intervalo. A origem e as janelas declaradas são preservadas. A busca parcial é sinalizada; déficit não é automaticamente tratado como necessidade de contratação. [Achados, correções, testes e limites](docs/auditorias/precisao-5x2-2026-10-28.md).
+
 ## Edição dos horários na grade — 28/10/2026
 
 Os resumos semanais dos dois modos compartilham a mesma formatação: nome, horas trabalhadas/computadas, alvo, contrato e folgas; **verde** para HORAS OK, **amarelo** para ABAIXO, **vermelho** para ACIMA e neutro para semana parcial. Créditos e abonos continuam separados quando aplicáveis.
@@ -45,7 +49,7 @@ O CSV dinâmico passa a incluir início/fim de intervalo também quando há edi�
 - Instaladores do DEMO original e de quatro empresas por segmento com onze modelos de cobertura, readequação e contratação; dados existentes e edições são preservados. Instalação remota depende do comando administrativo dos guias.
 - Domínio informado pelo proprietário: **https://reescala.fintria.com.br**, com hospedagem ainda na Vercel. `APP_ORIGIN` deve acompanhar o domínio; alterar a variável exige novo deploy.
 
-Última validação funcional em **28/10/2026**: **484 testes unitários**, build e suíte completa de navegador aprovados localmente. A integração PostgreSQL 17/PostgREST 14.15 com navegador passou na entrega anterior do modo fixo; não foi repetida nesta alteração de edição/interface, sem mudança de API ou schema. Isso não confirma execução de migrações, instaladores DEMO ou correções de configuração na VPS/Vercel.
+Última validação funcional em **28/10/2026**: **493 testes unitários**, build e suíte completa de navegador aprovados localmente. A integração PostgreSQL 17/PostgREST 14.15 com navegador passou na entrega anterior do modo fixo; não foi repetida nesta alteração de edição/interface, sem mudança de API ou schema. Isso não confirma execução de migrações, instaladores DEMO ou correções de configuração na VPS/Vercel.
 
 A entrega do modo fixo inclui **16 testes de domínio/persistência**, com oito cenários setoriais compatíveis e três ciclos explicitamente rejeitados, além do teste de navegador dedicado (`tests/browser-escala-fixa.cjs`). Cobre invariância de mês/feriados, 44→40h, fase de 42h/ACT, vigências, folgas e restrições recorrentes, noites/interjornada, cobertura/intervalos, diagnóstico, CSV, salvamento/reabertura, etapas, tutorial, impressão e celular.
 
@@ -68,7 +72,7 @@ A origem e a proposta são configurações e resultados distintos. A conversão 
 
 Os dias de funcionamento são preservados: uma loja aberta de segunda a sábado continua aberta aos sábados. A geração inicial da proposta distribui até cinco dias de trabalho, preserva contratos, funções, entradas/grupos de turno e usa as janelas atuais como limites. Sugestões adicionais de mudança de horário, turno ou função são buscadas em uma etapa própria, com prévia antes de aplicar. Respeita dias permitidos e folgas fixas atuais; sábado e domingo fixos são uma escolha explícita no destino. Não estende saídas nem presume ACT/CCT. Sem fundamento coletivo aplicável, mantém até 8h diárias: a distribuição de 42h em cinco dias pode exigir revisão, registrada nos déficits/alertas.
 
-A busca de folgas é determinística, limitada a 120 avaliações em até duas rodadas e prioriza reduzir incompatibilidades antes das lacunas. Não é uma prova de otimização global. Os diagnósticos distinguem:
+A busca de folgas é determinística, com até duas rodadas e orçamento proporcional ao quadro (120 a 2.400 avaliações), dividido por pessoa; prioriza incompatibilidades, lacunas e déficit semanal. Não é uma prova de otimização global. Os diagnósticos distinguem:
 
 - **Suficiente:** a proposta cobre as demandas informadas, sem incompatibilidades objetivas ou déficit do alvo de horas. Pendências documentais continuam indicadas separadamente.
 - **Insuficiente:** há lacunas e uma insuficiência demonstrável de capacidade por função, por horas ou dias-pessoa. A comparação explica os limites e os períodos descobertos.

@@ -1,4 +1,5 @@
 import { apurarSemana } from "./resumo-semanal.js";
+import { janelaDaProposta } from "./janela-proposta.js";
 import { contextoModelo, escalaFixa, conferirSuporteFixo, colaboradorRecorrente } from "./modelo-escala.js";
 import {
   aplicarRestricoesDia,
@@ -276,6 +277,9 @@ export function createGerador(state, jornada, feriados, validacao) {
     }
 
     const periodo = dias.filter((d) => dateFromKey(d.data) >= dataInicio);
+    if (state.aplicarProposta5x2)
+      for (const d of periodo) d.jornadaAplicada = janelaDaProposta(state, colab, d,
+        d.jornadaAplicada || obterJornadaDoDia(d.weekday));
     distribuirHorasIndividuais(colab, periodo);
     if (!state.adiarRestricoes)
       for (const d of periodo)
@@ -412,7 +416,7 @@ export function createGerador(state, jornada, feriados, validacao) {
         ? state.jornada
         : obterJornadaDoDia(d.weekday));
     const pausa = Math.max(0, intervaloMin(j) || 0);
-    d.entradaMin = timeToMin(d.turno === "B" ? state.entradaTurnoB : j.entrada);
+    d.entradaMin = timeToMin(d.turno === "B" && !state.aplicarProposta5x2 ? state.entradaTurnoB : j.entrada);
     d.intervaloMin = pausa;
     d.saidaMin = d.entradaMin + d.horas * 60 + pausa;
     const intervalo = calcularPausaEfetiva(d, j);

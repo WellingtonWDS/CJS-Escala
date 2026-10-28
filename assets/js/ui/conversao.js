@@ -47,8 +47,9 @@ export function createConversaoUI({
       return;
     }
     const m = c.comparacao;
+    const avisoBusca = c.buscaParcial ? '<p role="status" class="text-sm mt-2 rounded-lg border border-amber-300 bg-amber-50 p-3">A busca de distribuição foi parcial pelo limite de processamento. Revise as alternativas restantes; o resultado não comprova que esta seja a melhor escala possível.</p>' : "";
     if (escalaFixa(c.proposta.config)) {
-      el("conversao-comparacao").innerHTML = `<section class="border rounded-lg p-4 mb-4"><h3 class="font-semibold">Comparação dos padrões semanais · 6×1 → 5×2</h3>
+      el("conversao-comparacao").innerHTML = `${avisoBusca}<section class="border rounded-lg p-4 mb-4"><h3 class="font-semibold">Comparação dos padrões semanais · 6×1 → 5×2</h3>
         <p id="conversao-diagnostico" class="font-semibold mt-2" ${c.desatualizada ? 'role="alert"' : ""}>${c.desatualizada ? "Comparação desatualizada. Gere novamente antes de utilizar." : titulos[m.status]}</p>
         <p class="text-sm mt-2">A conclusão considera uma semana recorrente, sem feriados. ${m.erros} incompatibilidade(s) e ${m.pendencias} alerta(s)/pendência(s). Cobertura completa exige também conferir as condições de jornada e repouso.</p>
         <p class="text-sm mt-2">Lacunas semanais: ${fmtHoras(m.faltantesAntes)} → ${fmtHoras(m.faltantesDepois)} horas-pessoa. A busca é limitada; lacunas de distribuição não comprovam, por si só, necessidade de contratação.</p>
@@ -60,6 +61,7 @@ export function createConversaoUI({
     }
     const hora = (value) => (value === 1440 ? "24:00" : minToTime(value));
     el("conversao-comparacao").innerHTML = `
+      ${avisoBusca}
       ${c.desatualizada ? '<p role="alert" class="rounded-lg border border-amber-300 bg-amber-50 p-4 mb-4 font-semibold">Dados da escala atual ou destino alterados. Gere uma nova proposta antes de usar esta comparação. Os resultados abaixo são uma referência anterior.</p>' : ""}
       <div class="rounded-lg border border-slate-200 bg-slate-50 p-4 mb-4"><h3 class="font-display font-semibold text-fintria-navy">Comparação e suficiência da equipe</h3>
       <p id="conversao-diagnostico" class="font-semibold mt-2">${c.desatualizada ? "Comparação desatualizada — conclusão suspensa." : titulos[m.status]}</p>

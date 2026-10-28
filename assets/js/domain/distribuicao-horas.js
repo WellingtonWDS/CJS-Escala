@@ -1,3 +1,4 @@
+import { limiteDiario } from "./ec141.js";
 import { normalizarJornada } from "./datas-horas.js";
 
 /** O horário por dia limita a capacidade individual. O turno único, inclusive
@@ -22,7 +23,16 @@ export function limiteHorasDia(config, weekday) {
 export function distribuirCargaPrevista(colaborador, dias, config) {
   const previstos = dias.filter((d) => d.previsto);
   const horas = Math.max(0, Number(colaborador.horasSemana) || 0);
-  const limites = previstos.map((d) => limiteHorasDia(config, d.weekday));
+  const limites = previstos.map((d) => {
+    const capacidade = limiteHorasDia(config, d.weekday);
+    if (!config.aplicarProposta5x2) return capacidade;
+    const j = normalizarJornada(d.jornadaAplicada || (config.horarioPorDia ? config.jornadaPorDia[d.weekday] || config.jornada : config.jornada));
+    // Capacidade por data: não invalidar o ACT de todo o mês porque vence no meio dele.
+    const pausa = j?.intervalo || 0;
+    const tetoPausa = pausa < 15 ? 4 : pausa < 60 ? 6 : Infinity;
+    const janela = j ? (j.saida - j.entrada - j.intervalo) / 60 : 0;
+    return Math.min(capacidade, janela, limiteDiario(config, d.data), tetoPausa);
+  });
   if (limites.every((l) => l === Infinity))
     return new Map(previstos.map((d) => [d.data, horas / previstos.length]));
   const capacidades = limites.map((l) => Math.max(0, Math.round(l * 60)));
