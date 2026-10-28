@@ -1,16 +1,15 @@
+import { editarHorario } from "./horario-manual.js";
+import { aplicarHorarioManual, desfazerHorarioRecorrente } from "../domain/horario-manual.js";
+import { renderResumoSemanal } from "./resumo-semanal.js";
 import { executarCalculoEscala } from "./calculo-escala.js";
 import { renderQuadroFixo } from "./escala-fixa.js";
 import { createEdicaoManualUI } from "./edicao-manual.js";
-import {
-  assinaturaAjustes,
-  substituirDiasDaEscala,
-} from "../domain/ajustes-cobertura.js";
 import { configurarRolagemEscala } from "./rolagem-escala.js";
 import { configDaEscala } from "../domain/contexto-escala.js";
 import { createDomain } from "../domain/index.js";
 import { createAjustesCoberturaUI } from "./ajustes-cobertura.js";
 import { funcaoDoDia } from "../domain/funcoes.js";
-import { violacoesDia, aplicarRestricoesDia } from "../domain/restricoes.js";
+import { aplicarRestricoesDia } from "../domain/restricoes.js";
 import { configDoPerfil } from "../domain/perfil-dominio.js";
 import { apurarComputoCCT } from "../domain/computo-cct.js";
 import { apurarSemana } from "../domain/resumo-semanal.js";
@@ -21,7 +20,6 @@ import {
   horarioComDia,
   getMonday,
   formatDateBR,
-  parseHorasTrabalhadas,
 } from "../domain/datas-horas.js";
 import { MESES, DIAS_SEMANA } from "../config/regras-jornada.js";
 import { escapeHtml } from "../shared/formatacao.js";
@@ -37,7 +35,6 @@ export function createCalendarioUI({
   ajustesPermitidos = () => true,
 }) {
   const {
-    calcHorasDia,
     calcularSaidaSimulada,
     feriadoDaData,
     validarCobertura,
@@ -105,10 +102,10 @@ export function createCalendarioUI({
         ["F", "F — Folga/repouso"],
         ["FE", "FE — Feriado trabalhado"],
         ["FC", "FC — Folga compensatória"],
-      ];
+      ].filter(([status]) => state.modeloEscala !== "fixa" || status !== "FE");
 
       const escolha = await prompt(
-        `Dia ${obj.dia} (${DIAS_SEMANA[obj.weekday]})\nStatus atual: ${atual}\n\nSelecione o novo status:`,
+        `${state.modeloEscala === "fixa" ? `${DIAS_SEMANA[obj.weekday]} em todas as semanas` : `Dia ${obj.dia} (${DIAS_SEMANA[obj.weekday]})`}\nStatus atual: ${atual}\n\nSelecione o novo status:`,
         atual,
         { title: "Alterar status do dia", label: "Status", choices: opcoes },
       );
@@ -137,84 +134,30 @@ export function createCalendarioUI({
           return;
       }
 
-      let novasHoras = 0;
+      let jornada;
       if (status === "T" || status === "FE") {
-        const horasStr = await prompt(
-          "Horas trabalhadas neste dia (HH:MM ou decimal):",
-          fmtHoras(obj.horas || calcHorasDia(obj.weekday)),
-          {
-            title: "Ajustar horas do dia",
-            label: "Horas trabalhadas (HH:MM ou decimal)",
-            maxLength: 10,
-          },
-        );
-        if (horasStr === null) return;
-        novasHoras = parseHorasTrabalhadas(horasStr);
-        if (novasHoras === null) {
-          alert("Informe horas válidas, entre 0 e 24, com minutos de 00 a 59.");
-          return;
-        }
+        const config = configDaEscala(state);
+        const proprio = configDoPerfil(config, colaborador) || config;
+        jornada = await (env.editarHorario || editarHorario)(env, obj,
+          createDomain(proprio).obterJornadaDoDia(obj.weekday));
+        if (jornada === null) return;
       }
       if (state.escalaGerada !== escalaInicial || !ajustesPermitidos()) {
         await alert("A escala mudou durante a edição. Abra o dia novamente.");
         return;
       }
-      const candidato = { ...obj, status, horas: novasHoras };
-      atualizarHorarioEfetivo(candidato);
-      if (obj.ajusteRestricao && ["T", "FE"].includes(status)) {
-        candidato.entradaMin = obj.entradaMin;
-        candidato.intervaloMin = obj.intervaloMin;
-        candidato.saidaMin =
-          candidato.entradaMin + novasHoras * 60 + candidato.intervaloMin;
-        candidato.intervaloInicioMin = obj.intervaloInicioMin;
-        candidato.intervaloFimMin = obj.intervaloFimMin;
-      }
-      Object.assign(
-        candidato,
-        apurarComputoCCT(
-          configDoPerfil(configDaEscala(state), colaborador) ||
-            configDaEscala(state),
-          candidato,
-        ),
-      );
-      const violacoes = violacoesDia(colaborador, candidato);
-      if (violacoes.length) {
-        alert(violacoes.join("\n"));
+      try {
+        state.escalaGerada = aplicarHorarioManual(state, colaborador.id, obj.data, status, jornada);
+      } catch (error) {
+        await alert(error.message);
         return;
       }
-      candidato.ajusteManual = true;
-      delete candidato.intervaloSugerido;
-      delete candidato.sabadoCompensado;
-      delete candidato.reposicaoSabado;
-      const antes = structuredClone(obj);
-      state.escalaGerada = substituirDiasDaEscala(state.escalaGerada, [
-        { colaboradorId: colaborador.id, data: obj.data, depois: candidato },
-      ]);
-      state.escalaGerada.validacoes = state.escalaGerada.resultado.map((r) => ({
-        colaborador: r.colaborador,
-        issues: validarLegal(
-          r.colaborador,
-          r.dias,
-          r.diasContexto,
-          r.diasApuracao,
-        ),
-      }));
-      state.escalaGerada.avisosCobertura = validarCobertura(
-        state.escalaGerada.resultado,
-      );
-      state.escalaGerada.coberturaOperacional = domain.analisarCobertura(
-        state.escalaGerada.resultado,
-      );
-      state.escalaGerada.ultimaEdicaoManual = {
-        colaboradorId: colaborador.id,
-        data: obj.data,
-        antes,
-        assinatura: assinaturaAjustes(state),
-      };
       renderEscalaGerada();
       onEscalaChange();
       saveState();
-      edicaoManual.destacar();
+      if (state.modeloEscala === "fixa")
+        document.getElementById(containerId).querySelector("[data-edicao-fixa]")?.focus({ preventScroll: true });
+      else edicaoManual.destacar();
     } finally {
       editando = false;
     }
@@ -269,6 +212,16 @@ export function createCalendarioUI({
       limparRolagem();
       container.innerHTML = renderQuadroFixo(config, createDomain(config));
       limparRolagem = configurarRolagemEscala(container, env.window);
+      container.querySelectorAll("[data-ri][data-di]").forEach((el) => {
+        el.onclick = () => editarStatus(Number(el.dataset.ri), Number(el.dataset.di));
+      });
+      container.querySelector("[data-fixo-desfazer]")?.addEventListener("click", async () => {
+        if (!ajustesPermitidos()) return;
+        try {
+          state.escalaGerada = desfazerHorarioRecorrente(state);
+          renderEscalaGerada(); onEscalaChange(); saveState();
+        } catch (error) { await alert(error.message); }
+      });
       return;
     }
     const { resultado } = state.escalaGerada;
@@ -480,34 +433,9 @@ export function createCalendarioUI({
           return { r, ...apuracao, folgas };
         });
 
-        const resumoHtml = semanaPorColaborador
-          .map((x) => {
-            const badge =
-              x.estado === "ok"
-                ? '<span class="px-1.5 py-0.5 rounded bg-fintria-verdeBg text-fintria-verde font-bold">HORAS OK</span>'
-                : x.estado === "acima"
-                  ? '<span class="px-1.5 py-0.5 rounded bg-fintria-vermelhoBg text-fintria-vermelho font-bold">ACIMA</span>'
-                  : x.estado === "abaixo"
-                    ? '<span class="px-1.5 py-0.5 rounded bg-fintria-ambarBg text-fintria-ambar font-bold">ABAIXO</span>'
-                    : '<span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 font-bold">PARCIAL</span>';
-            const folgas = x.folgas
-              .map((d) => {
-                const dt = dateFromKey(d.data);
-                return dt
-                  ? `${String(dt.getDate()).padStart(2, "0")}/${String(dt.getMonth() + 1).padStart(2, "0")}`
-                  : d.data;
-              })
-              .join(", ");
-            return `<div data-resumo-semanal data-colaborador="${x.r.colaborador.id}" data-semana="${isoDate(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate())}" class="pb-2 mb-2 border-b border-slate-200 last:border-0 last:mb-0 last:pb-0">
-          <div class="flex items-start justify-between gap-1"><b class="text-fintria-navy">${escapeHtml(x.r.colaborador.nome || "(sem nome)")}</b>${badge}</div>
-          <div class="text-slate-600 mt-0.5" title="O fechamento de horas não substitui as validações de jornada e enquadramento">${fmtHoras(x.trabalhadas)} trabalhadas${x.abonadas ? ` + ${fmtHoras(x.abonadas)} abonadas` : ""}${x.creditosIntervalo ? ` + ${fmtHoras(x.creditosIntervalo)} de intervalo computado (CCT)` : ""}${x.creditosNoturnos ? ` + ${fmtHoras(x.creditosNoturnos)} de crédito noturno (CCT)` : ""}${Number.isFinite(x.alvo) ? ` · total ${fmtHoras(x.computadas)} / alvo ${fmtHoras(x.alvo)}` : ""}</div>
-          ${x.ausencias.length ? `<div class="text-slate-600 mt-1">${x.ausencias.map((a) => `${escapeHtml(a.descricao)}: ${formatDateBR(dateFromKey(a.data))}`).join(" · ")}. ${fmtHoras(x.dispensadas)} previstas retiradas da meta de alocação; sem compensação automática.${x.semDiasAlocaveis ? " Sem dias de trabalho previstos fora da ausência nesta semana." : ""}</div>` : ""}
-          ${x.abonos.map((a) => `<div class="text-fintria-azul mt-1">Abono de feriado: ${formatDateBR(dateFromKey(a.data))} — ${escapeHtml(a.nome)} (${fmtHoras(a.horas)}).</div>`).join("")}
-          ${x.contrato !== x.alvo ? `<div class="text-slate-500">Contrato de referência: ${fmtHoras(x.contrato)}. ${x.dispensadas ? "Meta de alocação ajustada aos períodos de ausência informados." : "Alvo ajustado à fase, sem alteração salarial."}</div>` : ""}
-          <div class="text-slate-500">Folgas: ${folgas || "nenhuma"}</div>
-        </div>`;
-          })
-          .join("");
+        const resumoHtml = semanaPorColaborador.map((x) => renderResumoSemanal(x, {
+          semana: isoDate(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate()),
+        })).join("");
 
         html += `<tr>
         <td class="border border-slate-200 px-1 py-2 align-top bg-slate-50 text-center">

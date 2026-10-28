@@ -21,9 +21,19 @@ No fixo, informe a **data de referência jurídica** para verificar a fase autom
 
 As restrições semanais continuam válidas. Férias/afastamentos por período e admissão não são aplicados ao padrão; seus cadastros são preservados. Compensações com apuração por datas e ciclos alternados, como 12×36, exigem o modo dinâmico nesta entrega. Trabalho fixo em todos os domingos no comércio ou para colaboradoras é sinalizado como incompatível com a necessidade de revezamento; confira a regra da categoria.
 
-A proposta fixa busca folgas e redistribui intervalos, sempre repetindo a mesma alteração em cada dia da semana correspondente. Para editar o padrão, altere o preenchimento e gere novamente; edição pontual das células e busca de ajustes avulsos continuam no dinâmico. Há grade semanal com rolagem, resumo por pessoa, diagnóstico e CSV fixo com sete dias por colaborador e intervalos completos. Impressão/PDF continua pelo navegador. O quadro diário dedicado e os novos documentos por público permanecem planejados.
+A proposta fixa busca folgas e redistribui intervalos, sempre repetindo a mesma alteração em cada dia da semana correspondente. Clique no card para editar o status e os horários: na dinâmica, muda somente a data; na fixa, muda o mesmo dia da semana em todo o padrão, com opção de desfazer a última edição. A busca de ajustes avulsos continua no dinâmico. Há grade semanal com rolagem, resumo por pessoa, diagnóstico e CSV fixo com sete dias por colaborador e intervalos completos. Impressão/PDF continua pelo navegador. O quadro diário dedicado e os novos documentos por público permanecem planejados.
 
 A referência jurídica não é validade permanente: reavaliar ao mudar a legislação ou vencer o instrumento coletivo. O padrão sem feriados não autoriza automaticamente trabalho em feriados quando aplicado a datas reais. Detalhes e critérios: [evolução das escalas](docs/planos/evolucao-escalas.md).
+
+## Edição dos horários na grade — 28/10/2026
+
+Os resumos semanais dos dois modos compartilham a mesma formatação: nome, horas trabalhadas/computadas, alvo, contrato e folgas; **verde** para HORAS OK, **amarelo** para ABAIXO, **vermelho** para ACIMA e neutro para semana parcial. Créditos e abonos continuam separados quando aplicáveis.
+
+Ao clicar no card, escolha o status. Para trabalho, o modal seguinte pede **entrada, início do intervalo, fim do intervalo e saída**, preenchidos com os horários efetivos. Entrada/saída são obrigatórias; sem intervalo, os dois campos da pausa ficam vazios. Pausa incompleta ou fora da jornada impede salvar o formulário. Horários noturnos indicam a saída no dia seguinte. A duração é calculada a partir dos horários.
+
+Na dinâmica, muda somente a data. Na fixa, a edição é repetida em todas as ocorrências do mesmo dia da semana, incluindo contextos de validação. Restrições individuais continuam protegidas; jornada, descanso, cobertura, comparação e CSV são recalculados. Excessos legais ou falta de repousos permanecem como erros de rascunho antes da grade; não há compensação presumida. O fixo tem revisão da alteração e desfazer da última edição, com proteção contra mudanças posteriores. A readequação automática por busca continua no fluxo dinâmico.
+
+O CSV dinâmico passa a incluir início/fim de intervalo também quando há edição manual de horários. A edição da proposta preserva a origem. Não exige migração SQL nem mudança da versão das regras de geração.
 
 ## Atualizações consolidadas em 27/10/2026
 
@@ -35,7 +45,7 @@ A referência jurídica não é validade permanente: reavaliar ao mudar a legisl
 - Instaladores do DEMO original e de quatro empresas por segmento com onze modelos de cobertura, readequação e contratação; dados existentes e edições são preservados. Instalação remota depende do comando administrativo dos guias.
 - Domínio informado pelo proprietário: **https://reescala.fintria.com.br**, com hospedagem ainda na Vercel. `APP_ORIGIN` deve acompanhar o domínio; alterar a variável exige novo deploy.
 
-Última validação funcional em **28/10/2026**: **476 testes unitários**, build, suíte completa de navegador e integração PostgreSQL 17/PostgREST 14.15 com navegador aprovados localmente. Isso não confirma execução de migrações, instaladores DEMO ou correções de configuração na VPS/Vercel.
+Última validação funcional em **28/10/2026**: **484 testes unitários**, build e suíte completa de navegador aprovados localmente. A integração PostgreSQL 17/PostgREST 14.15 com navegador passou na entrega anterior do modo fixo; não foi repetida nesta alteração de edição/interface, sem mudança de API ou schema. Isso não confirma execução de migrações, instaladores DEMO ou correções de configuração na VPS/Vercel.
 
 A entrega do modo fixo inclui **16 testes de domínio/persistência**, com oito cenários setoriais compatíveis e três ciclos explicitamente rejeitados, além do teste de navegador dedicado (`tests/browser-escala-fixa.cjs`). Cobre invariância de mês/feriados, 44→40h, fase de 42h/ACT, vigências, folgas e restrições recorrentes, noites/interjornada, cobertura/intervalos, diagnóstico, CSV, salvamento/reabertura, etapas, tutorial, impressão e celular.
 
@@ -52,7 +62,7 @@ O quadro diário e os novos arquivos por público **ainda não estão implementa
 
 1. Escolha o modo. Preencha colaboradores, jornadas, funcionamento e folgas **como estão atualmente no 6×1**; no dinâmico, também o período e os feriados; no fixo, a referência jurídica. Para avaliar suficiência, ative a cobertura e informe a demanda por função, horário e dia.
 2. Em **Conversão e comparação**, no dinâmico escolha o mês de destino; em ambos, escolha a vigência automática ou uma simulação explícita de 42h/40h e a distribuição de folgas. Clique em **Gerar proposta 5×2 e comparar**.
-3. Confira a comparação, os horários descobertos e a nova grade. A proposta dinâmica pode ser ajustada nas células; o padrão fixo é revisado no preenchimento e gerado novamente. Ambos têm exportação própria. A prévia avulsa e a exportação da escala atual continuam disponíveis separadamente.
+3. Confira a comparação, os horários descobertos e a nova grade. Ambas as propostas podem ser ajustadas nos cards: por data no dinâmico ou por dia da semana em todo o padrão fixo. Ambos têm exportação própria. A prévia avulsa e a exportação da escala atual continuam disponíveis separadamente.
 
 A origem e a proposta são configurações e resultados distintos. A conversão não troca o modelo, período ou cadastro da origem. O snapshot original preserva uma grade já gerada, incluindo seus ajustes manuais; sem grade anterior, a referência usa os horários atuais informados, sem reduzir a duração para limites futuros. Para comparar períodos de comprimentos diferentes, o relatório projeta o padrão original 6×1 também no mês de destino. Ajustes pontuais datados da grade original não são transpostos automaticamente para outras datas.
 

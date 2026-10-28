@@ -36,7 +36,15 @@ Buscar ajustes de cobertura abre o resumo em um modal do sistema antes de libera
 
 A primeira configuração oferece mensal dinâmica e mensal fixa. O fixo mostra a data de referência jurídica em vez de mês/ano/início; retira Feriados da navegação e tutorial, renumera as etapas, pula o painel nas setas/teclado e conserva as informações mensais. O destino dispensa mês próprio; a fase automática usa a referência, e simulações continuam explícitas.
 
-O resultado fixo apresenta uma linha por colaborador, sete dias da semana, intervalos completos e resumo semanal; rolagem horizontal sincronizada e impressão sem largura mínima de tela. Erros precedem o quadro e as demais análises ficam recolhidas. Cobertura usa dias da semana, sem feriados ou datas fictícias visíveis na grade. Para ajustes, a orientação é revisar o cadastro e gerar novamente; não disponibilizar edições pontuais que deixem semanas diferentes. Os turnos A/B são fixos por pessoa; no dinâmico continuam alternando semanalmente.
+O resultado fixo apresenta uma linha por colaborador, sete dias da semana, intervalos completos e resumo semanal; rolagem horizontal sincronizada e impressão sem largura mínima de tela. Erros precedem o quadro e as demais análises ficam recolhidas. Cobertura usa dias da semana, sem feriados ou datas fictícias visíveis na grade. Os cards permitem editar status/horários: no fixo, a mesma alteração se repete em todas as semanas; no dinâmico, vale somente para a data escolhida. Os turnos A/B são fixos por pessoa; no dinâmico continuam alternando semanalmente.
+
+## Resumo semanal e edição por relógios — 28/10/2026
+
+`ui/resumo-semanal.js` renderiza o mesmo resumo nos dois quadros: tipografia, linhas de horas/alvo/contrato, folgas e indicadores verde/amarelo/vermelho (ou neutro para parcial). O fixo usa nomes dos dias; a dinâmica usa datas e conserva abonos/ausências.
+
+A seleção de Trabalho abre o formulário de entrada, início/fim da pausa e saída no sistema de modais compartilhado (`getDialogs().form`). Campos de tempo, foco, Escape/cancelamento, animação e fila; intervalo opcional com validação pareada e relógios reais já preenchidos. Erros estruturais ficam no modal sem alterar a escala. A duração é derivada dos horários; pausas e término no dia seguinte aparecem na grade e CSV.
+
+No fixo, cards são botões acessíveis e a edição corresponde ao dia da semana em todo o padrão. Revisão e desfazer aparecem antes da grade; erros legais continuam destacados. A busca avulsa de readequação não é aplicada ao padrão fixo. A edição dinâmica conserva o painel e as sugestões de readequação existentes.
 
 ## Organização dos estilos
 

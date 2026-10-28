@@ -148,7 +148,7 @@ module.exports = async function ({ browser, baseURL }) {
       respostas = [];
     await respondToDialogs(page, async (d) => {
       alerts.push(d.message());
-      if (d.type() === "prompt" && respostas.length)
+      if (["prompt", "form"].includes(d.type()) && respostas.length)
         await d.accept(respostas.shift());
       else await d.dismiss();
     });
@@ -161,7 +161,7 @@ module.exports = async function ({ browser, baseURL }) {
       (await salvo()).escalaGerada.resultado[0].dias[index].status,
       "VA",
     );
-    respostas = ["T", "08:00"];
+    respostas = ["T", {entrada:"08:00",intInicio:"12:00",intFim:"13:00",saida:"17:00"}];
     const segunda = dias.findIndex((d) => d.data === "2026-10-05");
     await page
       .locator(`#resultado-gerar [data-ri="0"][data-di="${segunda}"]`)

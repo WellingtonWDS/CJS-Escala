@@ -21,8 +21,8 @@ export function gerarCsv(state) {
   state = configDaEscala(state);
   if (state.modeloEscala === "fixa") return gerarCsvFixo(state);
   const { resultado } = state.escalaGerada;
-  const intervalosSugeridos = resultado.some((r) =>
-    r.dias.some((d) => d.intervaloSugerido),
+  const horariosDetalhados = resultado.some((r) =>
+    r.dias.some((d) => d.intervaloSugerido || (d.ajusteManual && d.jornadaAplicada)),
   );
   const ajustes = resultado.some((r) =>
     r.dias.some((d) => d.funcaoAlocada || d.ajusteAutomatico),
@@ -84,7 +84,7 @@ export function gerarCsv(state) {
       "Enquadramento",
       "Aditamento informado",
       "Data da saída",
-      ...(intervalosSugeridos
+      ...(horariosDetalhados
         ? [
             "Início do intervalo",
             "Fim do intervalo",
@@ -169,7 +169,7 @@ export function gerarCsv(state) {
               );
             })()
           : "",
-        ...(intervalosSugeridos
+        ...(horariosDetalhados
           ? [
               trabalha && d.intervaloInicioMin != null
                 ? horarioComDia(d.intervaloInicioMin)

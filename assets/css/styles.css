@@ -464,3 +464,9 @@ body {
 .tutorial-top[data-tutorial-drag].is-dragging { cursor: grabbing; }
 .tutorial-top[data-tutorial-drag]:focus-visible { outline: 3px solid #237cbe; outline-offset: 3px; border-radius: 6px; }
 .tutorial-top[data-tutorial-drag] button { cursor: pointer; touch-action: manipulation; }
+
+.dialog-horarios { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 18px 0; }
+.dialog-horarios label { display: grid; gap: 6px; min-width: 0; font-size: 13px; font-weight: 600; }
+.dialog-horarios input { box-sizing: border-box; min-width: 0; width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; background: white; color: #0c2440; font-size: 16px; }
+.escala-fixa button.escala-colaborador { cursor: pointer; text-align: left; }
+@media (max-width: 360px) { .dialog-horarios { grid-template-columns: minmax(0, 1fr); } }

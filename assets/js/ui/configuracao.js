@@ -55,9 +55,9 @@ export function createConfiguracaoUI({
       onModeloChange();
       saveState();
     };
-    document.getElementById("proposta-resumo-grade").textContent = fixa ? "Escala proposta 5×2 — padrão semanal fixo" : "Escala proposta 5×2 — clique nas células para ajustar";
+    document.getElementById("proposta-resumo-grade").textContent = fixa ? "Escala proposta 5×2 — clique para editar em todas as semanas" : "Escala proposta 5×2 — clique nas células para ajustar";
     document.getElementById("geracao-orientacao-edicao").textContent = fixa
-      ? "Para ajustar o padrão fixo, revise os horários e as folgas no preenchimento e gere novamente. Alterações pontuais por data ficam disponíveis no modo dinâmico."
+      ? "Clique no card para editar o status e os horários. Na escala fixa, a alteração vale para o mesmo dia da semana em todo o padrão. Confira o resumo semanal e a cobertura após cada edição."
       : "Após gerar, clique nas células para ajustar trabalho e folgas. As validações e os totais acompanham cada alteração. Use FC somente quando houver folga compensatória efetivamente prevista.";
     document.getElementById("conversao-periodo").parentElement.hidden = fixa;
     const automatico = document.querySelector('#conversao-fase option[value="automatico"]');

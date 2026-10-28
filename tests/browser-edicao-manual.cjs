@@ -94,7 +94,7 @@ module.exports = async function ({ browser, baseURL }) {
         await route.continue();
       } catch {}
     });
-    let respostas = ["T", "08:00"];
+    let respostas = ["T", {entrada:"08:00",intInicio:"12:00",intFim:"13:00",saida:"17:00"}];
     const responder = (dialog) => dialog.accept(respostas.shift() || "");
     await respondToDialogs(page, responder);
     await page.locator('#resultado-gerar [data-ri="0"][data-di="0"]').click();

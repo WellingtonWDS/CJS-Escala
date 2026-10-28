@@ -14,6 +14,12 @@ async function respondToDialogs(page, handler) {
       message: () => data.message,
       defaultValue: () => data.value,
       async accept(value) {
+        if (data.type === "form") {
+          for (const [key, fieldValue] of Object.entries(value || {}))
+            await root.locator(`[data-dialog-time="${key}"]`).fill(fieldValue);
+          await root.locator("[data-dialog-accept]").click();
+          return;
+        }
         const input = root.locator("[data-dialog-input]");
         if (data.type === "prompt" && value !== undefined) {
           if ((await input.evaluate((el) => el.tagName)) === "SELECT")

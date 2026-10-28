@@ -74,6 +74,7 @@ function app(now) {
     alert: (...args) => ctx.alert(...args),
     confirm: (...args) => ctx.confirm(...args),
     prompt: (...args) => ctx.prompt(...args),
+    editarHorario: () => ctx.prompt(),
   };
   const instance = createApplication({ env, now: () => new Clock() });
   Object.assign(ctx, dates, instance.domain, instance, instance.storage, {
@@ -183,7 +184,7 @@ test("edição rejeita minutos, negativos, texto, mais de 24h; cancelar preserva
   assert.equal(run(`parseHorasTrabalhadas('8,5')`), 8.5);
   assert.equal(
     await run(
-      `state.escalaGerada={resultado:[{dias:[{dia:1,status:'F',horas:0}]}]};prompt=(()=>{let i=0;return ()=>['T','08:99'][i++]})();editarStatus(0,0).then(()=>state.escalaGerada.resultado[0].dias[0].status)`,
+      `gerarEscala();state.escalaGerada.resultado[0].dias[0].status='F';state.escalaGerada.resultado[0].dias[0].horas=0;prompt=(()=>{let i=0;return ()=>['T',{entrada:'08:99',saida:'12:00',intInicio:'',intFim:''}][i++]})();editarStatus(0,0).then(()=>state.escalaGerada.resultado[0].dias[0].status)`,
     ),
     "F",
   );
@@ -201,7 +202,7 @@ test("cancelar a edição das horas preserva status e totais", async () => {
   const run = app();
   assert.equal(
     await run(
-      `state.escalaGerada={resultado:[{dias:[{dia:1,status:'F',horas:0}]}]};prompt=(()=>{let i=0;return ()=>['T',null][i++]})();editarStatus(0,0).then(()=>state.escalaGerada.resultado[0].dias[0].status==='F' && state.escalaGerada.resultado[0].dias[0].horas===0)`,
+      `gerarEscala();state.escalaGerada.resultado[0].dias[0].status='F';state.escalaGerada.resultado[0].dias[0].horas=0;prompt=(()=>{let i=0;return ()=>['T',null][i++]})();editarStatus(0,0).then(()=>state.escalaGerada.resultado[0].dias[0].status==='F' && state.escalaGerada.resultado[0].dias[0].horas===0)`,
     ),
     true,
   );

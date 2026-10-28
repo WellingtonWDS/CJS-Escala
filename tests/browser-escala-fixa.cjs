@@ -32,13 +32,13 @@ module.exports = async ({ browser, baseURL }) => {
     assert.equal(await page.locator('[data-etapa-link][data-pendente]').count(),0);
     await page.locator('[data-etapa-link="sec-gerar"]').click();
     assert.equal(await page.locator('#conversao-periodo').isVisible(),false);
-    assert.doesNotMatch(await page.locator('#proposta-resumo-grade').textContent(),/clique nas células/);
+    assert.match(await page.locator('#proposta-resumo-grade').textContent(),/todas as semanas/);
     await clicarCalculo(page,'#btn-gerar');
     assert.equal(await page.locator('#resultado-gerar [data-fixo-colaborador]').count(),5);
     assert.equal(await page.locator('#resultado-gerar [data-fixo-dia]').count(),35);
     assert.equal(await page.locator('#resultado-gerar [data-resumo-semanal]').count(),5);
     assert.match(await page.locator('#resultado-gerar').textContent(),/padrão semanal recorrente/);
-    assert.equal(await page.locator('#resultado-gerar [data-ri]').count(),0);
+    assert.equal(await page.locator('#resultado-gerar [data-ri]').count(),35);
     await clicarCalculo(page,'#btn-converter');
     const convertido=await saved();
     assert.equal(convertido.conversao.proposta.config.modeloEscala,'fixa');

@@ -31,6 +31,32 @@ export function getDialogs(document = globalThis.document) {
         cancel.hidden = type === "alert";
         let input,
           finished = false;
+        const fields = {};
+        let fieldError;
+        if (type === "form") {
+          const group = document.createElement("div");
+          group.className = "dialog-horarios";
+          for (const field of options.fields) {
+            const label = document.createElement("label");
+            label.textContent = field.label;
+            const control = document.createElement("input");
+            control.type = field.type || "text";
+            control.dataset.dialogTime = field.name;
+            control.value = value?.[field.name] || "";
+            control.required = !!field.required;
+            label.append(control);
+            group.append(label);
+            fields[field.name] = control;
+          }
+          fieldError = document.createElement("p");
+          fieldError.dataset.dialogError = "";
+          fieldError.setAttribute("role", "alert");
+          fieldError.className = "text-fintria-vermelho text-sm";
+          fieldError.hidden = true;
+          const actions = dialog.querySelector(".app-dialog-actions");
+          actions.before(group, fieldError);
+          input = Object.values(fields)[0];
+        }
         if (type === "prompt") {
           dialog.querySelector("[data-dialog-field-label]").hidden = false;
           dialog.querySelector("[data-dialog-label]").textContent =
@@ -53,7 +79,7 @@ export function getDialogs(document = globalThis.document) {
           dialog.querySelector("[data-dialog-field]").append(input);
         }
         const dismissValue =
-          type === "prompt" ? null : type === "confirm" ? false : undefined;
+          ["prompt", "form"].includes(type) ? null : type === "confirm" ? false : undefined;
         async function finish(result) {
           if (finished) return;
           finished = true;
@@ -63,6 +89,17 @@ export function getDialogs(document = globalThis.document) {
         }
         dialog.querySelector("form").addEventListener("submit", (event) => {
           event.preventDefault();
+          if (type === "form") {
+            const values = Object.fromEntries(Object.entries(fields).map(([key, el]) => [key, el.value]));
+            try { options.validate?.(values); }
+            catch (error) {
+              fieldError.textContent = error.message;
+              fieldError.hidden = false;
+              return;
+            }
+            finish(values);
+            return;
+          }
           finish(
             type === "prompt"
               ? input.value
@@ -93,6 +130,7 @@ export function getDialogs(document = globalThis.document) {
     alert: (message, options) => ask("alert", message, "", options),
     confirm: (message, options) => ask("confirm", message, "", options),
     prompt: (message, value, options) => ask("prompt", message, value, options),
+    form: (message, value, options) => ask("form", message, value, options),
   };
   instances.set(document, api);
   return api;

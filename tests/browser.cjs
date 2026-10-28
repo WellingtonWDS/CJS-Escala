@@ -216,8 +216,8 @@ const { chromium } = require("playwright");
     assert.equal(await page.locator("#pec-resultado").count(), 0);
     assert.match(await page.locator("#sec-pec").innerText(), /16\/12\/2027/);
 
-    let answers = ["T", "08:30"];
-    await respondToDialogs(page, (dialog) => dialog.accept(answers.shift()));
+    let answers = ["T", {entrada:"08:00",intInicio:"12:00",intFim:"13:00",saida:"17:30"}];
+    await respondToDialogs(page, (dialog) => { const a=answers.shift(); return a === null ? dialog.dismiss() : dialog.accept(a); });
     await irParaEtapa(page, '[data-ri="0"][data-di="0"]');
     await page.locator('[data-ri="0"][data-di="0"]').click();
     await waitForDialogs(page);
@@ -232,12 +232,12 @@ const { chromium } = require("playwright");
     await page.locator("#tg-turnos").check();
     assert.equal((await saved()).escalaGerada.resultado[0].dias[0].horas, 8.5);
     const before = (await saved()).escalaGerada.resultado[0].dias[0];
-    answers = ["T", "08:99"];
+    answers = ["T", null];
     await irParaEtapa(page, '[data-ri="0"][data-di="0"]');
     await page.locator('[data-ri="0"][data-di="0"]').click();
     await waitForDialogs(page);
     assert.deepEqual((await saved()).escalaGerada.resultado[0].dias[0], before);
-    console.log("OK: edição manual e rejeição de horas inválidas");
+    console.log("OK: edição por horários e cancelamento sem alterações");
     const downloadPromise = page.waitForEvent("download");
     await irParaEtapa(page, "#btn-exportar-csv");
     await page.locator("#btn-exportar-csv").click();
@@ -322,6 +322,7 @@ const { chromium } = require("playwright");
     });
     await require("./browser-calculo-loading.cjs")({ browser, baseURL: `http://127.0.0.1:${server.address().port}` });
     await require("./browser-escala-fixa.cjs")({ browser, baseURL: `http://127.0.0.1:${server.address().port}` });
+    await require("./browser-horarios-escala.cjs")({ browser, baseURL: `http://127.0.0.1:${server.address().port}` });
     await require("./browser-loading.cjs")({
       browser,
       baseURL: `http://127.0.0.1:${server.address().port}`,
