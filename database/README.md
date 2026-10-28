@@ -70,6 +70,12 @@ A listagem inicial retorna no máximo 100 rascunhos por empresa; paginação, hi
 
 Entregues autenticação individual via n8n, abertura/revogação de sessões, gestão por perfil, empresas e seleção/salvamento/cópia/exclusão de preenchimentos na interface. O login foi confirmado pelo operador; a homologação das funções novas e a execução de todas as migrações remotas devem ser conferidas no [registro de implantação](../docs/implantacao-atual.md). A futura hospedagem na VPS reutiliza os mesmos handlers, sem depender do middleware Vercel.
 
-## Próximos formatos de escala e exportação
+## Escalas, edição e persistência — 28/10/2026
 
 A primeira entrega da escala fixa está implementada desde **28/10/2026**. O snapshot inclui `modeloEscala` (`dinamica`/`fixa`) e `dataReferenciaFixa`; preenchimentos antigos recebem o padrão dinâmico ao carregar. Não há migração SQL nem alteração de `schema_version`: o JSONB existente preserva esses campos, períodos/feriados mensais e resultados identificados pelo modo. A versão de regras mudou para exigir nova geração de resultados antigos. A integração local verifica também salvar e reabrir o JSON fixo por RPC autenticada. Quadro diário e novos arquivos por público continuam no [planejamento](../docs/planos/evolucao-escalas.md).
+
+A edição nos quadros agora recebe entrada, início/fim de intervalo e saída, com pausa opcional; no dinâmico vale para a data, no fixo para o mesmo dia da semana em todo o padrão. Horários aplicados e resultados continuam dentro do snapshot existente. Salvar no servidor permanece uma ação explícita do usuário; editar ou gerar uma escala não ativa sincronização automática.
+
+A revisão da conversão 5×2 atualizou as regras para **`ec141-2026-10-28-8`**. Resultados de versões anteriores exigem nova geração, preservando colaboradores, configurações e preenchimentos. Não há nova migração, RPC, variável de ambiente ou alteração nas permissões. As correções incluem disponibilidade por perfil, limites de ACT/CCT por data e janelas/pausas antes da distribuição de horas. [Relatório técnico e limites](../docs/auditorias/precisao-5x2-2026-10-28.md).
+
+A integração local PostgreSQL 17/PostgREST 14.15 com navegador passou na entrega do modo fixo. As alterações posteriores de edição e cálculo foram validadas por testes unitários e navegador, sem repetir essa integração de banco. Esses resultados não comprovam aplicação de migrações na VPS nem homologação do deploy público. Registro operacional: [implantação atual](../docs/implantacao-atual.md).

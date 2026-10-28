@@ -8,6 +8,18 @@ Escolha inicial mensal dinâmica/fixa, referência jurídica do padrão, navega�
 
 Não exige nova migração SQL nem variável de ambiente. `modeloEscala` e `dataReferenciaFixa` usam o JSONB existente (`schema_version=1`). Regras `ec141-2026-10-28-8` exigem nova geração de resultados antigos. A entrega depende do deploy do código; validações locais não comprovam homologação no domínio público. Quadro diário e novos documentos por público permanecem no planejamento.
 
+### Referências publicadas na main em 28/10/2026
+
+| Referência | Entrega |
+| --- | --- |
+| `221ebd9` | Modo fixo recorrente, referência jurídica, cobertura e comparação semanal, CSV próprio e persistência dos novos campos no JSON existente. |
+| `f4e1bba` | Edição de status/entrada/intervalo/saída nos dois modos, recorrência e desfazer no fixo, resumo semanal unificado e CSV com pausas editadas. |
+| `e22bdca` | Conversão 5×2 com busca sem cobertura, planos por perfil, desempate por déficit, ACT/CCT por data, janelas/pausas antes da distribuição e aviso de pesquisa parcial. |
+
+Validação funcional mais recente: **493 testes unitários**, build e suíte completa de navegador aprovados localmente na revisão do motor. Inclui nove testes novos com matriz de 24 combinações. Simulação local de 100 colaboradores sem cobertura: 1.200 avaliações, pesquisa parcial sinalizada, sem erros objetivos ou déficit semanal; cobertura não avaliada. A integração PostgreSQL 17/PostgREST 14.15 com navegador foi executada na entrega do modo fixo, incluindo salvar/reabrir por RPC; não foi repetida nas mudanças posteriores de edição/cálculo, sem alteração de API ou schema. A atualização documental não é uma nova execução das suítes.
+
+Para usar as correções, após o deploy gere novamente as escalas atuais/propostas antigas. Cadastros e preenchimentos permanecem preservados; não é necessário recriar banco, contas ou empresas. Envio à `main` não confirma sozinho o sucesso do deploy ou a homologação no domínio público. Detalhes: [revisão de precisão](auditorias/precisao-5x2-2026-10-28.md).
+
 ## Estado vigente
 
 - Hospedagem permanece na Vercel, com publicação automática da `main`. O proprietário informou o novo domínio público **https://reescala.fintria.com.br**; `cjs-escala.vercel.app` é o endereço anterior. A troca do domínio não representa migração para a VPS. Uma alteração de variável exige novo deployment.
@@ -18,7 +30,7 @@ Não exige nova migração SQL nem variável de ambiente. `modeloEscala` e `data
 - Novo modelo: menu lateral dentro do sistema, nome e perfil; Operador acessa suas empresas, Gerente gera escalas e gerencia usuários no escritório, Admin tem acesso global. Não há senha adicional nem página separada. Gerente não cria Admin e não edita empresas de outro escritório. Admin/gerentes podem criar Gerentes nos escritórios autorizados; alteração de empresas vale para Operadores.
 - O proprietário deve ser promovido explicitamente usando o **identity_subject informado no chat**. Esse ID é do provedor de login, não o UUID interno de cjs_private.users. Não presumir que o vínculo antigo membership.admin já seja Admin global: ele agora representa Gerente.
 
-## Últimas entregas de código — 27/10/2026
+## Histórico de entregas de código — 27/10/2026
 
 | Referência | Entrega |
 | --- | --- |
@@ -29,11 +41,11 @@ Não exige nova migração SQL nem variável de ambiente. `modeloEscala` e `data
 | `7d0c1e3` | Nome e logos oficiais Reescala no sistema, impressão e ícones; publicação da pasta logos e imagens necessárias ao login acessíveis sem sessão. |
 | `e40dc9b` | Ficha de colaboradores simplificada e ajuda contextual por mouse/teclado/toque; validações e dados importados preservados. |
 
-Última validação funcional: **460 testes unitários**, build, suíte completa de navegador e integração PostgreSQL 17/PostgREST 14.15 com navegador real **locais** aprovados, na entrega `373c51e`. A atualização deste documento não é uma nova execução de testes. As entregas acima não acrescentaram migrações após a 008. Execução dos instaladores DEMO na VPS ainda não foi confirmada; não presumir que as empresas já estejam cadastradas.
+Validação registrada em **27/10/2026**: **460 testes unitários**, build, suíte completa de navegador e integração PostgreSQL 17/PostgREST 14.15 com navegador real **locais** aprovados, na entrega `373c51e`. Esse número é histórico; a validação mais recente está na entrega de 28/10 acima. As entregas dessa data não acrescentaram migrações após a 008. Execução dos instaladores DEMO na VPS ainda não foi confirmada; não presumir que as empresas já estejam cadastradas.
 
 Guias atuais: [interface](interface.md), [DEMO original](empresa-demo.md), [DEMO por segmento](cenarios-demo-segmentos.md). Nos exemplos, a entidade mista 12×36/administrativo tem prévia atual; a conversão automática continua limitada aos grupos 6×1 compatíveis.
 
-As novas solicitações de escala fixa sem calendário, quadro diário e documentos completos/individuais estão **planejadas, sem implementação**: [escopo e critérios](planos/evolucao-escalas.md).
+A escala fixa sem calendário foi implementada em **28/10/2026**. Quadro diário e documentos completos/individuais continuam **planejados, sem implementação**: [escopo e critérios](planos/evolucao-escalas.md).
 
 ## Entrega anterior — horários, compensação e intervalos (27/10/2026)
 

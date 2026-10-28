@@ -10,6 +10,16 @@ Consulte [Estado do projeto](docs/estado-do-projeto.md) para uma visão consolid
 
 O fluxo principal já inclui cadastro manual e por planilhas, importação Domínio, restrições individuais, habilitações por função, geração, conversão 6×1 → 5×2, comparação de cobertura, sugestões de ajustes com prévia/aplicação/desfazer, edição da grade, CSV e impressão. O acesso oferece login individual por e-mail/senha integrado ao n8n e ao banco, com sessão de até 12 horas, menu por perfil, gestão de usuários e empresas e preenchimentos compartilhados por empresa autorizada. O modo compartilhado/local permanece disponível por configuração. Os detalhes de funcionamento e configuração estão nas seções abaixo.
 
+## Entregas de hoje — 28/10/2026
+
+| Referência | Alteração entregue |
+| --- | --- |
+| `221ebd9` | Escolha entre escala mensal dinâmica e fixa, referência jurídica própria, cobertura/comparação semanal, CSV fixo e navegação sem Feriados no padrão recorrente. |
+| `f4e1bba` | Edição de status e horários completos nos dois quadros, intervalo opcional, alterações recorrentes/desfazer no fixo e resumo semanal com formatação e cores compartilhadas. |
+| `e22bdca` | Revisão da geração/conversão 5×2: folgas por disponibilidade individual, busca mesmo sem cobertura, fechamento semanal, ACT/CCT por data e restrições/pausas consideradas antes de distribuir horas. |
+
+Versão atual das regras: **`ec141-2026-10-28-8`**, conforme o texto da EC 141 adotado pelo projeto. **Gere novamente as escalas anteriores** para aplicar as correções; os cadastros e preenchimentos são preservados. As entregas não exigem migração SQL nem novas variáveis de ambiente. Quadro diário e arquivos separados por colaborador continuam planejados.
+
 ## Escala mensal dinâmica ou fixa — 28/10/2026
 
 Na primeira etapa, **Como deseja organizar a escala?** oferece dois modos:
@@ -27,7 +37,14 @@ A referência jurídica não é validade permanente: reavaliar ao mudar a legisl
 
 ## Precisão da conversão — 28/10/2026
 
-Busca de folgas também sem cobertura, desempate pelo fechamento semanal, planos por colaborador importado, ACT/CCT limitado por data, restrições de horário consideradas antes da distribuição e capacidade coerente com o intervalo. A origem e as janelas declaradas são preservadas. A busca parcial é sinalizada; déficit não é automaticamente tratado como necessidade de contratação. [Achados, correções, testes e limites](docs/auditorias/precisao-5x2-2026-10-28.md).
+A revisão corrigiu situações que geravam déficit evitável ou aplicavam limites de maneira imprecisa:
+
+- A busca de folgas funciona também sem cobertura cadastrada e usa os dias disponíveis de cada colaborador. Com sábado de 4h, pode escolher essa folga para fechar 40h nos cinco dias de 8h, em vez de manter uma semana de 36h.
+- A escolha prioriza erros objetivos, lacunas de cobertura e, depois, déficit semanal. Há até duas rodadas, com orçamento de 120 a 2.400 avaliações dividido por pessoa; a comparação avisa quando a pesquisa foi parcial.
+- O limite diário do ACT/CCT é aplicado por data. Uma autorização que vence no meio do mês não é presumida válida depois do vencimento.
+- As janelas individuais e o turno são considerados antes da distribuição, permitindo repartir o saldo nos outros dias disponíveis. A capacidade também respeita a pausa declarada: até 4h sem pausa e até 6h com pausa de pelo menos 15min e inferior a 1h, conforme as regras gerais modeladas.
+
+A origem, os contratos e as janelas declaradas são preservados. O motor não inventa disponibilidade ou autorização coletiva para fechar horas. A busca é limitada, sem garantia de ótimo global; déficit não significa automaticamente necessidade de contratação. [Achados, correções, testes e limites](docs/auditorias/precisao-5x2-2026-10-28.md).
 
 ## Edição dos horários na grade — 28/10/2026
 
@@ -37,7 +54,7 @@ Ao clicar no card, escolha o status. Para trabalho, o modal seguinte pede **entr
 
 Na dinâmica, muda somente a data. Na fixa, a edição é repetida em todas as ocorrências do mesmo dia da semana, incluindo contextos de validação. Restrições individuais continuam protegidas; jornada, descanso, cobertura, comparação e CSV são recalculados. Excessos legais ou falta de repousos permanecem como erros de rascunho antes da grade; não há compensação presumida. O fixo tem revisão da alteração e desfazer da última edição, com proteção contra mudanças posteriores. A readequação automática por busca continua no fluxo dinâmico.
 
-O CSV dinâmico passa a incluir início/fim de intervalo também quando há edição manual de horários. A edição da proposta preserva a origem. Não exige migração SQL nem mudança da versão das regras de geração.
+O CSV dinâmico passa a incluir início/fim de intervalo também quando há edição manual de horários. A edição da proposta preserva a origem. Essa entrega de edição não exigiu migração SQL nem alterou a versão das regras; a revisão posterior do motor atualizou a versão para `ec141-2026-10-28-8`.
 
 ## Atualizações consolidadas em 27/10/2026
 
@@ -49,7 +66,7 @@ O CSV dinâmico passa a incluir início/fim de intervalo também quando há edi�
 - Instaladores do DEMO original e de quatro empresas por segmento com onze modelos de cobertura, readequação e contratação; dados existentes e edições são preservados. Instalação remota depende do comando administrativo dos guias.
 - Domínio informado pelo proprietário: **https://reescala.fintria.com.br**, com hospedagem ainda na Vercel. `APP_ORIGIN` deve acompanhar o domínio; alterar a variável exige novo deploy.
 
-Última validação funcional em **28/10/2026**: **493 testes unitários**, build e suíte completa de navegador aprovados localmente. A integração PostgreSQL 17/PostgREST 14.15 com navegador passou na entrega anterior do modo fixo; não foi repetida nesta alteração de edição/interface, sem mudança de API ou schema. Isso não confirma execução de migrações, instaladores DEMO ou correções de configuração na VPS/Vercel.
+Última validação funcional em **28/10/2026**, após a revisão do motor: **493 testes unitários**, build e suíte completa de navegador aprovados localmente. A revisão acrescentou nove testes, incluindo uma matriz de 24 combinações de modos, fases e disponibilidade de sábado. Uma simulação local com 100 colaboradores, sem cobertura cadastrada, terminou sem erros objetivos nem déficit semanal e sinalizou pesquisa parcial; a suficiência operacional permaneceu não avaliada. A integração PostgreSQL 17/PostgREST 14.15 com navegador passou na entrega do modo fixo; não foi repetida nas alterações posteriores de edição e cálculo, sem mudança de API ou schema. Isso não confirma execução de migrações, instaladores DEMO ou correções de configuração na VPS/Vercel. Esta atualização documental não representa nova execução das suítes.
 
 A entrega do modo fixo inclui **16 testes de domínio/persistência**, com oito cenários setoriais compatíveis e três ciclos explicitamente rejeitados, além do teste de navegador dedicado (`tests/browser-escala-fixa.cjs`). Cobre invariância de mês/feriados, 44→40h, fase de 42h/ACT, vigências, folgas e restrições recorrentes, noites/interjornada, cobertura/intervalos, diagnóstico, CSV, salvamento/reabertura, etapas, tutorial, impressão e celular.
 
