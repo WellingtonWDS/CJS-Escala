@@ -46,7 +46,15 @@ const ETAPAS = [
   ],
 ];
 
-export function createTutorialUI({ document, window, etapas }) {
+export function createTutorialUI({ document, window, etapas, state }) {
+  const etapasAtivas = () => ETAPAS.filter(([id]) => state?.modeloEscala !== "fixa" || id !== "sec-feriados").map((etapa) => {
+    if (state?.modeloEscala !== "fixa") return etapa;
+    if (etapa[0] === "config-periodo") return [etapa[0], "Escolha o modelo de escala", "No padrão fixo, horários e folgas se repetem por dia da semana. Informe a data de referência para conferir a legislação e a vigência do ACT/CCT. Feriados e eventos por data pertencem ao modo dinâmico."];
+    if (etapa[0] === "config-colaboradores") return [etapa[0], "Cadastre os colaboradores", "Use planilha, Domínio ou cadastro manual. Confira as jornadas individuais e a carga contratual. Restrições semanais de dias e horários são respeitadas; férias, afastamentos e admissão por data não são aplicados ao padrão fixo. Ciclos como 12×36 precisam do modo dinâmico."];
+    if (etapa[0] === "sec-jornada") return [etapa[0], "Preencha os horários recorrentes", "Informe entrada, intervalo e saída para os dias da semana. Use horários por dia para diferenças como o sábado. Em dois turnos, os grupos A/B serão fixos, sem alternância semanal. Jornadas noturnas mantêm a indicação de saída no dia seguinte e a verificação dos descansos."];
+    if (etapa[0] === "sec-gerar") return [etapa[0], "Converta o padrão e compare", "Escolha a fase legal para gerar o padrão fixo 5×2. Confira o resumo semanal, a cobertura e as incompatibilidades. A fase automática usa a data de referência; fases futuras escolhidas manualmente são simulações. Para ajustar o padrão, revise o cadastro e gere novamente."];
+    return etapa;
+  });
   let root,
     dialog,
     highlight,
@@ -73,7 +81,7 @@ export function createTutorialUI({ document, window, etapas }) {
 
   function position() {
     if (!root) return;
-    const target = document.getElementById(ETAPAS[index][0]);
+    const target = document.getElementById(etapasAtivas()[index][0]);
     const rect = target.getBoundingClientRect();
     const width = document.documentElement.clientWidth;
     const height = window.innerHeight;
@@ -104,7 +112,7 @@ export function createTutorialUI({ document, window, etapas }) {
   }
 
   function showStep() {
-    const [target, title, text] = ETAPAS[index];
+    const [target, title, text] = etapasAtivas()[index];
     etapas?.mostrarAlvo(target, {
       historico: false,
       registrarVisita: false,
@@ -113,12 +121,12 @@ export function createTutorialUI({ document, window, etapas }) {
     });
     root.dataset.target = target;
     root.querySelector("#tutorial-contador").textContent =
-      `Etapa ${index + 1} de ${ETAPAS.length}`;
+      `Etapa ${index + 1} de ${etapasAtivas().length}`;
     root.querySelector("#tutorial-titulo").textContent = title;
     root.querySelector("#tutorial-texto").textContent = text;
     root.querySelector("#tutorial-anterior").disabled = index === 0;
     root.querySelector("#tutorial-proximo").textContent =
-      index === ETAPAS.length - 1 ? "Concluir tutorial" : "Próxima";
+      index === etapasAtivas().length - 1 ? "Concluir tutorial" : "Próxima";
     document
       .getElementById(target)
       .scrollIntoView({ behavior: "instant", block: "start" });
@@ -257,7 +265,7 @@ export function createTutorialUI({ document, window, etapas }) {
       }
     };
     root.querySelector("#tutorial-proximo").onclick = () => {
-      if (index === ETAPAS.length - 1) close();
+      if (index === etapasAtivas().length - 1) close();
       else {
         index++;
         showStep();

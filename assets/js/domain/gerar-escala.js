@@ -1,4 +1,5 @@
 import { apurarSemana } from "./resumo-semanal.js";
+import { contextoModelo, escalaFixa, conferirSuporteFixo, colaboradorRecorrente } from "./modelo-escala.js";
 import {
   aplicarRestricoesDia,
   validarRestricoes,
@@ -90,7 +91,7 @@ export function createGerador(state, jornada, feriados, validacao) {
 
     if (!candidatos.length) return [];
 
-    if (state.folgaTipo === "fixa") {
+    if (state.folgaTipo === "fixa" || escalaFixa(state)) {
       return candidatos.slice(0, quantidadeFolgasOperacionais);
     }
 
@@ -135,6 +136,10 @@ export function createGerador(state, jornada, feriados, validacao) {
     dataFim,
     feriadosMap,
   ) {
+    if (escalaFixa(state)) {
+      colab = colaboradorRecorrente(colab);
+      feriadosMap = {};
+    }
     verificarPerfil(colab);
     const errosRestricoes = validarRestricoes(colab);
     if (errosRestricoes.length)
@@ -232,6 +237,7 @@ export function createGerador(state, jornada, feriados, validacao) {
         else if (!feriado.trabalhado) status = "F";
       }
       if (
+        !escalaFixa(state) &&
         colab.quadroDominio?.admissaoIso &&
         key < colab.quadroDominio.admissaoIso
       )
@@ -482,6 +488,9 @@ export function createGerador(state, jornada, feriados, validacao) {
   }
 
   function gerarDadosEscala() {
+    conferirSuporteFixo(state);
+    const contexto = contextoModelo(state);
+    if (contexto !== state) return createDomain(contexto).gerarDadosEscala();
     const diasMes = diasNoMes(state.mes, state.ano);
     const primeiroDia = new Date(state.ano, state.mes, state.diaInicio);
     const ultimoDia = new Date(state.ano, state.mes, diasMes);
@@ -529,6 +538,7 @@ export function createGerador(state, jornada, feriados, validacao) {
       const key = isoDate(state.ano, state.mes, Number(f.dia));
       feriadosMap[key] = { ...f };
     });
+    if (escalaFixa(state)) for (const key of Object.keys(feriadosMap)) delete feriadosMap[key];
 
     const resultado = state.colaboradores.map((c, idx) => {
       const inicioMes = getMonday(new Date(state.ano, state.mes, 1));
@@ -561,6 +571,8 @@ export function createGerador(state, jornada, feriados, validacao) {
     }));
 
     return {
+      modeloEscala: state.modeloEscala || "dinamica",
+      ...(escalaFixa(state) ? { dataReferenciaFixa: state.dataReferenciaFixa } : {}),
       versaoRegras: VERSAO_REGRAS,
       modoRegime: state.modoRegime,
       diasMes,

@@ -1,6 +1,6 @@
 # Estado do projeto — Reescala
 
-Atualizado em **27/10/2026**. Referência funcional: versão de regras `ec141-2026-10-27-6` ([histórico do projeto](https://github.com/WellingtonWDS/CJS-Escala/commits/main/)). Esta página resume o andamento; o [README](../README.md) detalha operação, arquitetura, configuração e testes.
+Atualizado em **28/10/2026**. Referência funcional: versão de regras `ec141-2026-10-28-7` ([histórico do projeto](https://github.com/WellingtonWDS/CJS-Escala/commits/main/)). Esta página resume o andamento; o [README](../README.md) detalha operação, arquitetura, configuração e testes.
 
 Identidade **Reescala** aplicada no login, cabeçalho, menu expandido/recolhido, carregamento, quadros de escala/impressão e ícone do navegador, usando os arquivos originais de `logos/`. A publicação inclui essa pasta e o login carrega suas imagens sem sessão; dados, chaves internas e permissões são preservados.
 
@@ -9,6 +9,14 @@ Logos com dimensões limitadas também no HTML para evitar crescimento com CSS a
 Quatro novas empresas por segmento e onze preenchimentos DEMO para comércio contínuo, fazenda com sábado compensado, entidade 24h com 12×36/administrativo e padaria até 20h30. Casos de cobertura, readequação e contratação; os ciclos mistos são analisados na prévia e continuam fora da conversão automática. [Instalação e resultados esperados](cenarios-demo-segmentos.md). Instalador testado localmente; execução remota ainda pendente.
 
 Carregamento imediato na geração atual/proposta, cálculo em Worker local, bloqueio de duplicação, liberação em falhas e proteção contra resultados de dados alterados. Resumo da busca de cobertura aparece primeiro em modal e depois abaixo do botão, com aplicação separada. Regras de cálculo e versões de dados preservadas.
+
+## Modos de escala — entrega de 28/10/2026
+
+Escolha inicial entre **mensal dinâmica** e **mensal fixa**. O modo fixo representa uma semana recorrente, independente do mês e feriados; retira Feriados das etapas e do tutorial, com contagem e navegação por teclado ajustadas. Referência jurídica explícita, fase automática nessa data ou simulação de 42h/40h na proposta. Campos e feriados mensais são preservados ao alternar; resultados dependentes exigem nova geração.
+
+Cobertura e comparação semanais, grade segunda–domingo com horas/intervalos/folgas e resumo semanal, diagnóstico, sugestões recorrentes de intervalo, CSV fixo e impressão. Jornadas, descansos na virada semanal, restrições semanais e condições coletivas continuam verificados. Cadastros antigos permanecem dinâmicos; modo e referência são salvos no JSON do preenchimento, sem migração SQL. A mudança da versão de regras invalida cálculos antigos para nova geração.
+
+Limites desta primeira entrega: eventos por data (inclusive admissão) não são aplicados ao padrão; 12×36/ciclos e compensações com apuração datada usam o dinâmico. Ajustes pontuais/edição das células e a busca avulsa de cobertura continuam no dinâmico; no fixo, revisar o preenchimento e gerar novamente. Domingos fixos trabalhados em comércio/por colaboradoras exigem rever o revezamento. Referência legal/CCT exige revisão quando mudar sua validade. Ignorar feriados no modelo não autoriza trabalhar em qualquer feriado real.
 
 ## Objetivo e estágio atual
 
@@ -73,7 +81,7 @@ Horários individuais disponíveis também para cadastro manual/CSV, turnos cont
 - **Regimes importados:** a conversão atende à origem 6×1 compatível. Importar um ciclo diferente não significa convertê-lo automaticamente para 5×2; âncoras e informações ambíguas precisam ser conferidas.
 - **Conferência normativa:** a implementação usa o texto da EC 141 fornecido para o projeto. Cláusulas coletivas, exceções e efeitos específicos do trabalho noturno continuam sujeitos às verificações indicadas no relatório. A análise individual avançada de enquadramento permanece oculta e desativada por padrão.
 - **Publicação:** na Vercel, o login depende do middleware, das funções de API e das variáveis privadas. Há também adaptador Node.js para futura VPS, dependente de configuração HTTPS/proxy/supervisão; essa migração não foi executada. O build estático sozinho não fornece proteção. Fontes do Google são opcionais, com fallback; o Tailwind agora é compilado e servido localmente.
-- **Novos modos e documentos:** escala fixa sem calendário, quadro diário dedicado e arquivos separados por colaborador ainda não foram implementados; ver o planejamento.
+- **Próximas visualizações e documentos:** quadro diário dedicado e novos arquivos por público ainda não implementados. A primeira entrega da escala fixa está disponível, com os limites acima.
 - **Publicação de escalas:** ainda não há fluxo de rascunho → revisão → aprovação/publicação com registro de responsáveis.
 
 ## Planejamento de persistência — 26/10/2026
@@ -88,23 +96,23 @@ O [guia de homologação n8n](../integrations/n8n/README.md) e o template de log
 
 ## Próximos passos propostos
 
-As três próximas funcionalidades solicitadas em **27/10/2026** estão registradas abaixo e **ainda não foram implementadas**. Não têm prazo definido. O [plano detalhado](planos/evolucao-escalas.md) contém escopo, critérios de aceite e pontos a definir.
+A primeira entrega da escala fixa solicitada em **27/10/2026** foi implementada em **28/10/2026**. Quadro diário e exportações por público permanecem prioritários, junto das evoluções complementares abaixo. São funcionalidades **ainda não implementadas**. Não têm prazo definido. O [plano detalhado](planos/evolucao-escalas.md) contém escopo, critérios de aceite e pontos a definir.
 
 | Prioridade | Evolução | Resultado esperado |
 | --- | --- | --- |
-| 1 | Escala fixa com folgas fixas | Padrão recorrente por dia da semana, sem feriados nem datas específicas, com adequação à referência legal escolhida. Mantém o modo mensal existente. |
 | 2 | Quadro diário detalhado | Exibir colaboradores, funções, entradas, intervalos, saídas, folgas e cobertura por horário de uma data ou dia do padrão fixo. |
 | 3 | Exportação para empregador e colaboradores | Arquivo completo da equipe para o empregador e arquivos separados por funcionário, com conteúdo próprio e identificação do período/padrão. Formatos finais ainda a definir. |
 | 4 | Comparação visual mais detalhada | Destacar mudanças de cada dia/colaborador entre origem e proposta, além das grades e tabelas existentes. |
 | 5 | Evolução de versões e persistência | Histórico navegável/recuperação de versões, política de retenção e eventual sincronização automática. Banco, contas, empresas e salvamento central já estão implementados. |
 | 6 | Revisão e publicação da escala | Registrar revisão, aprovação e publicação, com identificação dos responsáveis. |
 
-O padrão fixo não é apenas marcar sábado/domingo no gerador mensal ou ocultar seus feriados; exige um modo próprio sem calendário. A visão diária ainda não tem uma tela dedicada. CSV completo e impressão/PDF pelo navegador já existem; os novos documentos por público permanecem no planejamento. Ciclos 12×36 exigem tratamento explícito e não são convertidos automaticamente por este plano.
+O modo fixo tem apresentação semanal e referência jurídica próprias, sem aplicar os feriados do calendário. A visão diária ainda não tem uma tela dedicada. CSV completo e impressão/PDF pelo navegador já existem; os novos documentos por público permanecem no planejamento. Ciclos 12×36 exigem tratamento explícito e não são convertidos automaticamente por este plano.
 
 ## Última validação registrada
 
-Última execução funcional em **27/10/2026**, na entrega de geração em Worker e resultado da busca em modal (`373c51e`): **460 testes unitários**, build, suíte completa de navegador e integração PostgreSQL/PostgREST com navegador aprovados localmente. A presente atualização é documental e não representa uma nova execução desses testes.
+Última execução funcional em **28/10/2026**, na entrega do modo fixo: **476 testes unitários**, build, suíte completa de navegador e integração PostgreSQL 17/PostgREST 14.15 com navegador aprovados localmente. São 16 testes novos do modelo, incluindo oito cenários setoriais e rejeição explícita dos três exemplos de ciclos. A integração confirma também o round-trip do JSON fixo por RPC autenticada; não exige migração adicional.
 
+- Modo fixo: independência de mês/feriados, padrão repetido, fases 44/42/40h, ACT válido somente na referência, limites diários, descanso domingo–segunda, domingos com revezamento, eventos datados fora do padrão, restrições semanais, turnos, comparação/cobertura semanal, intervalos recorrentes, diagnóstico, CSV e persistência. Navegador: etapas/tutorial sem Feriados, volta ao dinâmico sem apagar campos mensais, loading/Worker, quadro/resumo, rolagem móvel, impressão e reabertura.
 - Geração atual/proposta: overlay antes do cálculo, bloqueio de duplicação, Worker, fallback local, falha de rede, descarte de resultados quando os dados mudam e liberação da interface.
 - Busca de cobertura: resumo em modal antes da mensagem/prévia, sucesso, ausência de sugestões, erro, preservação dos dados e aplicação separada.
 - Onze modelos DEMO em quatro segmentos: geração atual, propostas compatíveis, diagnóstico, 12×36/administrativo, readequação e contratação; instaladores com idempotência, auditoria e isolamento validados em banco local.
@@ -113,7 +121,7 @@ O padrão fixo não é apenas marcar sábado/domingo no gerador mensal ou oculta
 O histórico de validações dos demais recursos implementados é mantido abaixo:
 
 - Janela Usuários validada em banco e navegador reais locais: pesquisa/filtros, edição, toggles com cancelamento, conta compartilhada, perfis, Consulta legada, escopos, e-mail duplicado com rollback, concorrência, revogação global, auditoria e layout móvel.
-- **460 testes unitários aprovados**, sem falhas, com `npm test`.
+- **476 testes unitários aprovados**, sem falhas, com `npm test`.
 - Integração real com PostgreSQL 17 e PostgREST 14.15 aprovada por `npm run test:persistence`: isolamento de escritórios/empresas, permissões, concorrência, idempotência, histórico/auditoria, FK cruzada, token inválido/expirado e sessão revogada.
 - Edição de empresa e criação de escritório validadas em navegador e banco reais locais. Dois Operadores distintos abriram e atualizaram a mesma escala salva; revisão antiga foi bloqueada, edição da empresa preservou os rascunhos e retirada de acesso impediu nova leitura.
 - Modais validados em navegador: Escape/Enter, foco restaurado, texto tratado sem HTML, fila, janelas sobrepostas, limpeza confirmada/cancelada e celular. Suíte completa de interface, login compartilhado e integração individual/banco passaram após a troca dos diálogos nativos.

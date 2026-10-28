@@ -1,4 +1,5 @@
 import { validarRestricoes } from "./restricoes.js";
+import { escalaFixa, conferirSuporteFixo, colaboradorRecorrente } from "./modelo-escala.js";
 import {
   jornadaValidaEstrutural,
   timeToMin,
@@ -13,13 +14,18 @@ export function pendenciasPreenchimento(state, destino) {
   const pendencias = [];
   const add = (etapa, seletor, mensagem) =>
     pendencias.push({ etapa, seletor, mensagem });
+  if (escalaFixa(state)) {
+    try { conferirSuporteFixo(state); }
+    catch (error) { add("sec-config", "#cfg-modelo", error.message); }
+  }
   if (
+    !escalaFixa(state) && (
     !Number.isInteger(state.mes) ||
     state.mes < 0 ||
     state.mes > 11 ||
     !Number.isInteger(state.ano) ||
     state.ano < 2026 ||
-    state.ano > 2100
+    state.ano > 2100)
   )
     add(
       "sec-config",
@@ -27,9 +33,10 @@ export function pendenciasPreenchimento(state, destino) {
       "Informe um mês e ano válidos para a escala atual.",
     );
   else if (
+    !escalaFixa(state) && (
     !Number.isInteger(state.diaInicio) ||
     state.diaInicio < 1 ||
-    state.diaInicio > diasNoMes(state.mes, state.ano)
+    state.diaInicio > diasNoMes(state.mes, state.ano))
   )
     add("sec-config", "#cfg-diaInicio", "Informe um dia de início válido.");
   const pessoas = state.colaboradores || [];
@@ -42,7 +49,7 @@ export function pendenciasPreenchimento(state, destino) {
   for (const c of pessoas) {
     const campo = (f) => `#colab-list [data-id="${c.id}"][data-field="${f}"]`;
     const nome = String(c.nome || "").trim();
-    for (const erro of validarRestricoes(c))
+    for (const erro of validarRestricoes(escalaFixa(state) ? colaboradorRecorrente(c) : c))
       add(
         "sec-config",
         `[data-restricoes="${c.id}"]`,
@@ -89,7 +96,7 @@ export function pendenciasPreenchimento(state, destino) {
           `[data-perfil-dominio="${c.id}"]`,
           `${nome}: complete os horários individuais importados.`,
         );
-      if (p.admissaoIso && !dataValida(p.admissaoIso))
+      if (!escalaFixa(state) && p.admissaoIso && !dataValida(p.admissaoIso))
         add(
           "sec-config",
           `[data-perfil-dominio="${c.id}"]`,
@@ -224,11 +231,12 @@ export function pendenciasPreenchimento(state, destino) {
       .split("-")
       .map(Number);
     if (
+      !escalaFixa(state) && (
       !/^\d{4}-\d{2}$/.test(destino.periodo || "") ||
       ano < 2026 ||
       ano > 2100 ||
       mes < 1 ||
-      mes > 12
+      mes > 12)
     )
       add(
         "sec-gerar",

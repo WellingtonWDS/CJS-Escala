@@ -2,6 +2,7 @@ import { normalizarFuncao, habilitadoPara, funcaoDoDia } from "./funcoes.js";
 export { normalizarFuncao } from "./funcoes.js";
 import { diasNoMes, isoDate, timeToMin } from "./datas-horas.js";
 import { createFeriados } from "./feriados.js";
+import { contextoModelo, periodoModelo } from "./modelo-escala.js";
 
 const DIA = 1440;
 const minutoData = (key) => {
@@ -102,6 +103,7 @@ function segmentosTrabalho(dia, jornada) {
  * estiver configurada como fechada. Sobreposições da mesma função usam o maior
  * mínimo, e não somam a mesma necessidade duas vezes. Intervalos são [início, fim). */
 export function analisarCobertura(config, resultado) {
+  config = contextoModelo(config);
   const { feriadoDaData } = createFeriados(config);
   const demandas = config.demandasCobertura ?? [];
   const relatorio = {
@@ -113,10 +115,11 @@ export function analisarCobertura(config, resultado) {
   if (config.coberturaAtiva === false)
     return { ...relatorio, configurada: false };
   if (!demandas.length) return relatorio;
-  const inicio = minutoData(isoDate(config.ano, config.mes, config.diaInicio));
+  const fixo = periodoModelo(config);
+  const inicio = minutoData(fixo?.inicio || isoDate(config.ano, config.mes, config.diaInicio));
   const fim =
     minutoData(
-      isoDate(config.ano, config.mes, diasNoMes(config.mes, config.ano)),
+      fixo?.fim || isoDate(config.ano, config.mes, diasNoMes(config.mes, config.ano)),
     ) + DIA;
   const grupos = new Map();
   const grupo = (nome) => {

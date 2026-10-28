@@ -1,4 +1,5 @@
 import { habilitadoPara, funcaoDoDia } from "./funcoes.js";
+import { contextoModelo, escalaFixa, colaboradorRecorrente } from "./modelo-escala.js";
 import { validarRestricoesEscala, ausenciaProgramada } from "./restricoes.js";
 import { politicaPlantaoDeclarada, temTrabalhoNoturno } from "./computo-cct.js";
 import { apurarCompensacaoHoras } from "./compensacao-horas.js";
@@ -580,6 +581,9 @@ export function createValidacao(state, jornada, feriados) {
   }
 
   function validarLegal(colab, dias, contexto = [], apuracao = []) {
+    const modelo = contextoModelo(state);
+    if (modelo !== state) return createDomain(modelo).validarLegal(colaboradorRecorrente(colab), dias, contexto, apuracao);
+    if (escalaFixa(state)) colab = colaboradorRecorrente(colab);
     const individual = configDoPerfil(state, colab);
     if (individual)
       return createDomain(individual).validarLegal(
@@ -609,7 +613,22 @@ export function createValidacao(state, jornada, feriados) {
       colab,
       unirDias(apuracao, contexto, dias),
     );
+    const problemasFixos = [];
+    if (escalaFixa(state)) {
+      const padroes = new Map();
+      for (const d of dias) {
+        const chave = JSON.stringify([d.status, d.horas, d.entradaMin, d.saidaMin, d.intervaloInicioMin, d.intervaloFimMin, d.funcaoAlocada || ""]);
+        if (padroes.has(d.weekday) && padroes.get(d.weekday) !== chave) {
+          problemasFixos.push(issue("PADRAO_FIXO", "erro", "O resultado contém horários ou folgas diferentes no mesmo dia da semana. Gere novamente um padrão recorrente antes de utilizar."));
+          break;
+        }
+        padroes.set(d.weekday, chave);
+      }
+      if ((state.atividadeComercio || colab.sexo === "feminino") && dias.some((d) => d.weekday === 0 && ["T", "FE"].includes(d.status)))
+        problemasFixos.push(issue("DOMINGO_FIXO", "erro", "Trabalho em todos os domingos no padrão fixo não contempla o revezamento de repouso dominical aplicável ao comércio ou à colaboradora. Use o modo dinâmico para organizar o revezamento, ou fixe o domingo como folga e confira a regra da categoria."));
+    }
     return [
+      ...problemasFixos,
       ...dias
         .filter(
           (d) =>

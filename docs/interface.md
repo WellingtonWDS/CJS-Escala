@@ -32,6 +32,12 @@ Geração da escala atual e da proposta 5×2 exibem o overlay imediatamente, ant
 
 Buscar ajustes de cobertura abre o resumo em um modal do sistema antes de liberar a prévia. Depois de fechar, o mesmo texto aparece abaixo do botão. Sucesso, ausência de sugestões e erros recebem destaque; cancelar a busca conserva o retorno discreto existente. Aplicar continua sendo uma ação separada e o estado é conferido novamente após o modal.
 
+## Escolha do modelo e padrão fixo — 28/10/2026
+
+A primeira configuração oferece mensal dinâmica e mensal fixa. O fixo mostra a data de referência jurídica em vez de mês/ano/início; retira Feriados da navegação e tutorial, renumera as etapas, pula o painel nas setas/teclado e conserva as informações mensais. O destino dispensa mês próprio; a fase automática usa a referência, e simulações continuam explícitas.
+
+O resultado fixo apresenta uma linha por colaborador, sete dias da semana, intervalos completos e resumo semanal; rolagem horizontal sincronizada e impressão sem largura mínima de tela. Erros precedem o quadro e as demais análises ficam recolhidas. Cobertura usa dias da semana, sem feriados ou datas fictícias visíveis na grade. Para ajustes, a orientação é revisar o cadastro e gerar novamente; não disponibilizar edições pontuais que deixem semanas diferentes. Os turnos A/B são fixos por pessoa; no dinâmico continuam alternando semanalmente.
+
 ## Organização dos estilos
 
 `interface.css` é a camada visual compartilhada e vem depois dos arquivos específicos. As regras de tela ficam em `@media screen`; não substituir regras de impressão com seletores globais indiscriminados. `login.css` mantém o acesso independente dos estilos internos. `motion.css` continua responsável por animações e movimento reduzido.
@@ -61,4 +67,4 @@ Conferir visualmente também com fontes reais, zoom do navegador, nomes longos e
 
 ## Evoluções de interface planejadas
 
-O modo de escala fixa, o quadro diário e as novas exportações para empregador/funcionário constam no [plano de evolução](planos/evolucao-escalas.md). Ainda não existem telas ou controles desses recursos. A proposta deve reaproveitar o resultado comum das escalas, preservar o modo mensal e a leitura móvel, sem confundir folgas fixas mensais com um padrão sem calendário.
+O quadro diário e as novas exportações para empregador/funcionário continuam no [plano de evolução](planos/evolucao-escalas.md), ainda sem telas ou controles próprios. Serão detalhamentos opcionais do resultado dinâmico ou fixo, preservando o cálculo comum e a leitura móvel. A primeira entrega da escala fixa já está disponível conforme descrito acima.

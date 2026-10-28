@@ -13,6 +13,7 @@ export function createEtapasUI({ document, window, state }) {
   const paineis = links.map((link) =>
     document.getElementById(link.dataset.etapaLink),
   );
+  const disponiveis = () => links.map((link, i) => ({ link, i })).filter(({ link }) => !link.parentElement.hidden);
   const anterior = document.getElementById("etapa-anterior");
   const proxima = document.getElementById("etapa-proxima");
   let atual = 0,
@@ -84,7 +85,7 @@ export function createEtapasUI({ document, window, state }) {
     const indice = paineis.findIndex(
       (painel) => painel === target || painel.contains(target),
     );
-    if (indice < 0) return false;
+    if (indice < 0 || links[indice].parentElement.hidden) return false;
     if (registrarVisita) {
       if (etapaUsuario !== null && etapaUsuario !== indice)
         revisadas.add(paineis[etapaUsuario].id);
@@ -98,16 +99,18 @@ export function createEtapasUI({ document, window, state }) {
       if (i === atual) link.setAttribute("aria-current", "step");
       else link.removeAttribute("aria-current");
     });
+    const ativos = disponiveis();
+    const posicao = ativos.findIndex(({ i }) => i === atual);
     const titulo = links[atual].dataset.titulo;
     document.getElementById("etapas-status").textContent =
-      `Etapa ${atual + 1} de ${links.length} — ${titulo}`;
-    anterior.disabled = atual === 0;
-    proxima.hidden = atual === links.length - 1;
+      `Etapa ${posicao + 1} de ${ativos.length} — ${titulo}`;
+    anterior.disabled = posicao === 0;
+    proxima.hidden = posicao === ativos.length - 1;
     anterior.textContent =
-      atual > 0 ? `← Voltar: ${links[atual - 1].dataset.titulo}` : "← Voltar";
+      posicao > 0 ? `← Voltar: ${ativos[posicao - 1].link.dataset.titulo}` : "← Voltar";
     proxima.textContent =
-      atual < links.length - 1
-        ? `Avançar: ${links[atual + 1].dataset.titulo} →`
+      posicao < ativos.length - 1
+        ? `Avançar: ${ativos[posicao + 1].link.dataset.titulo} →`
         : "Avançar →";
     if (historico && window.location.hash !== `#${paineis[atual].id}`)
       window.history.pushState(null, "", `#${paineis[atual].id}`);
@@ -140,8 +143,20 @@ export function createEtapasUI({ document, window, state }) {
     mostrarAlvo,
     validarGeracao,
     atualizarPendencias,
+    atualizarModelo() {
+      if (!links.length) return;
+      const feriados = links.find((l) => l.dataset.etapaLink === "sec-feriados");
+      feriados.parentElement.hidden = state?.modeloEscala === "fixa";
+      disponiveis().forEach(({ link }, index) => {
+        link.querySelector(".etapa-numero").textContent = index + 1;
+      });
+      mostrarAlvo(links[atual].parentElement.hidden ? paineis[0] : paineis[atual],
+        { historico: false, foco: false, registrarVisita: false });
+      atualizarPendencias();
+    },
     etapaAtual: () => paineis[atual].id,
     init() {
+      this.atualizarModelo();
       daUrl(false);
       atualizarBarraFixa();
       atualizarPendencias();
@@ -175,11 +190,12 @@ export function createEtapasUI({ document, window, state }) {
         };
         link.onkeydown = (event) => {
           let index;
-          if (event.key === "ArrowRight") index = (i + 1) % links.length;
+          const ativos = disponiveis(), posicao = ativos.findIndex((a) => a.i === i);
+          if (event.key === "ArrowRight") index = ativos[(posicao + 1) % ativos.length].i;
           if (event.key === "ArrowLeft")
-            index = (i - 1 + links.length) % links.length;
+            index = ativos[(posicao - 1 + ativos.length) % ativos.length].i;
           if (event.key === "Home") index = 0;
-          if (event.key === "End") index = links.length - 1;
+          if (event.key === "End") index = ativos.at(-1).i;
           if (index === undefined) return;
           event.preventDefault();
           mostrarAlvo(paineis[index], { foco: false, rolar: false });
@@ -188,10 +204,12 @@ export function createEtapasUI({ document, window, state }) {
         };
       });
       anterior.onclick = () => {
-        if (atual > 0) mostrarAlvo(paineis[atual - 1]);
+        const ativos = disponiveis(), posicao = ativos.findIndex((a) => a.i === atual);
+        if (posicao > 0) mostrarAlvo(paineis[ativos[posicao - 1].i]);
       };
       proxima.onclick = () => {
-        if (atual < paineis.length - 1) mostrarAlvo(paineis[atual + 1]);
+        const ativos = disponiveis(), posicao = ativos.findIndex((a) => a.i === atual);
+        if (posicao < ativos.length - 1) mostrarAlvo(paineis[ativos[posicao + 1].i]);
       };
       window.addEventListener("hashchange", () => daUrl());
       document.addEventListener?.("change", atualizarPendencias);

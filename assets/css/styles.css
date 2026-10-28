@@ -72,6 +72,10 @@ body {
   margin-top: 4px;
   font-size: 11px;
 }
+.escala-fixa .escala-mensal { min-width: 1720px; }
+.escala-fixa .escala-colaborador { cursor: default; }
+.escala-fixa .escala-colaborador:hover { transform: none; box-shadow: none; }
+@media print { .escala-fixa .escala-mensal { min-width: 0; } }
 .tutorial-overlay {
   position: fixed;
   inset: 0;

@@ -12,6 +12,7 @@ import {
   dateFromKey,
 } from "../domain/datas-horas.js";
 import { PRIMEIRA_FASE, VERSAO_REGRAS } from "../domain/ec141.js";
+import { escalaFixa } from "../domain/modelo-escala.js";
 
 export function createConversaoUI({
   state,
@@ -46,6 +47,17 @@ export function createConversaoUI({
       return;
     }
     const m = c.comparacao;
+    if (escalaFixa(c.proposta.config)) {
+      el("conversao-comparacao").innerHTML = `<section class="border rounded-lg p-4 mb-4"><h3 class="font-semibold">Comparação dos padrões semanais · 6×1 → 5×2</h3>
+        <p id="conversao-diagnostico" class="font-semibold mt-2" ${c.desatualizada ? 'role="alert"' : ""}>${c.desatualizada ? "Comparação desatualizada. Gere novamente antes de utilizar." : titulos[m.status]}</p>
+        <p class="text-sm mt-2">A conclusão considera uma semana recorrente, sem feriados. ${m.erros} incompatibilidade(s) e ${m.pendencias} alerta(s)/pendência(s). Cobertura completa exige também conferir as condições de jornada e repouso.</p>
+        <p class="text-sm mt-2">Lacunas semanais: ${fmtHoras(m.faltantesAntes)} → ${fmtHoras(m.faltantesDepois)} horas-pessoa. A busca é limitada; lacunas de distribuição não comprovam, por si só, necessidade de contratação.</p>
+        ${m.funcoes.map((f) => `<p class="text-sm mt-2"><b>${escapeHtml(f.funcao)}</b>: ${escapeHtml(f.insuficiencias.join(" ") || (f.faltantes ? "Revise a distribuição dos horários; insuficiência do quadro não comprovada." : "Demanda semanal atendida."))}</p>`).join("")}
+        ${m.pessoas.map((p) => `<p class="text-sm mt-2"><b>${escapeHtml(p.nome)}</b>: ${fmtHoras(p.horasAntes)} → ${fmtHoras(p.horasDepois)} por semana · ${p.folgasAntes} → ${p.folgasDepois} folgas.${p.deficits ? " Horários disponíveis não comportam o alvo semanal; revise a distribuição e o fundamento coletivo aplicável." : ""}</p>`).join("")}
+        <p class="text-xs text-slate-500 mt-3">A origem foi preservada. A proposta usa a fase selecionada e a data de referência jurídica do padrão. Eventos por data não são transpostos para este quadro.</p></section>`;
+      el("btn-exportar-proposta").disabled = !!c.desatualizada;
+      return;
+    }
     const hora = (value) => (value === 1440 ? "24:00" : minToTime(value));
     el("conversao-comparacao").innerHTML = `
       ${c.desatualizada ? '<p role="alert" class="rounded-lg border border-amber-300 bg-amber-50 p-4 mb-4 font-semibold">Dados da escala atual ou destino alterados. Gere uma nova proposta antes de usar esta comparação. Os resultados abaixo são uma referência anterior.</p>' : ""}
@@ -109,7 +121,8 @@ export function createConversaoUI({
     el("conversao-periodo").value =
       state.destinoConversao?.periodo ||
       (atual < PRIMEIRA_FASE.slice(0, 7) ? PRIMEIRA_FASE.slice(0, 7) : atual);
-    el("conversao-fase").value = state.destinoConversao?.fase || "automatico";
+    el("conversao-fase").value = escalaFixa(state) && state.destinoConversao?.modeloEscala !== "fixa"
+      ? "definitivo40" : state.destinoConversao?.fase || "automatico";
     el("conversao-folgas").value =
       state.destinoConversao?.folgas || "distribuir";
     renderConversao();
@@ -127,6 +140,7 @@ export function createConversaoUI({
       for (const campo of ["periodo", "fase", "folgas"])
         el(`conversao-${campo}`).onchange = () => {
           state.destinoConversao = {
+            modeloEscala: state.modeloEscala || "dinamica",
             periodo: el("conversao-periodo").value,
             fase: el("conversao-fase").value,
             folgas: el("conversao-folgas").value,
@@ -139,6 +153,7 @@ export function createConversaoUI({
         if (!validarPreenchimento()) return;
         try {
           const opcoes = {
+            modeloEscala: state.modeloEscala || "dinamica",
             periodo: el("conversao-periodo").value,
             fase: el("conversao-fase").value,
             folgas: el("conversao-folgas").value,
@@ -170,7 +185,7 @@ export function createConversaoUI({
         );
         const link = document.createElement("a");
         link.href = url;
-        link.download = `proposta-5x2-${state.destinoConversao.periodo}.csv`;
+        link.download = escalaFixa(state) ? "proposta-5x2-fixa.csv" : `proposta-5x2-${state.destinoConversao.periodo}.csv`;
         link.click();
         env.setTimeout(() => env.URL.revokeObjectURL(url), 1000);
       };

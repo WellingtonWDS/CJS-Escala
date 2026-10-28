@@ -1,4 +1,5 @@
 import { executarCalculoEscala } from "./calculo-escala.js";
+import { renderQuadroFixo } from "./escala-fixa.js";
 import { createEdicaoManualUI } from "./edicao-manual.js";
 import {
   assinaturaAjustes,
@@ -262,6 +263,14 @@ export function createCalendarioUI({
 
   function renderEscalaGerada() {
     if (!state.escalaGerada) return;
+    if (state.modeloEscala === "fixa") {
+      const config = configDaEscala(state);
+      const container = document.getElementById(containerId);
+      limparRolagem();
+      container.innerHTML = renderQuadroFixo(config, createDomain(config));
+      limparRolagem = configurarRolagemEscala(container, env.window);
+      return;
+    }
     const { resultado } = state.escalaGerada;
     const container = document.getElementById(containerId);
     let analises = state.escalaGerada.referenciaAtual44

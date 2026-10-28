@@ -18,7 +18,9 @@ export function validarEnquadramento(state, c, dias) {
   const out = [];
   const analiseAtiva = state.analiseEnquadramentoAtiva === true;
   const e = analiseAtiva ? c.ec141 || {} : {};
-  const vigentes = dias.filter((d) => d.data >= PUBLICACAO);
+  const referencias = state.modeloEscala === "fixa" ? dias.map((d) => ({ ...d, data: state.dataReferenciaFixa })) : dias;
+  const vigentes = referencias.filter((d) => d.data >= PUBLICACAO ||
+    (state.modeloEscala === "fixa" && referenciaDia(state, d.data).futuro));
   if (!vigentes.length) return out;
   if (state.modoRegime === "simulacao")
     out.push(
@@ -155,7 +157,7 @@ export function validarEnquadramento(state, c, dias) {
       );
     if (
       state.instrumentoCompensacao === "act_cct" &&
-      vigentes.some((d) => d.data >= "2026-12-16") &&
+      vigentes.some((d) => d.data >= "2026-12-16" || (state.modeloEscala === "fixa" && referenciaDia(state, d.data).futuro)) &&
       !i.compativelEC141
     )
       out.push(

@@ -60,7 +60,7 @@ export function createJornadaFolgasUI({
       return;
     }
     const inicio = new Date(state.ano, state.mes, state.diaInicio);
-    resumo.innerHTML = [inicio, addDays(inicio, 7)]
+    resumo.innerHTML = (state.modeloEscala === "fixa" ? [inicio] : [inicio, addDays(inicio, 7)])
       .map((data) => {
         const grupos = ["A", "B"]
           .map((turno) => {
@@ -70,7 +70,7 @@ export function createJornadaFolgasUI({
             return `<div class="rounded-lg border border-slate-200 bg-white px-3 py-2"><b>Turno ${turno} · entrada ${turno === "B" ? state.entradaTurnoB : state.horarioPorDia ? "por dia" : state.jornada.entrada}</b><div class="text-xs text-slate-500 mt-1">${pessoas.map((p) => escapeHtml(p.nome || "(sem nome)")).join(", ") || "Sem colaboradores neste grupo"}</div></div>`;
           })
           .join("");
-        return `<div><div class="text-xs font-semibold text-fintria-navySoft mb-2">Semana que contém ${formatDateBR(data)}</div><div class="grid grid-cols-1 md:grid-cols-2 gap-2">${grupos}</div></div>`;
+        return `<div><div class="text-xs font-semibold text-fintria-navySoft mb-2">${state.modeloEscala === "fixa" ? "Grupos fixos em todas as semanas" : `Semana que contém ${formatDateBR(data)}`}</div><div class="grid grid-cols-1 md:grid-cols-2 gap-2">${grupos}</div></div>`;
       })
       .join("");
   }
@@ -156,16 +156,20 @@ export function createJornadaFolgasUI({
 
   function renderFolgasSection() {
     const tipo = document.getElementById("folga-tipo");
+    const fixa = state.modeloEscala === "fixa";
+    tipo.querySelector('option[value="rotativa"]').disabled = fixa;
     const fimSemana = state.tipoEscala === "5x2" && state.folgasFimSemana;
     document.getElementById("folga-fim-semana-opcao").disabled =
       state.tipoEscala !== "5x2";
-    tipo.value = fimSemana ? "fim_semana" : state.folgaTipo;
+    tipo.value = fimSemana ? "fim_semana" : fixa ? "fixa" : state.folgaTipo;
     document.getElementById("folga-dias-wrap").hidden = fimSemana;
     document.getElementById("folga-dias-label").textContent =
-      state.folgaTipo === "fixa"
+      fixa || state.folgaTipo === "fixa"
         ? "Dias para folgas fixas adicionais"
         : "Dias permitidos para rotação";
-    document.getElementById("folga-modelo-explicacao").textContent = fimSemana
+    document.getElementById("folga-modelo-explicacao").textContent = fixa
+      ? "No padrão fixo, as folgas se repetem toda semana. Dias não operacionais e restrições semanais já contam como repouso; os primeiros dias permitidos completam as folgas adicionais. Na conversão, as folgas são fixadas por colaborador para buscar cobertura. Feriados não alteram esse padrão."
+      : fimSemana
       ? "Todos os colaboradores folgam aos sábados e domingos, em todas as semanas. Os dias operacionais da empresa permanecem como cadastrados. Um feriado não trabalhado durante a semana não desloca essas folgas fixas e pode resultar em um dia adicional sem expediente."
       : state.folgaTipo === "fixa"
         ? "Dias não operacionais já contam como folga. As folgas adicionais são escolhidas sempre nos primeiros dias permitidos selecionados, até completar a quantidade da escala. Para garantir sábado e domingo, use o modelo pronto do 5×2."

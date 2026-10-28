@@ -1,6 +1,6 @@
 import { REGIMES } from "../config/regras-jornada.js";
 import { dateFromKey, isoDate } from "./datas-horas.js";
-export const VERSAO_REGRAS = "ec141-2026-10-27-6";
+export const VERSAO_REGRAS = "ec141-2026-10-28-7";
 export const PUBLICACAO = "2026-10-16";
 export const PRIMEIRA_FASE = "2026-12-16";
 export const SEGUNDA_FASE = "2027-12-16";
@@ -40,7 +40,7 @@ export function excecaoArt8(c) {
   );
 }
 export function referenciaDia(state, value, c = {}) {
-  const data = chaveData(value);
+  const data = state.modeloEscala === "fixa" ? state.dataReferenciaFixa : chaveData(value);
   const r =
     state.modoRegime === "simulacao"
       ? {
@@ -92,6 +92,7 @@ export function referenciaSemana(state, dias, c = {}) {
   };
 }
 export function instrumentoValido(state, data, uso) {
+  if (state.modeloEscala === "fixa") data = state.dataReferenciaFixa;
   const i = state.instrumentoColetivo || {};
   return (
     state.instrumentoCompensacao === "act_cct" &&
@@ -100,7 +101,7 @@ export function instrumentoValido(state, data, uso) {
     dataValida(i.fim) &&
     i.inicio <= data &&
     data <= i.fim &&
-    (data < PRIMEIRA_FASE || i.compativelEC141 === true) &&
+    ((data < PRIMEIRA_FASE && !(state.modeloEscala === "fixa" && referenciaDia(state, data).futuro)) || i.compativelEC141 === true) &&
     i[uso] === true
   );
 }

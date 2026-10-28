@@ -8,6 +8,7 @@ import { referenciaDia } from "./ec141.js";
 export function createJornada(state) {
   function obterTurno(date, indice) {
     if (!state.turnosRevezamento || state.tipoEscala === "12x36") return "A";
+    if (state.modeloEscala === "fixa") return indice % 2 === 0 ? "A" : "B";
     const segunda = new Date(
       date.getFullYear(),
       date.getMonth(),

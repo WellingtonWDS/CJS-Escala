@@ -6,9 +6,24 @@ Ferramenta para configurar, gerar e revisar escalas de trabalho e comparar a esc
 
 ## Andamento do projeto
 
-Consulte [Estado do projeto](docs/estado-do-projeto.md) para uma visão consolidada das funcionalidades implementadas, limitações e últimas validações. O [plano das próximas funcionalidades](docs/planos/evolucao-escalas.md) detalha escala fixa, quadro diário e exportações por público, ainda não implementados. O documento reflete o código atual; auditorias e relatórios datados em `docs/` são registros históricos.
+Consulte [Estado do projeto](docs/estado-do-projeto.md) para uma visão consolidada das funcionalidades implementadas, limitações e últimas validações. O [plano das próximas funcionalidades](docs/planos/evolucao-escalas.md) registra a primeira entrega da escala fixa e os próximos recursos de quadro diário e exportações por público. O documento reflete o código atual; auditorias e relatórios datados em `docs/` são registros históricos.
 
 O fluxo principal já inclui cadastro manual e por planilhas, importação Domínio, restrições individuais, habilitações por função, geração, conversão 6×1 → 5×2, comparação de cobertura, sugestões de ajustes com prévia/aplicação/desfazer, edição da grade, CSV e impressão. O acesso oferece login individual por e-mail/senha integrado ao n8n e ao banco, com sessão de até 12 horas, menu por perfil, gestão de usuários e empresas e preenchimentos compartilhados por empresa autorizada. O modo compartilhado/local permanece disponível por configuração. Os detalhes de funcionamento e configuração estão nas seções abaixo.
+
+## Escala mensal dinâmica ou fixa — 28/10/2026
+
+Na primeira etapa, **Como deseja organizar a escala?** oferece dois modos:
+
+- **Mensal dinâmica:** mês/ano, feriados e exceções individuais por data, preservando o fluxo existente.
+- **Mensal fixa:** um padrão de segunda a domingo que se repete em qualquer mês, com horários, intervalos e folgas fixos. A etapa Feriados é omitida da navegação e do tutorial. A cobertura e a comparação consideram uma semana, incluindo plantões que cruzam a meia-noite.
+
+No fixo, informe a **data de referência jurídica** para verificar a fase automática e a vigência do ACT/CCT. A conversão também permite simular explicitamente 42h ou 40h (padrão inicial: 40h). O mês do modo dinâmico não influencia o quadro fixo. Trocar de modo preserva mês/ano, feriados e preferências mensais; resultados dependentes são invalidados e precisam ser gerados novamente.
+
+As restrições semanais continuam válidas. Férias/afastamentos por período e admissão não são aplicados ao padrão; seus cadastros são preservados. Compensações com apuração por datas e ciclos alternados, como 12×36, exigem o modo dinâmico nesta entrega. Trabalho fixo em todos os domingos no comércio ou para colaboradoras é sinalizado como incompatível com a necessidade de revezamento; confira a regra da categoria.
+
+A proposta fixa busca folgas e redistribui intervalos, sempre repetindo a mesma alteração em cada dia da semana correspondente. Para editar o padrão, altere o preenchimento e gere novamente; edição pontual das células e busca de ajustes avulsos continuam no dinâmico. Há grade semanal com rolagem, resumo por pessoa, diagnóstico e CSV fixo com sete dias por colaborador e intervalos completos. Impressão/PDF continua pelo navegador. O quadro diário dedicado e os novos documentos por público permanecem planejados.
+
+A referência jurídica não é validade permanente: reavaliar ao mudar a legislação ou vencer o instrumento coletivo. O padrão sem feriados não autoriza automaticamente trabalho em feriados quando aplicado a datas reais. Detalhes e critérios: [evolução das escalas](docs/planos/evolucao-escalas.md).
 
 ## Atualizações consolidadas em 27/10/2026
 
@@ -20,23 +35,24 @@ O fluxo principal já inclui cadastro manual e por planilhas, importação Domí
 - Instaladores do DEMO original e de quatro empresas por segmento com onze modelos de cobertura, readequação e contratação; dados existentes e edições são preservados. Instalação remota depende do comando administrativo dos guias.
 - Domínio informado pelo proprietário: **https://reescala.fintria.com.br**, com hospedagem ainda na Vercel. `APP_ORIGIN` deve acompanhar o domínio; alterar a variável exige novo deploy.
 
-Última validação funcional: **460 testes unitários**, build, suíte completa de navegador e integração PostgreSQL 17/PostgREST 14.15 com navegador aprovados localmente. Isso não confirma execução de migrações, instaladores DEMO ou correções de configuração na VPS/Vercel.
+Última validação funcional em **28/10/2026**: **476 testes unitários**, build, suíte completa de navegador e integração PostgreSQL 17/PostgREST 14.15 com navegador aprovados localmente. Isso não confirma execução de migrações, instaladores DEMO ou correções de configuração na VPS/Vercel.
+
+A entrega do modo fixo inclui **16 testes de domínio/persistência**, com oito cenários setoriais compatíveis e três ciclos explicitamente rejeitados, além do teste de navegador dedicado (`tests/browser-escala-fixa.cjs`). Cobre invariância de mês/feriados, 44→40h, fase de 42h/ACT, vigências, folgas e restrições recorrentes, noites/interjornada, cobertura/intervalos, diagnóstico, CSV, salvamento/reabertura, etapas, tutorial, impressão e celular.
 
 ## Próximos passos — planejados
 
 | Ordem | Funcionalidade | Escopo solicitado |
 | --- | --- | --- |
-| 1 | Escala fixa com folgas fixas | Padrão semanal recorrente, independente de mês, feriados e datas específicas, adequado à referência da nova legislação. |
 | 2 | Quadro diário detalhado | Visualizar colaboradores, funções, jornadas, intervalos, folgas e cobertura ao longo de uma data ou dia do padrão fixo. |
 | 3 | Exportação por público | Arquivo completo para o empregador e um arquivo separado para cada funcionário. Formatos e download em lote serão definidos na implementação. |
 
-Esses recursos **ainda não estão implementados**. A geração mensal, as folgas fixas dentro dela, o CSV e a impressão/PDF atuais continuam disponíveis. Escopo, critérios de aceite e limites: [próximas funcionalidades](docs/planos/evolucao-escalas.md).
+O quadro diário e os novos arquivos por público **ainda não estão implementados**. Os modos dinâmico e fixo, seus CSVs e a impressão/PDF estão disponíveis. Escopo, critérios de aceite e limites: [próximas funcionalidades](docs/planos/evolucao-escalas.md).
 
 ## Conversão da escala atual 6×1 para uma proposta 5×2
 
-1. Preencha o período, colaboradores, jornadas, dias de funcionamento, folgas e feriados **como estão atualmente no 6×1**. Para avaliar suficiência, ative a cobertura e informe a demanda por função, horário e dia.
-2. Em **Conversão e comparação**, escolha o mês de destino, a vigência automática ou uma simulação explícita de 42h/40h e a distribuição de folgas. Clique em **Gerar proposta 5×2 e comparar**.
-3. Confira a comparação, os horários descobertos e a nova grade. A proposta pode ser ajustada nas células e exportada pelo botão próprio. A prévia avulsa e a exportação da escala atual continuam disponíveis separadamente.
+1. Escolha o modo. Preencha colaboradores, jornadas, funcionamento e folgas **como estão atualmente no 6×1**; no dinâmico, também o período e os feriados; no fixo, a referência jurídica. Para avaliar suficiência, ative a cobertura e informe a demanda por função, horário e dia.
+2. Em **Conversão e comparação**, no dinâmico escolha o mês de destino; em ambos, escolha a vigência automática ou uma simulação explícita de 42h/40h e a distribuição de folgas. Clique em **Gerar proposta 5×2 e comparar**.
+3. Confira a comparação, os horários descobertos e a nova grade. A proposta dinâmica pode ser ajustada nas células; o padrão fixo é revisado no preenchimento e gerado novamente. Ambos têm exportação própria. A prévia avulsa e a exportação da escala atual continuam disponíveis separadamente.
 
 A origem e a proposta são configurações e resultados distintos. A conversão não troca o modelo, período ou cadastro da origem. O snapshot original preserva uma grade já gerada, incluindo seus ajustes manuais; sem grade anterior, a referência usa os horários atuais informados, sem reduzir a duração para limites futuros. Para comparar períodos de comprimentos diferentes, o relatório projeta o padrão original 6×1 também no mês de destino. Ajustes pontuais datados da grade original não são transpostos automaticamente para outras datas.
 
@@ -98,14 +114,14 @@ assets/js/
 scripts/                        Servidor local e preparação da publicação
 tests/                          Regressões e fluxos no navegador
 docs/estado-do-projeto.md        Implementado, limitações e validações
-docs/planos/evolucao-escalas.md   Escala fixa, quadro diário e novas exportações (planejados)
+docs/planos/evolucao-escalas.md   Escala fixa entregue; quadro diário e novas exportações planejados
 ```
 
-O domínio recebe a configuração explicitamente, por meio de `createDomain(state)`, e não acessa HTML, armazenamento ou variáveis globais da aplicação. `gerarDadosEscala()` devolve a escala e suas validações; a interface decide quando exibi-la e salvá-la. Cada instância da aplicação possui seu próprio estado. O toggle de dois turnos mostra os grupos A/B para duas semanas e atualiza os horários da escala existente, inclusive ao mudar a entrada do Turno B, preservando status, folgas e horas ajustadas manualmente.
+O domínio recebe a configuração explicitamente, por meio de `createDomain(state)`, e não acessa HTML, armazenamento ou variáveis globais da aplicação. `gerarDadosEscala()` devolve a escala e suas validações; a interface decide quando exibi-la e salvá-la. Cada instância da aplicação possui seu próprio estado. No dinâmico, o toggle de dois turnos mostra os grupos A/B para duas semanas; no fixo, mantém os grupos em todas as semanas. Atualiza os horários da escala existente, inclusive ao mudar a entrada do Turno B, preservando status, folgas e horas ajustadas manualmente.
 
 A interface recebe suas dependências na criação: estado, funções do domínio, persistência, recursos do navegador e callbacks entre seções. Os eventos são registrados em `bindEvents()`, e os dados são restaurados em `init()`. Importar os módulos não inicializa a página.
 
-A persistência mantém a chave `fintria-escala-dp-v2` e o formato dos dados da versão anterior. A restauração atualiza o mesmo objeto de estado, preservando as referências usadas pelos módulos. A regra de abrir no mês atual foi mantida.
+A persistência mantém a chave `fintria-escala-dp-v2` e o formato dos dados da versão anterior. A restauração atualiza o mesmo objeto de estado, preservando as referências usadas pelos módulos. No modo dinâmico, a regra de abrir no mês atual foi mantida; o fixo preserva sua referência jurídica independente do mês.
 
 Para manutenção:
 
@@ -223,7 +239,7 @@ O botão **Sair** fica no final do menu lateral, com ícone acessível quando re
 
 O menu e o cabeçalho abrem a janela **Empresa atual e Preenchimentos**, organizada em empresa/escritório e preenchimentos disponíveis. A empresa usa um único seletor: ao clicar, abre a lista com busca interna por razão social ou CNPJ, com ou sem pontuação. A busca filtra as opções sem trocar a empresa até uma seleção explícita; aceita teclado e informa quando não há resultados. O botão principal é **Usar esta empresa** para um preenchimento ainda não salvo ou **Abrir preenchimento** para um registro existente. A ação permanece visível no rodapé da janela; recuperação e importação de dados antigos ficam numa área recolhível.
 
-Durante o preenchimento das oito etapas, uma barra fixa inferior mostra razão social/CNPJ, escritório e nome do preenchimento aberto. Novos preenchimentos recebem nome com data e hora local, por exemplo **Planejamento de escala — 27/10/2026, 14:05:06**. O nome pode ser editado; abrir ou salvar um registro existente preserva seu título. O nome sugerido para uma cópia também inclui a data e hora da criação da sugestão. **Salvar preenchimento** atualiza o aberto diretamente, sem precisar abrir a janela. **Salvar uma cópia** pede o nome e cria outro registro na mesma empresa, preservando o original. **Trocar empresa ou abrir preenchimento** leva ao seletor. A barra informa alterações locais, confirmação no servidor e envio pendente; nesse último caso o botão passa a **Concluir salvamento** e a cópia fica indisponível até resolver o envio anterior.
+Durante o preenchimento das etapas (oito no dinâmico, sete no fixo), uma barra fixa inferior mostra razão social/CNPJ, escritório e nome do preenchimento aberto. Novos preenchimentos recebem nome com data e hora local, por exemplo **Planejamento de escala — 27/10/2026, 14:05:06**. O nome pode ser editado; abrir ou salvar um registro existente preserva seu título. O nome sugerido para uma cópia também inclui a data e hora da criação da sugestão. **Salvar preenchimento** atualiza o aberto diretamente, sem precisar abrir a janela. **Salvar uma cópia** pede o nome e cria outro registro na mesma empresa, preservando o original. **Trocar empresa ou abrir preenchimento** leva ao seletor. A barra informa alterações locais, confirmação no servidor e envio pendente; nesse último caso o botão passa a **Concluir salvamento** e a cópia fica indisponível até resolver o envio anterior.
 
 Escolher outra empresa ou outro preenchimento no seletor não altera os dados nem o nome do que já está aberto. Salvar usa o contexto efetivamente aberto; cancelar a seleção mantém a empresa anterior como destino. Só o botão de abertura confirmado troca esse contexto. A barra se adapta ao celular, reserva espaço de rolagem, fica fora da impressão e não aparece nos painéis de gestão de cadastros. O contrato de persistência/idempotência/revisão permanece o mesmo; não há nova migração.
 

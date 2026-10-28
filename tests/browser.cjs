@@ -321,6 +321,7 @@ const { chromium } = require("playwright");
       baseURL: `http://127.0.0.1:${server.address().port}`,
     });
     await require("./browser-calculo-loading.cjs")({ browser, baseURL: `http://127.0.0.1:${server.address().port}` });
+    await require("./browser-escala-fixa.cjs")({ browser, baseURL: `http://127.0.0.1:${server.address().port}` });
     await require("./browser-loading.cjs")({
       browser,
       baseURL: `http://127.0.0.1:${server.address().port}`,

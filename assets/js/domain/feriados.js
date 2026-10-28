@@ -101,6 +101,7 @@ export function createFeriados(state) {
     return feriadoDaData(isoDate(state.ano, state.mes, Number(dia)));
   }
   function feriadoDaData(data) {
+    if (state.modeloEscala === "fixa") return null;
     const date = dateFromKey(data);
     if (!date || Number.isNaN(date.getTime())) return null;
     const atual = (state.feriados || []).find(

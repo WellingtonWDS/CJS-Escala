@@ -1,14 +1,20 @@
 # Próximas funcionalidades do Reescala
 
-Registrado em **27/10/2026**, conforme solicitação do proprietário. **Planejado; ainda não implementado.** Este documento define o escopo das próximas entregas, sem alterar o funcionamento atual ou prometer prazos.
+Registrado em **27/10/2026**, conforme solicitação do proprietário. **Atualizado em 28/10/2026:** primeira entrega da escala fixa implementada; quadro diário e novos arquivos por público continuam planejados, sem prazo definido.
 
 ## Ponto de partida
 
-Hoje a geração é mensal, com mês/ano, datas, semanas civis e feriados nacionais/locais. Há folgas fixas e rotativas dentro desse calendário, prévia da escala atual, proposta 6×1→5×2, cobertura por função/horário, diagnóstico e ajustes. A exportação atual é CSV detalhado e impressão/PDF pelo navegador, da etapa aberta. Existem persistência por escritório/empresa, usuários e permissões, com ativação dependente da infraestrutura configurada.
+O modo dinâmico usa mês/ano, datas, semanas civis e feriados nacionais/locais. Desde 28/10/2026, também há modo fixo com padrão semanal recorrente. Há folgas fixas e rotativas dentro desse calendário, prévia da escala atual, proposta 6×1→5×2, cobertura por função/horário, diagnóstico e ajustes. A exportação atual é CSV detalhado e impressão/PDF pelo navegador, da etapa aberta. Existem persistência por escritório/empresa, usuários e permissões, com ativação dependente da infraestrutura configurada.
 
 As três entregas abaixo ampliam esse produto. Folgas fixas no calendário atual não equivalem ao novo modo de escala fixa; a grade mensal já mostrar dias não equivale ao novo quadro diário. CSV completo e impressão não equivalem aos novos arquivos por público.
 
-## 1. Escala fixa com folgas fixas
+## 1. Escala fixa com folgas fixas — primeira entrega implementada
+
+Disponível desde **28/10/2026**. Seleção inicial **mensal dinâmica / mensal fixa**, data de referência jurídica, etapa Feriados omitida no fixo, tutorial e navegação condicionais, folgas/turnos fixos, restrições semanais, cobertura/diagnóstico/comparação por semana, intervalos sugeridos recorrentes, grade e resumo semanal, CSV sem datas por dia e impressão. Estado antigo permanece dinâmico; novos campos são persistidos no JSON existente, sem migração SQL.
+
+Limites entregues: eventos por data e admissão não são aplicados ao padrão, mantendo o cadastro; a edição do fixo é feita revisando o preenchimento e gerando novamente. A busca avulsa de ajustes e a edição pontual de células continuam no modo dinâmico. Ciclos alternados (12×36 inclusive) e compensações dependentes de período datado são rejeitados no fixo com orientação para usar o dinâmico. Há conferência de descanso na repetição, inclusive virada de semana, e incompatibilidade para trabalho fixo em todos os domingos no comércio/por colaboradoras. A data de referência serve à vigência, não transforma a grade em um calendário; exige revisão quando mudar a fase legal ou a vigência coletiva.
+
+Os pontos abaixo registram o escopo que orientou essa entrega.
 
 **Objetivo:** oferecer, além da escala mensal, um quadro recorrente de horários e folgas por dia da semana, adequado à nova legislação, sem depender de um mês ou de datas específicas.
 
@@ -29,9 +35,9 @@ Critérios de aceite:
 2. Folgas e horários repetem-se nos dias da semana escolhidos, incluindo indicação de saída no dia seguinte em jornadas noturnas.
 3. O quadro informa a referência legal usada e o total semanal por colaborador; incompatibilidades continuam visíveis.
 4. Cobertura semanal considera os intervalos e não conta uma mesma pessoa em duas funções simultaneamente.
-5. Mensal e fixo ficam identificados ao salvar/reabrir, sem interpretar um preenchimento mensal antigo como modelo fixo. A necessidade de versionar o estado será avaliada na implementação.
+5. Mensal e fixo ficam identificados ao salvar/reabrir, sem interpretar um preenchimento mensal antigo como modelo fixo. A mudança usa campos com valores padrão no estado e nova versão de regras; o banco continua armazenando o JSON, sem alteração de schema.
 
-O suporte a ciclos diferenciados, incluindo 12×36, deve ser tratado explicitamente: não transformar um ciclo alternado em uma semana repetida, pois isso alteraria seus descansos. Essa decisão é uma extensão a definir; a limitação atual da conversão mista não desaparece com este plano.
+Nesta primeira entrega, ciclos diferenciados, incluindo 12×36, permanecem no modo dinâmico: não transformar um ciclo alternado em uma semana repetida, pois isso alteraria seus descansos. Essa decisão é uma extensão a definir; a limitação atual da conversão mista não desaparece com este plano.
 
 ## 2. Visualização em quadro diário
 
@@ -88,4 +94,4 @@ Prioridade indicada: **escala fixa → quadro diário → exportação completa 
 
 Na implementação, simular os cenários DEMO de escritório, comércio contínuo, fazenda com sábado compensado/almoço coletivo, entidade 24h e padaria, respeitando os regimes que cada novo modo efetivamente suportar. Conferir também dias fixos de folga, intervalos, cobertura insuficiente, mudanças de fase, plantões noturnos, homônimos, resultados desatualizados e isolamento por empresa. A entidade 12×36 continua sendo um caso que exige suporte explícito ao ciclo, não uma promessa de conversão automática.
 
-Essas verificações são critérios futuros. A última validação dos recursos já implementados está em [Estado do projeto](../estado-do-projeto.md); os exemplos e instaladores estão em [Cenários DEMO](../cenarios-demo-segmentos.md).
+Os testes da primeira entrega do modo fixo incluem escritório, comércio, fazenda e padaria; a entidade 12×36 confirma a rejeição explícita desse modo, preservando o dinâmico. Os critérios de quadro diário e novos documentos continuam futuros. A última validação dos recursos já implementados está em [Estado do projeto](../estado-do-projeto.md); os exemplos e instaladores estão em [Cenários DEMO](../cenarios-demo-segmentos.md).

@@ -21,11 +21,16 @@ function app(now) {
           innerHTML: "",
           textContent: "",
           style: {},
+          parentElement: {},
+          closest() {
+            return { parentElement: { querySelector: () => ({}) } };
+          },
           classList: { toggle() {}, add() {}, remove() {} },
           getBoundingClientRect() {
             return { top: 0 };
           },
-          querySelector() {
+          querySelector(selector) {
+            if (selector.startsWith("option[")) return {};
             return null;
           },
           querySelectorAll() {
@@ -34,6 +39,7 @@ function app(now) {
         });
       return elements.get(id);
     },
+    querySelector(selector) { return selector.includes("option[") ? {} : null; },
   };
   const Clock = now
     ? class extends Date {

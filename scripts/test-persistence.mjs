@@ -237,10 +237,11 @@ try {
     draftId: saved.id,
     revision: 1,
     key: randomUUID(),
-    state: { ...draft.state, mes: 10 },
+    state: { ...draft.state, mes: 10, modeloEscala: "fixa", dataReferenciaFixa: "2027-12-16" },
   };
   const updated = await service.saveDraft(admin, update);
   assert.equal(updated.revision, 2);
+  assert.deepEqual((await service.getDraft(viewer, office, company, saved.id)).state, update.state);
   await assert.rejects(
     () => service.saveDraft(admin, { ...update, key: randomUUID() }),
     (e) => e.status === 409,

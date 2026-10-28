@@ -1,4 +1,5 @@
 import { configDaEscala } from "./contexto-escala.js";
+import { periodoModelo } from "./modelo-escala.js";
 import { analisarCobertura, normalizarFuncao } from "./cobertura.js";
 import { habilitadoPara, funcaoDoDia } from "./funcoes.js";
 import { configDoPerfil, verificarPerfil } from "./perfil-dominio.js";
@@ -323,10 +324,11 @@ export function diagnosticarEquipe(config, resultado, relatorio = null) {
     picoDeficitMinimo: 0,
   };
   if (!rel.configurada || !rel.periodos.length) return diagnostico;
-  const inicio = minuto(isoDate(config.ano, config.mes, config.diaInicio)),
+  const fixo = periodoModelo(config);
+  const inicio = minuto(fixo?.inicio || isoDate(config.ano, config.mes, config.diaInicio)),
     fim =
       minuto(
-        isoDate(
+        fixo?.fim || isoDate(
           config.ano,
           config.mes,
           new Date(config.ano, config.mes + 1, 0).getDate(),

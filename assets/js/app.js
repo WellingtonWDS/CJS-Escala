@@ -68,6 +68,11 @@ export function createApplication({ env, now = () => new Date() }) {
   });
   const configuracao = createConfiguracaoUI({
     ...deps,
+    onModeloChange() {
+      cobertura.renderCoberturaConfig();
+      conversaoUI?.initConversao();
+      etapas.atualizarModelo();
+    },
     onInstrumentoChange() {
       colaboradores.renderColaboradores({ preservarEnquadramento: true });
       resumo.renderResumo();
@@ -86,7 +91,7 @@ export function createApplication({ env, now = () => new Date() }) {
     validarPreenchimento: etapas.validarGeracao,
     renderEscalaGerada: calendario.renderEscalaGerada,
   });
-  const tutorial = createTutorialUI({ ...env, etapas });
+  const tutorial = createTutorialUI({ ...env, etapas, state });
   const importacao = createImportarColaboradoresUI({
     ...deps,
     renderColaboradores: colaboradores.renderColaboradores,
@@ -164,6 +169,7 @@ export function createApplication({ env, now = () => new Date() }) {
     });
     const hoje = now();
     const mudouPeriodo =
+      state.modeloEscala !== "fixa" &&
       !env.preserveSavedPeriod &&
       (state.mes !== hoje.getMonth() || state.ano !== hoje.getFullYear());
     if (mudouPeriodo) {

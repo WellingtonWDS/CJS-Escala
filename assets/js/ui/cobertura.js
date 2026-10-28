@@ -109,7 +109,7 @@ export function createCoberturaUI({
             (
               d,
             ) => `<div class="border border-slate-200 rounded-lg p-3 mb-2 flex justify-between gap-3 items-center flex-wrap">
-      <div><b>${escapeHtml(d.funcao)}</b> · ${escapeHtml(d.inicio)}–${escapeHtml(d.fim)}${d.fim < d.inicio ? " (termina no dia seguinte)" : ""} · mínimo ${d.minimo}<div class="text-xs text-slate-500">${d.diasSemana.map((n) => DIAS_SEMANA[n]).join(", ")} · ${d.incluirFeriados ? "Inclui feriados" : "Exceto feriados"}</div></div>
+      <div><b>${escapeHtml(d.funcao)}</b> · ${escapeHtml(d.inicio)}–${escapeHtml(d.fim)}${d.fim < d.inicio ? " (termina no dia seguinte)" : ""} · mínimo ${d.minimo}<div class="text-xs text-slate-500">${d.diasSemana.map((n) => DIAS_SEMANA[n]).join(", ")}${state.modeloEscala === "fixa" ? " · Toda semana" : ` · ${d.incluirFeriados ? "Inclui feriados" : "Exceto feriados"}`}</div></div>
       <div><button type="button" class="border rounded px-2 py-1 mr-2" data-cobertura-editar="${d.id}">Editar</button><button type="button" class="border rounded px-2 py-1 text-fintria-vermelho" data-cobertura-remover="${d.id}">Remover</button></div></div>`,
           )
           .join("")

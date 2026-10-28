@@ -11,7 +11,7 @@ export function bindExportEvents(state, env) {
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = `escala-${MESES[state.mes]}-${state.ano}.csv`;
+    link.download = state.modeloEscala === "fixa" ? "escala-fixa-semanal.csv" : `escala-${MESES[state.mes]}-${state.ano}.csv`;
     link.click();
     setTimeout(() => URL.revokeObjectURL(link.href), 1000);
   };

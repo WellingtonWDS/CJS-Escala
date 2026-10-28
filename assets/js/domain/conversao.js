@@ -1,4 +1,5 @@
 import { sugerirIntervalosCobertura } from "./intervalos-cobertura.js";
+import { contextoModelo, escalaFixa, diasDoModelo, conferirSuporteFixo, ocorrenciasDoModelo } from "./modelo-escala.js";
 import { configDaEscala } from "./contexto-escala.js";
 import { diagnosticarEquipe } from "./diagnostico-equipe.js";
 import { aplicarRestricoesDia, validarRestricoes } from "./restricoes.js";
@@ -40,6 +41,7 @@ function periodo(config) {
   return `${config.ano}-${String(config.mes + 1).padStart(2, "0")}`;
 }
 function diasPeriodo(config, dias) {
+  if (escalaFixa(config)) return diasDoModelo(config, dias);
   const prefix = periodo(config);
   return dias.filter(
     (d) => d.data.startsWith(prefix) && d.dia >= config.diaInicio,
@@ -72,6 +74,8 @@ function recalcular(config, escala) {
 
 /** A referência descreve os horários atuais, sem reduzi-los para o limite futuro. */
 export function gerarReferenciaAtual(state) {
+  conferirSuporteFixo(state);
+  state = contextoModelo(state);
   const config = copiarConfig(state);
   config.tipoEscala = "6x1";
   config.modoRegime = "simulacao";
@@ -91,7 +95,9 @@ export function gerarReferenciaAtual(state) {
     dataValida(instrumento.inicio) &&
     dataValida(instrumento.fim) &&
     instrumento.inicio <= instrumento.fim &&
-    (instrumento.inicio > fimMes || instrumento.fim < inicioMes)
+    (escalaFixa(config)
+      ? instrumento.inicio > config.dataReferenciaFixa || instrumento.fim < config.dataReferenciaFixa
+      : instrumento.inicio > fimMes || instrumento.fim < inicioMes)
   )
     config.instrumentoCompensacao = "nenhuma";
   config.adiarRestricoes = true;
@@ -229,6 +235,10 @@ function pontuacao(config, escala) {
 const melhor = (a, b) => a[0] < b[0] || (a[0] === b[0] && a[1] < b[1]);
 
 export function converterEscala(state, opcoes = {}) {
+  conferirSuporteFixo(state);
+  state = contextoModelo(state);
+  if (escalaFixa(state)) opcoes = { ...opcoes,
+    periodo: `${state.ano}-${String(state.mes + 1).padStart(2, "0")}` };
   for (const c of state.colaboradores) {
     const erros = validarRestricoes(c);
     if (erros.length) throw new Error(`${c.nome}: ${erros.join(" ")}`);
@@ -263,6 +273,7 @@ export function converterEscala(state, opcoes = {}) {
     throw new Error("Escolha uma fase válida para a conversão.");
   if (
     opcoes.fase === "automatico" &&
+    !escalaFixa(state) &&
     `${opcoes.periodo}-01` < PRIMEIRA_FASE.slice(0, 7) + "-01"
   )
     throw new Error(
@@ -452,7 +463,7 @@ export function compararConversao(conversao) {
     const soma = (list) => list.reduce((s, d) => s + d.horas, 0);
     const trabalho = (list) =>
       list.filter((d) => ["T", "FE"].includes(d.status)).length;
-    const deficits = [...semanas(r.dias).values()]
+    const deficits = [...semanas(escalaFixa(config) ? dias : r.dias).values()]
       .map((s) => apurarSemana(r.colaborador, s, config))
       .filter((s) => s.completa && s.estado === "abaixo");
     return {
@@ -472,10 +483,10 @@ export function compararConversao(conversao) {
     };
   });
   const erros = escala.validacoes.flatMap((v) =>
-    v.issues.filter((i) => i.severidade === "erro"),
+    ocorrenciasDoModelo(config, v.issues).filter((i) => i.severidade === "erro"),
   );
   const pendencias = escala.validacoes.flatMap((v) =>
-    v.issues.filter((i) => ["pendencia", "alerta"].includes(i.severidade)),
+    ocorrenciasDoModelo(config, v.issues).filter((i) => ["pendencia", "alerta"].includes(i.severidade)),
   );
   const dadosIncompletos = pendencias.some(
     (i) => i.tipo === "DADOS_DOMINIO" || i.tipo === "ADMISSAO_PARCIAL",

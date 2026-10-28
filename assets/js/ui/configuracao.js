@@ -12,10 +12,62 @@ export function createConfiguracaoUI({
   atualizarCargaSemanalMsg,
   renderFeriados,
   onInstrumentoChange = () => {},
+  onModeloChange = () => {},
 }) {
   const { regimeAtual, inicializarFeriadosDoMes, arquivarFeriados } = domain;
   const { saveState } = storage;
   const { document } = env;
+
+  function renderModeloEscala() {
+    const fixa = state.modeloEscala === "fixa";
+    const select = document.getElementById("cfg-modelo");
+    select.value = fixa ? "fixa" : "dinamica";
+    document.getElementById("cfg-modelo-descricao").textContent = fixa
+      ? "Um padrão de segunda a domingo, com os mesmos horários e folgas, que se repete em qualquer mês. A etapa Feriados não se aplica."
+      : "Escolha o mês e o ano. A escala acompanha as datas, os feriados e as exceções individuais do período.";
+    document.getElementById("config-referencia-fixa").hidden = !fixa;
+    for (const [seletor, texto] of [
+      ["#sec-config > p", "1. Informe os colaboradores, horários e folgas atuais. O padrão fixo repete a mesma semana; escolha a referência jurídica e, ao final, a fase da proposta 5×2."],
+      ["#sec-gerar > p", "2. Escolha a fase e as folgas da proposta fixa. A escala atual será preservada. A comparação e a cobertura representam uma semana recorrente, sem feriados."],
+    ]) {
+      const paragrafo = document.querySelector(seletor);
+      if (paragrafo) {
+        paragrafo.dataset.textoDinamico ??= paragrafo.textContent;
+        paragrafo.textContent = fixa ? texto : paragrafo.dataset.textoDinamico;
+      }
+    }
+    for (const id of ["cfg-mes", "cfg-ano", "cfg-diaInicio"])
+      document.getElementById(id).parentElement.hidden = fixa;
+    const referencia = document.getElementById("cfg-referencia-fixa");
+    referencia.value = state.dataReferenciaFixa;
+    referencia.onchange = () => {
+      state.dataReferenciaFixa = referencia.value;
+      invalidarEscala();
+      renderRegimeAlerta();
+      saveState();
+    };
+    select.onchange = () => {
+      state.modeloEscala = select.value;
+      invalidarEscala();
+      renderModeloEscala();
+      renderJornadaSection();
+      renderRegimeAlerta();
+      onModeloChange();
+      saveState();
+    };
+    document.getElementById("proposta-resumo-grade").textContent = fixa ? "Escala proposta 5×2 — padrão semanal fixo" : "Escala proposta 5×2 — clique nas células para ajustar";
+    document.getElementById("geracao-orientacao-edicao").textContent = fixa
+      ? "Para ajustar o padrão fixo, revise os horários e as folgas no preenchimento e gere novamente. Alterações pontuais por data ficam disponíveis no modo dinâmico."
+      : "Após gerar, clique nas células para ajustar trabalho e folgas. As validações e os totais acompanham cada alteração. Use FC somente quando houver folga compensatória efetivamente prevista.";
+    document.getElementById("conversao-periodo").parentElement.hidden = fixa;
+    const automatico = document.querySelector('#conversao-fase option[value="automatico"]');
+    automatico.textContent = fixa ? "Automática — na data de referência" : "Automática — vigência nas datas";
+    const feriadosCobertura = document.getElementById("cobertura-feriados");
+    if (feriadosCobertura) feriadosCobertura.closest("label").hidden = fixa;
+    const turnos = document.getElementById("tg-turnos").closest("label").parentElement;
+    turnos.querySelector(".font-semibold").textContent = fixa ? "Jornada em 2 turnos fixos" : "Jornada em 2 turnos (revezamento)";
+    turnos.querySelector(".text-slate-500").textContent = fixa ? "Divide a equipe em Turno A e Turno B, mantendo os grupos toda semana" : "Divide a equipe em Turno A e Turno B, trocando semanalmente";
+  }
 
   function renderRegimeControls() {
     const sel = document.getElementById("regime-jornada");
@@ -105,7 +157,7 @@ export function createConfiguracaoUI({
     el.textContent =
       (state.modoRegime === "simulacao"
         ? "SIMULAÇÃO: fase escolhida manualmente; não equivale à adequação nas datas da escala. "
-        : "Vigência automática nas datas da escala. ") +
+        : state.modeloEscala === "fixa" ? `Padrão fixo: vigência na referência ${state.dataReferenciaFixa}. ` : "Vigência automática nas datas da escala. ") +
       msg +
       (r.chave !== fim.chave
         ? " Este mês atravessa uma mudança de fase; as semanas de transição serão sinalizadas."
@@ -113,6 +165,7 @@ export function createConfiguracaoUI({
   }
 
   function renderConfigSelects() {
+    renderModeloEscala();
     const selMes = document.getElementById("cfg-mes");
     selMes.innerHTML = MESES.map(
       (m, i) =>
@@ -201,6 +254,7 @@ export function createConfiguracaoUI({
 
   return {
     renderRegimeControls,
+    renderModeloEscala,
     renderRegimeAlerta,
     renderConfigSelects,
     renderDiaInicioOptions,

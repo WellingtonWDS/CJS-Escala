@@ -55,7 +55,7 @@ export function coberturaSemPiora(antes, depois) {
     return cursor >= novo.fimMin;
   });
 }
-function substituir(escala, id, data, novo) {
+function substituir(escala, id, data, novo, fixo = false) {
   return {
     ...escala,
     resultado: escala.resultado.map((r) =>
@@ -69,7 +69,11 @@ function substituir(escala, id, data, novo) {
                 .map((k) => [
                   k,
                   r[k].map((d) =>
-                    d.data === data ? structuredClone(novo) : d,
+                    d.data === data ? structuredClone(novo) : fixo && d.weekday === novo.weekday
+                      ? { ...d, intervaloInicioMin: novo.intervaloInicioMin,
+                          intervaloFimMin: novo.intervaloFimMin,
+                          intervaloSugerido: true, jornadaAplicada: structuredClone(novo.jornadaAplicada) }
+                      : d,
                   ),
                 ]),
             ),
@@ -106,7 +110,7 @@ export function sugerirIntervalosCobertura(config, original, limite = 1200) {
         melhor = rel;
       for (const novo of alternativasIntervalo(r.colaborador, dia)) {
         if (++tentativas > limite) break;
-        const proposta = substituir(escala, r.colaborador.id, dia.data, novo),
+        const proposta = substituir(escala, r.colaborador.id, dia.data, novo, config.modeloEscala === "fixa"),
           cobertura = analisarCobertura(config, proposta.resultado);
         if (
           faltas(cobertura) < faltas(melhor) &&
@@ -117,7 +121,7 @@ export function sugerirIntervalosCobertura(config, original, limite = 1200) {
         }
       }
       if (escolhido) {
-        escala = substituir(escala, r.colaborador.id, dia.data, escolhido);
+        escala = substituir(escala, r.colaborador.id, dia.data, escolhido, config.modeloEscala === "fixa");
         alteracoes.push({
           colaboradorId: r.colaborador.id,
           data: dia.data,

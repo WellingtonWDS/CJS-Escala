@@ -1,4 +1,5 @@
 import { configDaEscala } from "../domain/contexto-escala.js";
+import { gerarCsvFixo } from "./csv-fixo.js";
 import {
   diagnosticarEquipe,
   TITULOS_DIAGNOSTICO,
@@ -18,6 +19,7 @@ import { createDomain } from "../domain/index.js";
 import { csvCell } from "../shared/formatacao.js";
 export function gerarCsv(state) {
   state = configDaEscala(state);
+  if (state.modeloEscala === "fixa") return gerarCsvFixo(state);
   const { resultado } = state.escalaGerada;
   const intervalosSugeridos = resultado.some((r) =>
     r.dias.some((d) => d.intervaloSugerido),

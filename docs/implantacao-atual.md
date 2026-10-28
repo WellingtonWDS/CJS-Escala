@@ -1,6 +1,12 @@
-# Registro de implantação — atualizado em 27/10/2026
+# Registro de implantação — atualizado em 28/10/2026
 
 Consultar este registro antes de orientar o operador. Distinguir código disponível, testes locais e resultados informados pelo operador. Não contém senhas, chaves ou identificadores pessoais.
+
+## Entrega de 28/10/2026 — modos dinâmico e fixo
+
+Escolha inicial mensal dinâmica/fixa, referência jurídica do padrão, navegação/tutorial sem Feriados no fixo, validação semanal recorrente, cobertura/comparação por semana, intervalos sugeridos recorrentes, grade semanal, CSV fixo e impressão. Preenchimentos antigos continuam dinâmicos; feriados e parâmetros mensais são preservados. Eventos datados e admissão não são aplicados ao padrão; ciclos 12×36 e apurações coletivas por datas ficam no dinâmico. Para revisar o fixo, alterar o preenchimento e gerar novamente.
+
+Não exige nova migração SQL nem variável de ambiente. `modeloEscala` e `dataReferenciaFixa` usam o JSONB existente (`schema_version=1`). Regras `ec141-2026-10-28-7` exigem nova geração de resultados antigos. A entrega depende do deploy do código; validações locais não comprovam homologação no domínio público. Quadro diário e novos documentos por público permanecem no planejamento.
 
 ## Estado vigente
 

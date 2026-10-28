@@ -3,6 +3,8 @@ export function createDefaultState(now = new Date()) {
     mes: now.getMonth(),
     ano: now.getFullYear(),
     diaInicio: 1,
+    modeloEscala: "dinamica",
+    dataReferenciaFixa: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`,
     analiseEnquadramentoAtiva: false,
     colaboradores: [
       {
