@@ -10,6 +10,12 @@ Consulte [Estado do projeto](docs/estado-do-projeto.md) para uma visão consolid
 
 O fluxo principal já inclui cadastro manual e por planilhas, importação Domínio, restrições individuais, habilitações por função, geração, conversão 6×1 → 5×2, comparação de cobertura, sugestões de ajustes com prévia/aplicação/desfazer, edição da grade, CSV e impressão. O acesso oferece login individual por e-mail/senha integrado ao n8n e ao banco, com sessão de até 12 horas, menu por perfil, gestão de usuários e empresas e preenchimentos compartilhados por empresa autorizada. O modo compartilhado/local permanece disponível por configuração. Os detalhes de funcionamento e configuração estão nas seções abaixo.
 
+## Animação do painel de salvamento — 29/10/2026
+
+O botão flutuante **Salvar preenchimento** e seu painel passam a abrir e recolher com transições suaves de movimento e opacidade. O botão de minimizar agora é um **X**, com identificação acessível e dica ao passar o mouse. Ao abrir, o foco vai para o painel; ao recolher, retorna ao botão flutuante. Os campos recolhidos ficam fora da navegação por teclado. A preferência do dispositivo por movimento reduzido desativa essas transições. O fluxo de salvamento permanece igual.
+
+Validação: build e teste de navegador do painel, incluindo abertura/recolhimento, salvamento, cópia, cancelamento e layout móvel aprovados.
+
 ## Abrir preenchimentos com o navegador sem espaço — 29/10/2026
 
 A abertura de um preenchimento do servidor não depende mais de conseguir gravar a cópia local. Se o armazenamento do navegador estiver cheio, os dados são abertos **na memória da aba**, sem recarregar a página, preservando mês, colaboradores, escala atual e proposta. O painel informa que a cópia local está indisponível e o salvamento remoto continua disponível.
@@ -22,7 +28,7 @@ Validação local: **510 testes unitários**, build, suíte completa de navegado
 
 ## Salvamento compacto e ajustes de escala — 29/10/2026
 
-- **Salvar preenchimento:** botão flutuante verde no canto inferior direito. O painel começa recolhido; abre pelo botão e possui **Minimizar**. O salvamento continua explícito, com confirmação do servidor, cópia e recuperação preservadas.
+- **Salvar preenchimento:** botão flutuante verde no canto inferior direito. O painel começa recolhido; abre pelo botão e possui um **X para recolher**. O salvamento continua explícito, com confirmação do servidor, cópia e recuperação preservadas.
 - **Replicar horários:** na ficha com horários individuais por dia, selecione outro colaborador com padrão semanal e confirme **Replicar horários**. Copia os dias/situações e horários completos, sem copiar identificação, admissão, função ou restrições. A carga segue a opção existente de manter/recalcular contrato. Os dados são independentes após a cópia; gere novamente a escala.
 - **Simular 42h em 5×2:** a opção fica desabilitada sem ACT/CCT identificado, compatível com a EC 141, vigente em todo o mês de destino (ou na referência fixa), com compensação diária e limite suficiente para 42h em cinco dias (ao menos 8h24). Uma seleção antiga de 42h sem essas condições passa para 40h e a comparação anterior fica desatualizada. A referência automática por datas e a análise da escala atual continuam disponíveis; não altera a vigência legal da EC 141.
 - **Trocar dias:** arraste um card sobre outro dia do **mesmo colaborador**, ou use **Trocar dois dias** por clique/teclado/toque. A troca leva entrada, intervalo e saída com o trabalho; no fixo, repete os dias da semana. Exibe confirmação e efeito total nas lacunas de cobertura antes de aplicar. Restrições e novos erros legais impedem a troca sem aplicar metade dela. Há **Desfazer última troca**, protegido contra alterações posteriores. Ausências/dias especiais usam a edição própria; não há troca de identidade ou redistribuição automática entre pessoas por arraste.

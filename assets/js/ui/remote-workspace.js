@@ -28,11 +28,13 @@ export async function initRemoteWorkspace({
   fab.textContent="Salvar preenchimento";fab.setAttribute("aria-controls",bar.id);
   document.body.append(fab);
   const minimize=document.createElement("button");minimize.type="button";
-  minimize.className="workspace-minimize";minimize.textContent="Minimizar";minimize.setAttribute("aria-label","Minimizar painel de salvamento");bar.prepend(minimize);
+  minimize.className="workspace-minimize";minimize.textContent="×";minimize.title="Recolher painel de salvamento";minimize.setAttribute("aria-label","Recolher painel de salvamento");bar.prepend(minimize);
   function painel(aberto) {
     bar.dataset.expanded=String(aberto);fab.setAttribute("aria-expanded",String(aberto));
-    document.documentElement.style.setProperty("--workspace-bar-height",aberto?`${bar.getBoundingClientRect().height+28}px`:"80px");
     if(!aberto && bar.contains(document.activeElement))fab.focus({preventScroll:true});
+    bar.inert=!aberto;
+    if(aberto)minimize.focus({preventScroll:true});
+    document.documentElement.style.setProperty("--workspace-bar-height",aberto?`${bar.offsetHeight+28}px`:"80px");
   }
   fab.onclick=()=>painel(bar.dataset.expanded!=="true");
   minimize.onclick=()=>painel(false);painel(false);
