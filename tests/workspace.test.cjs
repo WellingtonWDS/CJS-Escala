@@ -2,9 +2,8 @@ const { test, before } = require("node:test");
 const assert = require("node:assert/strict");
 let create, base, validate;
 before(async () => {
-  ({ createWorkspace: create, validateSnapshot: validate } = await import(
-    "../assets/js/state/workspace.js"
-  ));
+  ({ createWorkspace: create, validateSnapshot: validate } =
+    await import("../assets/js/state/workspace.js"));
   ({ createDefaultState: base } = await import("../assets/js/state/store.js"));
 });
 const user = "10000000-0000-0000-0000-000000000001",
@@ -86,4 +85,64 @@ test("snapshots inválidos e chaves de poluição de protótipo são rejeitados 
     }),
   );
   assert.equal({}.polluted, undefined);
+});
+
+test("abrir snapshot remoto com quota esgotada mantém dados na aba e preserva contexto/cache duráveis", () => {
+  const r = raw(),
+    w = create(r, user),
+    old = base(new Date(2026, 9, 1));
+  w.activate(c, old);
+  w.setPending({ key: "old-pending", state: old });
+  const persistedContext = r.getItem(`${key}:user:${user}:context`),
+    before = w.storage.getItem(key);
+  const originalSet = r.setItem;
+  r.setItem = () => {
+    throw new DOMException("quota", "QuotaExceededError");
+  };
+  const target = { ...c, draftId: other, revision: 7 },
+    incoming = {
+      ...base(new Date(2026, 7, 1)),
+      colaboradores: [{ id: 99, nome: "Pessoa remota", horasSemana: 40 }],
+    };
+  assert.equal(
+    w.activate(target, incoming, {
+      allowVolatile: true,
+      persistContextOnFailure: false,
+    }).cached,
+    false,
+  );
+  assert.deepEqual(w.context(), target);
+  assert.deepEqual(JSON.parse(w.storage.getItem(key)), incoming);
+  assert.equal(r.getItem(`${key}:user:${user}:context`), persistedContext);
+  assert.equal(
+    r.getItem(`${key}:user:${user}:${c.officeId}:${c.companyId}:new`),
+    before,
+  );
+  const edited = { ...incoming, mes: 6 };
+  assert.throws(() => w.storage.setItem(key, JSON.stringify(edited)));
+  assert.deepEqual(JSON.parse(w.storage.getItem(key)), edited);
+  w.activate(c, old, { allowVolatile: true, persistContextOnFailure: false });
+  assert.equal(w.pending().key, "old-pending");
+  r.setItem = originalSet;
+});
+
+test("snapshot remoto em memória preserva recuperação local anterior do mesmo preenchimento", () => {
+  const r = raw(),
+    w = create(r, user),
+    old = base(),
+    write = r.setItem;
+  w.activate(c, old);
+  r.setItem = () => {
+    throw Error("quota");
+  };
+  const incoming = { ...old, mes: 3 };
+  w.activate(c, incoming, {
+    allowVolatile: true,
+    persistContextOnFailure: false,
+  });
+  assert.deepEqual(w.previous(), old);
+  assert.deepEqual(w.cached(c), incoming);
+  r.setItem = write;
+  w.activate(c, { ...incoming, mes: 4 });
+  assert.deepEqual(w.previous(), incoming);
 });

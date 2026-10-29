@@ -130,6 +130,7 @@ export function createImportarColaboradoresUI({
     }
   }
   return {
+    resetContext() { limpar(); mensagem(""); el("importacao-linhas").innerHTML=""; el("importacao-resumo").textContent=""; },
     bindEvents() {
       el("btn-modelo-colaboradores").onclick = () => {
         const blob = new env.Blob([gerarModeloColaboradores()], {

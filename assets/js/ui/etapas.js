@@ -155,7 +155,8 @@ export function createEtapasUI({ document, window, state }) {
       atualizarPendencias();
     },
     etapaAtual: () => paineis[atual].id,
-    init() {
+    init({resetVisits = false} = {}) {
+      if(resetVisits){revisadas.clear();etapaUsuario=null;tentouGerar=false;}
       this.atualizarModelo();
       daUrl(false);
       atualizarBarraFixa();

@@ -155,7 +155,29 @@ export function createApplication({ env, now = () => new Date() }) {
       }
     };
   }
-  function init() {
+  function init({
+    preserveSavedPeriod = env.preserveSavedPeriod,
+    resetView = false,
+  } = {}) {
+    if (resetView) {
+      tutorial.close();
+      importacao.resetContext();
+      dominioImportacao.resetContext();
+      document.getElementById("colab-form")?.reset?.();
+      document.getElementById("colab-form-mensagem").textContent = "";
+      for (const id of [
+        "resultado-gerar",
+        "resultado-proposta",
+        "conversao-comparacao",
+      ])
+        document.getElementById(id).innerHTML = "";
+      document.getElementById("conversao-mensagem").textContent = "";
+      const bloqueio = document.getElementById("preenchimento-bloqueio");
+      if (bloqueio) {
+        bloqueio.innerHTML = "";
+        bloqueio.hidden = true;
+      }
+    }
     const carregou = loadState();
 
     /* Migração simples de versões anteriores */
@@ -170,7 +192,7 @@ export function createApplication({ env, now = () => new Date() }) {
     const hoje = now();
     const mudouPeriodo =
       state.modeloEscala !== "fixa" &&
-      !env.preserveSavedPeriod &&
+      !preserveSavedPeriod &&
       (state.mes !== hoje.getMonth() || state.ano !== hoje.getFullYear());
     if (mudouPeriodo) {
       state.mes = hoje.getMonth();
@@ -200,7 +222,7 @@ export function createApplication({ env, now = () => new Date() }) {
     if (state.escalaGerada) renderEscalaGerada();
     conversaoUI.initConversao();
     dominioImportacao.renderEmpresa();
-    etapas.init();
+    etapas.init({ resetVisits: resetView });
     if (!carregou || mudouPeriodo) saveState();
   }
   return {

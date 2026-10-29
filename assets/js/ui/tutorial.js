@@ -279,6 +279,7 @@ export function createTutorialUI({ document, window, etapas, state }) {
   }
 
   return {
+    close,
     bindEvents() {
       document.getElementById("btn-tutorial").onclick = start;
     },

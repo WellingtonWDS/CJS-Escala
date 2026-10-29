@@ -344,6 +344,7 @@ const { chromium } = require("playwright");
       browser,
       baseURL: `http://127.0.0.1:${server.address().port}/`,
     });
+    await require("./browser-open-quota.cjs")({ browser, baseURL: `http://127.0.0.1:${server.address().port}/` });
     await require("./browser-workspace-results.cjs")({ browser, baseURL: `http://127.0.0.1:${server.address().port}/` });
     await require("./browser-correcoes-interface.cjs")({ browser, baseURL: `http://127.0.0.1:${server.address().port}/` });
     await require("./browser-interacoes.cjs")({ browser, baseURL: `http://127.0.0.1:${server.address().port}/` });

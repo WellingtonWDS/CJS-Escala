@@ -36,6 +36,7 @@ export function createWorkspace(raw, userId) {
     contextKey = `${prefix}:context`;
   let context = null;
   const volatilePending = new Map();
+  const volatileSnapshots = new Map();
   try {
     const c = JSON.parse(raw.getItem(contextKey));
     if (
@@ -51,28 +52,40 @@ export function createWorkspace(raw, userId) {
     `${prefix}:${c?.officeId || "pending"}:${c?.companyId || "pending"}:${c?.draftId || "new"}`;
   return {
     context: () => (context ? { ...context } : null),
+    cacheVolatile: () => volatileSnapshots.has(cacheKey(context)),
     storage: {
       getItem: (k) => {
-        const value = raw.getItem(
-          k === STORAGE_KEY ? cacheKey(context) : `${prefix}:${k}`,
-        );
+        const target = k === STORAGE_KEY ? cacheKey(context) : `${prefix}:${k}`;
+        const value = volatileSnapshots.get(target) ?? raw.getItem(target);
         return k === STORAGE_KEY && value
           ? JSON.stringify(expandirSnapshot(JSON.parse(value)))
           : value;
       },
-      setItem: (k, v) =>
-        raw.setItem(
-          k === STORAGE_KEY ? cacheKey(context) : `${prefix}:${k}`,
+      setItem: (k, v) => {
+        const target = k === STORAGE_KEY ? cacheKey(context) : `${prefix}:${k}`;
+        const serialized =
           k === STORAGE_KEY
             ? JSON.stringify(compactarSnapshot(JSON.parse(v)))
-            : v,
-        ),
-      removeItem: (k) =>
-        raw.removeItem(
-          k === STORAGE_KEY ? cacheKey(context) : `${prefix}:${k}`,
-        ),
+            : v;
+        try {
+          raw.setItem(target, serialized);
+          volatileSnapshots.delete(target);
+        } catch (error) {
+          if (k === STORAGE_KEY) volatileSnapshots.set(target, serialized);
+          throw error;
+        }
+      },
+      removeItem: (k) => {
+        const target = k === STORAGE_KEY ? cacheKey(context) : `${prefix}:${k}`;
+        volatileSnapshots.delete(target);
+        raw.removeItem(target);
+      },
     },
-    activate(c, state, { allowVolatile = false } = {}) {
+    activate(
+      c,
+      state,
+      { allowVolatile = false, persistContextOnFailure = true } = {},
+    ) {
       if (
         !uuid(c.officeId) ||
         !uuid(c.companyId) ||
@@ -82,23 +95,32 @@ export function createWorkspace(raw, userId) {
       )
         throw Error("Contexto inválido.");
       const copy = validateSnapshot(state);
-      const previous = raw.getItem(cacheKey(c)),
+      const previous =
+          volatileSnapshots.get(cacheKey(c)) ?? raw.getItem(cacheKey(c)),
         serialized = JSON.stringify(compactarSnapshot(copy));
       let cached = true;
       try {
         if (previous && previous !== serialized) {
-          let recovery=previous;
-          try { recovery=JSON.stringify(compactarSnapshot(JSON.parse(previous))); } catch {}
+          let recovery = previous;
+          try {
+            recovery = JSON.stringify(compactarSnapshot(JSON.parse(previous)));
+          } catch {}
           raw.setItem(`${cacheKey(c)}:previous`, recovery);
+          volatileSnapshots.delete(`${cacheKey(c)}:previous`);
         }
         raw.setItem(cacheKey(c), serialized);
         raw.setItem(contextKey, JSON.stringify(c));
+        volatileSnapshots.delete(cacheKey(c));
       } catch (error) {
         if (!allowVolatile) throw error;
         cached = false;
-        try {
-          raw.setItem(contextKey, JSON.stringify(c));
-        } catch {}
+        if (previous && previous !== serialized)
+          volatileSnapshots.set(`${cacheKey(c)}:previous`, previous);
+        volatileSnapshots.set(cacheKey(c), serialized);
+        if (persistContextOnFailure)
+          try {
+            raw.setItem(contextKey, JSON.stringify(c));
+          } catch {}
       }
       context = { ...c };
       return { cached };
@@ -120,17 +142,22 @@ export function createWorkspace(raw, userId) {
       }
       const key = cacheKey(c);
       volatilePending.delete(key);
-      for (const suffix of ["", ":previous", ":pending"])
+      for (const suffix of ["", ":previous", ":pending"]) {
+        volatileSnapshots.delete(`${key}${suffix}`);
         raw.removeItem(`${key}${suffix}`);
+      }
       return active;
     },
     legacy: () => raw.getItem(STORAGE_KEY),
     cached: (c) => {
-      const value = raw.getItem(cacheKey(c));
+      const value =
+        volatileSnapshots.get(cacheKey(c)) ?? raw.getItem(cacheKey(c));
       return value ? validateSnapshot(JSON.parse(value)) : null;
     },
     previous: () => {
-      const value = raw.getItem(`${cacheKey(context)}:previous`);
+      const value =
+        volatileSnapshots.get(`${cacheKey(context)}:previous`) ??
+        raw.getItem(`${cacheKey(context)}:previous`);
       return value ? validateSnapshot(JSON.parse(value)) : null;
     },
     pending: () => {

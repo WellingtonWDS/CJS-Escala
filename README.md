@@ -10,6 +10,16 @@ Consulte [Estado do projeto](docs/estado-do-projeto.md) para uma visão consolid
 
 O fluxo principal já inclui cadastro manual e por planilhas, importação Domínio, restrições individuais, habilitações por função, geração, conversão 6×1 → 5×2, comparação de cobertura, sugestões de ajustes com prévia/aplicação/desfazer, edição da grade, CSV e impressão. O acesso oferece login individual por e-mail/senha integrado ao n8n e ao banco, com sessão de até 12 horas, menu por perfil, gestão de usuários e empresas e preenchimentos compartilhados por empresa autorizada. O modo compartilhado/local permanece disponível por configuração. Os detalhes de funcionamento e configuração estão nas seções abaixo.
 
+## Abrir preenchimentos com o navegador sem espaço — 29/10/2026
+
+A abertura de um preenchimento do servidor não depende mais de conseguir gravar a cópia local. Se o armazenamento do navegador estiver cheio, os dados são abertos **na memória da aba**, sem recarregar a página, preservando mês, colaboradores, escala atual e proposta. O painel informa que a cópia local está indisponível e o salvamento remoto continua disponível.
+
+O erro `Storage.setItem ... exceeded the quota` era da gravação dessa cópia no computador atual, não de acesso ao preenchimento no outro computador. A correção anterior cobria a gravação remota, mas a abertura ainda usava a ativação local obrigatória seguida de reload. Agora o fallback mantém a aplicação no mesmo documento e não modifica a seleção durável quando a cópia falha. Não limpa outros preenchimentos nem envios pendentes; a recuperação anterior fica preservada.
+
+**Nesse modo, salve alterações no servidor antes de fechar a aba. Se recarregar, selecione novamente o preenchimento salvo pelo servidor.** Dados já confirmados no servidor continuam disponíveis. Sem migração SQL ou alteração das regras de cálculo.
+
+Validação local: **510 testes unitários**, build, suíte completa de navegador e integração PostgreSQL 17/PostgREST 14.15 com navegador aprovados. O teste específico bloqueia a gravação local, abre um snapshot remoto com mês e escalas, preserva o cache anterior e salva no servidor; verifica também a troca para um preenchimento sem escala, limpando grades, rascunho manual e prévias de importação anteriores.
+
 ## Salvamento compacto e ajustes de escala — 29/10/2026
 
 - **Salvar preenchimento:** botão flutuante verde no canto inferior direito. O painel começa recolhido; abre pelo botão e possui **Minimizar**. O salvamento continua explícito, com confirmação do servidor, cópia e recuperação preservadas.

@@ -10,6 +10,14 @@ Quatro novas empresas por segmento e onze preenchimentos DEMO para comércio con
 
 Carregamento imediato na geração atual/proposta, cálculo em Worker local, bloqueio de duplicação, liberação em falhas e proteção contra resultados de dados alterados. Resumo da busca de cobertura aparece primeiro em modal e depois abaixo do botão, com aplicação separada. Regras de cálculo e versões de dados preservadas.
 
+## Abertura remota com quota local esgotada — 29/10/2026
+
+Corrigido o fluxo que ainda exigia `workspace.activate` gravar no localStorage e depois recarregava a página para abrir um preenchimento. A ativação tolerante agora mantém um snapshot isolado em memória; a aplicação lê essa cópia e reinicializa os formulários/grades no mesmo documento, com o período salvo preservado. Seleção durável e caches/pendências anteriores não são apagados quando falta espaço. A cópia local anterior continua recuperável, e a recuperação passa a acompanhar o cache durável quando o espaço volta.
+
+A interface avisa sobre dados apenas na aba e orienta salvar no servidor antes de sair. Abertura nesse fallback não força reload; após uma recarga, o usuário deve selecionar novamente o preenchimento remoto. Salvamento e validação de acesso continuam no servidor, com os controles existentes. Sem migração, RPC, variável ou nova versão das regras.
+
+Validação local: **510 testes unitários**, build, suíte completa de navegador e integração PostgreSQL 17/PostgREST 14.15 com navegador aprovados. O teste específico bloqueia a gravação local, abre um snapshot remoto com mês e escalas, preserva o cache anterior e salva no servidor; verifica também a troca para um preenchimento sem escala, limpando grades, rascunho manual e prévias de importação anteriores.
+
 ## FAB, horários replicados e troca de dias — 29/10/2026
 
 Painel de salvamento inicialmente recolhido, aberto por FAB verde **Salvar preenchimento** no canto inferior direito, com **Minimizar** e espaço inferior reduzido. Mantidos contexto, cópia, recuperação, confirmação remota e permissões.

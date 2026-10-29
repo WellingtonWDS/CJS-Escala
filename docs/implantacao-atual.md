@@ -2,6 +2,12 @@
 
 Consultar este registro antes de orientar o operador. Distinguir código disponível, testes locais e resultados informados pelo operador. Não contém senhas, chaves ou identificadores pessoais.
 
+## Abrir sem quota de cache — 29/10/2026
+
+Ativação tolerante ao abrir preenchimentos: snapshot em memória quando não cabe no localStorage, leitura da aplicação pelo mesmo adaptador e inicialização no documento atual, preservando período salvo. Não recarrega nem apaga caches/envios pendentes anteriores. Mensagem visível informa o modo temporário e pede salvar alterações no servidor antes de sair; após recarregar, selecionar novamente o preenchimento remoto. Persistência normal continua usando o fluxo existente. Sem migração SQL, variável, RPC ou regra de geração nova; requer deploy da aplicação.
+
+Validação local: **510 testes unitários**, build, suíte completa de navegador e integração PostgreSQL 17/PostgREST 14.15 com navegador aprovados. O teste específico bloqueia a gravação local, abre um snapshot remoto com mês e escalas, preserva o cache anterior e salva no servidor; verifica também a troca para um preenchimento sem escala, limpando grades, rascunho manual e prévias de importação anteriores.
+
 ## Salvamento recolhível e novas interações — 29/10/2026
 
 FAB **Salvar preenchimento** abre o painel, inicialmente recolhido, com botão Minimizar. Cópia de horários semanais entre colaboradores, sem copiar identidade/restrições. Simulação de 42h desabilitada sem ACT/CCT válido e autorização de compensação diária suficiente no destino. Troca de dias por arraste/seleção de dois cards, mesmo colaborador, confirmação, validação atômica e desfazer; fixo altera o padrão semanal. Campos/regras antigas de geração preservados. Sem migração, RPC ou variável nova; requer deploy dos arquivos públicos. Alterações de resultado continuam exigindo salvar o preenchimento para confirmar no servidor.

@@ -91,3 +91,7 @@ O snapshot salvo inclui escala atual, proposta e ajustes. Para evitar repetir gr
 Quota local não impede confirmar uma gravação remota. Na falta de espaço, a pendência pode existir somente na memória da aba, com chave estável de repetição e aviso para não fechá-la se a rede falhar. Sucesso remoto mantém ID/revisão ativos mesmo se atualizar o cache falhar; a interface informa ambos os resultados. Esse fallback não é sincronização automática nem backup de dados ainda não confirmados pelo servidor.
 
 Verificado em PostgreSQL 17/PostgREST 14.15 locais: snapshot completo de 30 colaboradores, aproximadamente 4,3 MB em JSON expandido e 630 KB compactado, salvo e reaberto por RPC sem perda. A integração com navegador também preserva isolamento, compartilhamento autorizado, concorrência e revogação. Serviços reais da VPS não foram alterados.
+
+## Abertura sem cache local — 29/10/2026
+
+A abertura do snapshot autorizado pelo servidor tolera falha de quota local. O cliente mantém a cópia em memória, preserva os dados locais anteriores e apresenta o preenchimento sem reload, com o mês salvo. Nesse fallback de abertura, não persiste uma nova seleção sem a respectiva cópia: após recarregar, o usuário deve selecionar novamente o registro remoto. Modificações precisam ser confirmadas pelo salvamento no servidor antes de fechar a aba. Não há alteração de schema, limite JSONB, RPC, RLS ou validação da sessão.

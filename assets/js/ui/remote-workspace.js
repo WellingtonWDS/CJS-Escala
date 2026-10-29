@@ -296,8 +296,15 @@ export async function initRemoteWorkspace({
           state.proximoId = 1;
         }
       }
-      workspace.activate({ ...s, revision }, state);
-      window.location.reload();
+      const local = workspace.activate({ ...s, revision }, state, {allowVolatile:true,persistContextOnFailure:false});
+      if(local.cached) { window.location.reload(); return; }
+      // A reload would discard the only in-memory copy of the selected server snapshot.
+      app.init({preserveSavedPeriod:true,resetView:true});
+      dialog.close();
+      await refreshCurrent();
+      current("status").textContent += " Sem espaço para a cópia local: este preenchimento está aberto nesta aba. O que já foi salvo permanece no servidor. Salve novas alterações antes de sair; se recarregar, selecione o preenchimento novamente pelo servidor.";
+      painel(true);
+
     }),
   );
   async function save(asNew, title) {
@@ -534,8 +541,9 @@ export async function initRemoteWorkspace({
   window.addEventListener("cjs-local-save", () => {
     if (!workspace.context() || busy) return;
     dirty = true;
-    current("status").textContent =
-      "Alterações neste navegador. Use Salvar preenchimento para compartilhá-las com a equipe.";
+    current("status").textContent = workspace.cacheVolatile?.()
+      ? "Alterações apenas nesta aba; a cópia local está indisponível. Use Salvar preenchimento e aguarde a confirmação do servidor antes de sair."
+      : "Alterações neste navegador. Use Salvar preenchimento para compartilhá-las com a equipe.";
   });
   window.addEventListener("cjs-company-changed", refreshCurrent);
   const observer = new window.ResizeObserver(() =>

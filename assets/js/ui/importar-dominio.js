@@ -58,6 +58,7 @@ export function createImportarDominioUI({
         "Você está mudando de empresa. Use Substituir. Os colaboradores serão substituídos e cobertura, instrumento coletivo e feriados locais da empresa anterior serão reiniciados. Nenhuma demanda mínima será presumida. Revise as pendências individuais antes de gerar a escala.";
   }
   return {
+    resetContext() { limpar(); mensagem(""); for(const id of ["empresa","linhas","resumo"])el(id).innerHTML=""; },
     renderEmpresa,
     bindEvents() {
       el("arquivo").onchange = async () => {
