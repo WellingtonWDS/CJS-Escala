@@ -1,6 +1,10 @@
-# Registro de implantação — atualizado em 28/10/2026
+# Registro de implantação — atualizado em 29/10/2026
 
 Consultar este registro antes de orientar o operador. Distinguir código disponível, testes locais e resultados informados pelo operador. Não contém senhas, chaves ou identificadores pessoais.
+
+## Entrega de 29/10/2026 — documentos PDF
+
+Botões próprios para documento completo do empregador e ZIP com um PDF por colaborador, tanto na atual quanto na proposta e nos modos dinâmico/fixo. A4 paisagem, logo, empresa/período, horários/intervalos, folgas, função, resumo semanal e pendências; cobertura apenas no completo. Geração local independente da impressão, com jsPDF/AutoTable/fflate publicados pelo build (esbuild apenas para esse módulo de dependências). Sem migração SQL, nova variável, RPC ou mudança das regras de geração. Requer deploy do build atualizado. 496 testes unitários, build, suíte completa de navegador e downloads reais PDF/ZIP aprovados localmente; não confirma homologação no domínio público.
 
 ## Entrega de 28/10/2026 — modos dinâmico e fixo
 

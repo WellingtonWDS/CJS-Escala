@@ -1,12 +1,12 @@
 # Próximas funcionalidades do Reescala
 
-Registrado em **27/10/2026**, conforme solicitação do proprietário. **Atualizado em 28/10/2026:** primeira entrega da escala fixa implementada; quadro diário e novos arquivos por público continuam planejados, sem prazo definido.
+Registrado em **27/10/2026**, conforme solicitação do proprietário. **Atualizado em 29/10/2026:** primeira entrega da escala fixa implementada; PDFs para empregador e colaboradores implementados em 29/10/2026; quadro diário continua planejado, sem prazo definido.
 
 ## Ponto de partida
 
 O modo dinâmico usa mês/ano, datas, semanas civis e feriados nacionais/locais. Desde 28/10/2026, também há modo fixo com padrão semanal recorrente. Há folgas fixas e rotativas dentro desse calendário, prévia da escala atual, proposta 6×1→5×2, cobertura por função/horário, diagnóstico e ajustes. A exportação atual é CSV detalhado e impressão/PDF pelo navegador, da etapa aberta. Existem persistência por escritório/empresa, usuários e permissões, com ativação dependente da infraestrutura configurada.
 
-As três entregas abaixo ampliam esse produto. Folgas fixas no calendário atual não equivalem ao novo modo de escala fixa; a grade mensal já mostrar dias não equivale ao novo quadro diário. CSV completo e impressão não equivalem aos novos arquivos por público.
+As três entregas abaixo ampliam esse produto. Folgas fixas no calendário atual não equivalem ao novo modo de escala fixa; a grade mensal já mostrar dias não equivale ao novo quadro diário. Os novos PDFs próprios são independentes do CSV e da impressão da interface.
 
 ## 1. Escala fixa com folgas fixas — primeira entrega implementada
 
@@ -61,7 +61,9 @@ Critérios de aceite:
 
 O desenho final do quadro — tabela, faixas de horário ou combinação — será definido na implementação. A solicitação não inclui criar um novo fluxo de edição independente do resultado atual.
 
-## 3. Exportação para empregador e colaboradores
+## 3. Exportação para empregador e colaboradores — implementada em 29/10/2026
+
+**Entrega:** PDFs A4 em paisagem, gerados localmente com jsPDF/AutoTable, sem captura da interface ou serviço externo. Logo Reescala, empresa/CNPJ quando disponíveis, origem (atual/proposta), mês ou padrão fixo, horários, intervalos, função, folgas, totais semanais, pendências, identificação de rascunho e páginas. O empregador recebe um PDF com todas as pessoas e cobertura; os colaboradores recebem PDFs isolados em um único ZIP (fflate), com nomes que distinguem homônimos. Disponível nos dois modos, preservando edições aplicadas. Propostas desatualizadas são bloqueadas. Salvar/exportar não significa aprovar a escala.
 
 **Objetivo:** distribuir a mesma escala em dois tipos de documento, adequados a quem vai recebê-los.
 
@@ -86,7 +88,7 @@ Critérios de aceite:
 4. Nomes dos arquivos distinguem empresa, período/padrão e colaborador, inclusive homônimos.
 5. A exportação não usa silenciosamente um resultado antigo após alteração do preenchimento.
 
-**A definir na implementação:** formatos finais dos novos documentos e forma de baixar vários arquivos. PDF/planilha e eventual pacote de arquivos são opções a avaliar, não decisões já tomadas. O CSV atual e o PDF pela impressão do navegador permanecem como recursos existentes.
+**Formato entregue:** PDF para o documento completo e ZIP contendo um PDF por colaborador. O CSV e a impressão do navegador permanecem disponíveis separadamente. Não há envio automático, assinatura, aprovação/publicação ou aplicação do padrão fixo a datas reais.
 
 ## Sequência e verificações
 
@@ -94,4 +96,4 @@ Prioridade indicada: **escala fixa → quadro diário → exportação completa 
 
 Na implementação, simular os cenários DEMO de escritório, comércio contínuo, fazenda com sábado compensado/almoço coletivo, entidade 24h e padaria, respeitando os regimes que cada novo modo efetivamente suportar. Conferir também dias fixos de folga, intervalos, cobertura insuficiente, mudanças de fase, plantões noturnos, homônimos, resultados desatualizados e isolamento por empresa. A entidade 12×36 continua sendo um caso que exige suporte explícito ao ciclo, não uma promessa de conversão automática.
 
-Os testes da primeira entrega do modo fixo incluem escritório, comércio, fazenda e padaria; a entidade 12×36 confirma a rejeição explícita desse modo, preservando o dinâmico. Os critérios de quadro diário e novos documentos continuam futuros. A última validação dos recursos já implementados está em [Estado do projeto](../estado-do-projeto.md); os exemplos e instaladores estão em [Cenários DEMO](../cenarios-demo-segmentos.md).
+Os testes da primeira entrega do modo fixo incluem escritório, comércio, fazenda e padaria; a entidade 12×36 confirma a rejeição explícita desse modo, preservando o dinâmico. Os critérios do quadro diário continuam futuros; a exportação PDF completa/individual já está implementada. A última validação dos recursos já implementados está em [Estado do projeto](../estado-do-projeto.md); os exemplos e instaladores estão em [Cenários DEMO](../cenarios-demo-segmentos.md).

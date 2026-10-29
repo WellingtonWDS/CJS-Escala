@@ -10,7 +10,15 @@ Consulte [Estado do projeto](docs/estado-do-projeto.md) para uma visão consolid
 
 O fluxo principal já inclui cadastro manual e por planilhas, importação Domínio, restrições individuais, habilitações por função, geração, conversão 6×1 → 5×2, comparação de cobertura, sugestões de ajustes com prévia/aplicação/desfazer, edição da grade, CSV e impressão. O acesso oferece login individual por e-mail/senha integrado ao n8n e ao banco, com sessão de até 12 horas, menu por perfil, gestão de usuários e empresas e preenchimentos compartilhados por empresa autorizada. O modo compartilhado/local permanece disponível por configuração. Os detalhes de funcionamento e configuração estão nas seções abaixo.
 
-## Entregas de hoje — 28/10/2026
+## Exportação de documentos PDF — 29/10/2026
+
+Na etapa de geração, tanto a escala atual quanto a proposta oferecem **Baixar PDF do empregador** e **Baixar PDFs dos colaboradores (ZIP)**. Documentos próprios em A4 paisagem, com logo Reescala, identificação da empresa/período, horários, intervalos, folgas, função, resumo semanal e pendências. O documento completo inclui toda a equipe e cobertura; cada arquivo individual contém somente o respectivo colaborador. Homônimos são diferenciados nos nomes dos arquivos. Funciona nos modos dinâmico e fixo, incluindo ajustes aplicados.
+
+A geração acontece no navegador, sem envio dos dados a conversores externos e sem imprimir/capturar a tela. PDF gerado não significa aprovação: rascunho e incompatibilidades continuam identificados. Gere novamente uma proposta desatualizada antes de exportar. Dependências jsPDF, AutoTable e fflate são publicadas localmente pelo build; a exportação não exige banco, RPC ou variáveis novas. CSV e impressão continuam disponíveis.
+
+Validação da entrega: **496 testes unitários aprovados**, build, suíte completa de navegador e testes de domínio/documentos e downloads reais de PDF/ZIP no navegador nos dois modos e nas duas origens, com logo, nomes únicos e isolamento individual. O quadro diário dedicado permanece planejado. [Escopo e critérios](docs/planos/evolucao-escalas.md).
+
+## Entregas de 28/10/2026
 
 | Referência | Alteração entregue |
 | --- | --- |
@@ -18,7 +26,7 @@ O fluxo principal já inclui cadastro manual e por planilhas, importação Domí
 | `f4e1bba` | Edição de status e horários completos nos dois quadros, intervalo opcional, alterações recorrentes/desfazer no fixo e resumo semanal com formatação e cores compartilhadas. |
 | `e22bdca` | Revisão da geração/conversão 5×2: folgas por disponibilidade individual, busca mesmo sem cobertura, fechamento semanal, ACT/CCT por data e restrições/pausas consideradas antes de distribuir horas. |
 
-Versão atual das regras: **`ec141-2026-10-28-8`**, conforme o texto da EC 141 adotado pelo projeto. **Gere novamente as escalas anteriores** para aplicar as correções; os cadastros e preenchimentos são preservados. As entregas não exigem migração SQL nem novas variáveis de ambiente. Quadro diário e arquivos separados por colaborador continuam planejados.
+Versão atual das regras: **`ec141-2026-10-28-8`**, conforme o texto da EC 141 adotado pelo projeto. **Gere novamente as escalas anteriores** para aplicar as correções; os cadastros e preenchimentos são preservados. As entregas não exigem migração SQL nem novas variáveis de ambiente. Quadro diário continua planejado; os arquivos separados em PDF foram entregues em 29/10/2026.
 
 ## Escala mensal dinâmica ou fixa — 28/10/2026
 
@@ -31,7 +39,7 @@ No fixo, informe a **data de referência jurídica** para verificar a fase autom
 
 As restrições semanais continuam válidas. Férias/afastamentos por período e admissão não são aplicados ao padrão; seus cadastros são preservados. Compensações com apuração por datas e ciclos alternados, como 12×36, exigem o modo dinâmico nesta entrega. Trabalho fixo em todos os domingos no comércio ou para colaboradoras é sinalizado como incompatível com a necessidade de revezamento; confira a regra da categoria.
 
-A proposta fixa busca folgas e redistribui intervalos, sempre repetindo a mesma alteração em cada dia da semana correspondente. Clique no card para editar o status e os horários: na dinâmica, muda somente a data; na fixa, muda o mesmo dia da semana em todo o padrão, com opção de desfazer a última edição. A busca de ajustes avulsos continua no dinâmico. Há grade semanal com rolagem, resumo por pessoa, diagnóstico e CSV fixo com sete dias por colaborador e intervalos completos. Impressão/PDF continua pelo navegador. O quadro diário dedicado e os novos documentos por público permanecem planejados.
+A proposta fixa busca folgas e redistribui intervalos, sempre repetindo a mesma alteração em cada dia da semana correspondente. Clique no card para editar o status e os horários: na dinâmica, muda somente a data; na fixa, muda o mesmo dia da semana em todo o padrão, com opção de desfazer a última edição. A busca de ajustes avulsos continua no dinâmico. Há grade semanal com rolagem, resumo por pessoa, diagnóstico e CSV fixo com sete dias por colaborador e intervalos completos. Impressão/PDF continua pelo navegador. O quadro diário dedicado permanece planejado; documentos PDF por público estão disponíveis desde 29/10/2026.
 
 A referência jurídica não é validade permanente: reavaliar ao mudar a legislação ou vencer o instrumento coletivo. O padrão sem feriados não autoriza automaticamente trabalho em feriados quando aplicado a datas reais. Detalhes e critérios: [evolução das escalas](docs/planos/evolucao-escalas.md).
 
@@ -75,9 +83,9 @@ A entrega do modo fixo inclui **16 testes de domínio/persistência**, com oito 
 | Ordem | Funcionalidade | Escopo solicitado |
 | --- | --- | --- |
 | 2 | Quadro diário detalhado | Visualizar colaboradores, funções, jornadas, intervalos, folgas e cobertura ao longo de uma data ou dia do padrão fixo. |
-| 3 | Exportação por público | Arquivo completo para o empregador e um arquivo separado para cada funcionário. Formatos e download em lote serão definidos na implementação. |
 
-O quadro diário e os novos arquivos por público **ainda não estão implementados**. Os modos dinâmico e fixo, seus CSVs e a impressão/PDF estão disponíveis. Escopo, critérios de aceite e limites: [próximas funcionalidades](docs/planos/evolucao-escalas.md).
+
+O quadro diário **ainda não está implementado**. PDFs para empregador e colaboradores foram entregues em 29/10/2026. Os modos dinâmico e fixo, seus CSVs e a impressão/PDF estão disponíveis. Escopo, critérios de aceite e limites: [próximas funcionalidades](docs/planos/evolucao-escalas.md).
 
 ## Conversão da escala atual 6×1 para uma proposta 5×2
 
@@ -145,7 +153,7 @@ assets/js/
 scripts/                        Servidor local e preparação da publicação
 tests/                          Regressões e fluxos no navegador
 docs/estado-do-projeto.md        Implementado, limitações e validações
-docs/planos/evolucao-escalas.md   Escala fixa entregue; quadro diário e novas exportações planejados
+docs/planos/evolucao-escalas.md   Escala fixa e PDFs entregues; quadro diário planejado
 ```
 
 O domínio recebe a configuração explicitamente, por meio de `createDomain(state)`, e não acessa HTML, armazenamento ou variáveis globais da aplicação. `gerarDadosEscala()` devolve a escala e suas validações; a interface decide quando exibi-la e salvá-la. Cada instância da aplicação possui seu próprio estado. No dinâmico, o toggle de dois turnos mostra os grupos A/B para duas semanas; no fixo, mantém os grupos em todas as semanas. Atualiza os horários da escala existente, inclusive ao mudar a entrada do Turno B, preservando status, folgas e horas ajustadas manualmente.

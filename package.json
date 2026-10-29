@@ -17,11 +17,15 @@
     "node": ">=22"
   },
   "devDependencies": {
+    "esbuild": "0.28.2",
     "playwright": "1.62.1",
     "tailwindcss": "3.4.19"
   },
   "dependencies": {
     "@e965/xlsx": "0.20.3",
-    "@vercel/functions": "3.10.3"
+    "@vercel/functions": "3.10.3",
+    "fflate": "0.8.3",
+    "jspdf": "4.2.1",
+    "jspdf-autotable": "5.0.9"
   }
 }

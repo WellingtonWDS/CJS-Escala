@@ -1,7 +1,9 @@
+import { bindPdfEvents } from "./pdf-download.js";
 import { gerarCsv } from "./csv.js";
 import { MESES } from "../config/regras-jornada.js";
 export function bindExportEvents(state, env) {
   const { document, alert, Blob, URL, setTimeout, window } = env;
+  bindPdfEvents(state, env);
   document.getElementById("btn-exportar-csv").onclick = () => {
     if (!state.escalaGerada) {
       alert("Gere a escala primeiro.");

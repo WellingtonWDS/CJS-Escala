@@ -1,3 +1,4 @@
+import { build } from "esbuild";
 import { execFileSync } from "node:child_process";
 import { cp, mkdir, rm } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
@@ -38,3 +39,12 @@ await cp(
   join(dist, "assets/css/utilities.css"),
 );
 console.log("Publicação estática preparada em dist/.");
+
+await build({
+  entryPoints: [join(root, "assets/js/export/pdf-vendor.js")],
+  outfile: join(dist, "assets/vendor/pdf.js"),
+  bundle: true,
+  format: "esm",
+  minify: true,
+  legalComments: "eof",
+});
