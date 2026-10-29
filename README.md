@@ -10,6 +10,18 @@ Consulte [Estado do projeto](docs/estado-do-projeto.md) para uma visão consolid
 
 O fluxo principal já inclui cadastro manual e por planilhas, importação Domínio, restrições individuais, habilitações por função, geração, conversão 6×1 → 5×2, comparação de cobertura, sugestões de ajustes com prévia/aplicação/desfazer, edição da grade, CSV e impressão. O acesso oferece login individual por e-mail/senha integrado ao n8n e ao banco, com sessão de até 12 horas, menu por perfil, gestão de usuários e empresas e preenchimentos compartilhados por empresa autorizada. O modo compartilhado/local permanece disponível por configuração. Os detalhes de funcionamento e configuração estão nas seções abaixo.
 
+## Ajustes de seleção, comparação e intervalos — 29/10/2026
+
+O seletor de empresas mantém a lista aberta ao clicar/arrastar sua barra de rolagem, inclusive quando o navegador tira o foco da busca sem indicar outro campo. Clique ou foco em outro controle continua fechando a lista. O modal Empresa atual e Preenchimentos tem altura fixa de 85% da área visível, com rolagem interna, sem crescer ao abrir a seleção. Comparações ganham textos em blocos, colunas mais espaçosas e rolagem horizontal em telas menores.
+
+Os botões de CSV da etapa Conversão e comparação foram removidos; use PDF completo ou ZIP dos PDFs individuais. O serializador CSV permanece apenas como módulo interno, com regressões próprias; descrições históricas de download CSV abaixo referem-se ao fluxo anterior.
+
+**Art. 71 da CLT:** até 4h não exige pausa; acima de 4h até 6h exige 15min; acima de 6h exige pelo menos 1h. Intervalo acima de 2h é sinalizado como incompatível com a regra geral: o sistema não presume acordo escrito ou instrumento específico autorizando exceção. A duração já era verificada; foram acrescentados teto e aviso preventivo para blocos contínuos acima de 6h. Esse aviso solicita conferência do regime/categoria, sem transformar o horário de almoço em uma exigência fixa da lei.
+
+Nas **novas sugestões automáticas**, a pausa começa até quatro horas após a entrada, como política conservadora de distribuição, mantendo sua duração, as entradas/saídas e a cobertura sem piora. Isso não é um prazo de quatro horas previsto no art. 71 e não autoriza encurtar a pausa para fechar cobertura. Horários atuais declarados continuam preservados para diagnóstico. Regras atualizadas para `ec141-2026-10-29-9`: gere novamente resultados anteriores; cadastros são mantidos. Sem alteração de banco ou variáveis.
+
+Validação: **498 testes unitários**, build e suíte completa de navegador aprovados, incluindo limites de 4h/6h, pausas de 15/60/120/135min e sugestões diurnas/noturnas. Teste de navegador dedicado ao seletor, rolagem, altura fixa e remoção do CSV.
+
 ## Exportação de documentos PDF — 29/10/2026
 
 Na etapa de geração, tanto a escala atual quanto a proposta oferecem **Baixar PDF do empregador** e **Baixar PDFs dos colaboradores (ZIP)**. Documentos próprios em A4 paisagem, com logo Reescala, identificação da empresa/período, horários, intervalos, folgas, função, resumo semanal e pendências. O documento completo inclui toda a equipe e cobertura; cada arquivo individual contém somente o respectivo colaborador. Homônimos são diferenciados nos nomes dos arquivos. Funciona nos modos dinâmico e fixo, incluindo ajustes aplicados.
@@ -26,7 +38,7 @@ Validação da entrega: **496 testes unitários aprovados**, build, suíte compl
 | `f4e1bba` | Edição de status e horários completos nos dois quadros, intervalo opcional, alterações recorrentes/desfazer no fixo e resumo semanal com formatação e cores compartilhadas. |
 | `e22bdca` | Revisão da geração/conversão 5×2: folgas por disponibilidade individual, busca mesmo sem cobertura, fechamento semanal, ACT/CCT por data e restrições/pausas consideradas antes de distribuir horas. |
 
-Versão atual das regras: **`ec141-2026-10-28-8`**, conforme o texto da EC 141 adotado pelo projeto. **Gere novamente as escalas anteriores** para aplicar as correções; os cadastros e preenchimentos são preservados. As entregas não exigem migração SQL nem novas variáveis de ambiente. Quadro diário continua planejado; os arquivos separados em PDF foram entregues em 29/10/2026.
+Versão atual das regras: **`ec141-2026-10-29-9`**, conforme o texto da EC 141 adotado pelo projeto. **Gere novamente as escalas anteriores** para aplicar as correções; os cadastros e preenchimentos são preservados. As entregas não exigem migração SQL nem novas variáveis de ambiente. Quadro diário continua planejado; os arquivos separados em PDF foram entregues em 29/10/2026.
 
 ## Escala mensal dinâmica ou fixa — 28/10/2026
 

@@ -1,3 +1,4 @@
+const { baixarCsvLegado } = require("./helpers/csv-legado.cjs");
 const { clicarCalculo } = require("./helpers/calculo.cjs");
 const { irParaEtapa } = require("./helpers/etapas.cjs");
 const assert = require("node:assert/strict");
@@ -142,8 +143,8 @@ module.exports = async function testarDominio({ browser, baseURL }) {
     );
     assert.equal(dia(s.escalaGerada.resultado[1], "2026-10-24").saidaMin, 960);
     const dp = page.waitForEvent("download");
-    await irParaEtapa(page, "#btn-exportar-csv");
-    await page.locator("#btn-exportar-csv").click();
+    await irParaEtapa(page, "#btn-gerar");
+    await baixarCsvLegado(page, false);
     const download = await dp;
     assert.match(
       await readFile(await download.path(), "utf8"),

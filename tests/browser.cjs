@@ -1,3 +1,4 @@
+const { baixarCsvLegado } = require("./helpers/csv-legado.cjs");
 const { clicarCalculo } = require("./helpers/calculo.cjs");
 const {
   respondToDialogs,
@@ -239,8 +240,8 @@ const { chromium } = require("playwright");
     assert.deepEqual((await saved()).escalaGerada.resultado[0].dias[0], before);
     console.log("OK: edição por horários e cancelamento sem alterações");
     const downloadPromise = page.waitForEvent("download");
-    await irParaEtapa(page, "#btn-exportar-csv");
-    await page.locator("#btn-exportar-csv").click();
+    await irParaEtapa(page, "#btn-gerar");
+    await baixarCsvLegado(page, false);
     await waitForDialogs(page);
     const download = await downloadPromise;
     assert.equal(
@@ -343,6 +344,7 @@ const { chromium } = require("playwright");
       browser,
       baseURL: `http://127.0.0.1:${server.address().port}/`,
     });
+    await require("./browser-correcoes-interface.cjs")({ browser, baseURL: `http://127.0.0.1:${server.address().port}/` });
     await require("./browser-pdf.cjs")({ browser, baseURL: `http://127.0.0.1:${server.address().port}/` });
     await require("./browser-fim-semana.cjs")({
       browser,

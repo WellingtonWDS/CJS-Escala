@@ -1,3 +1,4 @@
+const { baixarCsvLegado } = require("./helpers/csv-legado.cjs");
 const { clicarCalculo } = require("./helpers/calculo.cjs");
 const assert = require("node:assert/strict");
 const path = require("node:path");
@@ -104,7 +105,7 @@ module.exports = async function testarComputoCct({ browser, baseURL }) {
       ),
     );
     const download = page.waitForEvent("download");
-    await page.locator("#btn-exportar-csv").click();
+    await baixarCsvLegado(page, false);
     const csv = await fs.readFile(await (await download).path(), "utf8");
     assert.match(csv, /01:00;01:00;12:00/);
     await page.reload();

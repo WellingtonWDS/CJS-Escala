@@ -3,7 +3,6 @@ import { renderDiagnosticoEquipe } from "./diagnostico-equipe.js";
 import { converterEscala, compararConversao } from "../domain/conversao.js";
 import { createCalendarioUI } from "./calendario.js";
 import { createDomain } from "../domain/index.js";
-import { gerarCsv } from "../export/csv.js";
 import { escapeHtml } from "../shared/formatacao.js";
 import {
   fmtHoras,
@@ -26,7 +25,7 @@ export function createConversaoUI({
   function salvar() {
     if (storage.saveState() === false)
       el("conversao-mensagem").textContent =
-        "A proposta foi calculada nesta aba, mas não pôde ser salva no navegador. O espaço de armazenamento pode estar cheio. Exporte o CSV antes de sair ou recarregar a página.";
+        "A proposta foi calculada nesta aba, mas não pôde ser salva no navegador. O espaço de armazenamento pode estar cheio. Exporte os PDFs antes de sair ou recarregar a página.";
   }
   const titulos = {
     suficiente:
@@ -49,14 +48,14 @@ export function createConversaoUI({
     const m = c.comparacao;
     const avisoBusca = c.buscaParcial ? '<p role="status" class="text-sm mt-2 rounded-lg border border-amber-300 bg-amber-50 p-3">A busca de distribuição foi parcial pelo limite de processamento. Revise as alternativas restantes; o resultado não comprova que esta seja a melhor escala possível.</p>' : "";
     if (escalaFixa(c.proposta.config)) {
-      el("conversao-comparacao").innerHTML = `${avisoBusca}<section class="border rounded-lg p-4 mb-4"><h3 class="font-semibold">Comparação dos padrões semanais · 6×1 → 5×2</h3>
+      el("conversao-comparacao").innerHTML = `${avisoBusca}<section class="comparacao-fixa border rounded-lg p-4 mb-4"><h3 class="font-semibold">Comparação dos padrões semanais · 6×1 → 5×2</h3>
         <p id="conversao-diagnostico" class="font-semibold mt-2" ${c.desatualizada ? 'role="alert"' : ""}>${c.desatualizada ? "Comparação desatualizada. Gere novamente antes de utilizar." : titulos[m.status]}</p>
         <p class="text-sm mt-2">A conclusão considera uma semana recorrente, sem feriados. ${m.erros} incompatibilidade(s) e ${m.pendencias} alerta(s)/pendência(s). Cobertura completa exige também conferir as condições de jornada e repouso.</p>
         <p class="text-sm mt-2">Lacunas semanais: ${fmtHoras(m.faltantesAntes)} → ${fmtHoras(m.faltantesDepois)} horas-pessoa. A busca é limitada; lacunas de distribuição não comprovam, por si só, necessidade de contratação.</p>
-        ${m.funcoes.map((f) => `<p class="text-sm mt-2"><b>${escapeHtml(f.funcao)}</b>: ${escapeHtml(f.insuficiencias.join(" ") || (f.faltantes ? "Revise a distribuição dos horários; insuficiência do quadro não comprovada." : "Demanda semanal atendida."))}</p>`).join("")}
-        ${m.pessoas.map((p) => `<p class="text-sm mt-2"><b>${escapeHtml(p.nome)}</b>: ${fmtHoras(p.horasAntes)} → ${fmtHoras(p.horasDepois)} por semana · ${p.folgasAntes} → ${p.folgasDepois} folgas.${p.deficits ? " Horários disponíveis não comportam o alvo semanal; revise a distribuição e o fundamento coletivo aplicável." : ""}</p>`).join("")}
+        ${m.funcoes.map((f) => `<p class="comparacao-item text-sm mt-2"><b>${escapeHtml(f.funcao)}</b> ${escapeHtml(f.insuficiencias.join(" ") || (f.faltantes ? "Revise a distribuição dos horários; insuficiência do quadro não comprovada." : "Demanda semanal atendida."))}</p>`).join("")}
+        ${m.pessoas.map((p) => `<p class="comparacao-item text-sm mt-2"><b>${escapeHtml(p.nome)}</b> ${fmtHoras(p.horasAntes)} → ${fmtHoras(p.horasDepois)} por semana · ${p.folgasAntes} → ${p.folgasDepois} folgas.${p.deficits ? " Horários disponíveis não comportam o alvo semanal; revise a distribuição e o fundamento coletivo aplicável." : ""}</p>`).join("")}
         <p class="text-xs text-slate-500 mt-3">A origem foi preservada. A proposta usa a fase selecionada e a data de referência jurídica do padrão. Eventos por data não são transpostos para este quadro.</p></section>`;
-      el("btn-exportar-proposta").disabled = !!c.desatualizada;
+
       return;
     }
     const hora = (value) => (value === 1440 ? "24:00" : minToTime(value));
@@ -75,8 +74,8 @@ export function createConversaoUI({
       </div>
       ${c.desatualizada ? "" : renderDiagnosticoEquipe(m.diagnostico)}
       <p class="text-xs text-slate-500 mb-3">Origem preservada: ${c.origem.config.mes + 1}/${c.origem.config.ano}. Comparação abaixo: ambos os padrões projetados em ${c.proposta.config.mes + 1}/${c.proposta.config.ano}, para comparar o mesmo período. Ajustes pontuais feitos em datas da escala original permanecem na referência original; não são transpostos automaticamente para outras datas. ${c.proposta.config.modoRegime === "simulacao" ? "SIMULAÇÃO explícita da fase escolhida." : "Vigência automática por data; semanas que atravessam fases recebem conferência específica."}</p>
-      <div class="overflow-x-auto mb-4"><table class="w-full text-sm border border-slate-200"><caption class="text-left font-semibold mb-2">Capacidade por função no período</caption><thead><tr>${["Função", "Demanda (h-pessoa)", "Trabalho proposto (h)", "Lacunas (h-pessoa)", "Pico de faltantes", "Explicação"].map((s) => `<th class="text-left p-2 border-b">${s}</th>`).join("")}</tr></thead><tbody>${m.funcoes.map((f) => `<tr><td class="p-2 border-b">${escapeHtml(f.funcao)}</td><td class="p-2 border-b">${fmtHoras(f.necessarias)}</td><td class="p-2 border-b">${fmtHoras(f.disponiveis)}</td><td class="p-2 border-b">${fmtHoras(f.faltantes)}</td><td class="p-2 border-b">${f.pico}</td><td class="p-2 border-b">${escapeHtml(f.insuficiencias.join(" ") || (f.faltantes ? "Persistem lacunas de distribuição ou disponibilidade de horários; não foi comprovada insuficiência do quadro." : "Demanda atendida pela distribuição proposta."))}</td></tr>`).join("")}</tbody></table></div>
-      <div class="overflow-x-auto mb-4"><table class="w-full text-sm border border-slate-200"><caption class="text-left font-semibold mb-2">Antes e depois por colaborador — mesmo mês da proposta</caption><thead><tr>${["Colaborador", "Função", "Horas 6×1 → 5×2", "Dias de trabalho", "Dias sem trabalho", "Semanas abaixo do alvo"].map((s) => `<th class="text-left p-2 border-b">${s}</th>`).join("")}</tr></thead><tbody>${m.pessoas.map((p) => `<tr><td class="p-2 border-b">${escapeHtml(p.nome)}</td><td class="p-2 border-b">${escapeHtml(p.funcao)}</td><td class="p-2 border-b">${fmtHoras(p.horasAntes)} → ${fmtHoras(p.horasDepois)}</td><td class="p-2 border-b">${p.diasAntes} → ${p.diasDepois}</td><td class="p-2 border-b">${p.folgasAntes} → ${p.folgasDepois}</td><td class="p-2 border-b">${p.deficits}</td></tr>`).join("")}</tbody></table></div>
+      <div class="overflow-x-auto mb-4"><table class="comparacao-tabela w-full text-sm border border-slate-200"><caption class="text-left font-semibold mb-2">Capacidade por função no período</caption><thead><tr>${["Função", "Demanda (h-pessoa)", "Trabalho proposto (h)", "Lacunas (h-pessoa)", "Pico de faltantes", "Explicação"].map((s) => `<th class="text-left p-2 border-b">${s}</th>`).join("")}</tr></thead><tbody>${m.funcoes.map((f) => `<tr><td class="p-2 border-b">${escapeHtml(f.funcao)}</td><td class="p-2 border-b">${fmtHoras(f.necessarias)}</td><td class="p-2 border-b">${fmtHoras(f.disponiveis)}</td><td class="p-2 border-b">${fmtHoras(f.faltantes)}</td><td class="p-2 border-b">${f.pico}</td><td class="p-2 border-b">${escapeHtml(f.insuficiencias.join(" ") || (f.faltantes ? "Persistem lacunas de distribuição ou disponibilidade de horários; não foi comprovada insuficiência do quadro." : "Demanda atendida pela distribuição proposta."))}</td></tr>`).join("")}</tbody></table></div>
+      <div class="overflow-x-auto mb-4"><table class="comparacao-tabela w-full text-sm border border-slate-200"><caption class="text-left font-semibold mb-2">Antes e depois por colaborador — mesmo mês da proposta</caption><thead><tr>${["Colaborador", "Função", "Horas 6×1 → 5×2", "Dias de trabalho", "Dias sem trabalho", "Semanas abaixo do alvo"].map((s) => `<th class="text-left p-2 border-b">${s}</th>`).join("")}</tr></thead><tbody>${m.pessoas.map((p) => `<tr><td class="p-2 border-b">${escapeHtml(p.nome)}</td><td class="p-2 border-b">${escapeHtml(p.funcao)}</td><td class="p-2 border-b">${fmtHoras(p.horasAntes)} → ${fmtHoras(p.horasDepois)}</td><td class="p-2 border-b">${p.diasAntes} → ${p.diasDepois}</td><td class="p-2 border-b">${p.folgasAntes} → ${p.folgasDepois}</td><td class="p-2 border-b">${p.deficits}</td></tr>`).join("")}</tbody></table></div>
       ${
         m.lacunas.length
           ? `<details class="border rounded-lg p-3 mb-4"><summary class="cursor-pointer font-semibold">Horários descobertos (${m.lacunas.length} faixas)</summary><div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr>${["Data", "Função", "Horário", "Necessários", "Presentes", "Faltantes"].map((s) => `<th class="text-left p-2">${s}</th>`).join("")}</tr></thead><tbody>${m.lacunas
@@ -91,7 +90,7 @@ export function createConversaoUI({
           : ""
       }
       <p class="text-xs text-slate-500 mb-4">A distribuição busca reduzir lacunas preservando funções, entradas e grupos de turno na geração inicial, janelas de horário, contratos e restrições de folga. Ajustes de horário ou função adicionais podem ser buscados e revisados no painel de sugestões da proposta. A busca é limitada; não garante encontrar toda solução possível.</p>`;
-    el("btn-exportar-proposta").disabled = !!c.desatualizada;
+
   }
   function renderConversao() {
     const c = state.conversao;
@@ -179,18 +178,7 @@ export function createConversaoUI({
           el("conversao-mensagem").textContent = error.message;
         }
       };
-      el("btn-exportar-proposta").onclick = () => {
-        if (!state.conversao || state.conversao.desatualizada) return;
-        const csv = gerarCsv(state.conversao.proposta.config);
-        const url = env.URL.createObjectURL(
-          new env.Blob([csv], { type: "text/csv;charset=utf-8;" }),
-        );
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = escalaFixa(state) ? "proposta-5x2-fixa.csv" : `proposta-5x2-${state.destinoConversao.periodo}.csv`;
-        link.click();
-        env.setTimeout(() => env.URL.revokeObjectURL(url), 1000);
-      };
+
     },
   };
 }

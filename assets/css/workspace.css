@@ -134,6 +134,7 @@ body {
   box-sizing: border-box;
   width: 85vw;
   max-width: calc(100vw - 24px);
+  height: 85dvh;
   max-height: 85dvh;
 }
 #remote-workspace[open] {
@@ -149,6 +150,8 @@ body {
 }
 .workspace-selector-scroll {
   overflow: auto;
+  flex: 1;
+  align-content: start;
   min-height: 0;
   overscroll-behavior: contain;
   padding-right: 6px;

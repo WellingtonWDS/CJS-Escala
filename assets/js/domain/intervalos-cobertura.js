@@ -12,11 +12,15 @@ export function* alternativasIntervalo(c, d) {
     d.creditoNoturnoCCT ||
     !Number.isFinite(d.intervaloMin) ||
     d.intervaloMin <= 0 ||
+    d.intervaloMin > 120 ||
+    (d.horas > 6 && d.intervaloMin < 60) ||
+    (d.horas > 4 && d.intervaloMin < 15) ||
     violacoesDia(c, d).length
   )
     return;
   const inicio = Math.max(d.entradaMin + 60, d.saidaMin - d.intervaloMin - 360),
-    fim = Math.min(d.entradaMin + 360, d.saidaMin - d.intervaloMin - 60);
+    // Conservative scheduling preference: meal break starts within four hours.
+    fim = Math.min(d.entradaMin + 240, d.saidaMin - d.intervaloMin - 60);
   for (let pausa = Math.ceil(inicio / 15) * 15; pausa <= fim; pausa += 15) {
     if (pausa === d.intervaloInicioMin) continue;
     yield {

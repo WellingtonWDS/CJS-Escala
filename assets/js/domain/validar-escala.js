@@ -156,6 +156,11 @@ export function createValidacao(state, jornada, feriados) {
           : state.jornada;
       const h = d.horas;
       const int = d.intervaloMin ?? intervaloMin(j);
+      if (int > 120) out.push(issue("INTRAJORNADA_MAXIMA", "erro",
+        `${d.data}: intervalo de ${fmtHoras(int / 60)} excede o máximo geral de 2h do art. 71 da CLT. Uma exceção exige acordo escrito ou instrumento coletivo específico, não presumido pelo sistema.`, d.data));
+      if (Number.isFinite(d.intervaloInicioMin) && Number.isFinite(d.intervaloFimMin) &&
+          (d.intervaloInicioMin - d.entradaMin > 360 || d.saidaMin - d.intervaloFimMin > 360))
+        out.push(issue("TRABALHO_CONTINUO", "alerta", `${d.data}: há mais de 6h contínuas antes ou depois do intervalo. Reveja o posicionamento da pausa e as condições do regime/categoria; a conferência preventiva não substitui a análise do instrumento aplicável.`, d.data));
       if (h > 6 && int < 60) {
         out.push(
           issue(

@@ -2,6 +2,10 @@
 
 Consultar este registro antes de orientar o operador. Distinguir código disponível, testes locais e resultados informados pelo operador. Não contém senhas, chaves ou identificadores pessoais.
 
+## Correções posteriores de 29/10/2026 — seleção e intervalos
+
+Seletor preservado na interação com scrollbar, altura fixa de 85dvh no modal, comparação com textos/colunas legíveis e remoção dos botões CSV. Intervalos: duração mínima do art. 71 preservada, teto geral de 2h validado, aviso preventivo para blocos contínuos acima de 6h e sugestões automáticas de pausa até quatro horas após entrada (política do gerador). Regras `ec141-2026-10-29-9` invalidam resultados antigos para nova geração, preservando cadastro; sem migração, RPC ou variável nova. 498 testes unitários, build e suíte completa de navegador aprovados localmente. Instalação depende do deploy, sem alteração direta na VPS.
+
 ## Entrega de 29/10/2026 — documentos PDF
 
 Botões próprios para documento completo do empregador e ZIP com um PDF por colaborador, tanto na atual quanto na proposta e nos modos dinâmico/fixo. A4 paisagem, logo, empresa/período, horários/intervalos, folgas, função, resumo semanal e pendências; cobertura apenas no completo. Geração local independente da impressão, com jsPDF/AutoTable/fflate publicados pelo build (esbuild apenas para esse módulo de dependências). Sem migração SQL, nova variável, RPC ou mudança das regras de geração. Requer deploy do build atualizado. 496 testes unitários, build, suíte completa de navegador e downloads reais PDF/ZIP aprovados localmente; não confirma homologação no domínio público.

@@ -1,3 +1,4 @@
+const { baixarCsvLegado } = require("./helpers/csv-legado.cjs");
 const assert = require('node:assert/strict');
 const { clicarCalculo } = require('./helpers/calculo.cjs');
 module.exports = async ({ browser, baseURL }) => {
@@ -45,7 +46,7 @@ module.exports = async ({ browser, baseURL }) => {
     assert.equal(convertido.conversao.comparacao.status,'suficiente');
     assert.equal(await page.locator('#resultado-proposta [data-fixo-colaborador]').count(),5);
     assert.match(await page.locator('#conversao-comparacao').textContent(),/semanais/);
-    const [download]=await Promise.all([page.waitForEvent('download'),page.locator('#btn-exportar-proposta').click()]);
+    const [download]=await Promise.all([page.waitForEvent('download'),baixarCsvLegado(page, true)]);
     assert.equal(download.suggestedFilename(),'proposta-5x2-fixa.csv');
     await page.setViewportSize({width:390,height:844});
     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));

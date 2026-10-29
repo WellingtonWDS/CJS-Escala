@@ -1,3 +1,4 @@
+const { baixarCsvLegado } = require("./helpers/csv-legado.cjs");
 const { clicarCalculo } = require("./helpers/calculo.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs/promises");
@@ -175,7 +176,7 @@ module.exports = async function testarSexoNomes({ browser, baseURL }) {
     await irParaEtapa(page, "#btn-gerar");
     await clicarCalculo(page, "#btn-gerar");
     const promessa = page.waitForEvent("download");
-    await page.locator("#btn-exportar-csv").click();
+    await baixarCsvLegado(page, false);
     const d = await promessa;
     const csv = await fs.readFile(await d.path(), "utf8");
     assert.match(csv, /Origem do sexo/);

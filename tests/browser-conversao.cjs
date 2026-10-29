@@ -1,3 +1,4 @@
+const { baixarCsvLegado } = require("./helpers/csv-legado.cjs");
 const { clicarCalculo } = require("./helpers/calculo.cjs");
 const {
   respondToDialogs,
@@ -105,8 +106,8 @@ module.exports = async function testarConversao({ browser, baseURL }) {
     );
     const origem = structuredClone(s.conversao.origem);
     const promise = page.waitForEvent("download");
-    await irParaEtapa(page, "#btn-exportar-proposta");
-    await page.locator("#btn-exportar-proposta").click();
+    await irParaEtapa(page, "#btn-gerar");
+    await baixarCsvLegado(page, true);
     await waitForDialogs(page);
     const download = await promise;
     assert.equal(download.suggestedFilename(), "proposta-5x2-2028-02.csv");
@@ -162,7 +163,7 @@ module.exports = async function testarConversao({ browser, baseURL }) {
       /desatualizada/,
     );
     assert.equal(
-      await page.locator("#btn-exportar-proposta").isDisabled(),
+      await page.evaluate(() => JSON.parse(localStorage.getItem("fintria-escala-dp-v2")).conversao.desatualizada === true),
       true,
     );
     await irParaEtapa(page, "#btn-converter");
@@ -292,7 +293,7 @@ module.exports = async function testarConversao({ browser, baseURL }) {
       /INCOMPATÍVEL|a semana civil contém|fora da vigência/,
     );
     const downloadAtual = page.waitForEvent("download");
-    await page.locator("#btn-exportar-csv").click();
+    await baixarCsvLegado(page, false);
     await waitForDialogs(page);
     const csvAtual = await readFile(await (await downloadAtual).path(), "utf8");
     assert.doesNotMatch(csvAtual, /REPOUSO_SEMANAL|INSTRUMENTO_FORA_VIGENCIA/);
@@ -311,7 +312,7 @@ module.exports = async function testarConversao({ browser, baseURL }) {
       /não pôde ser salva/,
     );
     assert.equal(
-      await page.locator("#btn-exportar-proposta").isDisabled(),
+      await page.evaluate(() => JSON.parse(localStorage.getItem("fintria-escala-dp-v2")).conversao.desatualizada === true),
       false,
     );
     assert.deepEqual(errors, []);

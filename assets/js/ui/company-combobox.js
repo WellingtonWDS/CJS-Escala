@@ -116,7 +116,9 @@ export function createCompanyCombobox({ root, onChange = () => {} }) {
     if (!root.contains(event.target)) close();
   });
   root.addEventListener("focusout", (event) => {
-    if (!root.contains(event.relatedTarget)) close();
+    // Scrollbars may blur the input with no relatedTarget. Only a known
+    // focus destination outside the control closes it; pointerdown handles outside clicks.
+    if (event.relatedTarget && !root.contains(event.relatedTarget)) close();
   });
   root.closest("dialog")?.addEventListener("close", () => close());
   select.addEventListener("change", () => {

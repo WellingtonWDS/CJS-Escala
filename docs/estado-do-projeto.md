@@ -1,6 +1,6 @@
 # Estado do projeto — Reescala
 
-Atualizado em **29/10/2026**. Referência funcional: versão de regras `ec141-2026-10-28-8` ([histórico do projeto](https://github.com/WellingtonWDS/CJS-Escala/commits/main/)). Esta página resume o andamento; o [README](../README.md) detalha operação, arquitetura, configuração e testes.
+Atualizado em **29/10/2026**. Referência funcional: versão de regras `ec141-2026-10-29-9` ([histórico do projeto](https://github.com/WellingtonWDS/CJS-Escala/commits/main/)). Esta página resume o andamento; o [README](../README.md) detalha operação, arquitetura, configuração e testes.
 
 Identidade **Reescala** aplicada no login, cabeçalho, menu expandido/recolhido, carregamento, quadros de escala/impressão e ícone do navegador, usando os arquivos originais de `logos/`. A publicação inclui essa pasta e o login carrega suas imagens sem sessão; dados, chaves internas e permissões são preservados.
 
@@ -9,6 +9,12 @@ Logos com dimensões limitadas também no HTML para evitar crescimento com CSS a
 Quatro novas empresas por segmento e onze preenchimentos DEMO para comércio contínuo, fazenda com sábado compensado, entidade 24h com 12×36/administrativo e padaria até 20h30. Casos de cobertura, readequação e contratação; os ciclos mistos são analisados na prévia e continuam fora da conversão automática. [Instalação e resultados esperados](cenarios-demo-segmentos.md). Instalador testado localmente; execução remota ainda pendente.
 
 Carregamento imediato na geração atual/proposta, cálculo em Worker local, bloqueio de duplicação, liberação em falhas e proteção contra resultados de dados alterados. Resumo da busca de cobertura aparece primeiro em modal e depois abaixo do botão, com aplicação separada. Regras de cálculo e versões de dados preservadas.
+
+## Correções de interface e intervalos — 29/10/2026
+
+Seletor de empresas deixa de fechar quando a barra de rolagem provoca perda de foco com destino nulo; foco/clique externos continuam fechando. Modal com altura fixa de 85dvh e rolagem interna. Tabelas de comparação com largura mínima, explicação espaçosa, alinhamento superior e textos semanais em blocos. Botões CSV removidos da etapa; PDFs e ZIP permanecem. Serializador CSV interno continua com regressões independentes da interface.
+
+Art. 71: mínimos de 15min para mais de 4h até 6h e 1h para mais de 6h preservados; teto geral de 2h validado, sem presumir exceção não cadastrada. Blocos contínuos maiores que 6h geram aviso preventivo para revisão do regime/categoria. Sugestões automáticas iniciam a pausa até quatro horas após entrada (política conservadora, não prazo fixado no artigo), mantendo duração e limites de disponibilidade. Origem preservada. Versão `ec141-2026-10-29-9` exige nova geração, sem migração SQL. 498 testes unitários, build e suíte completa de navegador aprovados; navegador dedicado verifica barra de rolagem/foco nulo, altura fixa desktop/celular e ausência dos botões CSV.
 
 ## Documentos PDF — 29/10/2026
 

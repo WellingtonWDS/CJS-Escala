@@ -1,3 +1,4 @@
+const { baixarCsvLegado } = require("./helpers/csv-legado.cjs");
 const { clicarCalculo } = require("./helpers/calculo.cjs");
 const { irParaEtapa } = require("./helpers/etapas.cjs");
 const assert = require("node:assert/strict");
@@ -88,8 +89,8 @@ module.exports = async function testarSetores({ browser, baseURL }) {
       /22:00–07:00 \(\+1d\)/,
     );
     const downloadPromise = page.waitForEvent("download");
-    await irParaEtapa(page, "#btn-exportar-csv");
-    await page.locator("#btn-exportar-csv").click();
+    await irParaEtapa(page, "#btn-gerar");
+    await baixarCsvLegado(page, false);
     const download = await downloadPromise;
     const { readFile } = require("node:fs/promises");
     const csv = await readFile(await download.path(), "utf8");
