@@ -31,9 +31,11 @@ module.exports = async ({ browser, baseURL, sql }) => {
     await page.waitForFunction(
       () => document.documentElement.dataset.ready === "true",
     );
+    await page.locator("#btn-workspace-fab").click();
     return page;
   }
   const openPanel = async (page) => {
+    if(await page.locator("#btn-workspace-fab").isVisible())await page.locator("#btn-workspace-fab").click();
     await page.locator("#btn-remote-workspace").click();
     await page
       .locator("[data-remote-company] option")
@@ -64,6 +66,7 @@ module.exports = async ({ browser, baseURL, sql }) => {
         document.documentElement.dataset.ready === "true" &&
         !document.querySelector("#remote-workspace").open,
     );
+    if(await page.locator("#btn-workspace-fab").isVisible())await page.locator("#btn-workspace-fab").click();
   };
   try {
     const a = await login("admin-a@example.test");
@@ -103,6 +106,7 @@ module.exports = async ({ browser, baseURL, sql }) => {
     );
     assert.equal(await a.locator('[data-field="nome"]').count(), 2);
     assert.equal(await a.locator("#cfg-mes").inputValue(), "8");
+    if(await a.locator("#btn-workspace-fab").isVisible())await a.locator("#btn-workspace-fab").click();
     await a
       .locator("[data-remote-title]")
       .fill("Rascunho integração navegador");
@@ -114,6 +118,7 @@ module.exports = async ({ browser, baseURL, sql }) => {
         await route.abort("failed");
       } else await route.continue();
     });
+    if(await a.locator("#btn-workspace-fab").isVisible())await a.locator("#btn-workspace-fab").click();
     await a.locator("[data-remote-save]").click();
     await a.waitForFunction(
       () =>
@@ -129,6 +134,7 @@ module.exports = async ({ browser, baseURL, sql }) => {
     await a.waitForFunction(
       () => document.documentElement.dataset.ready === "true",
     );
+    if(await a.locator("#btn-workspace-fab").isVisible())await a.locator("#btn-workspace-fab").click();
     await a.locator("[data-remote-save]").click();
     await a.waitForFunction(
       () =>
@@ -155,6 +161,7 @@ module.exports = async ({ browser, baseURL, sql }) => {
     assert.equal(await second.locator('[data-field="nome"]').count(), 2);
     assert.equal(await second.locator("#cfg-mes").inputValue(), "8");
     await a.locator("[data-remote-title]").fill("Revisão A");
+    if(await a.locator("#btn-workspace-fab").isVisible())await a.locator("#btn-workspace-fab").click();
     await a.locator("[data-remote-save]").click();
     await a.waitForFunction(
       () =>
@@ -221,6 +228,7 @@ module.exports = async ({ browser, baseURL, sql }) => {
     }
     await closePanel(a);
     await a.locator("[data-remote-title]").fill("Cópia renomeada");
+    if(await a.locator("#btn-workspace-fab").isVisible())await a.locator("#btn-workspace-fab").click();
     await a.locator("[data-remote-save]").click();
     await a.waitForFunction(
       () =>

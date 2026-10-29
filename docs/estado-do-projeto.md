@@ -10,6 +10,18 @@ Quatro novas empresas por segmento e onze preenchimentos DEMO para comércio con
 
 Carregamento imediato na geração atual/proposta, cálculo em Worker local, bloqueio de duplicação, liberação em falhas e proteção contra resultados de dados alterados. Resumo da busca de cobertura aparece primeiro em modal e depois abaixo do botão, com aplicação separada. Regras de cálculo e versões de dados preservadas.
 
+## FAB, horários replicados e troca de dias — 29/10/2026
+
+Painel de salvamento inicialmente recolhido, aberto por FAB verde **Salvar preenchimento** no canto inferior direito, com **Minimizar** e espaço inferior reduzido. Mantidos contexto, cópia, recuperação, confirmação remota e permissões.
+
+Horários individuais semanais podem ser replicados de outro colaborador com confirmação e cópia independente. Preserva dados pessoais, admissão, função e restrições; a referência contratual segue o checkbox existente. Alteração invalida a escala para nova geração.
+
+Simulação explícita de 42h na conversão exige ACT/CCT identificado, compatível, vigente em todo destino/referência fixa, com compensação diária e teto >=8h24. Opção desabilitada quando não atende; seleção anterior inválida é substituída por 40h. Referência automática e contexto jurídico da origem preservados.
+
+Arraste troca dois dias de trabalho/folga do mesmo colaborador; alternativa de seleção de dois cards permite teclado/toque. Confirmação com efeito nas lacunas, validação atômica, restrições/novos erros bloqueados, recálculo e desfazer com assinatura. Fixo altera o padrão recorrente, dinâmico altera as datas. Não troca identidades, não move ausências especiais nem readequa colegas automaticamente. Resultado e metadados acompanham o preenchimento/exports existentes. Sem migração SQL, variável ou mudança das regras de geração.
+
+Validação local desta entrega: **508 testes unitários**, build, suíte completa de navegador e integração PostgreSQL 17/PostgREST 14.15 com navegador aprovados. Inclui FAB/minimização, cópia de horários, bloqueio de 42h, arraste/seleção, cancelamento/confirmar, desfazer, restrições, padrão fixo e preservação da origem.
+
 ## Persistência de resultados e seletor — 29/10/2026
 
 Salvar preenchimento já incluía a escala atual e a proposta. Corrigida a distinção entre falha do cache automático e confirmação remota. No modo individual, resultados completos são compactados sem perda no cache, recuperação, pendências e transporte, mantendo leitura de estados antigos. Quota local não bloqueia o salvamento remoto: envio pendente fica em memória quando necessário, com aviso explícito para manter a aba aberta e repetição pela mesma chave. Confirmação depende da resposta do servidor e atualiza o aviso da geração quando a versão atual foi salva. Não há autosave remoto nem mudança de cálculo/permissões.

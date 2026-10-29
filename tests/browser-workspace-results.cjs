@@ -79,6 +79,7 @@ module.exports = async ({ browser, baseURL }) => {
         throw new DOMException("Sem espaço", "QuotaExceededError");
       };
     });
+    await page.locator("#btn-workspace-fab").click();
     await page.locator("[data-remote-save]").click();
     await page.waitForFunction(()=>document.querySelector('[data-current-status]').textContent.includes('apenas nesta aba'));
     assert.doesNotMatch(await page.locator('[data-current-status]').textContent(),/Salvo no servidor/);

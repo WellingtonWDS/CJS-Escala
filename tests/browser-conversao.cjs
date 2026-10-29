@@ -233,7 +233,7 @@ module.exports = async function testarConversao({ browser, baseURL }) {
       });
       Object.assign(s.instrumentoColetivo, {
         identificacao: "CCT teste",
-        inicio: "2026-12-16",
+        inicio: "2026-12-01",
         fim: "2027-12-15",
         compativelEC141: true,
         compensacaoDiaria: true,

@@ -2,6 +2,12 @@
 
 Consultar este registro antes de orientar o operador. Distinguir código disponível, testes locais e resultados informados pelo operador. Não contém senhas, chaves ou identificadores pessoais.
 
+## Salvamento recolhível e novas interações — 29/10/2026
+
+FAB **Salvar preenchimento** abre o painel, inicialmente recolhido, com botão Minimizar. Cópia de horários semanais entre colaboradores, sem copiar identidade/restrições. Simulação de 42h desabilitada sem ACT/CCT válido e autorização de compensação diária suficiente no destino. Troca de dias por arraste/seleção de dois cards, mesmo colaborador, confirmação, validação atômica e desfazer; fixo altera o padrão semanal. Campos/regras antigas de geração preservados. Sem migração, RPC ou variável nova; requer deploy dos arquivos públicos. Alterações de resultado continuam exigindo salvar o preenchimento para confirmar no servidor.
+
+Validação local desta entrega: **508 testes unitários**, build, suíte completa de navegador e integração PostgreSQL 17/PostgREST 14.15 com navegador aprovados. Inclui FAB/minimização, cópia de horários, bloqueio de 42h, arraste/seleção, cancelamento/confirmar, desfazer, restrições, padrão fixo e preservação da origem.
+
 ## Resultados completos, quota local e rolagem — 29/10/2026
 
 Compactação sem perda dos resultados no modo individual (cache, recuperação, pendências e transporte), compatível com estados antigos. Salvar preenchimento inclui escala atual/proposta; não há autosave remoto. Falha da cópia local tem aviso próprio; quota não bloqueia envio ao servidor. Se a rede falhar nesse fallback, a operação fica só na aba e é repetida pela mesma chave. Após sucesso, a interface confirma o servidor mesmo se o cache falhar. Seletor preserva abertura também com foco no modal/contêiner e evento nativo redirecionado ao ancestral.

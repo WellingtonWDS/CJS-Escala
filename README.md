@@ -10,6 +10,17 @@ Consulte [Estado do projeto](docs/estado-do-projeto.md) para uma visão consolid
 
 O fluxo principal já inclui cadastro manual e por planilhas, importação Domínio, restrições individuais, habilitações por função, geração, conversão 6×1 → 5×2, comparação de cobertura, sugestões de ajustes com prévia/aplicação/desfazer, edição da grade, CSV e impressão. O acesso oferece login individual por e-mail/senha integrado ao n8n e ao banco, com sessão de até 12 horas, menu por perfil, gestão de usuários e empresas e preenchimentos compartilhados por empresa autorizada. O modo compartilhado/local permanece disponível por configuração. Os detalhes de funcionamento e configuração estão nas seções abaixo.
 
+## Salvamento compacto e ajustes de escala — 29/10/2026
+
+- **Salvar preenchimento:** botão flutuante verde no canto inferior direito. O painel começa recolhido; abre pelo botão e possui **Minimizar**. O salvamento continua explícito, com confirmação do servidor, cópia e recuperação preservadas.
+- **Replicar horários:** na ficha com horários individuais por dia, selecione outro colaborador com padrão semanal e confirme **Replicar horários**. Copia os dias/situações e horários completos, sem copiar identificação, admissão, função ou restrições. A carga segue a opção existente de manter/recalcular contrato. Os dados são independentes após a cópia; gere novamente a escala.
+- **Simular 42h em 5×2:** a opção fica desabilitada sem ACT/CCT identificado, compatível com a EC 141, vigente em todo o mês de destino (ou na referência fixa), com compensação diária e limite suficiente para 42h em cinco dias (ao menos 8h24). Uma seleção antiga de 42h sem essas condições passa para 40h e a comparação anterior fica desatualizada. A referência automática por datas e a análise da escala atual continuam disponíveis; não altera a vigência legal da EC 141.
+- **Trocar dias:** arraste um card sobre outro dia do **mesmo colaborador**, ou use **Trocar dois dias** por clique/teclado/toque. A troca leva entrada, intervalo e saída com o trabalho; no fixo, repete os dias da semana. Exibe confirmação e efeito total nas lacunas de cobertura antes de aplicar. Restrições e novos erros legais impedem a troca sem aplicar metade dela. Há **Desfazer última troca**, protegido contra alterações posteriores. Ausências/dias especiais usam a edição própria; não há troca de identidade ou redistribuição automática entre pessoas por arraste.
+
+A grade e os resumos, cobertura, comparação e documentos passam a usar o resultado alterado; editar a proposta preserva sua origem. Salve o preenchimento para compartilhar as alterações. Não exige migração SQL nem novas variáveis.
+
+Validação local desta entrega: **508 testes unitários**, build, suíte completa de navegador e integração PostgreSQL 17/PostgREST 14.15 com navegador aprovados. Inclui FAB/minimização, cópia de horários, bloqueio de 42h, arraste/seleção, cancelamento/confirmar, desfazer, restrições, padrão fixo e preservação da origem.
+
 ## Resultados salvos com o preenchimento — 29/10/2026
 
 **Salvar preenchimento** guarda no servidor os dados preenchidos, a escala atual, a proposta 5×2 e os ajustes presentes no estado. Não há salvamento remoto automático ao gerar: aguarde a confirmação **Salvo no servidor** na barra da empresa. Gerar uma nova versão depois dessa confirmação exige salvar novamente.

@@ -936,3 +936,10 @@ label:has(> .ui-switch) {
   #conversao-comparacao .comparacao-tabela { min-width: 0; }
   #conversao-comparacao .comparacao-tabela td:last-child { min-width: 0; }
 }
+
+.troca-escala-acoes { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-bottom:14px; font-size:12px; line-height:1.5; color:#52657c; }
+.troca-escala-acoes span { flex:1 1 260px; }
+.troca-escala-acoes button { border:1px solid #cbd5e1; padding:8px 12px; border-radius:8px; background:white; color:#102b49; font-weight:600; }
+.escala-colaborador[draggable="true"] { cursor:grab; }
+.troca-selecionado { outline:3px solid #087e63 !important; }
+.troca-destino { outline:3px dashed #087e63 !important; }

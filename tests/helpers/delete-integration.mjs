@@ -198,10 +198,10 @@ export async function testDeleteIntegration({ env, sql, browserTest }) {
           ? d.dismiss()
           : d.accept(),
       );
-      const ready = () =>
-        page.waitForFunction(
-          () => document.documentElement.dataset.ready === "true",
-        );
+      const ready = async () => {
+        await page.waitForFunction(()=>document.documentElement.dataset.ready === "true");
+        if(await page.locator("#btn-workspace-fab").isVisible())await page.locator("#btn-workspace-fab").click();
+      };
       const open = async () => {
         await page.locator("#btn-remote-workspace").click();
         await page.waitForFunction(

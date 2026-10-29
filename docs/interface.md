@@ -76,3 +76,11 @@ Conferir visualmente também com fontes reais, zoom do navegador, nomes longos e
 ## Evoluções de interface planejadas
 
 O quadro diário e as novas exportações para empregador/funcionário continuam no [plano de evolução](planos/evolucao-escalas.md), ainda sem telas ou controles próprios. Serão detalhamentos opcionais do resultado dinâmico ou fixo, preservando o cálculo comum e a leitura móvel. A primeira entrega da escala fixa já está disponível conforme descrito acima.
+
+## Interações de 29/10/2026
+
+O painel de empresa/salvamento começa recolhido. FAB verde **Salvar preenchimento** no canto inferior direito abre as ações; **Minimizar** devolve espaço à escala. O seletor de empresa continua acessível pelo menu/cabeçalho. A confirmação do servidor continua necessária.
+
+Horários por dia oferecem seleção do colaborador de origem e confirmação da replicação do padrão semanal. A simulação de 42h indica indisponibilidade quando falta instrumento coletivo aplicável com compensação suficiente.
+
+Cards de escala aceitam arraste para outro dia do mesmo colaborador, com confirmação antes da aplicação e opção de desfazer. **Trocar dois dias** atende teclado/toque; Escape cancela a seleção. No padrão fixo a alteração é recorrente; na dinâmica é por data. Restrições e novos erros impedem a troca atômica. O resumo da cobertura é mostrado antes de confirmar, e os relatórios completos são recalculados após aplicar.

@@ -393,3 +393,11 @@ body[data-app-view]:not([data-app-view="schedule"]) .current-workspace {
     display: none !important;
   }
 }
+
+.current-workspace[data-expanded="false"] { display: none !important; }
+.workspace-fab { position: fixed; right: 22px; bottom: 20px; z-index: 66; padding: 16px 24px; border-radius: 999px; border: 0; background: #087e63; color: white; font-weight: 700; box-shadow: 0 6px 24px #102b4940; cursor: pointer; min-height: 48px; }
+.workspace-fab[aria-expanded="true"] { display:none; }
+.workspace-minimize { grid-column:1/-1; justify-self:end; border:1px solid #cbd5e1; border-radius:8px; padding:6px 12px; color:#102b49; background:white; cursor:pointer; }
+body[data-app-view]:not([data-app-view="schedule"]) .workspace-fab { display:none; }
+@media (max-width:600px) { .workspace-fab { right:14px; bottom:14px; padding:14px 20px; } .current-workspace { max-height:75dvh; overflow:auto; } }
+@media print { .workspace-fab { display:none !important; } }

@@ -1,3 +1,4 @@
+import { permiteSimular42 } from "../domain/simulacao42.js";
 import { executarCalculoEscala } from "./calculo-escala.js";
 import { renderDiagnosticoEquipe } from "./diagnostico-equipe.js";
 import { converterEscala, compararConversao } from "../domain/conversao.js";
@@ -117,6 +118,18 @@ export function createConversaoUI({
     });
     calendario.renderEscalaGerada();
   }
+  function atualizarOpcao42() {
+    const select=el("conversao-fase");
+    const option=select.querySelector?.('[value="transicao42"]');
+    if(!option)return;
+    option.disabled=!permiteSimular42(state,el("conversao-periodo").value);
+    option.textContent=option.disabled?"42h — exige ACT/CCT vigente com compensação diária":"Simular fase de 42h";
+    if(option.disabled && select.value==="transicao42") {
+      select.value="definitivo40";
+      if(state.destinoConversao)state.destinoConversao.fase="definitivo40";
+      if(state.conversao)state.conversao.desatualizada=true;
+    }
+  }
   function initConversao() {
     const atual = `${state.ano}-${String(state.mes + 1).padStart(2, "0")}`;
     el("conversao-periodo").value =
@@ -126,9 +139,11 @@ export function createConversaoUI({
       ? "definitivo40" : state.destinoConversao?.fase || "automatico";
     el("conversao-folgas").value =
       state.destinoConversao?.folgas || "distribuir";
+    atualizarOpcao42();
     renderConversao();
   }
   function marcarDesatualizada() {
+    atualizarOpcao42();
     if (!state.conversao) return;
     state.conversao.desatualizada = true;
     renderComparacao();
@@ -144,6 +159,7 @@ export function createConversaoUI({
       });
       for (const campo of ["periodo", "fase", "folgas"])
         el(`conversao-${campo}`).onchange = () => {
+          atualizarOpcao42();
           state.destinoConversao = {
             modeloEscala: state.modeloEscala || "dinamica",
             periodo: el("conversao-periodo").value,
@@ -155,6 +171,7 @@ export function createConversaoUI({
         };
       el("btn-converter").onclick = async () => {
         el("conversao-mensagem").textContent = "";
+        atualizarOpcao42();
         if (!validarPreenchimento()) return;
         try {
           const opcoes = {

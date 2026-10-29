@@ -1,3 +1,4 @@
+import { bindArrasteEscala } from "./arrastar-escala.js";
 import { editarHorario } from "./horario-manual.js";
 import { aplicarHorarioManual, desfazerHorarioRecorrente } from "../domain/horario-manual.js";
 import { renderResumoSemanal } from "./resumo-semanal.js";
@@ -204,6 +205,9 @@ export function createCalendarioUI({
     return '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-fintria-azulBg text-fintria-azul">INFO</span>';
   }
 
+  function bindTrocas(container) {
+    bindArrasteEscala({container,state,env,permitido:ajustesPermitidos,render:renderEscalaGerada,salvar:saveState,alterou:onEscalaChange});
+  }
   function renderEscalaGerada() {
     if (!state.escalaGerada) return;
     if (state.modeloEscala === "fixa") {
@@ -212,6 +216,7 @@ export function createCalendarioUI({
       limparRolagem();
       container.innerHTML = renderQuadroFixo(config, createDomain(config));
       limparRolagem = configurarRolagemEscala(container, env.window);
+      bindTrocas(container);
       container.querySelectorAll("[data-ri][data-di]").forEach((el) => {
         el.onclick = () => editarStatus(Number(el.dataset.ri), Number(el.dataset.di));
       });
@@ -543,6 +548,7 @@ export function createCalendarioUI({
     limparRolagem();
     container.innerHTML = edicaoManual.renderPainel() + html;
     limparRolagem = configurarRolagemEscala(container, env.window, posicao);
+    bindTrocas(container);
     ajustes.bindEvents();
     edicaoManual.bindEvents();
 

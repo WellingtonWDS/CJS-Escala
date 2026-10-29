@@ -100,6 +100,12 @@ module.exports = async ({ browser, baseURL }) => {
       });
     });
     const bar = page.locator("#current-workspace");
+    assert(!(await bar.isVisible()));
+    await page.locator("#btn-workspace-fab").click();
+    assert(await bar.isVisible());
+    await page.locator(".workspace-minimize").click();
+    assert(!(await bar.isVisible()));
+    await page.locator("#btn-workspace-fab").click();
     assert.equal(await page.locator("[data-remote-save]").isDisabled(), true);
     await page.evaluate(() =>
       window.dispatchEvent(new Event("cjs-company-changed")),

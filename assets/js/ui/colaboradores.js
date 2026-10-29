@@ -220,6 +220,17 @@ export function createColaboradoresUI({
           }
         };
       });
+    list.querySelectorAll("[data-replicar-horarios]").forEach(button=>{
+      button.onclick=async()=>{
+        const destino=state.colaboradores.find(c=>c.id===Number(button.dataset.replicarHorarios));
+        const id=Number(list.querySelector(`[data-copiar-horarios="${destino.id}"]`).value);
+        const origem=state.colaboradores.find(c=>c.id===id);
+        if(!origem?.quadroDominio?.semana){await env.alert("Selecione um colaborador com horários por dia cadastrados.");return;}
+        if(!await env.confirm(`Substituir os horários por dia de ${destino.nome} pelos de ${origem.nome}?`))return;
+        destino.quadroDominio.semana=structuredClone(origem.quadroDominio.semana);
+        atualizarPerfilDominio(destino,state);invalidarEscala();saveState();renderColaboradores();renderResumo();
+      };
+    });
     list.querySelectorAll("[data-horario-individual]").forEach((button) => {
       button.onclick = () => {
         const c = state.colaboradores.find(

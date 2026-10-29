@@ -23,6 +23,19 @@ export async function initRemoteWorkspace({
   bar.dataset.loadingLabel = "Salvando o preenchimento da empresa";
   bar.innerHTML = `<div class="workspace-context"><span class="workspace-eyebrow">Empresa atual e Preenchimentos</span><strong data-current-company>Nenhuma empresa selecionada</strong><span data-current-office></span><button type="button" data-current-open>Trocar empresa ou abrir preenchimento</button></div><div class="workspace-saving"><label>Nome do preenchimento<input data-remote-title maxlength="160" placeholder="Ex.: Escala de outubro" autocomplete="off"></label><div class="workspace-buttons"><button type="button" data-remote-save>Salvar preenchimento</button><button type="button" data-remote-new>Salvar uma cópia</button></div><p data-current-status role="status" aria-live="polite"></p></div>`;
   dialog.innerHTML = `<form method="dialog"><button class="remote-close" aria-label="Fechar">×</button></form><h2>Empresa atual e Preenchimentos</h2><p>Escolha a empresa e o preenchimento que deseja abrir.</p><div class="workspace-selector-scroll"><div class="workspace-choice-group"><h3>1. Escolha a empresa</h3><label>Escritório<select data-remote-office></select></label><div class="company-combobox" data-company-combobox><span id="workspace-company-label">Empresa</span><select data-remote-company hidden aria-hidden="true" tabindex="-1"></select><button type="button" data-company-trigger aria-labelledby="workspace-company-label workspace-company-value" id="workspace-company-value" aria-haspopup="listbox" aria-expanded="false" aria-controls="workspace-company-options">Selecione a empresa</button><div class="company-combobox-popup" data-company-popup hidden><label>Buscar empresa<input data-remote-company-search type="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="workspace-company-options" autocomplete="off" placeholder="Razão social ou CNPJ"></label><div id="workspace-company-options" role="listbox" aria-label="Empresas"></div><p role="status" aria-live="polite"></p></div></div></div><div class="workspace-choice-group"><h3>2. Escolha o preenchimento</h3><label>Preenchimentos desta empresa<select data-remote-draft></select></label><button type="button" class="workspace-delete" data-remote-delete disabled>Excluir preenchimento selecionado</button><p data-remote-preview>Comece um novo preenchimento ou abra um dos anteriores.</p></div><details class="workspace-recovery"><summary>Recuperação e importação de dados</summary><p>Estas ações usam a empresa e o preenchimento que já estão abertos no sistema.</p><div class="remote-actions"><button type="button" data-remote-restore>Recuperar preenchimento local anterior</button><button type="button" data-remote-import>Importar dados antigos deste navegador</button></div></details></div><p data-remote-status role="status" aria-live="polite"></p><div class="remote-actions workspace-open-actions"><button type="button" data-remote-open>Usar esta empresa</button></div>`;
+  const fab=document.createElement("button");
+  fab.type="button";fab.className="workspace-fab no-print";fab.id="btn-workspace-fab";
+  fab.textContent="Salvar preenchimento";fab.setAttribute("aria-controls",bar.id);
+  document.body.append(fab);
+  const minimize=document.createElement("button");minimize.type="button";
+  minimize.className="workspace-minimize";minimize.textContent="Minimizar";minimize.setAttribute("aria-label","Minimizar painel de salvamento");bar.prepend(minimize);
+  function painel(aberto) {
+    bar.dataset.expanded=String(aberto);fab.setAttribute("aria-expanded",String(aberto));
+    document.documentElement.style.setProperty("--workspace-bar-height",aberto?`${bar.getBoundingClientRect().height+28}px`:"80px");
+    if(!aberto && bar.contains(document.activeElement))fab.focus({preventScroll:true});
+  }
+  fab.onclick=()=>painel(bar.dataset.expanded!=="true");
+  minimize.onclick=()=>painel(false);painel(false);
   const field = (k) => document.querySelector(`[data-remote-${k}]`),
     current = (k) => bar.querySelector(`[data-current-${k}]`);
   let busy = false,
@@ -528,7 +541,7 @@ export async function initRemoteWorkspace({
   const observer = new window.ResizeObserver(() =>
     document.documentElement.style.setProperty(
       "--workspace-bar-height",
-      `${bar.getBoundingClientRect().height ? bar.getBoundingClientRect().height + 28 : 0}px`,
+      bar.dataset.expanded === "true" ? `${bar.getBoundingClientRect().height + 28}px` : "80px",
     ),
   );
   observer.observe(bar);
