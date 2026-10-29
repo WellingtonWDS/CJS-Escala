@@ -57,6 +57,13 @@ module.exports = async ({ browser, baseURL }) => {
           new FocusEvent("focusout", { bubbles: true, relatedTarget: null }),
         );
       });
+      await page.evaluate(() => {
+        const input=document.querySelector('[data-company-popup] input');
+        for(const target of [document.getElementById('remote-workspace'),document.body,document.querySelector('.workspace-selector-scroll')])
+          input.dispatchEvent(new FocusEvent('focusout',{bubbles:true,relatedTarget:target}));
+        const list=document.querySelector('[role=listbox]');const r=list.getBoundingClientRect();
+        document.getElementById('remote-workspace').dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,clientX:r.right-2,clientY:r.top+20}));
+      });
       assert(await page.locator("[data-company-popup]").isVisible());
       await list.evaluate((e) => (e.scrollTop = e.scrollHeight));
       assert(await list.evaluate((e) => e.scrollTop > 0));

@@ -10,6 +10,14 @@ Quatro novas empresas por segmento e onze preenchimentos DEMO para comércio con
 
 Carregamento imediato na geração atual/proposta, cálculo em Worker local, bloqueio de duplicação, liberação em falhas e proteção contra resultados de dados alterados. Resumo da busca de cobertura aparece primeiro em modal e depois abaixo do botão, com aplicação separada. Regras de cálculo e versões de dados preservadas.
 
+## Persistência de resultados e seletor — 29/10/2026
+
+Salvar preenchimento já incluía a escala atual e a proposta. Corrigida a distinção entre falha do cache automático e confirmação remota. No modo individual, resultados completos são compactados sem perda no cache, recuperação, pendências e transporte, mantendo leitura de estados antigos. Quota local não bloqueia o salvamento remoto: envio pendente fica em memória quando necessário, com aviso explícito para manter a aba aberta e repetição pela mesma chave. Confirmação depende da resposta do servidor e atualiza o aviso da geração quando a versão atual foi salva. Não há autosave remoto nem mudança de cálculo/permissões.
+
+Nova correção do seletor cobre foco no próprio modal/body/contêiner de rolagem e pointerdown nativo redirecionado ao ancestral, além do caso anterior de foco nulo. Altura fixa mantida; seleção externa e teclado preservados.
+
+504 testes unitários, build e suíte completa de navegador aprovados. PostgreSQL 17/PostgREST 14.15 e navegador reais locais: round-trip completo de 30 colaboradores (aprox. 4,3 MB → 630 KB), compartilhamento, revisões, idempotência e isolamento aprovados. Limite de 1 MiB por JSONB mantido, sem migração SQL. Codec documentado no [README do banco](../database/README.md). Não confirma implantação na VPS/Vercel.
+
 ## Correções de interface e intervalos — 29/10/2026
 
 Seletor de empresas deixa de fechar quando a barra de rolagem provoca perda de foco com destino nulo; foco/clique externos continuam fechando. Modal com altura fixa de 85dvh e rolagem interna. Tabelas de comparação com largura mínima, explicação espaçosa, alinhamento superior e textos semanais em blocos. Botões CSV removidos da etapa; PDFs e ZIP permanecem. Serializador CSV interno continua com regressões independentes da interface.

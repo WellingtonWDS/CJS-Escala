@@ -1,3 +1,4 @@
+import { compactarSnapshot, expandirSnapshot } from "../state/snapshot.js";
 // Serviço preparado para o adaptador de autenticação individual. Não é ativado no fluxo local.
 export function createRemotePersistence({ fetchImpl = fetch } = {}) {
   async function call(action, args = {}) {
@@ -37,9 +38,11 @@ export function createRemotePersistence({ fetchImpl = fetch } = {}) {
     listCompanies: (officeId) => call("listCompanies", { officeId }),
     listDrafts: (officeId, companyId) =>
       call("listDrafts", { officeId, companyId }),
-    getDraft: (officeId, companyId, draftId) =>
-      call("getDraft", { officeId, companyId, draftId }),
-    saveDraft: (draft) => call("saveDraft", draft),
+    getDraft: async (officeId, companyId, draftId) => {
+      const row = await call("getDraft", { officeId, companyId, draftId });
+      return row?.state ? {...row, state:expandirSnapshot(row.state)} : row;
+    },
+    saveDraft: (draft) => call("saveDraft", {...draft, state: compactarSnapshot(draft.state)}),
     deleteDraft: (draft) => call("deleteDraft", draft),
   };
 }

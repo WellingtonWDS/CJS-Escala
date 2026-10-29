@@ -1,3 +1,4 @@
+import { expandirSnapshot } from "./snapshot.js";
 import { VERSAO_REGRAS } from "../domain/ec141.js";
 import { STORAGE_KEY } from "../config/regras-jornada.js";
 import { replaceState, atualizarNomesExemplo } from "./store.js";
@@ -16,7 +17,7 @@ export function createPersistence({ state, initialState, storage }) {
     try {
       const raw = storage.getItem(STORAGE_KEY);
       if (!raw) return false;
-      const parsed = JSON.parse(raw);
+      const parsed = expandirSnapshot(JSON.parse(raw));
       const regrasAntigas =
         parsed?.escalaGerada &&
         parsed.escalaGerada.versaoRegras !== VERSAO_REGRAS;

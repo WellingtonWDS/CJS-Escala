@@ -10,6 +10,18 @@ Consulte [Estado do projeto](docs/estado-do-projeto.md) para uma visão consolid
 
 O fluxo principal já inclui cadastro manual e por planilhas, importação Domínio, restrições individuais, habilitações por função, geração, conversão 6×1 → 5×2, comparação de cobertura, sugestões de ajustes com prévia/aplicação/desfazer, edição da grade, CSV e impressão. O acesso oferece login individual por e-mail/senha integrado ao n8n e ao banco, com sessão de até 12 horas, menu por perfil, gestão de usuários e empresas e preenchimentos compartilhados por empresa autorizada. O modo compartilhado/local permanece disponível por configuração. Os detalhes de funcionamento e configuração estão nas seções abaixo.
 
+## Resultados salvos com o preenchimento — 29/10/2026
+
+**Salvar preenchimento** guarda no servidor os dados preenchidos, a escala atual, a proposta 5×2 e os ajustes presentes no estado. Não há salvamento remoto automático ao gerar: aguarde a confirmação **Salvo no servidor** na barra da empresa. Gerar uma nova versão depois dessa confirmação exige salvar novamente.
+
+O aviso de falha da cópia automática refere-se ao navegador e é distinto do salvamento remoto. No modo individual, os resultados agora usam uma representação compactada sem perda no cache, recuperação, envio pendente e transporte ao servidor. Dados antigos sem compactação continuam legíveis. Um cenário de 30 pessoas passou de cerca de 4,3 MB para 630 KB, preservando os resultados completos. Não altera cálculo, regras ou permissões; o limite de 1 MiB por JSONB salvo permanece.
+
+Se a quota local estiver esgotada, ainda é possível salvar no servidor. Uma falha de rede nesse caso mantém a operação pendente somente na memória da aba e pede para mantê-la aberta; a repetição usa a mesma chave para evitar duplicidade. Após sucesso remoto, a interface confirma o servidor e informa se a cópia local continuou indisponível. O aviso da geração é atualizado quando a versão atual é confirmada no servidor.
+
+O seletor também preserva a lista quando a rolagem nativa transfere o foco para o próprio modal ou seu contêiner, e quando o evento do scrollbar é redirecionado ao ancestral. Clique/foco em outro controle continua fechando a seleção. A altura fixa do modal foi mantida.
+
+Validação: **504 testes unitários**, build e suíte completa de navegador; integração local PostgreSQL 17/PostgREST 14.15 com navegador, incluindo salvar/reabrir resultados completos de 30 pessoas e compartilhamento autorizado. Testes específicos de quota local, repetição de envio, dados compactados/antigos, recuperação e isolamento. Não exige migração SQL ou variável nova; requer atualização da aplicação.
+
 ## Ajustes de seleção, comparação e intervalos — 29/10/2026
 
 O seletor de empresas mantém a lista aberta ao clicar/arrastar sua barra de rolagem, inclusive quando o navegador tira o foco da busca sem indicar outro campo. Clique ou foco em outro controle continua fechando a lista. O modal Empresa atual e Preenchimentos tem altura fixa de 85% da área visível, com rolagem interna, sem crescer ao abrir a seleção. Comparações ganham textos em blocos, colunas mais espaçosas e rolagem horizontal em telas menores.

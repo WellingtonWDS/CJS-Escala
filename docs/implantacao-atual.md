@@ -2,6 +2,12 @@
 
 Consultar este registro antes de orientar o operador. Distinguir código disponível, testes locais e resultados informados pelo operador. Não contém senhas, chaves ou identificadores pessoais.
 
+## Resultados completos, quota local e rolagem — 29/10/2026
+
+Compactação sem perda dos resultados no modo individual (cache, recuperação, pendências e transporte), compatível com estados antigos. Salvar preenchimento inclui escala atual/proposta; não há autosave remoto. Falha da cópia local tem aviso próprio; quota não bloqueia envio ao servidor. Se a rede falhar nesse fallback, a operação fica só na aba e é repetida pela mesma chave. Após sucesso, a interface confirma o servidor mesmo se o cache falhar. Seletor preserva abertura também com foco no modal/contêiner e evento nativo redirecionado ao ancestral.
+
+504 testes unitários, build, suíte completa de navegador e integração PostgreSQL 17/PostgREST 14.15 com navegador aprovados localmente, incluindo snapshot completo de 30 colaboradores e isolamento/revisão/compartilhamento. Sem migração, RPC, variável ou mudança das regras de cálculo; limite de 1 MiB por JSONB mantido. Requer deploy do código atualizado. Não comprova homologação no domínio público.
+
 ## Atualização da faixa de almoço — 29/10/2026
 
 Jornadas próximas de 8h (7h a 9h efetivas): sugestões de pausa entre 3h e 5h após a entrada, mantendo sua duração. Para 08h–18h com 2h de pausa, início entre 11h e 13h. Vale na redistribuição de pausas e nas sugestões de mudança de entrada/turno, inclusive noturnos. Outras durações mantêm a política anterior. Não altera os mínimos legais do art. 71 nem os horários atuais cadastrados; é critério do gerador. Regras `ec141-2026-10-29-10` exigem nova geração dos resultados, sem migração ou variável nova. Também aplicada na geração da proposta sem demanda operacional. Validação local: 501 testes unitários, build e navegador de ajustes de cobertura, conversão, escala fixa e cobertura aprovados.

@@ -316,7 +316,7 @@ export async function initRemoteWorkspace({
         state: validateSnapshot(app.state),
       };
       if (!body.title) throw Error("Informe o nome do preenchimento.");
-      workspace.setPending(body);
+      workspace.setPending(body, {allowVolatile:true});
     }
     status(
       previous
@@ -339,11 +339,13 @@ export async function initRemoteWorkspace({
         throw Error(
           "Outra pessoa alterou este preenchimento. Seus dados locais foram preservados. Abra a versão atual antes de salvar novamente.",
         );
+      if (workspace.pendingVolatile?.()) error.message += " O envio pendente está apenas nesta aba: mantenha-a aberta e tente salvar novamente.";
       throw error;
     }
-    workspace.activate(
+    const localCache = workspace.activate(
       { ...c, draftId: result.id, revision: result.revision },
       app.state,
+      {allowVolatile:true},
     );
     workspace.clearPending(c);
     contextKey = `${c.officeId}:${c.companyId}:${result.id}`;
@@ -367,8 +369,9 @@ export async function initRemoteWorkspace({
     status(
       dirty
         ? `Envio anterior salvo — revisão ${result.revision}. Há alterações locais posteriores; salve novamente para enviá-las.`
-        : `Salvo no servidor — revisão ${result.revision}. Disponível aos usuários autorizados desta empresa.`,
+        : `Salvo no servidor — revisão ${result.revision}. Inclui a escala atual e a proposta gerada. Disponível aos usuários autorizados desta empresa.${localCache?.cached === false ? " A cópia local não pôde ser atualizada; reabra o preenchimento do servidor quando necessário." : ""}`,
     );
+    window.dispatchEvent(new window.CustomEvent("cjs-remote-saved", {detail:{current:!dirty}}));
     updateButtons();
   }
   field("delete").addEventListener("click", () =>

@@ -112,13 +112,57 @@ export function createCompanyCombobox({ root, onChange = () => {} }) {
       if (matches[active]) choose(matches[active]);
     }
   });
-  document.addEventListener("pointerdown", (event) => {
-    if (!root.contains(event.target)) close();
-  });
+  const dialog = root.closest("dialog");
+  function dentroDoRetangulo(el, event) {
+    const r = el.getBoundingClientRect();
+    return (
+      event.clientX >= r.left &&
+      event.clientX <= r.right &&
+      event.clientY >= r.top &&
+      event.clientY <= r.bottom
+    );
+  }
+  function clicouNaRolagem(event) {
+    for (let el = list; el && el !== document.body; el = el.parentElement) {
+      if (el.scrollHeight <= el.clientHeight || !dentroDoRetangulo(el, event))
+        continue;
+      const r = el.getBoundingClientRect();
+      const style = document.defaultView.getComputedStyle(el);
+      const right = r.left + el.clientLeft + el.clientWidth;
+      if (
+        event.clientX >= right - 1 ||
+        (style.direction === "rtl" &&
+          event.clientX <= r.left + el.clientLeft + 16)
+      )
+        return true;
+    }
+    return false;
+  }
+  document.addEventListener(
+    "pointerdown",
+    (event) => {
+      // Native scrollbar events can be retargeted to the dialog or scrolling ancestor.
+      if (
+        !root.contains(event.target) &&
+        !dentroDoRetangulo(root, event) &&
+        !clicouNaRolagem(event)
+      )
+        close();
+    },
+    true,
+  );
   root.addEventListener("focusout", (event) => {
-    // Scrollbars may blur the input with no relatedTarget. Only a known
-    // focus destination outside the control closes it; pointerdown handles outside clicks.
-    if (event.relatedTarget && !root.contains(event.relatedTarget)) close();
+    const target = event.relatedTarget;
+    // Native scrollbar focus may land on the dialog/body, rather than remain null.
+    if (
+      target &&
+      target !== dialog &&
+      target !== document.body &&
+      target !== document.documentElement &&
+      !target.classList?.contains("workspace-selector-scroll") &&
+      !root.contains(target)
+    )
+      close();
   });
   root.closest("dialog")?.addEventListener("close", () => close());
   select.addEventListener("change", () => {

@@ -384,6 +384,22 @@ try {
     ).status,
     401,
   );
+  // Lossless round-trip of a realistic conversion that exceeds the raw JSON limit.
+  {
+    const {criarEstadoDemo}=await import('../database/demo/state.mjs');
+    const {converterEscala}=await import('../assets/js/domain/conversao.js');
+    const {compactarSnapshot,expandirSnapshot}=await import('../assets/js/state/snapshot.js');
+    const state=criarEstadoDemo();
+    state.colaboradores=Array.from({length:30},(_,i)=>({...state.colaboradores[i%5],id:i+1,nome:`Pessoa ${i}`}));
+    state.conversao=converterEscala(state,{periodo:'2028-02',fase:'definitivo40',folgas:'fim_semana'});
+    state.escalaGerada=structuredClone(state.conversao.origem.escala);
+    const packed=compactarSnapshot(state);
+    assert(JSON.stringify(state).length>4000000);
+    const record=await service.saveDraft(admin,{...draft,draftId:null,revision:null,key:randomUUID(),title:'Escala completa com 30 pessoas',state:packed});
+    const reopened=await service.getDraft(admin,office,company,record.id);
+    assert.deepEqual(expandirSnapshot(reopened.state),JSON.parse(JSON.stringify(state)));
+    console.log('OK: PostgreSQL/PostgREST salvam e reabrem escala atual e proposta completas de 30 colaboradores, compactadas sem perda.');
+  }
   sql(
     `UPDATE cjs_private.sessions SET revoked_at=now() WHERE id='${admin.sessionId}';`,
   );

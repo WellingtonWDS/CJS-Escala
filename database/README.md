@@ -81,3 +81,13 @@ A revisão da conversão 5×2 atualizou as regras para **`ec141-2026-10-28-8`**.
 A integração local PostgreSQL 17/PostgREST 14.15 com navegador passou na entrega do modo fixo. As alterações posteriores de edição e cálculo foram validadas por testes unitários e navegador, sem repetir essa integração de banco. Esses resultados não comprovam aplicação de migrações na VPS nem homologação do deploy público. Registro operacional: [implantação atual](../docs/implantacao-atual.md).
 
 Desde 29/10/2026, os resultados também podem ser exportados como PDF completo do empregador e ZIP com PDFs individuais. A geração é local no navegador, não salva anexos no banco nem altera RPCs, permissões ou schema. O salvamento do preenchimento continua explícito e independente da exportação.
+
+## Resultados compactados — 29/10/2026
+
+O snapshot salvo inclui escala atual, proposta e ajustes. Para evitar repetir grandes estruturas de cálculo, o cliente pode enviar `resultadosCompactados` com `versao=1`, dicionário de nós e referência raiz. Os campos de configuração continuam disponíveis no objeto; resultados são reconstruídos integralmente na leitura, sem introduzir referências mutáveis compartilhadas entre origem/proposta. Estados antigos sem esse campo continuam válidos. O codec é `assets/js/state/snapshot.js`, com limites de expansão e rejeição de estruturas/chaves inválidas. A compactação preserva os valores calculados, sem certificá-los.
+
+`schema_version=1`, RPCs, RLS e limite de 1 MiB no JSONB armazenado são preservados. Não há migração SQL. A aplicação atualizada é necessária para ler o novo campo; nenhuma função SQL depende do conteúdo interno dos resultados. O frontend compacta também cache/recuperação/envio pendente no modo individual. O modo local compartilhado conserva seu armazenamento anterior.
+
+Quota local não impede confirmar uma gravação remota. Na falta de espaço, a pendência pode existir somente na memória da aba, com chave estável de repetição e aviso para não fechá-la se a rede falhar. Sucesso remoto mantém ID/revisão ativos mesmo se atualizar o cache falhar; a interface informa ambos os resultados. Esse fallback não é sincronização automática nem backup de dados ainda não confirmados pelo servidor.
+
+Verificado em PostgreSQL 17/PostgREST 14.15 locais: snapshot completo de 30 colaboradores, aproximadamente 4,3 MB em JSON expandido e 630 KB compactado, salvo e reaberto por RPC sem perda. A integração com navegador também preserva isolamento, compartilhamento autorizado, concorrência e revogação. Serviços reais da VPS não foram alterados.

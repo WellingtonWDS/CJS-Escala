@@ -1,13 +1,17 @@
+import { compactarSnapshot, expandirSnapshot } from "./snapshot.js";
 import { STORAGE_KEY } from "../config/regras-jornada.js";
 const uuid = (v) =>
   typeof v === "string" &&
   /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(v);
 export function validateSnapshot(state) {
-  const copy = JSON.parse(JSON.stringify(state), (key, value) => {
-    if (["__proto__", "prototype", "constructor"].includes(key))
-      throw Error("Rascunho contém uma estrutura não permitida.");
-    return value;
-  });
+  const copy = JSON.parse(
+    JSON.stringify(expandirSnapshot(state)),
+    (key, value) => {
+      if (["__proto__", "prototype", "constructor"].includes(key))
+        throw Error("Rascunho contém uma estrutura não permitida.");
+      return value;
+    },
+  );
   if (
     !copy ||
     typeof copy !== "object" ||
@@ -31,6 +35,7 @@ export function createWorkspace(raw, userId) {
   const prefix = `${STORAGE_KEY}:user:${userId}`,
     contextKey = `${prefix}:context`;
   let context = null;
+  const volatilePending = new Map();
   try {
     const c = JSON.parse(raw.getItem(contextKey));
     if (
@@ -47,19 +52,27 @@ export function createWorkspace(raw, userId) {
   return {
     context: () => (context ? { ...context } : null),
     storage: {
-      getItem: (k) =>
-        raw.getItem(k === STORAGE_KEY ? cacheKey(context) : `${prefix}:${k}`),
+      getItem: (k) => {
+        const value = raw.getItem(
+          k === STORAGE_KEY ? cacheKey(context) : `${prefix}:${k}`,
+        );
+        return k === STORAGE_KEY && value
+          ? JSON.stringify(expandirSnapshot(JSON.parse(value)))
+          : value;
+      },
       setItem: (k, v) =>
         raw.setItem(
           k === STORAGE_KEY ? cacheKey(context) : `${prefix}:${k}`,
-          v,
+          k === STORAGE_KEY
+            ? JSON.stringify(compactarSnapshot(JSON.parse(v)))
+            : v,
         ),
       removeItem: (k) =>
         raw.removeItem(
           k === STORAGE_KEY ? cacheKey(context) : `${prefix}:${k}`,
         ),
     },
-    activate(c, state) {
+    activate(c, state, { allowVolatile = false } = {}) {
       if (
         !uuid(c.officeId) ||
         !uuid(c.companyId) ||
@@ -70,12 +83,25 @@ export function createWorkspace(raw, userId) {
         throw Error("Contexto inválido.");
       const copy = validateSnapshot(state);
       const previous = raw.getItem(cacheKey(c)),
-        serialized = JSON.stringify(copy);
-      if (previous && previous !== serialized)
-        raw.setItem(`${cacheKey(c)}:previous`, previous);
-      raw.setItem(cacheKey(c), serialized);
-      raw.setItem(contextKey, JSON.stringify(c));
+        serialized = JSON.stringify(compactarSnapshot(copy));
+      let cached = true;
+      try {
+        if (previous && previous !== serialized) {
+          let recovery=previous;
+          try { recovery=JSON.stringify(compactarSnapshot(JSON.parse(previous))); } catch {}
+          raw.setItem(`${cacheKey(c)}:previous`, recovery);
+        }
+        raw.setItem(cacheKey(c), serialized);
+        raw.setItem(contextKey, JSON.stringify(c));
+      } catch (error) {
+        if (!allowVolatile) throw error;
+        cached = false;
+        try {
+          raw.setItem(contextKey, JSON.stringify(c));
+        } catch {}
+      }
       context = { ...c };
+      return { cached };
     },
     reset() {
       raw.removeItem(contextKey);
@@ -93,6 +119,7 @@ export function createWorkspace(raw, userId) {
         context = null;
       }
       const key = cacheKey(c);
+      volatilePending.delete(key);
       for (const suffix of ["", ":previous", ":pending"])
         raw.removeItem(`${key}${suffix}`);
       return active;
@@ -107,14 +134,35 @@ export function createWorkspace(raw, userId) {
       return value ? validateSnapshot(JSON.parse(value)) : null;
     },
     pending: () => {
+      if (volatilePending.has(cacheKey(context)))
+        return volatilePending.get(cacheKey(context));
       try {
-        return JSON.parse(raw.getItem(`${cacheKey(context)}:pending`));
+        const body = JSON.parse(raw.getItem(`${cacheKey(context)}:pending`));
+        if (body?.state) body.state = expandirSnapshot(body.state);
+        return body;
       } catch {
         return null;
       }
     },
-    setPending: (body) =>
-      raw.setItem(`${cacheKey(context)}:pending`, JSON.stringify(body)),
-    clearPending: (c = context) => raw.removeItem(`${cacheKey(c)}:pending`),
+    pendingVolatile: () => volatilePending.has(cacheKey(context)),
+    setPending: (body, { allowVolatile = false } = {}) => {
+      try {
+        raw.setItem(
+          `${cacheKey(context)}:pending`,
+          JSON.stringify({
+            ...body,
+            ...(body.state ? { state: compactarSnapshot(body.state) } : {}),
+          }),
+        );
+        volatilePending.delete(cacheKey(context));
+      } catch (error) {
+        if (!allowVolatile) throw error;
+        volatilePending.set(cacheKey(context), body);
+      }
+    },
+    clearPending: (c = context) => {
+      volatilePending.delete(cacheKey(c));
+      raw.removeItem(`${cacheKey(c)}:pending`);
+    },
   };
 }

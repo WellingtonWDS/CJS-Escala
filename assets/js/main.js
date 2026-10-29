@@ -49,8 +49,8 @@ if (session) {
     env.localStorage = {
       ...workspace.storage,
       setItem: (...args) => {
-        workspace.storage.setItem(...args);
-        window.dispatchEvent(new Event("cjs-local-save"));
+        try { workspace.storage.setItem(...args); }
+        finally { window.dispatchEvent(new Event("cjs-local-save")); }
       },
     };
     env.beforeClearState = async () => {

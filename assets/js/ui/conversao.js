@@ -25,7 +25,7 @@ export function createConversaoUI({
   function salvar() {
     if (storage.saveState() === false)
       el("conversao-mensagem").textContent =
-        "A proposta foi calculada nesta aba, mas não pôde ser salva no navegador. O espaço de armazenamento pode estar cheio. Exporte os PDFs antes de sair ou recarregar a página.";
+        "A proposta foi calculada, mas a cópia automática neste navegador falhou. Isso não confirma nem impede o salvamento no servidor. Use Salvar preenchimento para guardar a escala atual e a proposta na empresa e aguarde a confirmação. Se estiver usando somente dados locais, exporte os PDFs antes de sair.";
   }
   const titulos = {
     suficiente:
@@ -138,6 +138,10 @@ export function createConversaoUI({
     renderConversao,
     marcarDesatualizada,
     bindEvents() {
+      env.window?.addEventListener?.("cjs-remote-saved", (event) => {
+        if (event.detail?.current && el("conversao-mensagem").textContent.includes("cópia automática"))
+          el("conversao-mensagem").textContent = "Escala atual e proposta salvas no servidor junto com o preenchimento.";
+      });
       for (const campo of ["periodo", "fase", "folgas"])
         el(`conversao-${campo}`).onchange = () => {
           state.destinoConversao = {
