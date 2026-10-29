@@ -18,9 +18,11 @@ Os botões de CSV da etapa Conversão e comparação foram removidos; use PDF co
 
 **Art. 71 da CLT:** até 4h não exige pausa; acima de 4h até 6h exige 15min; acima de 6h exige pelo menos 1h. Intervalo acima de 2h é sinalizado como incompatível com a regra geral: o sistema não presume acordo escrito ou instrumento específico autorizando exceção. A duração já era verificada; foram acrescentados teto e aviso preventivo para blocos contínuos acima de 6h. Esse aviso solicita conferência do regime/categoria, sem transformar o horário de almoço em uma exigência fixa da lei.
 
-Nas **novas sugestões automáticas**, a pausa começa até quatro horas após a entrada, como política conservadora de distribuição, mantendo sua duração, as entradas/saídas e a cobertura sem piora. Isso não é um prazo de quatro horas previsto no art. 71 e não autoriza encurtar a pausa para fechar cobertura. Horários atuais declarados continuam preservados para diagnóstico. Regras atualizadas para `ec141-2026-10-29-9`: gere novamente resultados anteriores; cadastros são mantidos. Sem alteração de banco ou variáveis.
+Nas **novas sugestões automáticas**, jornadas próximas de 8h (de **7h a 9h efetivas**) têm início da pausa entre **3h e 5h após a entrada**. Exemplo: 08h–18h com 2h de almoço permite iniciar entre **11h e 13h**. A faixa vale também ao sugerir troca de turno/entrada e em jornadas noturnas. Preserva duração da pausa, entrada/saída, horas e limites individuais; se não houver ajuste de cobertura viável nessa faixa, a lacuna permanece para revisão. Para jornadas fora dessa faixa de duração, mantém-se a política anterior de início até quatro horas após a entrada. São critérios de distribuição do produto, não horários de almoço fixados pelo art. 71. Horários atuais declarados continuam preservados para diagnóstico. Regras atualizadas para `ec141-2026-10-29-10`: gere novamente resultados anteriores; cadastros são mantidos. Sem alteração de banco ou variáveis.
 
-Validação: **498 testes unitários**, build e suíte completa de navegador aprovados, incluindo limites de 4h/6h, pausas de 15/60/120/135min e sugestões diurnas/noturnas. Teste de navegador dedicado ao seletor, rolagem, altura fixa e remoção do CSV.
+A faixa também é aplicada à geração da proposta sem demanda operacional cadastrada. Validação desta atualização: **501 testes unitários**, build e testes de navegador de ajustes de cobertura, conversão, escala fixa e cobertura aprovados.
+
+Validação da entrega anterior: **498 testes unitários**, build e suíte completa de navegador aprovados, incluindo limites de 4h/6h, pausas de 15/60/120/135min e sugestões diurnas/noturnas. Teste de navegador dedicado ao seletor, rolagem, altura fixa e remoção do CSV.
 
 ## Exportação de documentos PDF — 29/10/2026
 
@@ -38,7 +40,7 @@ Validação da entrega: **496 testes unitários aprovados**, build, suíte compl
 | `f4e1bba` | Edição de status e horários completos nos dois quadros, intervalo opcional, alterações recorrentes/desfazer no fixo e resumo semanal com formatação e cores compartilhadas. |
 | `e22bdca` | Revisão da geração/conversão 5×2: folgas por disponibilidade individual, busca mesmo sem cobertura, fechamento semanal, ACT/CCT por data e restrições/pausas consideradas antes de distribuir horas. |
 
-Versão atual das regras: **`ec141-2026-10-29-9`**, conforme o texto da EC 141 adotado pelo projeto. **Gere novamente as escalas anteriores** para aplicar as correções; os cadastros e preenchimentos são preservados. As entregas não exigem migração SQL nem novas variáveis de ambiente. Quadro diário continua planejado; os arquivos separados em PDF foram entregues em 29/10/2026.
+Versão atual das regras: **`ec141-2026-10-29-10`**, conforme o texto da EC 141 adotado pelo projeto. **Gere novamente as escalas anteriores** para aplicar as correções; os cadastros e preenchimentos são preservados. As entregas não exigem migração SQL nem novas variáveis de ambiente. Quadro diário continua planejado; os arquivos separados em PDF foram entregues em 29/10/2026.
 
 ## Escala mensal dinâmica ou fixa — 28/10/2026
 

@@ -697,3 +697,20 @@ test("realocação de função não sugere manter presença fora da janela opera
   gerar(s);
   assert.equal(buscar(s).alteracoes.length, 0);
 });
+
+test("trocas de horário não repetem almoço precoce do modelo em jornadas de8h", () => {
+  const s = gerar(config(2, { jornada: { entrada: "08:00", intInicio: "10:00", intFim: "11:00", saida: "17:00" } }));
+  const antes = structuredClone(s);
+  const p = buscar(s);
+  assert(p.alteracoes.length > 0);
+  for (const a of p.alteracoes) {
+    const d = a.depois;
+    if (["T", "FE"].includes(d.status) && d.horas >= 7 && d.horas <= 9 && d.intervaloMin) {
+      assert(d.intervaloInicioMin - d.entradaMin >= 180);
+      assert(d.intervaloInicioMin - d.entradaMin <= 300);
+      assert.equal(d.intervaloFimMin - d.intervaloInicioMin, d.intervaloMin);
+    }
+  }
+  conferir(s, p);
+  assert.deepEqual(s, antes);
+});

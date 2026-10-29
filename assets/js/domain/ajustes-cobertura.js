@@ -1,4 +1,4 @@
-import { alternativasIntervalo } from "./intervalos-cobertura.js";
+import { alternativasIntervalo, faixaInicioIntervalo } from "./intervalos-cobertura.js";
 import { configDaEscala } from "./contexto-escala.js";
 import { janelasDeclaradas as janelas } from "./disponibilidade.js";
 import { analisarCobertura, normalizarFuncao } from "./cobertura.js";
@@ -161,10 +161,16 @@ function horario(config, c, base, modelo, inicio, funcao) {
     creditoNoturnoCCT: 0,
     horasComputadasCCT: modelo.horas,
   };
+  if (pausa && modelo.horas >= 7 && modelo.horas <= 9) {
+    const faixa = faixaInicioIntervalo(novo);
+    if (faixa.inicio > faixa.fim) return null;
+    novo.intervaloInicioMin = Math.max(faixa.inicio, Math.min(pInicio, faixa.fim));
+    novo.intervaloFimMin = novo.intervaloInicioMin + pausa;
+  }
   novo.jornadaAplicada = {
     entrada: minToTime(inicio),
-    intInicio: minToTime(pausa ? pInicio : saida),
-    intFim: minToTime(pausa ? pInicio + pausa : saida),
+    intInicio: minToTime(pausa ? novo.intervaloInicioMin : saida),
+    intFim: minToTime(pausa ? novo.intervaloFimMin : saida),
     saida: minToTime(saida),
   };
   delete novo.ajusteRestricao;

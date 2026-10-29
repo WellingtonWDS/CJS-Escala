@@ -2,6 +2,10 @@
 
 Consultar este registro antes de orientar o operador. Distinguir código disponível, testes locais e resultados informados pelo operador. Não contém senhas, chaves ou identificadores pessoais.
 
+## Atualização da faixa de almoço — 29/10/2026
+
+Jornadas próximas de 8h (7h a 9h efetivas): sugestões de pausa entre 3h e 5h após a entrada, mantendo sua duração. Para 08h–18h com 2h de pausa, início entre 11h e 13h. Vale na redistribuição de pausas e nas sugestões de mudança de entrada/turno, inclusive noturnos. Outras durações mantêm a política anterior. Não altera os mínimos legais do art. 71 nem os horários atuais cadastrados; é critério do gerador. Regras `ec141-2026-10-29-10` exigem nova geração dos resultados, sem migração ou variável nova. Também aplicada na geração da proposta sem demanda operacional. Validação local: 501 testes unitários, build e navegador de ajustes de cobertura, conversão, escala fixa e cobertura aprovados.
+
 ## Correções posteriores de 29/10/2026 — seleção e intervalos
 
 Seletor preservado na interação com scrollbar, altura fixa de 85dvh no modal, comparação com textos/colunas legíveis e remoção dos botões CSV. Intervalos: duração mínima do art. 71 preservada, teto geral de 2h validado, aviso preventivo para blocos contínuos acima de 6h e sugestões automáticas de pausa até quatro horas após entrada (política do gerador). Regras `ec141-2026-10-29-9` invalidam resultados antigos para nova geração, preservando cadastro; sem migração, RPC ou variável nova. 498 testes unitários, build e suíte completa de navegador aprovados localmente. Instalação depende do deploy, sem alteração direta na VPS.

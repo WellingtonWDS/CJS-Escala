@@ -3,6 +3,9 @@ import { analisarCobertura, normalizarFuncao } from "./cobertura.js";
 import { minToTime } from "./datas-horas.js";
 import { violacoesDia } from "./restricoes.js";
 
+export { faixaInicioIntervalo } from "./politica-intervalo.js";
+import { faixaInicioIntervalo } from "./politica-intervalo.js";
+
 export function* alternativasIntervalo(c, d) {
   if (
     !["T", "FE"].includes(d.status) ||
@@ -18,9 +21,7 @@ export function* alternativasIntervalo(c, d) {
     violacoesDia(c, d).length
   )
     return;
-  const inicio = Math.max(d.entradaMin + 60, d.saidaMin - d.intervaloMin - 360),
-    // Conservative scheduling preference: meal break starts within four hours.
-    fim = Math.min(d.entradaMin + 240, d.saidaMin - d.intervaloMin - 60);
+  const { inicio, fim } = faixaInicioIntervalo(d);
   for (let pausa = Math.ceil(inicio / 15) * 15; pausa <= fim; pausa += 15) {
     if (pausa === d.intervaloInicioMin) continue;
     yield {

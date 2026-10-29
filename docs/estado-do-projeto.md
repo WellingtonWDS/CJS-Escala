@@ -1,6 +1,6 @@
 # Estado do projeto — Reescala
 
-Atualizado em **29/10/2026**. Referência funcional: versão de regras `ec141-2026-10-29-9` ([histórico do projeto](https://github.com/WellingtonWDS/CJS-Escala/commits/main/)). Esta página resume o andamento; o [README](../README.md) detalha operação, arquitetura, configuração e testes.
+Atualizado em **29/10/2026**. Referência funcional: versão de regras `ec141-2026-10-29-10` ([histórico do projeto](https://github.com/WellingtonWDS/CJS-Escala/commits/main/)). Esta página resume o andamento; o [README](../README.md) detalha operação, arquitetura, configuração e testes.
 
 Identidade **Reescala** aplicada no login, cabeçalho, menu expandido/recolhido, carregamento, quadros de escala/impressão e ícone do navegador, usando os arquivos originais de `logos/`. A publicação inclui essa pasta e o login carrega suas imagens sem sessão; dados, chaves internas e permissões são preservados.
 
@@ -14,7 +14,9 @@ Carregamento imediato na geração atual/proposta, cálculo em Worker local, blo
 
 Seletor de empresas deixa de fechar quando a barra de rolagem provoca perda de foco com destino nulo; foco/clique externos continuam fechando. Modal com altura fixa de 85dvh e rolagem interna. Tabelas de comparação com largura mínima, explicação espaçosa, alinhamento superior e textos semanais em blocos. Botões CSV removidos da etapa; PDFs e ZIP permanecem. Serializador CSV interno continua com regressões independentes da interface.
 
-Art. 71: mínimos de 15min para mais de 4h até 6h e 1h para mais de 6h preservados; teto geral de 2h validado, sem presumir exceção não cadastrada. Blocos contínuos maiores que 6h geram aviso preventivo para revisão do regime/categoria. Sugestões automáticas iniciam a pausa até quatro horas após entrada (política conservadora, não prazo fixado no artigo), mantendo duração e limites de disponibilidade. Origem preservada. Versão `ec141-2026-10-29-9` exige nova geração, sem migração SQL. 498 testes unitários, build e suíte completa de navegador aprovados; navegador dedicado verifica barra de rolagem/foco nulo, altura fixa desktop/celular e ausência dos botões CSV.
+Art. 71: mínimos de 15min para mais de 4h até 6h e 1h para mais de 6h preservados; teto geral de 2h validado, sem presumir exceção não cadastrada. Blocos contínuos maiores que 6h geram aviso preventivo para revisão do regime/categoria. Atualização posterior: para jornadas de 7h a 9h efetivas, sugestões automáticas iniciam a pausa entre 3h e 5h após entrada, inclusive trocas de horário/turno e noites. Exemplo 08h–18h/2h de pausa: início 11h–13h. Outras durações mantêm a política anterior de até quatro horas. É uma política de distribuição, não prazo fixado no artigo; preserva duração e limites de disponibilidade. Origem preservada. Versão `ec141-2026-10-29-10` exige nova geração, sem migração SQL. 498 testes unitários, build e suíte completa de navegador aprovados; navegador dedicado verifica barra de rolagem/foco nulo, altura fixa desktop/celular e ausência dos botões CSV.
+
+Validação da atualização da faixa: **501 testes unitários**, build e testes de navegador de ajustes de cobertura, conversão, escala fixa e cobertura aprovados. A proposta também reposiciona pausas fora da faixa quando não há demanda operacional; a escala atual permanece preservada para comparação. A suíte completa de navegador citada acima pertence à entrega anterior de seleção/intervalos.
 
 ## Documentos PDF — 29/10/2026
 

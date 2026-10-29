@@ -1,3 +1,4 @@
+import { ajustarIntervaloDaProposta } from "./politica-intervalo.js";
 import { apurarSemana } from "./resumo-semanal.js";
 import { janelaDaProposta } from "./janela-proposta.js";
 import { contextoModelo, escalaFixa, conferirSuporteFixo, colaboradorRecorrente } from "./modelo-escala.js";
@@ -286,6 +287,8 @@ export function createGerador(state, jornada, feriados, validacao) {
         aplicarRestricoesDia(colab, d, state, (dia) =>
           Object.assign(dia, apurarComputoCCT(state, dia)),
         );
+    if (state.aplicarProposta5x2)
+      for (const d of periodo) ajustarIntervaloDaProposta(d);
     ajustarSabadoCompensado(colab, periodo);
     return periodo;
   }

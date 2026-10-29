@@ -22,7 +22,7 @@ export function gerarCsv(state) {
   if (state.modeloEscala === "fixa") return gerarCsvFixo(state);
   const { resultado } = state.escalaGerada;
   const horariosDetalhados = resultado.some((r) =>
-    r.dias.some((d) => d.intervaloSugerido || (d.ajusteManual && d.jornadaAplicada)),
+    r.dias.some((d) => d.intervaloSugerido || d.intervaloAjustadoPolitica || (d.ajusteManual && d.jornadaAplicada)),
   );
   const ajustes = resultado.some((r) =>
     r.dias.some((d) => d.funcaoAlocada || d.ajusteAutomatico),
