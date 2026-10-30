@@ -7,14 +7,16 @@
 <link rel="icon" type="image/png" href="/logos/Reescala_original_transparente.png">
 <link rel="apple-touch-icon" href="/logos/Reescala_preto_fundo_branco.png">
 <meta name="theme-color" content="#0B2545">
+<script src="/assets/js/theme.js"></script>
     <link rel="stylesheet" href="/assets/css/login.css" />
     <link rel="stylesheet" href="/assets/css/motion.css" />
-  </head>
-  <body>
+  <link rel="stylesheet" href="/assets/css/theme.css">
+<link rel="stylesheet" href="/assets/css/theme-dark.css">
+</head>
+  <body class="login-page">
     <main class="login-card">
-      <div class="brand"><img src="/logos/Reescala_original_transparente.png" alt="" width="64" height="56" style="width:64px;height:56px;max-width:64px;object-fit:contain;flex-shrink:0"><span>Reescala</span></div>
+      <div class="brand"><img data-theme-logo src="/logos/Reescala_original_transparente.png" alt="" width="64" height="56" style="width:64px;height:56px;max-width:64px;object-fit:contain;flex-shrink:0"><span>Reescala<small class="brand-slogan">Jornadas em equilíbrio</small></span></div>
       <h1>Acesse o sistema</h1>
-      <p id="login-description">Informe a senha de acesso para continuar. Sua sessão dura até 12 horas.</p>
       <form id="login-form">
         <div id="login-email" hidden><label for="email">E-mail</label><input id="email" name="email" type="email" autocomplete="username" maxlength="254" /></div>
         <label for="password">Senha</label
@@ -29,6 +31,7 @@
         /><button type="submit">Entrar</button>
         <p id="login-message" role="status" aria-live="polite"></p>
       </form>
+      <footer class="app-footer"><p>Desenvolvido pela <a href="https://fintria.com.br" target="_blank" rel="noopener noreferrer" aria-label="Fintria (abre em nova aba)">Fintria</a></p><button id="btn-theme" type="button" class="theme-toggle no-print" data-theme-toggle role="switch" aria-checked="false" aria-label="Tema escuro"><span data-theme-icon aria-hidden="true">☀</span><span class="sidebar-label">Tema escuro</span><span class="theme-switch" aria-hidden="true"></span></button></footer>
     </main>
     <script type="module" src="/assets/js/login.js"></script>
   </body>

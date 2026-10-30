@@ -7,6 +7,7 @@
 <link rel="icon" type="image/png" href="/logos/Reescala_original_transparente.png">
 <link rel="apple-touch-icon" href="/logos/Reescala_preto_fundo_branco.png">
 <meta name="theme-color" content="#0B2545">
+<script src="/assets/js/theme.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="./assets/css/utilities.css">
@@ -18,6 +19,8 @@
 <link rel="stylesheet" href="./assets/css/diagnosticos.css">
 <link rel="stylesheet" href="./assets/css/avisos-escala.css">
 <link rel="stylesheet" href="./assets/css/interface.css?v=reescala-2">
+<link rel="stylesheet" href="/assets/css/theme.css">
+<link rel="stylesheet" href="/assets/css/theme-dark.css">
 </head>
 <body class="bg-slate-100 text-slate-800 text-[15px] leading-relaxed">
 <aside id="app-sidebar" class="app-sidebar no-print" hidden aria-label="Menu principal">
@@ -33,12 +36,13 @@
 
 <header class="app-header no-print bg-fintria-navy text-white px-4 md:px-10 py-5 flex items-center justify-between gap-3 flex-wrap">
   <div class="flex items-baseline gap-3 flex-wrap">
-    <h1 class="app-brand font-display text-white text-xl font-semibold"><img src="/logos/Reescala_original_transparente.png" alt="" width="40" height="35" style="width:40px;height:35px;max-width:40px;object-fit:contain;flex-shrink:0"><span>Reescala</span></h1>
+    <h1 class="app-brand font-display text-white text-xl font-semibold"><img data-theme-logo src="/logos/Reescala_original_transparente.png" alt="" width="40" height="35" style="width:40px;height:35px;max-width:40px;object-fit:contain;flex-shrink:0"><span>Reescala<small class="brand-slogan">Jornadas em equilíbrio</small></span></h1>
     <span id="storage-description" class="text-slate-300 text-sm">Calculadora de horas e migração 6×1 → 5×2 · dados salvos apenas neste navegador</span>
   </div>
   <div class="flex items-center gap-2 flex-wrap">
     <button id="btn-remote-workspace" hidden type="button" class="no-print text-white text-xs border border-white/50 rounded-md px-3 py-1.5">Empresa atual e Preenchimentos</button>
     <button id="btn-tutorial" type="button" class="no-print text-white text-xs border border-white/50 hover:bg-white/10 rounded-md px-3 py-1.5" aria-haspopup="dialog">Tutorial guiado</button>
+    <button id="btn-theme" type="button" class="theme-toggle no-print" data-theme-toggle role="switch" aria-checked="false" aria-label="Tema escuro"><span data-theme-icon aria-hidden="true">☀</span><span class="sidebar-label">Tema escuro</span><span class="theme-switch" aria-hidden="true"></span></button>
     <button id="btn-sair" class="no-print text-slate-300 hover:text-white text-xs border border-white/25 rounded-md px-3 py-1.5">Sair</button>
     <button id="btn-limpar-dados" class="no-print text-slate-300 hover:text-white text-xs border border-white/25 hover:border-white/50 rounded-md px-3 py-1.5">Limpar dados salvos</button>
   </div>
@@ -333,7 +337,7 @@
         <div class="flex items-center gap-2.5 mt-3.5 overflow-x-auto pb-1">
           <div class="text-center shrink-0"><div class="w-14 h-14 rounded-full flex flex-col items-center justify-center text-white text-[11px] font-bold mx-auto" style="background:#0B2545">44h<br>Base</div><div class="text-[11.5px] text-slate-500 mt-1.5 max-w-[90px]">Antes da 1ª fase</div></div>
           <div class="text-[11px] text-slate-500 text-center shrink-0 min-w-[60px]">16/12/2026<br>+ 2 meses →</div>
-          <div class="text-center shrink-0"><div class="w-14 h-14 rounded-full flex flex-col items-center justify-center text-white text-[11px] font-bold mx-auto" style="background:#B9791C">42h<br>Fase 1</div><div class="text-[11.5px] text-slate-500 mt-1.5 max-w-[90px]">2 repousos semanais</div></div>
+          <div class="text-center shrink-0"><div class="w-14 h-14 rounded-full flex flex-col items-center justify-center text-white text-[11px] font-bold mx-auto" data-phase-transition>42h<br>Fase 1</div><div class="text-[11.5px] text-slate-500 mt-1.5 max-w-[90px]">2 repousos semanais</div></div>
           <div class="text-[11px] text-slate-500 text-center shrink-0 min-w-[60px]">16/12/2027<br>+ 14 meses →</div>
           <div class="text-center shrink-0"><div class="w-14 h-14 rounded-full flex flex-col items-center justify-center text-white text-[11px] font-bold mx-auto" style="background:#1F7A54">40h<br>Fase 2</div><div class="text-[11.5px] text-slate-500 mt-1.5 max-w-[90px]">2 repousos semanais</div></div>
         </div>
@@ -375,9 +379,11 @@
       <button id="etapa-anterior" type="button" disabled>← Voltar</button>
       <button id="etapa-proxima" type="button">Avançar: Tipo de escala →</button>
     </div>
-    <footer class="text-center text-slate-500 text-xs py-5">Protótipo estático — os dados ficam salvos apenas no navegador deste computador (localStorage), sem envio para nenhum servidor.</footer>
+
   </main>
 </div>
+
+    <footer class="app-footer text-center text-slate-500 text-xs py-5"><p>Reescala · Jornadas em equilíbrio</p><p data-footer-storage>Preenchimento salvo localmente neste navegador.</p><p>Desenvolvido pela <a href="https://fintria.com.br" target="_blank" rel="noopener noreferrer" aria-label="Fintria (abre em nova aba)">Fintria</a></p></footer>
 
 <script type="module" src="./assets/js/main.js"></script>
 </body>

@@ -10,6 +10,16 @@ Quatro novas empresas por segmento e onze preenchimentos DEMO para comércio con
 
 Carregamento imediato na geração atual/proposta, cálculo em Worker local, bloqueio de duplicação, liberação em falhas e proteção contra resultados de dados alterados. Resumo da busca de cobertura aparece primeiro em modal e depois abaixo do botão, com aplicação separada. Regras de cálculo e versões de dados preservadas.
 
+## Identidade e alternância de tema — 30/10/2026
+
+Slogan “Jornadas em equilíbrio” no cabeçalho/login/rodapé; crédito com link Fintria em nova aba no login e aplicação, preservado ao atualizar a informação de armazenamento. Mensagem de acesso autorizado/12h removida do login; sessão não alterada.
+
+Tema claro preservado como padrão; escuro selecionável junto a Sair (menu individual/cabeçalho compartilhado) e no login. Switch acessível, presente com menu recolhido, preferência local antes da pintura e sincronização entre abas. Logos brancas no escuro. Camada escura gerada no build a partir dos estilos, com ajuste por componente, isolada de impressão e PDFs. Campos, botões, modais, administração, tutorial, avisos e estados da grade têm paleta semântica. Verificação de contraste AA nos textos/valores dos cenários de navegador e inspeção visual; não substitui a revisão de novos componentes.
+
+Sem alteração de API de negócio, SQL, sessão, regras de geração ou permissões. Apenas os arquivos públicos de tema necessários ao login são liberados pelo guard.
+
+Validação: 536 testes unitários, build, suíte completa de navegador, login e integração real local PostgreSQL 17/PostgREST 14.15 com navegador aprovados. Regressões finais de interface/contraste verificam rodapé global nas telas administrativas, oito etapas, inputs, quadros, confirmações e login após animações. Impressão usa a camada clara; PDFs próprios mantêm o gerador existente.
+
 ## Precisão da proposta e avisos para o empresário — 30/10/2026
 
 Rateio semanal em minutos inteiros, inclusive cargas fracionadas e estado legado de horas importadas. Painel mostra 42h/5 = 8h24 quando autorizado e fisicamente possível; se a janela ou a autorização não comportarem o alvo, mostra saldo, duração diária de referência e motivo. Não encurta intervalos nem ultrapassa janelas cadastradas para fechar horas. Contratos menores, abonos, férias e edição posterior participam da apuração.

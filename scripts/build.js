@@ -1,4 +1,5 @@
 import { build } from "esbuild";
+import { buildTheme } from "./build-theme.mjs";
 import { execFileSync } from "node:child_process";
 import { cp, mkdir, rm } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
@@ -38,6 +39,8 @@ await cp(
   join(root, "assets/css/utilities.css"),
   join(dist, "assets/css/utilities.css"),
 );
+await buildTheme(root);
+await cp(join(root, "assets/css/theme-dark.css"), join(dist, "assets/css/theme-dark.css"));
 console.log("Publicação estática preparada em dist/.");
 
 await build({

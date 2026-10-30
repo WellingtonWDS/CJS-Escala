@@ -10,6 +10,18 @@ Consulte [Estado do projeto](docs/estado-do-projeto.md) para uma visão consolid
 
 O fluxo principal já inclui cadastro manual e por planilhas, importação Domínio, restrições individuais, habilitações por função, geração, conversão 6×1 → 5×2, comparação de cobertura, sugestões de ajustes com prévia/aplicação/desfazer, edição da grade, documentos PDF próprios, ZIP individual e impressão. O acesso oferece login individual por e-mail/senha integrado ao n8n e ao banco, com sessão de até 12 horas, menu por perfil, gestão de usuários e empresas e preenchimentos compartilhados por empresa autorizada. O modo compartilhado/local permanece disponível por configuração. Os detalhes de funcionamento e configuração estão nas seções abaixo.
 
+## Identidade e temas claro/escuro — 30/10/2026
+
+Slogan **“Jornadas em equilíbrio”** no cabeçalho, login e rodapé. Crédito **Desenvolvido pela Fintria**, com link para `https://fintria.com.br` em nova aba, no login e na aplicação; o texto de armazenamento continua separado e não sobrescreve o crédito. Removida a explicação da duração da sessão no formulário de login, sem mudar a autenticação.
+
+O controle **Tema escuro** fica junto de **Sair**, no final do menu individual, e no cabeçalho do modo compartilhado. Também está disponível no login. É um switch acessível por teclado, com estado anunciado; continua disponível com o menu recolhido e no celular. O modo inicial é claro; a escolha é gravada somente neste navegador (`reescala-theme`), aplicada antes dos estilos e sincronizada entre abas. Sem acesso ao armazenamento, a troca continua funcionando na página. As marcas do cabeçalho/login usam a logo branca no escuro.
+
+O modo claro mantém as declarações de cores existentes. A camada escura é isolada em `@media screen` e `html[data-theme="dark"]`, com superfícies, campos, textos, bordas e estados semânticos próprios. Impressão e PDFs permanecem claros. `scripts/build-theme.mjs` gera `assets/css/theme-dark.css` a partir dos estilos autorais/utilitários no build, com paleta por função e matiz; editar a paleta no script e os ajustes de componentes em `assets/css/theme.css`, não o arquivo gerado. PostCSS é dependência de desenvolvimento explícita.
+
+O teste de navegador de tema verifica contraste AA dos textos e valores visíveis nas oito etapas, cadastros, quadros dinâmico/fixo, resumos/avisos, confirmação e login; confere preferência após recarga, posição do switch, menu recolhido, celular, impressão, slogan e link. A auditoria é sobre os cenários renderizados; ícones, imagens e estados adicionais também exigem revisão visual quando forem alterados. Nenhuma migração SQL, regra de jornada ou variável nova.
+
+Validação local: **536 testes unitários**, build, suíte completa de navegador, login com sessão/recuperação e integração PostgreSQL 17/PostgREST 14.15 com navegador aprovados. Após o ajuste final do rodapé global e da rolagem escura, regressões de tema/contraste e interface aprovadas novamente. O crédito fica visível também nas telas administrativas. Testes de integração do FAB verificam o estado expandido, evitando confundir a transição de saída com um botão disponível.
+
 ## Sessão e falhas temporárias de conexão — 30/10/2026
 
 O cookie e a sessão têm limite de **12 horas**, sem renovação por atividade. No login individual, a validade também é limitada pela expiração assinada pelo n8n; o template emite `exp = iat + 43200`. Um token configurado com duração menor no workflow de produção resulta em sessão menor. O JWT interno de 60 segundos do PostgREST é emitido novamente a cada chamada e não é o prazo do login.

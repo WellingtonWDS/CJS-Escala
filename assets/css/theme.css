@@ -1,0 +1,29 @@
+.brand-slogan { display:block; margin-top:3px; font:400 12px/1.5 Inter,system-ui,sans-serif; letter-spacing:.02em; color:inherit; opacity:.85; }
+.app-footer p { margin:5px 0; font-size:12px; }
+.app-footer a { color:inherit; font-weight:700; text-decoration:underline; text-underline-offset:3px; }
+.theme-toggle { display:inline-flex; align-items:center; justify-content:center; gap:9px; width:auto; min-height:40px; padding:8px 12px; margin:0; border:1px solid #bdcdd9; border-radius:9px; color:#334155; background:#fff; font:600 12px/1.5 Inter,system-ui,sans-serif; cursor:pointer; box-shadow:none; }
+.theme-switch { display:block; width:28px; height:16px; border-radius:999px; background:#64748b; padding:2px; flex-shrink:0; }
+.theme-switch::after { content:""; display:block; width:12px; height:12px; background:white; border-radius:50%; transition:transform .18s ease; }
+.theme-toggle[aria-checked="true"] .theme-switch { background:#167455; }
+.theme-toggle[aria-checked="true"] .theme-switch::after { transform:translateX(12px); }
+.theme-toggle:focus-visible { outline:3px solid #3b82f6; outline-offset:3px; }
+.sidebar-account-actions { margin-top:auto; display:grid; gap:8px; padding-top:18px; flex-shrink:0; }
+.app-sidebar .sidebar-account-actions .sidebar-logout { margin-top:0; }
+.app-sidebar .theme-toggle { width:100%; justify-content:flex-start; border-color:#47627c; background:#17354e; color:#edf4fb; }
+.app-sidebar .theme-switch { margin-left:auto; }
+.sidebar-collapsed .theme-toggle .sidebar-label, .sidebar-collapsed .theme-switch { display:none; }
+.sidebar-collapsed .theme-toggle { justify-content:center; padding-inline:4px; }
+.login-card .app-footer { margin-top:22px; text-align:center; }
+.login-card .theme-toggle { margin-top:12px; }
+@media(prefers-reduced-motion:reduce) { .theme-switch::after { transition:none; } }
+@media print { .theme-toggle { display:none!important; } }
+
+[data-phase-transition] { background:#B9791C; }
+@media screen { html[data-theme="dark"] .theme-switch::after { background:white !important; } }
+
+@media screen { html[data-theme="dark"] input::placeholder, html[data-theme="dark"] textarea::placeholder { color:#b5c6d8; opacity:1; } }
+@media screen {
+  html[data-theme="dark"] body:not(.login-page) { background:#101923; }
+  html[data-theme="dark"] input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+  html[data-theme="dark"] select, html[data-theme="dark"] textarea { background:#122131; }
+}

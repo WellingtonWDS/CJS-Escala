@@ -15,8 +15,6 @@ const configuration = fetch("/api/auth?config=1", { cache: "no-store" })
     if (mode === "n8n") {
       document.getElementById("login-email").hidden = false;
       form.email.required = true;
-      document.getElementById("login-description").textContent =
-        "Entre com sua conta autorizada. A sessão dura até 12 horas.";
       form.email.focus();
     }
   })

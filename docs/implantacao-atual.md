@@ -2,6 +2,10 @@
 
 Consultar este registro antes de orientar o operador. Distinguir código disponível, testes locais e resultados informados pelo operador. Não contém senhas, chaves ou identificadores pessoais.
 
+## Slogan e tema — 30/10/2026
+
+Código de marca/rodapé, remoção de texto do login e alternância claro/escuro, com preferência no navegador. Build gera CSS escuro isolado para tela; manter `scripts/build-theme.mjs` e dependência PostCSS no processo de build. Guard libera somente os assets adicionais de tema do login. Não exige variável, migração SQL nem alteração do n8n. Preferência de tema não altera sessões e não é gravada no banco. Impressão/PDF permanecem claros. Validação local: 536 testes unitários, build, suíte completa de navegador, login e integração PostgreSQL/PostgREST com navegador aprovados; regressões finais de tema e interface também passaram. Sem execução administrativa na VPS.
+
 ## Precisão de geração e diagnóstico — 30/10/2026
 
 Entrega em código: rateio em minutos e recomendações por semana; diagnóstico condicional de perda de presença mesmo sem cobertura operacional; ajustes combinados e recorrentes no fixo; novo layout de avisos. Regras `ec141-2026-10-30-11`, exigindo gerar novamente resultados antigos. Nenhuma migração SQL, RPC ou variável nova. Publicar o frontend/backend existentes por `main` não executa alterações na VPS. Validação local: 536 testes unitários, build e suíte completa de navegador aprovados, incluindo os 11 modelos DEMO e o novo diagnóstico. Integração de banco não repetida nesta entrega sem alteração de API/schema. Detalhes e limites no [README](../README.md).

@@ -50,7 +50,10 @@ export function initNavigation({ session, document, window }) {
   logout.title = "Sair";
   logout.innerHTML =
     '<span class="sidebar-icon" aria-hidden="true">↪</span><span class="sidebar-label">Sair</span>';
-  sidebar.append(logout);
+  const accountActions = document.createElement("div");
+  accountActions.className = "sidebar-account-actions";
+  accountActions.append(document.getElementById("btn-theme"), logout);
+  sidebar.append(accountActions);
   const role = session.user.role || "operator";
   document.getElementById("sidebar-user").textContent = session.user.name;
   document.getElementById("sidebar-role").textContent =
