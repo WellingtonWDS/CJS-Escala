@@ -10,6 +10,14 @@ Consulte [Estado do projeto](docs/estado-do-projeto.md) para uma visão consolid
 
 O fluxo principal já inclui cadastro manual e por planilhas, importação Domínio, restrições individuais, habilitações por função, geração, conversão 6×1 → 5×2, comparação de cobertura, sugestões de ajustes com prévia/aplicação/desfazer, edição da grade, documentos PDF próprios, ZIP individual e impressão. O acesso oferece login individual por e-mail/senha integrado ao n8n e ao banco, com sessão de até 12 horas, menu por perfil, gestão de usuários e empresas e preenchimentos compartilhados por empresa autorizada. O modo compartilhado/local permanece disponível por configuração. Os detalhes de funcionamento e configuração estão nas seções abaixo.
 
+## Sessão e falhas temporárias de conexão — 30/10/2026
+
+O cookie e a sessão têm limite de **12 horas**, sem renovação por atividade. No login individual, a validade também é limitada pela expiração assinada pelo n8n; o template emite `exp = iat + 43200`. Um token configurado com duração menor no workflow de produção resulta em sessão menor. O JWT interno de 60 segundos do PostgREST é emitido novamente a cada chamada e não é o prazo do login.
+
+Corrigida a verificação periódica do navegador: antes, erros de rede, respostas 5xx e falhas ao ler a resposta eram tratados como expiração e redirecionavam para o login. Agora a interface fica bloqueada por um modal com nova tentativa, preservando cookie e dados; só volta a liberar após validação bem-sucedida. Isso também funciona durante a abertura inicial. Expiração, revogação/401 e mudança de usuário continuam encerrando o acesso. Logout explícito mantém o comportamento existente. Não estende uma sessão vencida nem altera permissões.
+
+Validação local: build, 12 testes de autenticação e teste de navegador com cookie persistente, limite de 12h, 503, falha de rede na inicialização, recuperação, expiração na aba e logout aprovados.
+
 ## Geração 5×2, rateio e diagnóstico de cobertura — 30/10/2026
 
 - **Rateio em minutos:** a proposta distribui o alvo contratual entre os dias efetivos, saturando dias curtos e respeitando janelas e limites legais. Com ACT/CCT válido e janela suficiente, **42h em cinco dias = 8h24 por dia**. Corrigidos estado legado que mantinha horas do quadro e divisão de cargas fracionadas. Contratos menores, feriados abonados e afastamentos não viram horas indevidas a recuperar.

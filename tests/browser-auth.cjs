@@ -110,7 +110,30 @@ const { chromium } = require("playwright");
       (await context.request.get(base + "/assets/js/app.js")).status(),
       200,
     );
-    now += SESSION_MS;
+    assert(Math.abs(session.expires * 1000 - now - SESSION_MS) < 2000);
+    // Indisponibilidade não é expiração; mantém o cookie e bloqueia a interface.
+    const temporary = route => route.fulfill({status:503,contentType:"application/json",body:'{"error":"Indisponível"}'});
+    await page.route("**/api/auth", temporary);
+    await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+    const interruption = page.getByRole("dialog", {name:"Verificação de acesso temporariamente indisponível"});
+    await interruption.waitFor();
+    assert.equal(new URL(page.url()).pathname, "/");
+    assert.equal((await context.cookies()).find(c=>c.name==="cjs_session").value, session.value);
+    await page.unroute("**/api/auth", temporary);
+    await interruption.getByRole("button", {name:"Tentar novamente"}).click();
+    await interruption.waitFor({state:"detached"});
+    // Falha de rede na inicialização também permite recuperar sem novo login.
+    const network = route => route.abort();
+    await page.route("**/api/auth", network);
+    await page.reload();
+    await interruption.waitFor();
+    await page.unroute("**/api/auth", network);
+    await interruption.getByRole("button", {name:"Tentar novamente"}).click();
+    await page.waitForFunction(() => document.documentElement.dataset.ready === "true");
+    assert.equal(new URL(page.url()).pathname, "/");
+    now += SESSION_MS - 1000;
+    assert.equal((await context.request.get(base + "/api/auth")).status(), 200);
+    now += 1000;
     await page.evaluate(() => window.dispatchEvent(new Event("focus")));
     await page.waitForURL("**/login.html?expired=1**");
     assert.equal(

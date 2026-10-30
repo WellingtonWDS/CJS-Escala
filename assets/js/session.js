@@ -12,7 +12,30 @@ export function safeDestination(value) {
 export async function requireSession() {
   let timer,
     checking = false,
-    owner;
+    owner,
+    interruption;
+  let recoverInitial;
+  const recovered = new Promise(resolve => { recoverInitial = resolve; });
+  function unavailable() {
+    if (interruption) return;
+    if (document.documentElement.dataset.ready !== "true")
+      document.body.removeAttribute("aria-busy");
+    interruption = document.createElement("dialog");
+    interruption.className = "app-dialog";
+    interruption.setAttribute("aria-label", "Verificação de acesso temporariamente indisponível");
+    interruption.innerHTML = `<h2>Não foi possível verificar seu acesso</h2><p>A conexão ou o serviço está temporariamente indisponível. Sua sessão não foi encerrada. Vamos verificar novamente; os dados desta aba foram preservados.</p><button type="button">Tentar novamente</button>`;
+    interruption.addEventListener("cancel", event => event.preventDefault());
+    interruption.querySelector("button").onclick = check;
+    document.body.append(interruption);
+    interruption.showModal();
+    document.documentElement.style.visibility = "visible";
+    document.body.inert = false;
+  }
+  function available() {
+    interruption?.close();
+    interruption?.remove();
+    interruption = null;
+  }
   const expire = (expired = true) => {
     document.documentElement.style.visibility = "hidden";
     document.body.inert = true;
@@ -28,8 +51,12 @@ export async function requireSession() {
     checking = true;
     try {
       const response = await fetch("/api/auth", { cache: "no-store" });
-      if (!response.ok) {
+      if (response.status === 401) {
         expire();
+        return false;
+      }
+      if (!response.ok) {
+        unavailable();
         return false;
       }
       const session = await response.json();
@@ -43,18 +70,18 @@ export async function requireSession() {
         expire();
         return false;
       }
+      available();
+      recoverInitial(session);
       clearTimeout(timer);
       timer = setTimeout(expire, remaining);
       return session;
     } catch {
-      expire();
+      unavailable();
       return false;
     } finally {
       checking = false;
     }
   }
-  const initialSession = await check();
-  if (!initialSession) return false;
   window.addEventListener("pageshow", async (event) => {
     if (event.persisted) {
       document.documentElement.style.visibility = "hidden";
@@ -71,6 +98,7 @@ export async function requireSession() {
   });
   // Detect logout in another tab even while this tab stays open.
   setInterval(check, 60000);
+  const initialSession = (await check()) || await recovered;
   document.getElementById("btn-sair")?.addEventListener("click", async () => {
     try {
       const response = await fetch("/api/auth", {
