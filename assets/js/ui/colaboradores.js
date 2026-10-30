@@ -48,8 +48,9 @@ export function createColaboradoresUI({
             c.horasSemana = 44;
           return `<div class="relative grid grid-cols-1 md:grid-cols-[1.7fr_0.9fr_1.2fr_0.9fr_auto] gap-2.5 items-end border border-slate-200 rounded-lg p-3 mb-2.5 bg-slate-50">
       <span class="absolute -top-2.5 -left-2.5 w-5 h-5 rounded-full bg-fintria-verde text-white text-[11px] flex items-center justify-center">${idx + 1}</span>
-      <div><label class="block text-xs font-semibold text-fintria-navySoft mb-1.5">Nome</label><input data-id="${c.id}" data-field="nome" value="${escapeHtml(c.nome)}" class="w-full px-2.5 py-2 border border-slate-300 rounded-md text-sm bg-white"></div>
-      <div><label class="block text-xs font-semibold text-fintria-navySoft mb-1.5">Sexo</label>
+      <div class="colaborador-principais col-span-full">
+      <div class="colaborador-campo"><label class="block text-xs font-semibold text-fintria-navySoft mb-1.5">Nome</label><input data-id="${c.id}" data-field="nome" value="${escapeHtml(c.nome)}" class="w-full px-2.5 py-2 border border-slate-300 rounded-md text-sm bg-white"></div>
+      <div class="colaborador-campo"><label class="block text-xs font-semibold text-fintria-navySoft mb-1.5">Sexo</label>
         <select aria-describedby="sexo-estimativa-${c.id}" data-id="${c.id}" data-field="sexo" class="w-full px-2.5 py-2 border border-slate-300 rounded-md text-sm bg-white">
           <option value="nao_informado" ${c.sexo === "nao_informado" ? "selected" : ""}>Não informado</option>
           <option value="feminino" ${c.sexo === "feminino" ? "selected" : ""}>Feminino</option>
@@ -57,9 +58,10 @@ export function createColaboradoresUI({
         </select>
         <p id="sexo-estimativa-${c.id}" data-sexo-estimativa="${c.id}" class="text-[11px] text-slate-500 mt-1">${escapeHtml(descricaoSexo(c))}</p>
       </div>
-      <div><label class="block text-xs font-semibold text-fintria-navySoft mb-1.5">Cargo / função</label><input data-id="${c.id}" data-field="cargo" value="${escapeHtml(c.cargo)}" class="w-full px-2.5 py-2 border border-slate-300 rounded-md text-sm bg-white"></div>
-      <div><label class="block text-xs font-semibold text-fintria-navySoft mb-1.5">Jornada contratual de referência</label><div class="relative"><input type="number" min="1" max="44" step="0.5" data-id="${c.id}" data-field="horasSemana" value="${c.quadroDominio ? (c.horasSemana ?? "") : Number(c.horasSemana) || 44}" placeholder="Conferir" class="w-full px-2.5 py-2 pr-8 border border-slate-300 rounded-md text-sm bg-white"><span class="absolute right-2.5 top-2.5 text-xs text-slate-400">h</span></div></div>
+      <div class="colaborador-campo"><label class="block text-xs font-semibold text-fintria-navySoft mb-1.5">Cargo / função</label><input data-id="${c.id}" data-field="cargo" value="${escapeHtml(c.cargo)}" class="w-full px-2.5 py-2 border border-slate-300 rounded-md text-sm bg-white"></div>
+      <div class="colaborador-campo"><label class="block text-xs font-semibold text-fintria-navySoft mb-1.5">Jornada contratual de referência</label><div class="relative"><input type="number" min="1" max="44" step="0.5" data-id="${c.id}" data-field="horasSemana" value="${c.quadroDominio ? (c.horasSemana ?? "") : Number(c.horasSemana) || 44}" placeholder="Conferir" class="w-full px-2.5 py-2 pr-8 border border-slate-300 rounded-md text-sm bg-white"><span class="absolute right-2.5 top-2.5 text-xs text-slate-400">h</span></div></div>
       <button data-remove="${c.id}" title="Remover" class="text-fintria-vermelho bg-transparent text-base px-2 py-2 rounded hover:bg-red-50">✕</button>
+      </div>
       ${state.analiseEnquadramentoAtiva === true ? camposEnquadramento(c) : ""}
       <p data-carga-alerta="${c.id}" class="col-span-full text-xs text-fintria-vermelho" role="status">${Number(c.horasSemana) > 44 ? "Jornada contratual acima de 44h semanais: corrija a referência; horas extras não devem ser cadastradas como carga contratual." : ""}</p>
       ${camposDominio(c, state)}

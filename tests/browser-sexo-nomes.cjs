@@ -115,12 +115,29 @@ module.exports = async function testarSexoNomes({ browser, baseURL }) {
       await page.locator("[data-sexo-estimativa]").first().innerText(),
       "Preenchido automaticamente",
     );
+    async function conferirAlinhamento() {
+      for (const width of [1280, 768]) {
+        await page.setViewportSize({width,height:900});
+        const posicoes = await page.locator('#colab-list > div').first().evaluate(card =>
+          ['nome','sexo','cargo','horasSemana'].map(field=>card.querySelector(`[data-field="${field}"]`).getBoundingClientRect().top));
+        assert(Math.max(...posicoes)-Math.min(...posicoes)<1, `Campos alinhados em ${width}px`);
+      }
+      await page.setViewportSize({width:390,height:844});
+      const nome=await campo('nome').boundingBox(), sexo=await campo('sexo').boundingBox();
+      assert(sexo.y>=nome.y+nome.height,'No celular, os campos seguem em linhas distintas');
+      assert(sexo.x>=0 && sexo.x+sexo.width<=390,'Seletor não transborda no celular');
+      await page.setViewportSize({width:1280,height:900});
+    }
+    await conferirAlinhamento();
+    const nota=await page.locator('[data-sexo-estimativa]').first().boundingBox(), select=await campo('sexo').boundingBox();
+    assert(nota.y>=select.y+select.height,'Descrição fica abaixo do seletor');
     await campo("sexo").selectOption("masculino");
     assert.equal((await saved()).colaboradores[0].sexoOrigem, "usuario");
     assert.equal(
       await page.locator("[data-sexo-estimativa]").first().innerText(),
       "",
     );
+    await conferirAlinhamento();
     await campo("nome").fill("Ana Silva");
     await campo("nome").dispatchEvent("change");
     assert.equal((await saved()).colaboradores[0].sexo, "masculino");
