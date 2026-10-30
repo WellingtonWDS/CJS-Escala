@@ -10,6 +10,10 @@ Consulte [Estado do projeto](docs/estado-do-projeto.md) para uma visão consolid
 
 O fluxo principal já inclui cadastro manual e por planilhas, importação Domínio, restrições individuais, habilitações por função, geração, conversão 6×1 → 5×2, comparação de cobertura, sugestões de ajustes com prévia/aplicação/desfazer, edição da grade, documentos PDF próprios, ZIP individual e impressão. O acesso oferece login individual por e-mail/senha integrado ao n8n e ao banco, com sessão de até 12 horas, menu por perfil, gestão de usuários e empresas e preenchimentos compartilhados por empresa autorizada. O modo compartilhado/local permanece disponível por configuração. Os detalhes de funcionamento e configuração estão nas seções abaixo.
 
+## Contraste das bordas no escuro — 30/10/2026
+
+Bordas neutras e azuis mais claras no tema escuro, incluindo **Pré-visualizar escala atual / gerar escala avulsa**, **Imprimir / PDF**, contorno do quadro e divisões de células/cabeçalhos. O modo claro e a impressão mantêm suas cores. A auditoria de navegador passa a verificar também contraste de bordas de pelo menos **3:1 contra as superfícies adjacentes**, nas grades fixa e dinâmica, além dos textos. Build e regressão de tema/contraste aprovados.
+
 ## Identidade e temas claro/escuro — 30/10/2026
 
 Slogan **“Jornadas em equilíbrio”** no cabeçalho, login e rodapé. Crédito **Desenvolvido pela Fintria**, com link para `https://fintria.com.br` em nova aba, no login e na aplicação; o texto de armazenamento continua separado e não sobrescreve o crédito. Removida a explicação da duração da sessão no formulário de login, sem mudar a autenticação.

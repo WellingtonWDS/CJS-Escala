@@ -13,6 +13,7 @@ module.exports=async({browser,baseURL})=>{
   await page.reload();await page.waitForFunction(()=>document.documentElement.dataset.ready==='true');
   assert.equal(await page.locator('html').getAttribute('data-theme'),'dark');
   const failures=[];
+  const boundaries="#btn-gerar, #btn-imprimir, [data-escala-quadro], .escala-mensal th, .escala-mensal td";
   for(const id of ['sec-config','sec-tipo','sec-feriados','sec-jornada','sec-folgas','sec-cobertura','sec-pec','sec-gerar']){
    await page.locator(`[data-etapa-link="${id}"]`).click();
    if(id==='sec-config') await page.locator('#sec-config details').evaluateAll(els=>els.forEach(el=>el.open=true));
@@ -30,6 +31,7 @@ module.exports=async({browser,baseURL})=>{
   await page.locator('[data-etapa-link="sec-gerar"]').click();
   await page.locator('#conversao-comparacao details').evaluateAll(els=>els.forEach(el=>el.open=true));
   failures.push(...await contrast(page));
+  assert.deepEqual(await contrast.borders(page,boundaries),[],"Bordas dinâmicas com contraste 3:1");
   await page.evaluate(async()=>{const {getDialogs}=await import('/assets/js/ui/dialogs.js');getDialogs(document).confirm('Confira o contraste e os botões deste modal.',{title:'Revisar escala'});});
   await page.locator('dialog[open]').waitFor();failures.push(...await contrast(page,'dialog[open]'));
   await page.locator('[data-dialog-cancel]').click();
@@ -44,6 +46,7 @@ module.exports=async({browser,baseURL})=>{
   await page.reload();await page.waitForFunction(()=>document.documentElement.dataset.ready==='true');
   await page.locator('[data-etapa-link="sec-gerar"]').click();
   assert(await page.locator('#resultado-proposta .escala-fixa').isVisible());
+  assert.deepEqual(await contrast.borders(page,boundaries),[],"Bordas fixas com contraste 3:1");
   failures.push(...await contrast(page));
   // Role-based administration and its forms use the same dark palette.
   const options={platformAdmin:true,currentUserId:'owner',offices:[{id:'office',name:'Escritório de teste',active:true,canCreate:true}],companies:[{id:'company',officeId:'office',name:'Empresa de teste',cnpj:'48956412000126'}],users:[{id:'operator',officeId:'office',name:'Operador de teste',email:'operador@example.test',role:'operator',active:true,membershipActive:true,accountActive:true,canEdit:true,companyIds:['company'],revision:1}]};

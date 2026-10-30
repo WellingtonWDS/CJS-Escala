@@ -22,3 +22,28 @@ module.exports = async function contrast(page, scope = "body") {
   return out;
  });
 };
+
+// Boundaries need 3:1 against adjacent surfaces, independently of text contrast.
+module.exports.borders = async function borders(page, selector) {
+ return page.locator(selector).evaluateAll(elements => {
+  const rgba=s=>{const n=s.match(/[\d.]+/g)?.map(Number);return n?.length>=3?[...n.slice(0,3),n[3]??1]:[0,0,0,0];};
+  const over=(a,b)=>a.slice(0,3).map((v,i)=>v*a[3]+b[i]*(1-a[3]));
+  const lum=c=>c.map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4;}).reduce((s,v,i)=>s+v*[.2126,.7152,.0722][i],0);
+  const ratio=(a,b)=>(Math.max(lum(a),lum(b))+.05)/(Math.min(lum(a),lum(b))+.05);
+  const failures=[];
+  for(const el of elements){
+   if(!el.getClientRects().length||getComputedStyle(el).visibility!=="visible")continue;
+   let inside=[255,255,255],outside,chain=[];
+   for(let p=el;p;p=p.parentElement)chain.unshift(p);
+   for(const p of chain){if(p===el)outside=inside;inside=over(rgba(getComputedStyle(p).backgroundColor),inside);}
+   const style=getComputedStyle(el);
+   for(const side of ["Top","Right","Bottom","Left"]){
+    if(parseFloat(style[`border${side}Width`])<=0||["none","hidden"].includes(style[`border${side}Style`]))continue;
+    const border=rgba(style[`border${side}Color`]);
+    const value=Math.min(ratio(over(border,inside),inside),ratio(over(border,outside),outside));
+    if(value+.01<3) failures.push({id:el.id,tag:el.tagName,side,ratio:+value.toFixed(2),color:style[`border${side}Color`]});
+   }
+  }
+  return failures;
+ });
+};
