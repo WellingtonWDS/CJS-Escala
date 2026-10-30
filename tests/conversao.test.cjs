@@ -200,7 +200,7 @@ test("fim de semana fixo é explícito e não fecha a empresa nem oculta sábado
         .every((d) => d.status === "F"),
     );
 });
-test("sábado reduzido continua até meio-dia e não é estendido para fechar horas", () => {
+test("sábado reduzido não é estendido e a busca prioriza planos que completam a carga", () => {
   const s = empresa();
   s.horarioPorDia = true;
   s.jornadaPorDia[6] = {
@@ -216,7 +216,8 @@ test("sábado reduzido continua até meio-dia e não é estendido para fechar ho
         .filter((d) => d.weekday === 6 && d.horas > 0)
         .every((d) => d.saidaMin <= 720 && d.horas <= 4),
     );
-  assert.ok(c.comparacao.pessoas.some((p) => p.deficits));
+  assert.ok(c.comparacao.pessoas.every((p) => !p.deficits));
+  assert.ok(c.comparacao.lacunas.some((l) => new Date(l.data + "T12:00:00").getDay() === 6));
 });
 test("fase de 42h não presume autorização para ultrapassar 8h diárias", () => {
   const s = empresa();

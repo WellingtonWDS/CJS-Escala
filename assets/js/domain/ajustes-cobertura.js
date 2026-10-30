@@ -200,11 +200,19 @@ function inicios(config, c, base, modelo, lacuna) {
     .filter(Number.isFinite)
     .map(Math.round)
     .filter((m) => m >= 0 && m < 1440)
-    .sort((a, b) => a - b);
+    .sort((a, b) => {
+      // Tenta primeiro a entrada que cobre a maior parte da faixa procurada,
+      // evitando consumir o orçamento com avanços de poucos minutos.
+      const coberto = (inicio) => Math.max(0,
+        Math.min(inicio + duracao, lacuna.fimMin + offset) -
+        Math.max(inicio, lacuna.inicioMin + offset));
+      return coberto(b) - coberto(a) ||
+        Math.abs(a - modelo.entradaMin) - Math.abs(b - modelo.entradaMin) || a - b;
+    });
 }
 function podeMudar(config, c, d) {
   return (
-    noPeriodo(config, d) &&
+    (config.modeloEscala === "fixa" || noPeriodo(config, d)) &&
     !d.ajusteManual &&
     !d.restricao &&
     !bloqueioNaData(c, d.data) &&
@@ -306,6 +314,54 @@ function* trocasEntrePessoas(config, escala, c, d, de, primeiras) {
     }
   }
 }
+/** No padrão fixo uma sugestão é uma alteração semanal, inclusive nas
+ * semanas de contexto usadas para validar os descansos na virada. */
+function expandirRecorrencia(config, escala, alteracoes) {
+  if (config.modeloEscala !== "fixa") return alteracoes;
+  const mapa = new Map();
+  for (const a of alteracoes) {
+    const r = escala.resultado.find((r) => r.colaborador.id === a.colaboradorId);
+    const dias = new Map([
+      ...(r.diasContexto || []), ...(r.diasApuracao || []), ...r.dias,
+    ].map((d) => [d.data, d]));
+    for (const d of dias.values()) {
+      if (d.weekday !== a.depois.weekday) continue;
+      if (!podeMudar(config, r.colaborador, d)) return null;
+      // Replica somente os campos alterados pelo ajuste. Data, dia do mês,
+      // alvo e demais metadados continuam pertencendo à própria ocorrência.
+      const depois = structuredClone(d);
+      for (const key of new Set([...Object.keys(a.antes), ...Object.keys(a.depois)])) {
+        if (JSON.stringify(a.antes[key]) === JSON.stringify(a.depois[key])) continue;
+        if (Object.hasOwn(a.depois, key)) depois[key] = structuredClone(a.depois[key]);
+        else delete depois[key];
+      }
+      mapa.set(`${a.colaboradorId}:${d.data}`, {
+        colaboradorId: a.colaboradorId, data: d.data,
+        antes: structuredClone(d), depois,
+      });
+    }
+  }
+  return [...mapa.values()];
+}
+/** Pode ser necessário cobrir primeiro a função de quem será realocado.
+ * A dupla é avaliada atomicamente para não descobrir outra função. */
+function* realocacoesComReforco(config, escala, c, d, novo) {
+  const funcao = funcaoDoDia(c, d);
+  for (const r of escala.resultado) {
+    if (r.colaborador.id === c.id || !habilitadoPara(r.colaborador, funcao)) continue;
+    const dia = r.dias.find((x) => x.data === d.data);
+    const proprio = configDoPerfil(config, r.colaborador) || config;
+    if (!dia || !trabalha(dia) || !podeMudar(config, r.colaborador, dia) ||
+        proprio.tipoEscala === "12x36" || proprio.cicloQuadro ||
+        normalizarFuncao(funcaoDoDia(r.colaborador, dia)) === normalizarFuncao(funcao)) continue;
+    yield { tipo: "funcoes_combinadas", alteracoes: [
+      { colaboradorId: c.id, data: d.data, antes: structuredClone(d),
+        depois: { ...novo, ajusteAutomatico: true } },
+      { colaboradorId: r.colaborador.id, data: dia.data, antes: structuredClone(dia),
+        depois: { ...dia, funcaoAlocada: funcao, ajusteAutomatico: true } },
+    ] };
+  }
+}
 function* candidatos(config, escala, lacuna) {
   for (const r of escala.resultado) {
     const c = r.colaborador,
@@ -335,11 +391,11 @@ function* candidatos(config, escala, lacuna) {
         if (
           normalizarFuncao(funcaoDoDia(c, d)) !==
           normalizarFuncao(lacuna.funcao)
-        )
-          yield {
-            tipo: "funcao",
-            alteracoes: [alterar({ ...d, funcaoAlocada: lacuna.funcao })],
-          };
+        ) {
+          const novo = { ...d, funcaoAlocada: lacuna.funcao };
+          yield { tipo: "funcao", alteracoes: [alterar(novo)] };
+          yield* realocacoesComReforco(config, escala, c, d, novo);
+        }
         for (const inicio of inicios(config, c, d, d, lacuna)) {
           if (
             inicio === d.entradaMin &&
@@ -348,7 +404,13 @@ function* candidatos(config, escala, lacuna) {
           )
             continue;
           const novo = horario(config, c, d, d, inicio, lacuna.funcao);
-          if (novo) yield { tipo: "horario", alteracoes: [alterar(novo)] };
+          if (novo) {
+            yield { tipo: "horario", alteracoes: [alterar(novo)] };
+            // Mover o turno e a pausa pode ser necessário no mesmo passo;
+            // isoladamente cada mudança pode abrir uma nova lacuna.
+            for (const pausa of alternativasIntervalo(c, novo))
+              yield { tipo: "horario_intervalo", alteracoes: [alterar(pausa)] };
+          }
         }
       } else if (
         d.status === "F" &&
@@ -481,8 +543,15 @@ export function buscarAjustesCobertura(config, opcoes = {}) {
   ) {
     let aceito = false;
     const vistos = new Set();
-    busca: for (const lacuna of rel.lacunas)
-      for (const candidato of candidatos(config, escala, lacuna)) {
+    const prioritarias = [...rel.lacunas].sort((a, b) =>
+      (b.fimMin - b.inicioMin) * b.faltantes - (a.fimMin - a.inicioMin) * a.faltantes ||
+      a.data.localeCompare(b.data) || b.inicioMin - a.inicioMin ||
+      normalizarFuncao(a.funcao).localeCompare(normalizarFuncao(b.funcao)));
+    busca: for (const lacuna of prioritarias)
+      for (const gerado of candidatos(config, escala, lacuna)) {
+        const recorrentes = expandirRecorrencia(config, escala, gerado.alteracoes);
+        if (!recorrentes) continue;
+        const candidato = { ...gerado, alteracoes: recorrentes };
         const chaveCandidato = JSON.stringify(
           candidato.alteracoes.map((a) => [
             a.colaboradorId,
@@ -585,7 +654,8 @@ function conferirAlteracoes(config, escala, alteracoes) {
     const r = escala.resultado.find(
       (r) => r.colaborador.id === a.colaboradorId,
     );
-    const d = r?.dias.find((d) => d.data === a.data),
+    const d = [...(r?.dias || []), ...(r?.diasContexto || []), ...(r?.diasApuracao || [])]
+        .find((d) => d.data === a.data),
       chave = `${a.colaboradorId}:${a.data}`;
     if (
       !r ||

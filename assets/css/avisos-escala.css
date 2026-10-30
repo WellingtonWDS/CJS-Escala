@@ -1,0 +1,27 @@
+/* Validações da escala: impacto visível, ocorrências completas sob demanda. */
+.avisos-escala { margin: 0 0 20px; border: 1px solid #d8e2ec; border-radius: 16px; background: #fff; color: #102b49; overflow: hidden; }
+.avisos-escala > summary { display: grid; gap: 5px; padding: 18px 20px; cursor: pointer; background: #f5f8fb; list-style-position: inside; }
+.avisos-escala > summary::after { content: "Exibir detalhes ▾"; font-size: 11px; font-weight: 600; color: #52657c; margin-top: 3px; }
+.avisos-escala[open] > summary::after { content: "Recolher detalhes ▴"; }
+.avisos-escala[data-severidade="erro"] { border-color: #f2b5b5; }
+.avisos-escala[data-severidade="erro"] > summary { background: #fff2f2; }
+.avisos-escala-titulo { font-size: 15px; font-weight: 700; }
+.avisos-escala[data-severidade="erro"] .avisos-escala-titulo { color: #a12e2e; }
+.avisos-escala-subtitulo { font-size: 12px; line-height: 1.6; color: #52657c; }
+.avisos-escala-grupos { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 330px), 1fr)); gap: 12px; padding: 16px; }
+.aviso-escala { min-width: 0; padding: 16px; border: 1px solid #e2e8f0; border-left: 4px solid #d4a152; border-radius: 10px; }
+.aviso-escala[data-severidade="erro"] { border-left-color: #c55151; }
+.aviso-escala[data-severidade="info"], .aviso-escala[data-severidade="pendencia"] { border-left-color: #397cba; }
+.aviso-escala-cabecalho { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #52657c; font-size: 11px; }
+.aviso-escala-cabecalho span:first-child { font-weight: 700; text-transform: uppercase; letter-spacing: .035em; }
+.aviso-escala-resumo { margin: 12px 0 8px; font-size: 13px; font-weight: 600; line-height: 1.7; overflow-wrap: anywhere; }
+.aviso-escala-acao, .avisos-escala-nota { font-size: 12px; line-height: 1.6; color: #52657c; }
+.aviso-escala > details { margin-top: 14px; border-top: 1px solid #e2e8f0; padding-top: 12px; }
+.aviso-escala > details > summary { cursor: pointer; font-size: 12px; font-weight: 600; }
+.aviso-escala ul { margin: 10px 0 0; padding: 0; list-style: none; max-height: 300px; overflow: auto; }
+.aviso-escala li { display: grid; gap: 4px; padding: 10px 0; border-bottom: 1px solid #edf1f5; font-size: 12px; line-height: 1.6; overflow-wrap: anywhere; }
+.avisos-escala-nota { padding: 0 20px 16px; margin: 0; }
+.aviso-escala-vazio { color: #52657c; font-size: 13px; }
+.avisos-escala summary:focus-visible { outline: 3px solid #397cba; outline-offset: -3px; }
+@media (max-width: 600px) { .avisos-escala > summary { padding: 16px; } .avisos-escala-grupos { padding: 12px; } }
+@media print { .avisos-escala-grupos { display: block; } .aviso-escala { margin-bottom: 12px; break-inside: avoid; } .aviso-escala ul { max-height: none; overflow: visible; } }

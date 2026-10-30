@@ -1,3 +1,4 @@
+import { renderAvisosEscala } from "./avisos-escala.js";
 import { renderResumoSemanal } from "./resumo-semanal.js";
 import { assinaturaAjustes } from "../domain/ajustes-cobertura.js";
 import { diasDoModelo, ocorrenciasDoModelo } from "../domain/modelo-escala.js";
@@ -18,13 +19,11 @@ export function renderQuadroFixo(config, domain) {
     issues: domain.validarLegal(r.colaborador, r.dias, r.diasContexto, r.diasApuracao) }));
   // O mesmo problema diário/semanal aparece uma só vez no padrão recorrente.
   const ocorrencias = validacoes.flatMap(({ r, issues }) =>
-    ocorrenciasDoModelo(config, issues).map((i) => ({ ...i, nome: r.colaborador.nome })));
-  const lista = (items) => items.map((i) => `<p class="mt-2 text-sm"><b>${h(i.nome)}</b> · ${h(mensagemSemData(i.mensagem))}</p>`).join("");
-  const erros = ocorrencias.filter((i) => i.severidade === "erro");
-  const analises = ocorrencias.filter((i) => i.severidade !== "erro");
+    ocorrenciasDoModelo(config, issues).map((i) => ({ ...i, nome: r.colaborador.nome, colaborador: r.colaborador })));
+  const avisos = ocorrencias.map((i) => ({ colaborador: i.colaborador, issues: [i] }));
   const dias = [1, 2, 3, 4, 5, 6, 0];
   let html = `<p data-modelo-fixo class="rounded-lg border border-slate-200 bg-slate-50 p-4 mb-4 text-sm"><b>Escala mensal fixa · padrão semanal recorrente.</b> Referência: ${formatDateBR(dateFromKey(config.dataReferenciaFixa))} · ${h(domain.regimeAtual().nome)}. ${config.modoRegime === "simulacao" ? "SIMULAÇÃO explícita." : "Vigência na referência informada."} Sem feriados ou eventos por data.${escala.referenciaAtual44 ? " Referência atual em 44h; a redução é aplicada à proposta." : ""}</p>`;
-  if (erros.length) html += `<section data-erros-escala role="alert" class="border border-red-200 rounded-lg p-4 mb-4 text-fintria-vermelho"><h3 class="font-semibold">${erros.length} incompatibilidade(s). Corrija antes de utilizar o padrão.</h3>${lista(erros)}</section>`;
+  html += renderAvisosEscala(avisos, { erros: true, transformar: mensagemSemData });
   if (escala.ultimaEdicaoManual?.recorrente) {
     html += `<section data-edicao-fixa tabindex="-1" aria-label="Revisão da edição do padrão semanal" class="rounded-lg border border-slate-300 bg-slate-50 p-4 mb-4"><h3 class="font-semibold">Edição do padrão semanal</h3><p class="text-sm mt-2">A alteração foi aplicada ao mesmo dia da semana em todo o padrão. Confira o resumo semanal, os descansos e a cobertura abaixo. Se uma folga virou trabalho, ajuste outra folga e as horas para respeitar o limite semanal.</p><button type="button" data-fixo-desfazer ${escala.ultimaEdicaoManual.assinatura === assinaturaAjustes(config) ? "" : "disabled"} class="mt-3 px-3 py-2 border border-slate-300 rounded-md text-sm">Desfazer última edição</button></section>`;
   }
@@ -51,6 +50,6 @@ export function renderQuadroFixo(config, domain) {
       ${diagnostico.grupos.map((g) => `<p class="text-sm mt-2">${h(g.resumo)}</p>`).join("")}
       <p class="text-xs text-slate-500 mt-3">Intervalos não contam como cobertura. A conversão busca folgas e intervalos fixos para reduzir lacunas. Trocas pontuais por data e a busca de ajustes avulsos estão disponíveis no modo dinâmico.</p></section>`;
   }
-  html += `<details data-analises-escala class="border rounded-lg p-4"><summary class="font-semibold cursor-pointer">Análises e informações por colaborador (${analises.length})</summary>${lista(analises)}</details>`;
+  html += renderAvisosEscala(avisos, { transformar: mensagemSemData });
   return html;
 }

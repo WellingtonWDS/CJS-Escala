@@ -33,8 +33,6 @@ export function distribuirCargaPrevista(colaborador, dias, config) {
     const janela = j ? (j.saida - j.entrada - j.intervalo) / 60 : 0;
     return Math.min(capacidade, janela, limiteDiario(config, d.data), tetoPausa);
   });
-  if (limites.every((l) => l === Infinity))
-    return new Map(previstos.map((d) => [d.data, horas / previstos.length]));
   const capacidades = limites.map((l) => Math.max(0, Math.round(l * 60)));
   const alocadas = previstos.map(() => 0);
   let restantes = Math.min(

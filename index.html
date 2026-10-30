@@ -15,6 +15,8 @@
 <link rel="stylesheet" href="./assets/css/dialogs.css">
 <link rel="stylesheet" href="./assets/css/motion.css">
 <link rel="stylesheet" href="./assets/css/workspace.css">
+<link rel="stylesheet" href="./assets/css/diagnosticos.css">
+<link rel="stylesheet" href="./assets/css/avisos-escala.css">
 <link rel="stylesheet" href="./assets/css/interface.css?v=reescala-2">
 </head>
 <body class="bg-slate-100 text-slate-800 text-[15px] leading-relaxed">
@@ -362,6 +364,7 @@
       <div id="conversao-resultados" hidden class="mt-5">
         <h3 class="font-display text-fintria-navy text-lg font-semibold mb-3">3. Compare a operação atual com a proposta</h3>
         <div class="no-print border border-slate-200 rounded-lg p-3 my-3"><p class="font-semibold text-fintria-navy">Documentos da proposta 5×2</p><p class="text-xs text-slate-500 my-2">PDF em paisagem, com horários, intervalos, folgas e resumo. Todos os documentos individuais em um único ZIP.</p><div class="flex flex-wrap gap-2"><button type="button" data-export-pdf="empregador" data-origem="proposta" class="bg-fintria-navy text-white px-4 py-2 rounded-md font-semibold">Baixar PDF do empregador</button><button type="button" data-export-pdf="colaboradores" data-origem="proposta" class="border border-slate-300 px-4 py-2 rounded-md font-semibold">Baixar PDFs dos colaboradores (ZIP)</button></div></div>
+        <div id="conversao-visao-geral"></div>
         <details class="border border-slate-200 rounded-lg p-3 mb-4" open><summary id="proposta-resumo-grade" class="cursor-pointer font-semibold text-fintria-navy">Escala proposta 5×2 — clique nas células para ajustar</summary><div id="resultado-proposta" class="mt-4"></div></details>
       </div>
       <details class="mt-4" open><summary class="cursor-pointer font-semibold text-fintria-navy">Escala atual / prévia avulsa</summary><div id="resultado-gerar" class="mt-4"></div></details>

@@ -1,7 +1,7 @@
 import { sugerirIntervalosCobertura } from "./intervalos-cobertura.js";
 import { contextoModelo, escalaFixa, diasDoModelo, conferirSuporteFixo, ocorrenciasDoModelo } from "./modelo-escala.js";
 import { configDaEscala } from "./contexto-escala.js";
-import { diagnosticarEquipe } from "./diagnostico-equipe.js";
+import { diagnosticarEquipe, compararPresencaAtual } from "./diagnostico-equipe.js";
 import { aplicarRestricoesDia, validarRestricoes } from "./restricoes.js";
 import { apurarComputoCCT } from "./computo-cct.js";
 import { createDomain } from "./index.js";
@@ -231,7 +231,10 @@ function pontuacao(config, escala, cache) {
     }
     erros += valor[0]; deficit += valor[1];
   }
-  return [erros, faltantes, deficit];
+  // Cobrir uma faixa não autoriza deixar horas contratuais sem distribuição
+  // quando existe um plano legal que completa a meta semanal. Primeiro mantém
+  // legalidade e carga; entre planos equivalentes, minimiza as lacunas.
+  return [erros, deficit, faltantes];
 }
 const melhor = (a, b) => a.some((v, i) => v < b[i] && a.slice(0, i).every((n, j) => n === b[j]));
 
@@ -429,12 +432,22 @@ export function compararConversao(conversao) {
   const { config } = conversao.proposta;
   const escala = config.escalaGerada;
   recalcular(config, escala);
-  const cobertura = escala.coberturaOperacional;
-  const antes = analisarCobertura(
+  const coberturaInformada = escala.coberturaOperacional;
+  const inferida = !coberturaInformada.configurada;
+  const cobertura = inferida
+    ? compararPresencaAtual(config, conversao.referencia.escala.resultado, escala.resultado)
+    : coberturaInformada;
+  const antes = inferida
+    ? { lacunas: [] }
+    : analisarCobertura(
     { ...config, tipoEscala: "6x1" },
     conversao.referencia.escala.resultado,
   );
   const diagnostico = diagnosticarEquipe(config, escala.resultado, cobertura);
+  diagnostico.referenciaInferida = inferida;
+  if (inferida) diagnostico.limitacoes.unshift(
+    "Sem cobertura operacional informada, a análise compara a presença da escala atual no mesmo período. Se essa presença precisar ser mantida, uma insuficiência exige reforço da equipe ou revisão da operação. Não presume atendimento durante os intervalos nem certifica a demanda real. A busca inicial não otimiza essa referência inferida; cadastre a cobertura para buscar ajustes dirigidos a ela.",
+  );
   const grupos = new Map(
     diagnostico.funcoes.map((f) => [normalizarFuncao(f.funcao), f]),
   );
@@ -495,6 +508,8 @@ export function compararConversao(conversao) {
           : "suficiente";
   return {
     status,
+    baseCobertura: inferida ? "escala_atual" : "informada",
+    coberturaReferencia: inferida ? cobertura : null,
     funcoes: [...grupos.values()],
     pessoas,
     erros: erros.length,

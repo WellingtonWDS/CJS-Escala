@@ -8,7 +8,20 @@ Ferramenta para configurar, gerar e revisar escalas de trabalho e comparar a esc
 
 Consulte [Estado do projeto](docs/estado-do-projeto.md) para uma visão consolidada das funcionalidades implementadas, limitações e últimas validações. O [plano das próximas funcionalidades](docs/planos/evolucao-escalas.md) registra a primeira entrega da escala fixa e os próximos recursos de quadro diário e exportações por público. O documento reflete o código atual; auditorias e relatórios datados em `docs/` são registros históricos.
 
-O fluxo principal já inclui cadastro manual e por planilhas, importação Domínio, restrições individuais, habilitações por função, geração, conversão 6×1 → 5×2, comparação de cobertura, sugestões de ajustes com prévia/aplicação/desfazer, edição da grade, CSV e impressão. O acesso oferece login individual por e-mail/senha integrado ao n8n e ao banco, com sessão de até 12 horas, menu por perfil, gestão de usuários e empresas e preenchimentos compartilhados por empresa autorizada. O modo compartilhado/local permanece disponível por configuração. Os detalhes de funcionamento e configuração estão nas seções abaixo.
+O fluxo principal já inclui cadastro manual e por planilhas, importação Domínio, restrições individuais, habilitações por função, geração, conversão 6×1 → 5×2, comparação de cobertura, sugestões de ajustes com prévia/aplicação/desfazer, edição da grade, documentos PDF próprios, ZIP individual e impressão. O acesso oferece login individual por e-mail/senha integrado ao n8n e ao banco, com sessão de até 12 horas, menu por perfil, gestão de usuários e empresas e preenchimentos compartilhados por empresa autorizada. O modo compartilhado/local permanece disponível por configuração. Os detalhes de funcionamento e configuração estão nas seções abaixo.
+
+## Geração 5×2, rateio e diagnóstico de cobertura — 30/10/2026
+
+- **Rateio em minutos:** a proposta distribui o alvo contratual entre os dias efetivos, saturando dias curtos e respeitando janelas e limites legais. Com ACT/CCT válido e janela suficiente, **42h em cinco dias = 8h24 por dia**. Corrigidos estado legado que mantinha horas do quadro e divisão de cargas fracionadas. Contratos menores, feriados abonados e afastamentos não viram horas indevidas a recuperar.
+- **Recomendação visível:** o painel mostra o rateio aplicado ou o saldo e o motivo que impedem completá-lo. Exemplo 08h–18h com duas horas de pausa comporta apenas 8h efetivas: sinaliza as 2h semanais faltantes e a referência de mais 24min/dia, sem encurtar a pausa ou ampliar a janela silenciosamente. Sem autorização diária suficiente, solicita revisão do ACT/CCT.
+- **Sem cobertura operacional preenchida:** compara a presença efetiva da escala atual com a proposta, por função e horário, excluindo intervalos. Se um único auxiliar cobre 44h e passa para 42h/40h, informa a insuficiência para manter essa presença. A conclusão de reforço é **condicional à manutenção da operação atual**; não presume que a loja funcione durante o almoço nem inventa uma demanda confirmada. Para dirigir a busca automática a horários específicos, cadastre a cobertura operacional.
+- **Prioridade da conversão:** corrige incompatibilidades, busca completar a carga semanal possível e então reduz lacunas. Não prefere uma semana de 36h apenas para cobrir o sábado quando existe uma distribuição válida de 40h; a cobertura restante fica explícita.
+- **Buscar ajustes:** testa mudanças conjuntas de turno e intervalo e realocações coordenadas de duas pessoas habilitadas. Prioriza faixas com maior impacto. No fixo, alterações repetem-se em todas as ocorrências do dia da semana, inclusive contexto de descanso. Mantém aplicação separada, desfazer, horas/dias, restrições, edições manuais e proteção contra novas lacunas e incompatibilidades.
+- **Avisos para decisão:** resumo executivo antes da grade, com lacunas, incompatibilidades e próximo passo. Diagnóstico distingue insuficiência de capacidade de distribuição inadequada. Rateio, provas, horários e colaboradores têm blocos próprios; detalhes extensos ficam recolhidos. Validações das grades fixa e dinâmica são agrupadas por assunto e severidade, com todas as ocorrências acessíveis. Layout responsivo, sem confundir pico simultâneo com quantidade exata de contratações.
+
+Regras atualizadas para **`ec141-2026-10-30-11`**: gere novamente propostas anteriores. Os preenchimentos permanecem disponíveis. Sem migração SQL, alteração de RPC, permissões ou variáveis. A busca continua limitada; não é uma prova de solução ótima nem certificação jurídica.
+
+Validação local: **536 testes unitários** (26 novos), build e suíte completa de navegador aprovados. Inclui os 11 modelos DEMO, casos de rateio 8h24, contratos menores, feriados/férias, janelas curtas, ACT ausente/vencido, pausas/noturnos, ajustes combinados, recorrência fixa, aplicação/desfazer, preservação da origem e novos resumos em desktop/celular. Sem alteração de schema/API; a integração de banco não precisou ser repetida nesta entrega.
 
 ## Animação do painel de salvamento — 29/10/2026
 
@@ -101,7 +114,7 @@ A referência jurídica não é validade permanente: reavaliar ao mudar a legisl
 A revisão corrigiu situações que geravam déficit evitável ou aplicavam limites de maneira imprecisa:
 
 - A busca de folgas funciona também sem cobertura cadastrada e usa os dias disponíveis de cada colaborador. Com sábado de 4h, pode escolher essa folga para fechar 40h nos cinco dias de 8h, em vez de manter uma semana de 36h.
-- A escolha prioriza erros objetivos, lacunas de cobertura e, depois, déficit semanal. Há até duas rodadas, com orçamento de 120 a 2.400 avaliações dividido por pessoa; a comparação avisa quando a pesquisa foi parcial.
+- Na revisão de 30/10, a escolha passa a priorizar erros objetivos, déficit semanal e, depois, lacunas de cobertura. Há até duas rodadas, com orçamento de 120 a 2.400 avaliações dividido por pessoa; a comparação avisa quando a pesquisa foi parcial.
 - O limite diário do ACT/CCT é aplicado por data. Uma autorização que vence no meio do mês não é presumida válida depois do vencimento.
 - As janelas individuais e o turno são considerados antes da distribuição, permitindo repartir o saldo nos outros dias disponíveis. A capacidade também respeita a pausa declarada: até 4h sem pausa e até 6h com pausa de pelo menos 15min e inferior a 1h, conforme as regras gerais modeladas.
 
@@ -150,13 +163,13 @@ A origem e a proposta são configurações e resultados distintos. A conversão 
 
 Os dias de funcionamento são preservados: uma loja aberta de segunda a sábado continua aberta aos sábados. A geração inicial da proposta distribui até cinco dias de trabalho, preserva contratos, funções, entradas/grupos de turno e usa as janelas atuais como limites. Sugestões adicionais de mudança de horário, turno ou função são buscadas em uma etapa própria, com prévia antes de aplicar. Respeita dias permitidos e folgas fixas atuais; sábado e domingo fixos são uma escolha explícita no destino. Não estende saídas nem presume ACT/CCT. Sem fundamento coletivo aplicável, mantém até 8h diárias: a distribuição de 42h em cinco dias pode exigir revisão, registrada nos déficits/alertas.
 
-A busca de folgas é determinística, com até duas rodadas e orçamento proporcional ao quadro (120 a 2.400 avaliações), dividido por pessoa; prioriza incompatibilidades, lacunas e déficit semanal. Não é uma prova de otimização global. Os diagnósticos distinguem:
+A busca de folgas é determinística, com até duas rodadas e orçamento proporcional ao quadro (120 a 2.400 avaliações), dividido por pessoa; prioriza incompatibilidades, déficit semanal e lacunas, nessa ordem. Não é uma prova de otimização global. Os diagnósticos distinguem:
 
 - **Suficiente:** a proposta cobre as demandas informadas, sem incompatibilidades objetivas ou déficit do alvo de horas. Pendências documentais continuam indicadas separadamente.
 - **Insuficiente:** há lacunas e uma insuficiência demonstrável de capacidade por função, por horas ou dias-pessoa. A comparação explica os limites e os períodos descobertos.
 - **Ajustes necessários:** persistem lacunas de distribuição/disponibilidade ou déficit de jornada, sem prova de que contratar seja obrigatório.
 - **Incompatível:** a cobertura foi atendida, mas a proposta ainda contém erros de jornada/repouso.
-- **Não avaliada:** faltam demandas ativas/válidas no período ou existem avisos que impedem a conclusão.
+- **Não avaliada:** não há demanda nem referência de presença válida no período, ou existem avisos que impedem a conclusão. Sem demanda cadastrada, a conversão usa a presença atual como referência condicional, identificada na interface.
 
 O pico de faltantes é ausência simultânea, não uma estimativa exata de contratações. Demandas sobrepostas continuam usando o maior mínimo, com intervalos descontados e trabalho noturno tratado pelo motor existente. Feriados nacionais são recalculados para o destino; feriados locais permanecem nas datas cadastradas e devem ser revisados para o novo período.
 
@@ -260,7 +273,7 @@ Ao gerar a escala, o relatório mostra data, função, período descoberto, mín
 
 Na geração inicial, a pausa mantém sua distância da entrada configurada, inclusive no Turno B; em jornadas menores, é antecipada para caber no plantão. A cobertura utiliza os limites explícitos da pausa efetiva quando disponíveis, incluindo jornadas recortadas por restrições e ajustes de horário. O intervalo efetivo aparece na descrição do dia na grade. A análise ocorre em minutos e se limita ao período selecionado. O total de horas-pessoa faltantes soma a duração de cada lacuna multiplicada pela quantidade de pessoas que faltam.
 
-O módulo `domain/cobertura.js` é independente da interface e não modifica a configuração ou a escala. As demandas ficam em `demandasCobertura`, preservando a chave existente do armazenamento. Sem demandas, a cobertura por função é identificada como não avaliada. Alterar demandas ou cargos invalida a escala; editar um status diário recalcula a cobertura. A análise isolada diagnostica lacunas; o fluxo de conversão usa essa análise para buscar uma distribuição das folgas.
+O módulo `domain/cobertura.js` é independente da interface e não modifica a configuração ou a escala. As demandas ficam em `demandasCobertura`, preservando a chave existente do armazenamento. Sem demandas, esse módulo isolado identifica a cobertura como não avaliada. Na conversão, um diagnóstico separado compara a presença da referência atual com a proposta, sem alterar ou cadastrar demandas automaticamente. Alterar demandas ou cargos invalida a escala; editar um status diário recalcula a cobertura. A análise isolada diagnostica lacunas; o fluxo de conversão usa essa análise para buscar uma distribuição das folgas.
 
 ## Cadastro por planilha
 

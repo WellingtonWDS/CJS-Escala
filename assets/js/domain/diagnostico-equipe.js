@@ -1,5 +1,5 @@
 import { configDaEscala } from "./contexto-escala.js";
-import { periodoModelo } from "./modelo-escala.js";
+import { contextoModelo, periodoModelo } from "./modelo-escala.js";
 import { analisarCobertura, normalizarFuncao } from "./cobertura.js";
 import { habilitadoPara, funcaoDoDia } from "./funcoes.js";
 import { configDoPerfil, verificarPerfil } from "./perfil-dominio.js";
@@ -97,6 +97,93 @@ function segmentosAtuais(d) {
     ].filter(([a, b]) => b > a);
   return [[d.entradaMin, d.saidaMin]];
 }
+/** Referência descritiva, sem fabricar uma exigência de cobertura do empresário.
+ * Conta a presença realmente preenchida, excluindo pausas e sem duplicar IDs.
+ * Usa o mesmo período da proposta, inclusive o contexto de virada noturna. */
+export function compararPresencaAtual(config, referencia, proposta) {
+  config = contextoModelo(config);
+  const fixo = periodoModelo(config);
+  const inicio = minuto(fixo?.inicio || isoDate(config.ano, config.mes, config.diaInicio));
+  const fim = minuto(fixo?.fim || isoDate(config.ano, config.mes,
+    new Date(config.ano, config.mes + 1, 0).getDate())) + DIA;
+  const relatorio = { configurada: false, periodos: [], lacunas: [], avisos: [],
+    referenciaInferida: true };
+  const grupos = new Map();
+  const adicionar = (resultado, tipo) => {
+    const ids = new Set();
+    for (const r of resultado) {
+      const c = r.colaborador;
+      if (c?.id == null || c.id === "" || ids.has(c.id)) {
+        relatorio.avisos.push("A referência de presença contém identificação ausente ou duplicada. Revise os colaboradores.");
+        continue;
+      }
+      ids.add(c.id);
+      const dias = new Map([...(r.diasContexto || []), ...r.dias].map(d => [d.data, d]));
+      for (const d of dias.values()) {
+        if (!trabalha(d)) continue;
+        const funcao = funcaoDoDia(c, d);
+        if (!dataValida(d.data) || !normalizarFuncao(funcao) || !habilitadoPara(c, funcao)) {
+          relatorio.avisos.push(`${c.nome}: data ou função inválida na referência de presença.`);
+          continue;
+        }
+        const base = minuto(d.data);
+        if (base >= fim || base + 2 * DIA <= inicio) continue;
+        const pausa = d.intervaloMin || 0;
+        if (![d.entradaMin, d.saidaMin, pausa].every(Number.isFinite) ||
+            d.entradaMin < 0 || d.entradaMin >= DIA || d.saidaMin <= d.entradaMin ||
+            d.saidaMin - d.entradaMin > 2 * DIA || pausa < 0 ||
+            pausa >= d.saidaMin - d.entradaMin ||
+            (pausa > 0 && (![d.intervaloInicioMin, d.intervaloFimMin].every(Number.isFinite) ||
+              d.intervaloInicioMin < d.entradaMin || d.intervaloFimMin > d.saidaMin ||
+              Math.abs(d.intervaloFimMin - d.intervaloInicioMin - pausa) > 0.01))) {
+          relatorio.avisos.push(`${c.nome} · ${d.data}: horário incompleto na referência de presença.`);
+          continue;
+        }
+        const key = normalizarFuncao(funcao);
+        if (!grupos.has(key)) grupos.set(key, { funcao: funcao.trim(), eventos: [] });
+        for (const [a, b] of segmentosAtuais(d)) {
+          const x = Math.max(inicio, base + Math.round(a)), y = Math.min(fim, base + Math.round(b));
+          if (y <= x) continue;
+          grupos.get(key).eventos.push({ minuto: x, tipo, id: c.id, delta: 1 },
+            { minuto: y, tipo, id: c.id, delta: -1 });
+        }
+      }
+    }
+  };
+  adicionar(referencia, "atual");
+  adicionar(proposta, "proposta");
+  for (const { funcao, eventos } of grupos.values()) {
+    for (let data = inicio; data <= fim; data += DIA) eventos.push({ minuto: data });
+    eventos.sort((a, b) => a.minuto - b.minuto);
+    const presentes = { atual: new Map(), proposta: new Map() };
+    for (let i = 0; i < eventos.length;) {
+      const a = eventos[i].minuto;
+      while (i < eventos.length && eventos[i].minuto === a) {
+        const e = eventos[i++];
+        if (!e.tipo) continue;
+        const n = (presentes[e.tipo].get(e.id) || 0) + e.delta;
+        if (n > 0) presentes[e.tipo].set(e.id, n); else presentes[e.tipo].delete(e.id);
+      }
+      if (i >= eventos.length || !presentes.atual.size) continue;
+      const b = eventos[i].minuto, data = dataMin(a), base = minuto(data);
+      const linha = { data, funcao, inicioMin: a - base, fimMin: b - base,
+        necessarios: presentes.atual.size, presentes: presentes.proposta.size,
+        faltantes: Math.max(0, presentes.atual.size - presentes.proposta.size) };
+      const anterior = relatorio.periodos.at(-1);
+      if (anterior && anterior.data === data && anterior.funcao === funcao &&
+          anterior.fimMin === linha.inicioMin && anterior.necessarios === linha.necessarios &&
+          anterior.presentes === linha.presentes) anterior.fimMin = linha.fimMin;
+      else relatorio.periodos.push(linha);
+    }
+  }
+  relatorio.periodos.sort((a, b) => a.data.localeCompare(b.data) ||
+    a.inicioMin - b.inicioMin || a.funcao.localeCompare(b.funcao));
+  relatorio.configurada = relatorio.periodos.length > 0;
+  relatorio.lacunas = relatorio.periodos.filter(p => p.faltantes > 0);
+  relatorio.avisos = [...new Set(relatorio.avisos)];
+  return relatorio;
+}
+
 function construirPessoas(config, resultado, inicio, fim) {
   const { feriadoDaData } = createFeriados(config),
     out = [],

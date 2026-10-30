@@ -1,6 +1,10 @@
-# Registro de implantação — atualizado em 29/10/2026
+# Registro de implantação — atualizado em 30/10/2026
 
 Consultar este registro antes de orientar o operador. Distinguir código disponível, testes locais e resultados informados pelo operador. Não contém senhas, chaves ou identificadores pessoais.
+
+## Precisão de geração e diagnóstico — 30/10/2026
+
+Entrega em código: rateio em minutos e recomendações por semana; diagnóstico condicional de perda de presença mesmo sem cobertura operacional; ajustes combinados e recorrentes no fixo; novo layout de avisos. Regras `ec141-2026-10-30-11`, exigindo gerar novamente resultados antigos. Nenhuma migração SQL, RPC ou variável nova. Publicar o frontend/backend existentes por `main` não executa alterações na VPS. Validação local: 536 testes unitários, build e suíte completa de navegador aprovados, incluindo os 11 modelos DEMO e o novo diagnóstico. Integração de banco não repetida nesta entrega sem alteração de API/schema. Detalhes e limites no [README](../README.md).
 
 ## Abrir sem quota de cache — 29/10/2026
 

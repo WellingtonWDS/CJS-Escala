@@ -195,11 +195,12 @@ module.exports = async function testarConversao({ browser, baseURL }) {
     await irParaEtapa(page, "#btn-converter");
     await clicarCalculo(page, "#btn-converter");
     await waitForDialogs(page);
-    assert.equal((await saved()).conversao.comparacao.status, "nao_avaliada");
+    assert.equal((await saved()).conversao.comparacao.status, "insuficiente");
+    assert.equal((await saved()).conversao.comparacao.baseCobertura, "escala_atual");
     await irParaEtapa(page, "#conversao-diagnostico");
     assert.match(
       await page.locator("#conversao-diagnostico").innerText(),
-      /não é possível concluir/,
+      /presença.*atual|escala atual/i,
     );
     await irParaEtapa(page, '[data-tipo="5x2"]');
     await page.locator('[data-tipo="5x2"]').click();

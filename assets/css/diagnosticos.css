@@ -1,0 +1,58 @@
+/* Resumos orientados à decisão; detalhes continuam disponíveis sob demanda. */
+.diagnostico-executivo, .diagnostico-conversao, .diagnostico-equipe {
+  border: 1px solid #d9e2ec;
+  border-radius: 18px;
+  padding: clamp(16px, 2.4vw, 28px);
+  margin: 16px 0;
+  background: #fff;
+  color: #102b49;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.diagnostico-executivo { border-top: 4px solid #b87913; background: #fffdf8; }
+.diagnostico-executivo[data-situacao="suficiente"] { border-top-color: #087e63; background: #f5fcf8; }
+.diagnostico-executivo[data-situacao="insuficiente"], .diagnostico-executivo[data-situacao="incompativel"] { border-top-color: #b43d41; background: #fffafa; }
+.diagnostico-etiqueta { display: block; font-size: 11px; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; color: #52657c; margin-bottom: 8px; }
+.diagnostico-executivo h3 { font-size: clamp(18px, 2vw, 23px); line-height: 1.35; font-weight: 700; max-width: 80ch; margin-bottom: 10px; }
+.diagnostico-executivo p, .diagnostico-conversao p, .diagnostico-equipe p { font-size: 14px; margin: 8px 0; max-width: 100ch; }
+.diagnostico-indicadores { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; margin: 18px 0; }
+.diagnostico-indicadores > div { border: 1px solid #dce5ee; border-radius: 12px; padding: 14px; background: #ffffffc9; }
+.diagnostico-indicadores span, .diagnostico-indicadores small { display: block; font-size: 12px; color: #52657c; }
+.diagnostico-indicadores strong { display: block; font-size: 25px; font-weight: 700; margin: 5px 0; }
+.diagnostico-proximo { padding-top: 14px; border-top: 1px solid #dce5ee; }
+.diagnostico-conversao > h3, .diagnostico-equipe > h3, .diagnostico-rateio > h3 { font-size: 18px; font-weight: 700; }
+.diagnostico-detalhes { border: 1px solid #d9e2ec; border-radius: 12px; margin: 14px 0; background: #fff; }
+.diagnostico-detalhes > summary { padding: 14px 16px; cursor: pointer; font-size: 14px; font-weight: 650; }
+.diagnostico-detalhes > summary:focus-visible { outline: 3px solid #3b82f6; outline-offset: 2px; border-radius: 10px; }
+.diagnostico-tabela-scroll { overflow: auto; max-height: 520px; padding: 0 14px 14px; }
+.diagnostico-tabela-scroll table { border-collapse: separate; border-spacing: 0; min-width: 1000px; width: 100%; font-size: 13px; }
+.diagnostico-tabela-scroll th, .diagnostico-tabela-scroll td { padding: 12px 14px; border-bottom: 1px solid #e2e8f0; text-align: left; vertical-align: top; line-height: 1.65; }
+.diagnostico-tabela-scroll thead th { background: #f1f5f9; position: sticky; top: 0; z-index: 1; }
+.diagnostico-nota { padding: 12px 16px; border-left: 3px solid #b87913; background: #fff9ee; margin: 14px 0; font-size: 13px; }
+.diagnostico-rateio { border: 1px solid #dce5ee; border-radius: 14px; background: #f7fafc; padding: 18px; margin: 18px 0; }
+.diagnostico-rateio-pessoa { padding: 14px 0; border-top: 1px solid #dce5ee; margin-top: 14px; }
+.diagnostico-rateio-pessoa h4 { font-weight: 700; }
+.diagnostico-rateio-item { margin-top: 10px; padding: 12px 16px; border-left: 3px solid #b87913; background: white; border-radius: 6px; }
+.diagnostico-rateio-item[data-rateio="aplicado"] { border-left-color: #087e63; }
+.diagnostico-rateio-item details, .diagnostico-rodape { font-size: 12px !important; color: #52657c; }
+.diagnostico-rateio-item summary { cursor: pointer; }
+.diagnostico-faixas { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,300px),1fr)); gap: 12px; margin: 16px 0; }
+.diagnostico-faixa { padding: 16px; border: 1px solid #dce5ee; border-radius: 12px; border-top: 3px solid #b87913; background: #fff; }
+.diagnostico-faixa h4 { font-size: 14px; font-weight: 700; }
+.diagnostico-faixa p { font-size: 13px; }
+.diagnostico-faixa details { font-size: 12px; color: #52657c; }
+@media(max-width:600px) {
+  .diagnostico-indicadores { grid-template-columns: 1fr; gap: 8px; }
+  .diagnostico-indicadores > div { display: grid; grid-template-columns: 1fr auto; align-items: center; padding: 10px 14px; }
+  .diagnostico-indicadores small { grid-column: 1 / -1; }
+  .diagnostico-indicadores strong { font-size: 21px; }
+}
+@media print {
+  .diagnostico-tabela-scroll { overflow: visible; max-height: none; }
+  .diagnostico-tabela-scroll table { min-width: 0; }
+  .diagnostico-executivo, .diagnostico-faixa, .diagnostico-rateio-item { break-inside: avoid; }
+}
+.diagnostico-provas { list-style: disc; padding: 0 24px 16px 38px; font-size: 14px; }
+.diagnostico-provas li + li { margin-top: 10px; }
+.diagnostico-premissas { padding: 0 16px 16px; }
+.diagnostico-subtitulo { font-size: 15px; font-weight: 700; margin-top: 20px; }

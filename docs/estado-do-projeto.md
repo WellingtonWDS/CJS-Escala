@@ -1,6 +1,6 @@
 # Estado do projeto — Reescala
 
-Atualizado em **29/10/2026**. Referência funcional: versão de regras `ec141-2026-10-29-10` ([histórico do projeto](https://github.com/WellingtonWDS/CJS-Escala/commits/main/)). Esta página resume o andamento; o [README](../README.md) detalha operação, arquitetura, configuração e testes.
+Atualizado em **30/10/2026**. Referência funcional: versão de regras `ec141-2026-10-30-11` ([histórico do projeto](https://github.com/WellingtonWDS/CJS-Escala/commits/main/)). Esta página resume o andamento; o [README](../README.md) detalha operação, arquitetura, configuração e testes.
 
 Identidade **Reescala** aplicada no login, cabeçalho, menu expandido/recolhido, carregamento, quadros de escala/impressão e ícone do navegador, usando os arquivos originais de `logos/`. A publicação inclui essa pasta e o login carrega suas imagens sem sessão; dados, chaves internas e permissões são preservados.
 
@@ -9,6 +9,20 @@ Logos com dimensões limitadas também no HTML para evitar crescimento com CSS a
 Quatro novas empresas por segmento e onze preenchimentos DEMO para comércio contínuo, fazenda com sábado compensado, entidade 24h com 12×36/administrativo e padaria até 20h30. Casos de cobertura, readequação e contratação; os ciclos mistos são analisados na prévia e continuam fora da conversão automática. [Instalação e resultados esperados](cenarios-demo-segmentos.md). Instalador testado localmente; execução remota ainda pendente.
 
 Carregamento imediato na geração atual/proposta, cálculo em Worker local, bloqueio de duplicação, liberação em falhas e proteção contra resultados de dados alterados. Resumo da busca de cobertura aparece primeiro em modal e depois abaixo do botão, com aplicação separada. Regras de cálculo e versões de dados preservadas.
+
+## Precisão da proposta e avisos para o empresário — 30/10/2026
+
+Rateio semanal em minutos inteiros, inclusive cargas fracionadas e estado legado de horas importadas. Painel mostra 42h/5 = 8h24 quando autorizado e fisicamente possível; se a janela ou a autorização não comportarem o alvo, mostra saldo, duração diária de referência e motivo. Não encurta intervalos nem ultrapassa janelas cadastradas para fechar horas. Contratos menores, abonos, férias e edição posterior participam da apuração.
+
+A busca de conversão prioriza legalidade, cumprimento da carga semanal e cobertura, nessa ordem. Uma cobertura aparentemente completa não pode esconder horas contratuais faltantes quando há distribuição válida que completa o alvo.
+
+Conversão sem cobertura cadastrada compara presença atual por função/horário, com pausas excluídas, viradas noturnas e contagem única de colaboradores. A insuficiência indica reforço se a empresa precisar manter essa presença. Cobertura explícita tem precedência. A inferência serve ao diagnóstico; a busca dirigida continua exigindo cobertura informada.
+
+Ajustes testam turnos e pausas em conjunto e duas realocações de funções de forma atômica, priorizando lacunas de maior impacto. No fixo, repetem o ajuste em todas as semanas e contextos, preservando dados calendáricos; aplicação e desfazer são validados. Horas, dias, descanso, restrições e bloqueios manuais permanecem protegidos.
+
+Avisos reorganizados: resumo executivo antes da grade, indicadores de impacto, próxima ação, capacidade versus distribuição, rateio por colaborador e detalhes de contratação. Validações agrupadas por assunto/severidade, com mensagens completas em detalhes e erros antes da grade. A busca continua limitada e não garante ótimo global. Nova versão de regras exige recalcular propostas antigas; sem migração SQL ou variáveis.
+
+Validação local: **536 testes unitários** (26 novos), build e suíte completa de navegador aprovados. Inclui os 11 modelos DEMO e o novo teste de navegador com rateio 8h24 real, reforço condicional sem cobertura, datas/tabelas, déficit de 2h e recomendação de 24min, além de leitura em 390px. Sem alterações de API/schema; integração PostgreSQL/PostgREST não repetida nesta entrega.
 
 ## Abertura remota com quota local esgotada — 29/10/2026
 
@@ -20,7 +34,7 @@ Validação local: **510 testes unitários**, build, suíte completa de navegado
 
 ## FAB, horários replicados e troca de dias — 29/10/2026
 
-Painel de salvamento inicialmente recolhido, aberto por FAB verde **Salvar preenchimento** no canto inferior direito, com **Minimizar** e espaço inferior reduzido. Mantidos contexto, cópia, recuperação, confirmação remota e permissões.
+Painel de salvamento inicialmente recolhido, aberto por FAB verde **Salvar preenchimento** no canto inferior direito, com **X para recolher**, transições suaves de abertura/fechamento e espaço inferior reduzido. Mantidos contexto, cópia, recuperação, confirmação remota e permissões.
 
 Horários individuais semanais podem ser replicados de outro colaborador com confirmação e cópia independente. Preserva dados pessoais, admissão, função e restrições; a referência contratual segue o checkbox existente. Alteração invalida a escala para nova geração.
 

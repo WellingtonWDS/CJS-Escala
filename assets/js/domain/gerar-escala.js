@@ -1,3 +1,4 @@
+import { analisarRateioSemanal } from "./rateio-semanal.js";
 import { ajustarIntervaloDaProposta } from "./politica-intervalo.js";
 import { apurarSemana } from "./resumo-semanal.js";
 import { janelaDaProposta } from "./janela-proposta.js";
@@ -437,7 +438,7 @@ export function createGerador(state, jornada, feriados, validacao) {
     });
     porSemana.forEach((semana) => {
       if (
-        state.usarHorasQuadro ||
+        (state.usarHorasQuadro && !state.aplicarProposta5x2) ||
         (state.tipoEscala === "12x36" && politicaPlantaoDeclarada(state))
       ) {
         const ref = referenciaSemana(state, semana, colab);
@@ -595,6 +596,7 @@ export function createGerador(state, jornada, feriados, validacao) {
       ),
       resultado,
       avisosCobertura: cobertura,
+      recomendacoesRateio: analisarRateioSemanal(state, resultado),
       coberturaOperacional: analisarCobertura(state, resultado),
       validacoes,
       geradoEm: new Date().toISOString(),

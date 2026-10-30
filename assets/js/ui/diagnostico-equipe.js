@@ -1,35 +1,17 @@
 import { escapeHtml } from "../shared/formatacao.js";
 import { dateFromKey, formatDateBR } from "../domain/datas-horas.js";
-import {
-  TITULOS_DIAGNOSTICO as titulos,
-  CAUSAS_DIAGNOSTICO as causas,
-} from "../domain/diagnostico-equipe.js";
+import { TITULOS_DIAGNOSTICO as titulos, CAUSAS_DIAGNOSTICO as causas } from "../domain/diagnostico-equipe.js";
 export function renderDiagnosticoEquipe(d) {
   if (!d || d.status === "nao_avaliada") return "";
-  return `<section data-diagnostico-equipe data-status="${escapeHtml(d.status)}" class="rounded-lg border border-slate-200 p-4 mb-4">
- <h3 class="font-display font-semibold text-fintria-navy mb-2">Diagnóstico da equipe e contratação</h3>
- <p class="font-semibold mb-2">${titulos[d.status]}</p>
- ${d.picoDeficitMinimo ? `<p class="text-sm mb-2">Déficit mínimo simultâneo: <b>${d.picoDeficitMinimo} pessoa(s)</b>. Este pico não é o número exato de contratações.</p>` : ""}
- ${d.avisos.map((a) => `<p role="alert" class="text-sm mb-2">${escapeHtml(a)}</p>`).join("")}
- <div class="space-y-3">${d.grupos
-   .slice(0, 100)
-   .map(
-     (g) =>
-       `<div data-diagnostico-faixa class="rounded-lg bg-slate-50 border border-slate-200 p-3"><p class="font-semibold text-sm">${escapeHtml(g.resumo)}</p><p class="text-sm mt-1">${causas[g.tipo]}</p><details class="text-xs text-slate-500 mt-2"><summary class="cursor-pointer">${g.ocorrencias} ocorrência(s) identificada(s) — ver datas</summary><p class="mt-1">${g.datas.map((data) => formatDateBR(dateFromKey(data))).join(", ")}</p></details></div>`,
-   )
-   .join("")}</div>
- ${d.grupos.length > 100 ? '<p class="text-sm mt-2">Exibindo os primeiros 100 grupos. O CSV contém todos os grupos.</p>' : ""}
- ${
-   d.provas.length
-     ? `<details class="mt-3 text-sm"><summary class="cursor-pointer font-semibold">Por que falta capacidade? (${d.provas.length} verificações)</summary><ul class="list-disc pl-5 mt-2">${d.provas
-         .slice(0, 100)
-         .map((p) => `<li class="mb-2">${escapeHtml(p.mensagem)}</li>`)
-         .join(
-           "",
-         )}</ul>${d.provas.length > 100 ? "<p>Todas as verificações estão no CSV.</p>" : ""}</details>`
-     : ""
- }
- <p class="text-xs text-slate-500 mt-3">A análise considera somente a operação cadastrada e não duplica pessoas habilitadas para várias funções. Os tetos de capacidade são otimistas: saldo de horas não garante uma escala viável. Use “Buscar ajustes” para testar redistribuições; uma busca sem sugestões não comprova necessidade de contratar. Ausências temporárias podem exigir cobertura temporária. As datas acima identificam as ocorrências; não significam falta em todas as semanas.</p>
- ${(d.limitacoes || []).map((a) => `<p class="text-xs text-slate-500 mt-2">${escapeHtml(a)}</p>`).join("")}
- </section>`;
+  const insuficiente = d.status === "capacidade_insuficiente";
+  return `<section data-diagnostico-equipe data-status="${escapeHtml(d.status)}" class="diagnostico-equipe">
+ <span class="diagnostico-etiqueta">${insuficiente ? "Capacidade insuficiente" : d.status === "redistribuicao" ? "Distribuição a ajustar" : "Análise da operação"}</span>
+ <h3>Diagnóstico da equipe e contratação</h3><p><b>${titulos[d.status]}</b></p>
+ <p>${d.referenciaInferida ? "Sem cobertura operacional informada, usamos a presença da escala atual como referência. A necessidade de reforço é condicional à manutenção dessa presença, sem presumir funcionamento durante os intervalos." : "As conclusões abaixo usam a demanda operacional cadastrada, as habilitações e as disponibilidades da equipe."}</p>
+ ${d.picoDeficitMinimo ? `<p>Faltam simultaneamente pelo menos <b>${d.picoDeficitMinimo} pessoa(s)</b> em parte do período. Esse pico não é o número exato de contratações.</p>` : ""}
+ ${d.avisos.length ? `<aside class="diagnostico-nota">${d.avisos.map(a=>`<p>${escapeHtml(a)}</p>`).join("")}</aside>` : ""}
+ ${d.provas.length ? `<details class="diagnostico-detalhes" ${insuficiente ? "open" : ""}><summary>Por que o quadro não comporta a operação? (${d.provas.length} verificações)</summary><ul class="diagnostico-provas">${d.provas.map(p=>`<li>${escapeHtml(p.mensagem)}</li>`).join("")}</ul></details>` : ""}
+ ${d.grupos.length ? `<h4 class="diagnostico-subtitulo">Onde a cobertura precisa de atenção</h4><div class="diagnostico-faixas">${d.grupos.map(g=>`<article data-diagnostico-faixa class="diagnostico-faixa"><h4>${escapeHtml(g.resumo)}</h4><p>${causas[g.tipo]}</p><details><summary>${g.ocorrencias} ocorrência(s) — ver datas</summary><p>${g.datas.map(data=>formatDateBR(dateFromKey(data))).join(", ")}</p></details></article>`).join("")}</div>` : ""}
+ <p class="diagnostico-proximo"><b>Ação recomendada:</b> ${insuficiente ? "Planeje reforço na função e nos horários indicados, reveja as disponibilidades ou redimensione a operação. O déficit pode exigir cobertura parcial ou temporária; a quantidade exata de contratações depende dos turnos e contratos escolhidos." : d.status === "redistribuicao" ? "Teste Buscar ajustes de cobertura e confira as mudanças antes de aplicar. Ter capacidade total não assegura uma distribuição viável." : "Confira jornada, intervalos, descansos e pendências antes de utilizar a escala."}</p>
+ <details class="diagnostico-detalhes"><summary>Premissas e limites desta análise</summary><div class="diagnostico-premissas"><p>A análise não duplica pessoas habilitadas para várias funções. Os tetos de capacidade são otimistas: saldo de horas não garante uma escala viável. Uma busca sem sugestões não comprova necessidade de contratar. Ausências temporárias podem exigir cobertura temporária. As datas identificam as ocorrências; não significam falta em todas as semanas.</p>${(d.limitacoes || []).map(a=>`<p>${escapeHtml(a)}</p>`).join("")}</div></details></section>`;
 }

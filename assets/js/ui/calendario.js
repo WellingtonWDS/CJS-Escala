@@ -1,3 +1,4 @@
+import { renderAvisosEscala } from "./avisos-escala.js";
 import { bindArrasteEscala } from "./arrastar-escala.js";
 import { editarHorario } from "./horario-manual.js";
 import { aplicarHorarioManual, desfazerHorarioRecorrente } from "../domain/horario-manual.js";
@@ -231,9 +232,8 @@ export function createCalendarioUI({
     }
     const { resultado } = state.escalaGerada;
     const container = document.getElementById(containerId);
-    let analises = state.escalaGerada.referenciaAtual44
-      ? '<p data-referencia-atual class="text-sm border border-slate-200 rounded-lg p-3 mb-3">Referência atual 6×1: validação e resumo em 44h semanais, conforme o contexto preservado na conversão. A simulação da fase futura é aplicada à proposta 5×2. Os horários e intervalos efetivos continuam sujeitos às verificações.</p>'
-      : "";
+    const referenciaHtml = state.escalaGerada.referenciaAtual44
+      ? '<p data-referencia-atual class="text-sm border border-slate-200 rounded-lg p-3 mb-3">Referência atual 6×1: validação e resumo em 44h semanais. A simulação da fase futura é aplicada à proposta 5×2.</p>' : "";
     const coberturaHtml = renderRelatorioCobertura(resultado);
     const ajustesHtml = ajustes.renderPainel();
 
@@ -248,99 +248,10 @@ export function createCalendarioUI({
         r.diasApuracao,
       ),
     }));
-    const allIssues = validacoes.flatMap((v) => v.issues);
     const cobertura = validarCobertura(resultado);
-    const erros = allIssues.filter((x) => x.severidade === "erro");
-    const alertas = allIssues.filter(
-      (x) => x.severidade === "alerta" || x.severidade === "pendencia",
-    );
-    const infos = allIssues.filter((x) => x.severidade === "info");
-
-    if (erros.length) {
-      analises += `<div class="rounded-lg px-3.5 py-2.5 text-sm bg-fintria-vermelhoBg text-fintria-vermelho mb-2"><b>${erros.length} incompatibilidade(s) objetiva(s).</b> Os erros detalhados estão antes da grade e precisam ser corrigidos antes de utilizar a escala.</div>`;
-    } else if (alertas.length) {
-      analises += `<div class="rounded-lg px-3.5 py-2.5 text-sm bg-fintria-ambarBg text-fintria-ambar mb-2"><b>${alertas.length} ponto(s) dependem de análise.</b> Verificações documentais ou de enquadramento pendentes não equivalem à aprovação de adequação à EC 141.</div>`;
-    } else {
-      analises += `<div class="rounded-lg px-3.5 py-2.5 text-sm bg-fintria-verdeBg text-fintria-verde mb-2"><b>Nenhuma incompatibilidade objetiva detectada</b> nas regras modeladas. Isso não substitui a conferência do caso concreto.</div>`;
-    }
-
-    if (cobertura.length) {
-      analises += `<div class="rounded-lg px-3.5 py-2.5 text-sm bg-fintria-ambarBg text-fintria-ambar mb-3">⚠ <b>Problema de cobertura:</b> ${cobertura.map((x) => escapeHtml(x.mensagem)).join(" ")}</div>`;
-    }
-
-    analises += `<div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 mb-4">
-    <div class="border border-slate-200 rounded-lg p-3 bg-slate-50"><b class="text-fintria-vermelho">${erros.length}</b><div class="text-xs text-slate-500">ERROS</div></div>
-    <div class="border border-slate-200 rounded-lg p-3 bg-slate-50"><b class="text-fintria-ambar">${alertas.length}</b><div class="text-xs text-slate-500">ANÁLISES</div></div>
-    <div class="border border-slate-200 rounded-lg p-3 bg-slate-50"><b class="text-fintria-azul">${infos.length}</b><div class="text-xs text-slate-500">INFORMATIVOS</div></div>
-    <div class="border border-slate-200 rounded-lg p-3 bg-slate-50"><b class="text-fintria-navy">${resultado.length}</b><div class="text-xs text-slate-500">COLABORADORES</div></div>
-  </div>`;
-
-    // ---------------------------------------------------------
-    // PAINEL POR COLABORADOR
-    // ---------------------------------------------------------
-    validacoes.forEach(({ r, issues }) => {
-      const hasError = issues.some((x) => x.severidade === "erro");
-      const hasAlert = issues.some(
-        (x) => x.severidade === "alerta" || x.severidade === "pendencia",
-      );
-      const label = hasError
-        ? "INCOMPATÍVEL"
-        : hasAlert
-          ? "REQUER ANÁLISE"
-          : "SEM INCOMPATIBILIDADE OBJETIVA";
-      const cls = hasError
-        ? "bg-fintria-vermelhoBg text-fintria-vermelho"
-        : hasAlert
-          ? "bg-fintria-ambarBg text-fintria-ambar"
-          : "bg-fintria-verdeBg text-fintria-verde";
-      const diasAlvo =
-        state.tipoEscala === "5x2"
-          ? 5
-          : state.tipoEscala === "6x1"
-            ? 6
-            : [...new Set(state.diasTrabalho)].length;
-      const jIndividual =
-        diasAlvo && !r.colaborador.quadroDominio
-          ? calcularSaidaSimulada(
-              Number(r.colaborador.horasSemana) || 0,
-              diasAlvo,
-            )
-          : null;
-      analises += `<div class="border border-slate-200 rounded-lg px-3.5 py-3 mb-3">
-      <div class="flex justify-between items-start gap-3">
-        <div><b>${escapeHtml(r.colaborador.nome || "(sem nome)")}</b> <span class="text-slate-500">— ${escapeHtml(r.colaborador.cargo || "")}</span> <span class="text-xs text-slate-500">· ${fmtHoras(Number(r.colaborador.horasSemana) || 0)}/semana</span></div>
-        <span class="text-[10px] font-bold px-2.5 py-1 rounded-full ${cls}">${label}</span>
-      </div>
-      ${r.colaborador.quadroDominio?.ativo !== false && r.colaborador.quadroDominio ? '<div class="text-xs text-slate-500 mt-1">Horário individual cadastrado: horários, intervalos e folgas desta pessoa aparecem na grade. A carga de referência deve ser conferida com o contrato.</div>' : state.horarioPorDia ? `<div class="text-xs text-slate-500 mt-1">Carga distribuída dentro dos horários de cada dia. Dias reduzidos são respeitados; consulte os horários efetivos na grade e o fechamento no resumo semanal.</div>` : jIndividual ? `<div class="text-xs text-slate-500 mt-1">Jornada individual estimada (uniforme): entrada ${state.jornada.entrada} · ${fmtHoras(jIndividual.horasDia)}/dia médio em ${diasAlvo} dia(s) · saída ${jIndividual.saida}. Esta é apenas a referência média; os horários efetivos de cada dia aparecem na grade e consideram folgas, feriados e ajustes manuais.</div>` : ""}
-      ${
-        issues.length
-          ? `<div class="mt-2 space-y-1">${issues
-              .filter((x) => x.severidade !== "erro")
-              .map(
-                (x) =>
-                  `<div class="text-xs flex gap-2 items-start">${severityBadge(x)}<span>${escapeHtml(x.mensagem)}</span></div>`,
-              )
-              .join("")}</div>`
-          : ""
-      }
-    </div>`;
-    });
-
-    let html = erros.length
-      ? `<details data-erros-escala open class="border border-red-200 rounded-lg p-4 mb-4"><summary class="cursor-pointer font-semibold text-fintria-vermelho">${erros.length} incompatibilidade(s) objetiva(s). Corrija os erros abaixo antes de utilizar a escala.</summary>${validacoes
-          .filter((v) => v.issues.some((i) => i.severidade === "erro"))
-          .map(
-            (v) =>
-              `<div class="mt-3"><b>${escapeHtml(v.r.colaborador.nome || "(sem nome)")}</b>${v.issues
-                .filter((i) => i.severidade === "erro")
-                .map(
-                  (i) =>
-                    `<p class="text-sm mt-1">${severityBadge(i)} ${escapeHtml(i.mensagem)}</p>`,
-                )
-                .join("")}</div>`,
-          )
-          .join("")}</details>`
-      : "";
+    const coberturaBasica = cobertura.length
+      ? `<p class="text-sm border rounded-lg p-3 mb-3"><b>Confira a cobertura:</b> ${cobertura.map((x) => escapeHtml(x.mensagem)).join(" ")}</p>` : "";
+    let html = renderAvisosEscala(validacoes, { erros: true });
 
     // ---------------------------------------------------------
     // ESCALA VISUAL — modelo inspirado no quadro do Big Ambitions:
@@ -539,7 +450,7 @@ export function createCalendarioUI({
   </div>`;
 
     html += coberturaHtml + ajustesHtml;
-    html += `<details data-analises-escala class="border border-slate-200 rounded-lg p-4 mt-4"><summary class="cursor-pointer font-semibold text-fintria-navy">Análises e informações por colaborador — ${alertas.length} ponto(s) de análise · ${infos.length} informativo(s)</summary><div class="mt-4">${analises}</div></details>`;
+    html += referenciaHtml + coberturaBasica + renderAvisosEscala(validacoes);
     const anterior = container.querySelector("[data-rolagem-escala]");
     const posicao = {
       left: anterior?.scrollLeft || 0,

@@ -170,7 +170,12 @@ test('cenários de comércio, fazenda e padaria mantêm padrão fixo e distingue
     conferirRepeticao(e);assert.equal(erros(e).length,0,d.title);
     if(d.title.includes('contratar')) assert.equal(c.comparacao.status,'insuficiente',d.title);
     else {
-      assert.equal(e.coberturaOperacional.lacunas.length,0,d.title);
+      if(empresa.name.startsWith('Comércio')) {
+        // Sábado curto não comporta cinco jornadas que completem 40h: a
+        // proposta mantém o alvo contratual e expõe a cobertura a resolver.
+        assert(c.comparacao.pessoas.every(p=>p.horasDepois===40&&!p.deficits),d.title);
+        assert(e.coberturaOperacional.lacunas.some(l=>new Date(l.data+'T12:00:00').getDay()===6),d.title);
+      } else assert.equal(e.coberturaOperacional.lacunas.length,0,d.title);
       assert.equal(c.comparacao.status,empresa.name.startsWith('Fazenda')?'suficiente':'ajustes',d.title);
     }
     simulados++;
