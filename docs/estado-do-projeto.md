@@ -10,11 +10,19 @@ Quatro novas empresas por segmento e onze preenchimentos DEMO para comércio con
 
 Carregamento imediato na geração atual/proposta, cálculo em Worker local, bloqueio de duplicação, liberação em falhas e proteção contra resultados de dados alterados. Resumo da busca de cobertura aparece primeiro em modal e depois abaixo do botão, com aplicação separada. Regras de cálculo e versões de dados preservadas.
 
+## Tema escuro com paleta autoral — 30/10/2026
+
+Substituída a conversão automática de cores por `assets/css/dark-palette.css`: tokens de superfície, texto, borda, ação e estado com aplicações explícitas. O compilador somente restringe a paleta ao modo escuro em tela. Hierarquia entre fundo/painéis/cartões/campos/modais; ação principal verde, secundária neutra, destrutiva vermelha; foco/hover/seleção/desabilitado definidos. Cores de status da grade e do fechamento semanal preservam seu significado, com contraste adequado. Layout e cálculo não mudam.
+
+Regressão de navegador expandida: textos/valores e bordas, detecção de superfícies claras residuais, resumos reais acima/abaixo/corretos, menu por perfil, formulários, modal e lista pesquisável de empresas, painel de salvamento, tutorial, grades fixa/dinâmica e login. Capturas de desktop/celular disponíveis por `REESCALA_THEME_SCREENSHOTS` para revisão visual local. Tema claro e impressão usam seus estilos originais; nenhum SQL, regra, API ou configuração de produção alterado.
+
+Validação desta revisão: build e suíte completa de navegador aprovados; após os ajustes finais de contorno dos botões e estado desabilitado, regressões de tema/contraste e interface aprovadas novamente. Inspeção de sete capturas de desktop/celular. A auditoria inclui modais, lista de empresas, painel de salvamento, tutorial, estados reais do resumo semanal, bordas e superfícies claras residuais. Não houve alteração de cálculo ou persistência que exigisse repetir a integração de banco.
+
 ## Identidade e alternância de tema — 30/10/2026
 
 Slogan “Jornadas em equilíbrio” no cabeçalho/login/rodapé; crédito com link Fintria em nova aba no login e aplicação, preservado ao atualizar a informação de armazenamento. Mensagem de acesso autorizado/12h removida do login; sessão não alterada.
 
-Tema claro preservado como padrão; escuro selecionável junto a Sair (menu individual/cabeçalho compartilhado) e no login. Switch acessível, presente com menu recolhido, preferência local antes da pintura e sincronização entre abas. Logos brancas no escuro. Camada escura gerada no build a partir dos estilos, com ajuste por componente, isolada de impressão e PDFs. Campos, botões, modais, administração, tutorial, avisos e estados da grade têm paleta semântica. Verificação de contraste AA nos textos/valores dos cenários de navegador e inspeção visual; não substitui a revisão de novos componentes.
+Tema claro preservado como padrão; escuro selecionável junto a Sair (menu individual/cabeçalho compartilhado) e no login. Switch acessível, presente com menu recolhido, preferência local antes da pintura e sincronização entre abas. Logos brancas no escuro. Camada escura compilada no build a partir de paleta autoral por componente, isolada de impressão e PDFs. Campos, botões, modais, administração, tutorial, avisos e estados da grade têm paleta semântica. Verificação de contraste AA nos textos/valores dos cenários de navegador e inspeção visual; não substitui a revisão de novos componentes.
 
 Sem alteração de API de negócio, SQL, sessão, regras de geração ou permissões. Apenas os arquivos públicos de tema necessários ao login são liberados pelo guard.
 

@@ -2,6 +2,10 @@
 
 Consultar este registro antes de orientar o operador. Distinguir código disponível, testes locais e resultados informados pelo operador. Não contém senhas, chaves ou identificadores pessoais.
 
+## Revisão da paleta escura — 30/10/2026
+
+A conversão automática foi removida. Build compila `assets/css/dark-palette.css` para a camada escura existente, mantendo o mesmo caminho público/controle de tema. Tokens e estados por componente; sem alteração de sessão, SQL, API ou variável. Estilos claros e impressão preservados. Não é necessário configurar novamente n8n, Vercel ou VPS.
+
 ## Slogan e tema — 30/10/2026
 
 Código de marca/rodapé, remoção de texto do login e alternância claro/escuro, com preferência no navegador. Build gera CSS escuro isolado para tela; manter `scripts/build-theme.mjs` e dependência PostCSS no processo de build. Guard libera somente os assets adicionais de tema do login. Não exige variável, migração SQL nem alteração do n8n. Preferência de tema não altera sessões e não é gravada no banco. Impressão/PDF permanecem claros. Validação local: 536 testes unitários, build, suíte completa de navegador, login e integração PostgreSQL/PostgREST com navegador aprovados; regressões finais de tema e interface também passaram. Sem execução administrativa na VPS.

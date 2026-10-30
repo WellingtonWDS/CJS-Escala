@@ -10,6 +10,19 @@ Consulte [Estado do projeto](docs/estado-do-projeto.md) para uma visão consolid
 
 O fluxo principal já inclui cadastro manual e por planilhas, importação Domínio, restrições individuais, habilitações por função, geração, conversão 6×1 → 5×2, comparação de cobertura, sugestões de ajustes com prévia/aplicação/desfazer, edição da grade, documentos PDF próprios, ZIP individual e impressão. O acesso oferece login individual por e-mail/senha integrado ao n8n e ao banco, com sessão de até 12 horas, menu por perfil, gestão de usuários e empresas e preenchimentos compartilhados por empresa autorizada. O modo compartilhado/local permanece disponível por configuração. Os detalhes de funcionamento e configuração estão nas seções abaixo.
 
+## Revisão integral do tema escuro — 30/10/2026
+
+O tema escuro passa a ter uma **paleta autoral por componente**, substituindo a conversão automática das cores do tema claro. O arquivo `assets/css/dark-palette.css` centraliza os tokens e as aplicações; `scripts/build-theme.mjs` apenas compila e restringe os seletores a `html[data-theme="dark"]` em tela. Edite a fonte, não `theme-dark.css`.
+
+- Fundo, superfície de conteúdo, cartões elevados, campos rebaixados e modais têm níveis distintos. Divisórias decorativas são discretas; controles e grade mantêm bordas legíveis.
+- Verde identifica ações principais. Ações secundárias têm fundo neutro e contorno; destrutivas usam vermelho. Hover, foco por teclado, seleção e desabilitado têm aplicações explícitas.
+- Trabalho, folga, horas corretas, abaixo/acima do alvo e avisos mantêm cores semânticas e texto identificador. O foco e a seleção por arraste deixam de usar um verde pouco visível sobre os próprios cards verdes.
+- Revisados login, oito etapas, navegação compacta, colaboradores/importação, usuários/empresas/escritórios, modais, seletor pesquisável, salvamento/FAB, tutorial e quadros fixo/dinâmico.
+
+A auditoria de navegador verifica textos e valores, bordas funcionais (3:1), ausência de painéis claros residuais, hierarquia entre ações, estados de horas reais, hover/foco e campos de seleção. Controles nativos são diferenciados de superfícies pintadas pelo sistema. Capturas opcionais para revisão visual: variável local `REESCALA_THEME_SCREENSHOTS` apontando para uma pasta ao executar a suíte de navegador. Inclui desktop e celular. Tema claro, impressão, PDFs e regras de negócio são preservados; sem migração ou variável de produção nova.
+
+Validação desta revisão: build e suíte completa de navegador aprovados; após os ajustes finais de contorno dos botões e estado desabilitado, regressões de tema/contraste e interface aprovadas novamente. Inspeção de sete capturas de desktop/celular. A auditoria inclui modais, lista de empresas, painel de salvamento, tutorial, estados reais do resumo semanal, bordas e superfícies claras residuais. Não houve alteração de cálculo ou persistência que exigisse repetir a integração de banco.
+
 ## Contraste das bordas no escuro — 30/10/2026
 
 Bordas neutras e azuis mais claras no tema escuro, incluindo **Pré-visualizar escala atual / gerar escala avulsa**, **Imprimir / PDF**, contorno do quadro e divisões de células/cabeçalhos. O modo claro e a impressão mantêm suas cores. A auditoria de navegador passa a verificar também contraste de bordas de pelo menos **3:1 contra as superfícies adjacentes**, nas grades fixa e dinâmica, além dos textos. Build e regressão de tema/contraste aprovados.
@@ -20,7 +33,7 @@ Slogan **“Jornadas em equilíbrio”** no cabeçalho, login e rodapé. Crédit
 
 O controle **Tema escuro** fica junto de **Sair**, no final do menu individual, e no cabeçalho do modo compartilhado. Também está disponível no login. É um switch acessível por teclado, com estado anunciado; continua disponível com o menu recolhido e no celular. O modo inicial é claro; a escolha é gravada somente neste navegador (`reescala-theme`), aplicada antes dos estilos e sincronizada entre abas. Sem acesso ao armazenamento, a troca continua funcionando na página. As marcas do cabeçalho/login usam a logo branca no escuro.
 
-O modo claro mantém as declarações de cores existentes. A camada escura é isolada em `@media screen` e `html[data-theme="dark"]`, com superfícies, campos, textos, bordas e estados semânticos próprios. Impressão e PDFs permanecem claros. `scripts/build-theme.mjs` gera `assets/css/theme-dark.css` a partir dos estilos autorais/utilitários no build, com paleta por função e matiz; editar a paleta no script e os ajustes de componentes em `assets/css/theme.css`, não o arquivo gerado. PostCSS é dependência de desenvolvimento explícita.
+O modo claro mantém as declarações de cores existentes. A camada escura é isolada em `@media screen` e `html[data-theme="dark"]`, com superfícies, campos, textos, bordas e estados semânticos próprios. Impressão e PDFs permanecem claros. `scripts/build-theme.mjs` compila `assets/css/dark-palette.css` para `assets/css/theme-dark.css`, isolando a paleta autoral por componente em tela; editar a fonte da paleta, não o arquivo gerado. A conversão automática por brilho/matiz foi substituída na revisão integral de 30/10. PostCSS é dependência de desenvolvimento explícita.
 
 O teste de navegador de tema verifica contraste AA dos textos e valores visíveis nas oito etapas, cadastros, quadros dinâmico/fixo, resumos/avisos, confirmação e login; confere preferência após recarga, posição do switch, menu recolhido, celular, impressão, slogan e link. A auditoria é sobre os cenários renderizados; ícones, imagens e estados adicionais também exigem revisão visual quando forem alterados. Nenhuma migração SQL, regra de jornada ou variável nova.
 

@@ -47,3 +47,16 @@ module.exports.borders = async function borders(page, selector) {
   return failures;
  });
 };
+
+// Contrast alone can pass for dark text on an accidental white panel. In a
+// dark theme, neutral content surfaces must also remain dark.
+module.exports.lightSurfaces = async function lightSurfaces(page) {
+ return page.evaluate(() => [...document.body.querySelectorAll('*')].flatMap(el => {
+  if(!el.getClientRects().length||el.closest('[hidden],svg'))return [];
+  const style=getComputedStyle(el), n=style.backgroundColor.match(/[\d.]+/g)?.map(Number);
+  if((el.tagName==='INPUT'&&['checkbox','radio'].includes(el.type)&&style.appearance!=='none')||style.visibility!=='visible'||!n||n.length<3||(n[3]??1)<.5)return [];
+  const rgb=n.slice(0,3), max=Math.max(...rgb), min=Math.min(...rgb);
+  if(min>110 && max-min<80)return [{tag:el.tagName,id:el.id,cls:el.className,type:el.type,parent:el.parentElement.className,bg:style.backgroundColor}];
+  return [];
+ }));
+};

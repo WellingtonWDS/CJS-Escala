@@ -1,0 +1,252 @@
+/* Authoring source. Build scopes every selector to the dark screen theme.
+   Colors express purpose, rather than the brightness of their light equivalent. */
+:root {
+  color-scheme: dark;
+  --dark-canvas: #0d141e;
+  --dark-surface: #162130;
+  --dark-raised: #1e2d40;
+  --dark-hover: #283b52;
+  --dark-input: #101b29;
+  --dark-text: #e8eef7;
+  --dark-muted: #b1bfd2;
+  --dark-line: #3b4e66;
+  --dark-control: #7d93ae;
+  --dark-grid: #6d85a3;
+  --dark-accent: #86e2bd;
+  --dark-primary: #087657;
+  --dark-primary-hover: #086449;
+  --dark-positive-bg: #143b30;
+  --dark-positive: #9ae8c6;
+  --dark-info-bg: #1a354e;
+  --dark-info: #b6d9ff;
+  --dark-warning-bg: #3b2f1b;
+  --dark-warning: #ffdaa0;
+  --dark-danger-bg: #402630;
+  --dark-danger: #ffb8c0;
+  --ui-page: var(--dark-canvas);
+  --ui-ink: var(--dark-text);
+  --ui-muted: var(--dark-muted);
+  --ui-line: var(--dark-line);
+  --ui-green: var(--dark-primary);
+  --ui-focus: #a1ceff;
+  --ui-shadow: 0 10px 30px #00000024;
+}
+body { background:var(--dark-canvas); color:var(--dark-text); }
+body:not(.login-page) { background:var(--dark-canvas); }
+h1, h2, h3, h4, h5, legend, .brand { color:var(--dark-text); }
+.text-white { color:#fff; }
+.text-slate-800, .text-slate-700, .text-fintria-navy, .text-fintria-navySoft { color:var(--dark-text); }
+.text-slate-600, .text-slate-500, .text-slate-400, .text-slate-300 { color:var(--dark-muted); }
+.text-fintria-verde { color:var(--dark-positive); }
+.text-fintria-azul, .text-blue-600 { color:var(--dark-info); }
+.text-fintria-ambar, .text-amber-700 { color:var(--dark-warning); }
+.text-fintria-vermelho, .text-red-600, .text-red-700 { color:var(--dark-danger); }
+.text-fintria-roxo { color:#ddc6ff; }
+.bg-white, .bg-slate-50, .bg-slate-100 { background:var(--dark-surface); }
+.bg-slate-300 { background:var(--dark-raised); }
+.bg-slate-50\/80 { background:#162130cc; }
+.bg-fintria-navy, .bg-fintria-navySoft { background:#152e47; }
+.bg-fintria-verde { background:var(--dark-primary); }
+.bg-fintria-verdeBg { background:var(--dark-positive-bg); }
+.bg-fintria-azulBg { background:var(--dark-info-bg); }
+.bg-fintria-ambarBg, .bg-amber-50 { background:var(--dark-warning-bg); }
+.bg-fintria-vermelhoBg, .bg-red-50 { background:var(--dark-danger-bg); }
+.bg-fintria-vermelhoBg\/30 { background:#40263066; }
+.bg-fintria-roxoBg { background:#322644; }
+.border-slate-200, .border-slate-300 { border-color:var(--dark-line); }
+.border-fintria-verde { border-color:#52b994; }
+.border-fintria-azul { border-color:#8cb7e6; }
+.border-amber-300, .border-fintria-ambar { border-color:#d5af66; }
+.border-red-200, .border-fintria-vermelho { border-color:#de929d; }
+.border-fintria-roxo { border-color:#b79edb; }
+
+/* Three levels: canvas, content surface, raised cards. Quiet dividers do not
+   compete with input/button outlines or the operational grid. */
+.app-header { background:var(--dark-surface); color:var(--dark-text); border-bottom-color:var(--dark-line); }
+.app-header h1 { color:var(--dark-text); }
+#storage-description, .app-footer, .app-footer p, .app-footer a { color:var(--dark-muted); }
+.app-footer a:hover { color:var(--dark-accent); }
+[data-etapa], .user-management { background:var(--dark-surface); border-color:var(--dark-line); }
+#config-periodo, [data-etapa] > details, [data-etapa] #config-colaboradores > details,
+[data-etapa] details[open], .restricao-bloco, .user-editor, .workspace-choice-group,
+.workspace-recovery, .user-row, .management-companies label {
+  background:var(--dark-raised); color:var(--dark-text); border-color:var(--dark-line);
+}
+#colab-list > div, #colaboradores-lista > div, #lista-colaboradores > div {
+  background:var(--dark-raised); color:var(--dark-text); border-color:var(--dark-line);
+}
+.user-row span, .user-management small, .user-management p, .workspace-choice-group p,
+.workspace-recovery p, .workspace-eyebrow, .workspace-context [data-current-office],
+.workspace-saving [role="status"], .troca-escala-acoes { color:var(--dark-muted); }
+.user-row:hover { background:#24354a; border-color:var(--dark-control); }
+.user-management fieldset, .etapas-acoes, .workspace-open-actions, .workspace-context,
+.restricao-item, .tutorial-top[data-tutorial-drag] { border-color:var(--dark-line); }
+
+/* All secondary actions have a visible outline; primary actions have one
+   consistent green fill. Transparency is reserved for tertiary navigation. */
+button:where(:not(.escala-colaborador)), .theme-toggle {
+  color:var(--dark-text) !important; background:var(--dark-raised) !important;
+  border:1px solid var(--dark-control) !important; box-shadow:none;
+}
+button:where(:not(.escala-colaborador)):hover:not(:disabled) {
+  color:#fff !important; background:var(--dark-hover) !important; border-color:#b3c9e2 !important;
+}
+button.bg-fintria-navy, button.bg-fintria-verde, #btn-converter, #etapa-proxima,
+#login-form button[type="submit"], .user-management button[type="submit"],
+[data-remote-save], [data-remote-open], [data-ajuste-aplicar], [data-ajuste-buscar],
+.app-dialog [data-dialog-accept], #tutorial-proximo, .workspace-fab {
+  color:#fff !important; background:var(--dark-primary) !important; border-color:#61be9c !important;
+}
+button.bg-fintria-navy:hover:not(:disabled), button.bg-fintria-verde:hover:not(:disabled),
+#btn-converter:hover:not(:disabled), #etapa-proxima:hover:not(:disabled),
+#login-form button[type="submit"]:hover:not(:disabled), .user-management button[type="submit"]:hover:not(:disabled),
+[data-remote-save]:hover:not(:disabled), [data-remote-open]:hover:not(:disabled),
+[data-ajuste-aplicar]:hover:not(:disabled), [data-ajuste-buscar]:hover:not(:disabled),
+.app-dialog [data-dialog-accept]:hover:not(:disabled), #tutorial-proximo:hover:not(:disabled), .workspace-fab:hover {
+  background:var(--dark-primary-hover) !important; color:#fff !important; border-color:#9ae8c6 !important;
+}
+button:disabled, button:disabled:hover {
+  opacity:1 !important; color:#a4b2c5 !important; background:#202d3e !important;
+  border-color:#4d6079 !important; box-shadow:none !important;
+}
+.app-header #btn-limpar-dados, .workspace-delete { color:var(--dark-danger) !important; }
+.workspace-delete { background:var(--dark-danger-bg) !important; border-color:#de929d !important; }
+.workspace-delete:hover:not(:disabled), .app-header #btn-limpar-dados:hover { background:#542e3a !important; }
+.workspace-context button { color:var(--dark-info) !important; background:transparent !important; }
+:where(button,a,summary,input,select,textarea):focus-visible {
+  outline:2px solid var(--ui-focus) !important; outline-offset:2px;
+}
+
+/* Fields sit below their cards; focus is brighter than the normal outline. */
+input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), select, textarea,
+.company-combobox [data-company-trigger] {
+  background:var(--dark-input) !important; color:var(--dark-text) !important;
+  border-color:var(--dark-control) !important; caret-color:var(--dark-accent);
+}
+input::placeholder, textarea::placeholder { color:#a5b5ca; opacity:1; }
+input:not([type="checkbox"]):not([type="radio"]):hover, select:hover, textarea:hover { border-color:#afc5df !important; }
+input:focus, select:focus, textarea:focus { border-color:var(--ui-focus) !important; box-shadow:0 0 0 3px #a1ceff26; }
+input:disabled, select:disabled, textarea:disabled, input[readonly] {
+  background:#202c3c !important; color:#aebbd0 !important; opacity:1; border-color:#596f89 !important;
+}
+input::file-selector-button { background:var(--dark-hover); color:var(--dark-text); }
+input[type="checkbox"], input[type="radio"] { accent-color:#179e75; }
+.user-management .user-toggle input { background:#627993; }
+.user-management .user-toggle input:checked { background:#087657; }
+.user-toggle input::before, .theme-switch::after { background:#fff; }
+.theme-switch { background:#627993; }
+.theme-toggle[aria-checked="true"] .theme-switch { background:#179e75; }
+option, optgroup { color:var(--dark-text); background:var(--dark-input); }
+
+/* Navigation is quiet; the current destination uses the brand accent. */
+.app-sidebar { background:#101b29; color:var(--dark-text); border-right-color:var(--dark-line); }
+.sidebar-brand, #sidebar-user { color:var(--dark-text); }
+.sidebar-role, #sidebar-role { color:var(--dark-muted); }
+.app-sidebar button { background:transparent !important; color:var(--dark-muted) !important; border-color:var(--dark-line) !important; }
+.app-sidebar button:hover:not(:disabled) { background:var(--dark-raised) !important; color:var(--dark-text) !important; }
+.app-sidebar button[aria-current="page"] { background:var(--dark-positive-bg) !important; color:var(--dark-accent) !important; border-color:#52b994 !important; }
+.app-sidebar .theme-toggle { border-color:var(--dark-control) !important; }
+.etapas-nav, .etapas-nav.is-sticky { background:var(--dark-canvas); }
+.etapas-linha { background:var(--dark-surface); border-color:var(--dark-line); box-shadow:0 6px 20px #00000020; }
+.etapas-linha a { color:var(--dark-muted); background:transparent; }
+.etapas-linha a:hover { color:var(--dark-text); background:var(--dark-hover); }
+.etapas-linha a[aria-current="step"] { background:var(--dark-positive-bg); color:var(--dark-accent); }
+.etapa-numero { background:#293b51; color:var(--dark-text); }
+.etapas-linha [aria-current="step"] .etapa-numero { background:var(--dark-primary); color:#fff; }
+.etapas-status, .etapas-status p { color:var(--dark-muted); }
+
+/* Overlay surfaces are deliberately raised above the page, not a duplicate of it. */
+.app-dialog, #remote-workspace, .tutorial-card, .campo-ajuda-conteudo, .current-workspace,
+.company-combobox-popup { background:#1e2d40; color:var(--dark-text); border-color:var(--dark-control); box-shadow:0 24px 70px #00000066; }
+.app-dialog::backdrop, #remote-workspace::backdrop { background:#020812b8; }
+.app-dialog p, .tutorial-card p, .tutorial-card .tutorial-dica, .tutorial-top,
+#remote-workspace > p, .company-combobox-popup label, .company-combobox > span { color:var(--dark-muted); }
+.tutorial-card h2, .app-dialog h2, #remote-workspace h2 { color:var(--dark-text); }
+.app-dialog-symbol { background:#2c4560; color:var(--dark-info); }
+.company-combobox [role="option"] { color:var(--dark-text); background:var(--dark-raised); border-color:var(--dark-line); }
+.company-combobox [role="option"]:hover, .company-combobox [role="option"].is-active { background:var(--dark-hover); }
+.company-combobox [aria-selected="true"] { background:var(--dark-positive-bg); color:var(--dark-accent); }
+.campo-ajuda .campo-ajuda-botao { background:#2c4560 !important; color:#fff !important; }
+.loading-overlay { background:linear-gradient(155deg,#213c54,#122334); border-color:#637f9d; box-shadow:0 30px 90px #00000080; }
+.loading-overlay p { color:#c0d1e2; }
+.loading-overlay h2 { color:#fff; }
+.loading-overlay::backdrop { background:#020812c4; }
+
+/* Operational status is conveyed by text AND color. Work/off cards remain
+   distinct; structural grid lines are stronger than decorative panel dividers. */
+.escala-quadro, [data-escala-quadro] { background:var(--dark-surface); border-color:var(--dark-grid); }
+.escala-rolagem { background:var(--dark-surface); }
+.escala-mensal th, .escala-mensal td { border-color:var(--dark-grid) !important; }
+.escala-mensal th, .escala-rolagem thead th, .diagnostico-tabela-scroll thead th { background:#223248; color:var(--dark-text); }
+.escala-mensal td { background:var(--dark-surface); }
+.escala-mensal td.bg-slate-50, .escala-mensal td.bg-slate-50\/80 { background:#1b2b3e; }
+.escala-mensal td.bg-fintria-vermelhoBg\/30 { background:#302430; }
+.escala-colaborador.bg-fintria-verdeBg { background:var(--dark-positive-bg); color:var(--dark-positive); border-color:#52b994; }
+.escala-colaborador.bg-fintria-azulBg { background:var(--dark-info-bg); color:var(--dark-info); border-color:#8cb7e6; }
+.escala-colaborador:hover { filter:none; box-shadow:0 0 0 2px #a1ceff66; }
+.escala-colaborador:focus-visible { outline:3px solid var(--ui-focus); outline-offset:2px; }
+.escala-rolagem, .escala-rolagem-topo { scrollbar-color:#8297b0 #142131; }
+.escala-rolagem::-webkit-scrollbar-track, .escala-rolagem-topo::-webkit-scrollbar-track { background:#142131; }
+.escala-rolagem::-webkit-scrollbar-thumb, .escala-rolagem-topo::-webkit-scrollbar-thumb { background:#8297b0; }
+
+/* Decision panels use restrained tinting; the KPI cards remain neutral. */
+.diagnostico-executivo, .diagnostico-executivo[data-situacao], .diagnostico-conversao, .diagnostico-equipe {
+  background:var(--dark-surface); color:var(--dark-text); border-color:var(--dark-line);
+}
+.diagnostico-executivo { border-top-color:#d5af66; }
+.diagnostico-executivo[data-situacao="suficiente"] { border-top-color:#52b994; }
+.diagnostico-executivo[data-situacao="insuficiente"], .diagnostico-executivo[data-situacao="incompativel"] { border-top-color:#de929d; }
+.diagnostico-indicadores > div, .diagnostico-detalhes, .diagnostico-faixa,
+.diagnostico-rateio, #conversao-comparacao .comparacao-item { background:var(--dark-raised); color:var(--dark-text); border-color:var(--dark-line); }
+.diagnostico-etiqueta, .diagnostico-indicadores span, .diagnostico-indicadores small,
+.diagnostico-rodape, .diagnostico-faixa details, .diagnostico-rateio-item details { color:var(--dark-muted); }
+.diagnostico-proximo, .diagnostico-rateio-pessoa, .diagnostico-tabela-scroll td, .diagnostico-tabela-scroll th { border-color:var(--dark-line); }
+.diagnostico-nota { background:var(--dark-warning-bg); color:var(--dark-warning); border-color:#d5af66; }
+.diagnostico-rateio-item { background:var(--dark-input); border-left-color:#d5af66; }
+.diagnostico-rateio-item[data-rateio="aplicado"] { border-left-color:#52b994; }
+.avisos-escala, .aviso-escala { background:var(--dark-surface); color:var(--dark-text); border-color:var(--dark-line); }
+.avisos-escala > summary { background:var(--dark-raised); }
+.avisos-escala[data-severidade="erro"] > summary { background:var(--dark-danger-bg); }
+.avisos-escala[data-severidade="erro"] .avisos-escala-titulo { color:var(--dark-danger); }
+.avisos-escala[data-severidade="erro"], .aviso-escala[data-severidade="erro"] { border-color:#de929d; }
+.aviso-escala { border-left-color:#d5af66; }
+.aviso-escala[data-severidade="info"], .aviso-escala[data-severidade="pendencia"] { border-left-color:#8cb7e6; }
+.aviso-escala-cabecalho, .aviso-escala-acao, .avisos-escala-nota,
+.avisos-escala-subtitulo, .avisos-escala > summary::after, .aviso-escala-vazio { color:var(--dark-muted); }
+.aviso-escala > details, .aviso-escala li { border-color:var(--dark-line); }
+.restricao-dia { background:var(--dark-input); color:var(--dark-text); border-color:var(--dark-control); }
+.restricao-dia:has(input:checked), .management-companies label:has(input:checked) { background:var(--dark-positive-bg); color:var(--dark-positive); border-color:#52b994; }
+.etapa-pendencias { background:var(--dark-danger-bg); color:var(--dark-danger); border-color:#de929d; }
+[data-phase-transition] { background:#755210; }
+
+/* Login shares the palette and brand accent, with a quiet ambient background. */
+.login-page { background:radial-gradient(ellipse at 0 0,#163b32,transparent 58%),var(--dark-canvas); color:var(--dark-text); }
+.login-card { background:var(--dark-surface); border-color:var(--dark-line); box-shadow:0 24px 80px #00000040; }
+.login-page .brand, .login-page h1 { color:var(--dark-text); }
+.login-page label { color:var(--dark-muted); }
+.login-page p { color:var(--dark-muted); }
+#login-message { color:var(--dark-danger); }
+label, .user-management label, [data-etapa] label, .workspace-choice-group label { color:var(--dark-muted) !important; }
+button[data-export-pdf] { color:var(--dark-text) !important; background:var(--dark-raised) !important; border-color:var(--dark-control) !important; }
+button[data-export-pdf]:hover:not(:disabled) { background:var(--dark-hover) !important; border-color:#b3c9e2 !important; }
+.users-filters { background:var(--dark-raised); border-color:var(--dark-line); }
+.etapas-nav.etapas-nav-compacta { background:#0d141ef5; border-bottom-color:var(--dark-line); box-shadow:0 6px 18px #00000030; }
+.troca-selecionado, .troca-destino { outline-color:var(--ui-focus) !important; }
+[data-users-refresh], [data-user-edit], [data-user-cancel] {
+  background:var(--dark-raised) !important; color:var(--dark-text) !important; border-color:var(--dark-control) !important;
+}
+
+.workspace-recovery summary { color:var(--dark-muted); }
+#remote-workspace .workspace-choice-group, #remote-workspace .workspace-recovery { background:var(--dark-surface); }
+.app-sidebar nav button:not([aria-current="page"]) { border-color:transparent !important; }
+.app-sidebar #sidebar-toggle { border-color:var(--dark-control) !important; }
+.app-sidebar .sidebar-logout { border-color:transparent !important; border-top-color:var(--dark-line) !important; }
+
+[data-etapa] summary:hover { color:var(--dark-accent); }
+/* Disabled beats the ID-based primary styles as well as component styles. */
+#btn-converter:disabled, #etapa-proxima:disabled, #tutorial-proximo:disabled,
+#login-form button:disabled, .user-management button:disabled,
+.app-dialog button:disabled, .app-sidebar button:disabled {
+  opacity:1 !important; color:#a4b2c5 !important; background:#202d3e !important;
+  border-color:#4d6079 !important; box-shadow:none !important;
+}
