@@ -1,6 +1,10 @@
-# Registro de implantação — atualizado em 30/10/2026
+# Registro de implantação — atualizado em 04/11/2026
 
 Consultar este registro antes de orientar o operador. Distinguir código disponível, testes locais e resultados informados pelo operador. Não contém senhas, chaves ou identificadores pessoais.
+
+## Filtro por função e painel fixo — 04/11/2026
+
+Frontend oferece filtro visual dos quadros sem alterar a escala/exportação e renderiza os ajustes de cobertura no fixo. Prévia recorrente por dia da semana; botão de impressão avulsa removido da conversão. Usa os Workers e contratos existentes, sem novas RPCs, migrações, variáveis ou configuração na VPS. Publicar pela main como as entregas anteriores. Validação local: 536 testes unitários, build e suíte completa de navegador, com regressões finais de filtro/readequação fixa aprovadas. Sem nova execução de integração do banco, pois API/schema não mudaram.
 
 ## Revisão da paleta escura — 30/10/2026
 

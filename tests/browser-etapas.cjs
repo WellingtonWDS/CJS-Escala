@@ -148,14 +148,8 @@ module.exports = async function testarEtapas({ browser, baseURL }) {
     assert.ok(await page.locator("#dominio-arquivo").isVisible());
     await page.emulateMedia({ media: "screen" });
     await conferir(0);
-    // O botão de impressão da geração permanece disponível.
-    await page.evaluate(() => {
-      window.__impressoes = 0;
-      window.print = () => window.__impressoes++;
-    });
-    await page.locator('[data-etapa-link="sec-gerar"]').click();
-    await page.locator("#btn-imprimir").click();
-    assert.equal(await page.evaluate(() => window.__impressoes), 1);
+    // Documentos próprios substituem o antigo botão de impressão da geração.
+    assert.equal(await page.locator("#btn-imprimir").count(), 0);
     for (const width of [390, 320]) {
       await page.setViewportSize({ width, height: 844 });
       await page.locator('[data-etapa-link="sec-gerar"]').click();

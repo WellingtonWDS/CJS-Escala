@@ -1,3 +1,4 @@
+import { DIAS_SEMANA } from "../config/regras-jornada.js";
 import {
   aplicarAjustesCobertura,
   desfazerAjustesCobertura,
@@ -47,11 +48,11 @@ export function createAjustesCoberturaUI({
   function renderPainel() {
     parar();
     plano = null;
-    if (!state.coberturaAtiva) return "";
+    if (!state.coberturaAtiva) return state.modeloEscala !== "fixa" ? "" : `<section id="${id}" class="border border-slate-200 rounded-lg p-4 mb-4 bg-slate-50"><h3 class="font-display font-semibold text-fintria-navy">Readequar escala · ajustes de cobertura</h3><p class="text-sm text-slate-600 my-3">Ative a Cobertura operacional e informe os horários e o mínimo de pessoas por função para buscar sugestões para o padrão fixo.</p><div class="flex flex-wrap gap-2"><button type="button" data-ajuste-buscar disabled class="px-4 py-2 rounded-md border text-sm">Buscar ajustes de cobertura</button><button type="button" data-ajuste-configurar class="px-4 py-2 rounded-md border border-slate-300 text-sm">Configurar cobertura operacional</button></div></section>`;
     const registro = state.escalaGerada?.ajustesCobertura;
     const podeDesfazer =
       registro?.assinaturaDepois === assinaturaAjustes(state);
-    return `<section id="${id}" class="border border-slate-200 rounded-lg p-4 mb-4 bg-slate-50"><h3 class="font-display font-semibold text-fintria-navy mb-2">Ajustes sugeridos para cobertura</h3><p class="text-sm text-slate-600 mb-3">Busque trocas de folga na mesma semana, ajustes de entrada/saída, redistribuição dos intervalos e realocação para funções habilitadas. Confira horários e intervalos antes de aplicar. A busca mantém horas semanais e dias de trabalho, respeita restrições e descanso e preserva dias editados manualmente. Ao ajustar a proposta 5×2, a escala de origem é preservada.</p><div class="flex flex-wrap gap-2"><button type="button" data-ajuste-buscar class="px-4 py-2 bg-fintria-navy text-white font-semibold rounded-md text-sm">Buscar ajustes de cobertura</button><button type="button" data-ajuste-cancelar hidden class="px-3 py-2 border border-slate-300 rounded-md text-sm">Cancelar busca</button><button type="button" data-ajuste-desfazer ${podeDesfazer ? "" : "disabled"} class="px-3 py-2 border border-slate-300 rounded-md text-sm disabled:opacity-50">Desfazer último ajuste</button></div><div data-ajuste-progresso hidden class="mt-3 rounded-md border border-slate-200 bg-white p-3"><div class="flex items-center gap-2 text-sm"><span class="ajuste-spinner" aria-hidden="true"></span><span data-ajuste-contador>Preparando a busca…</span></div><progress data-ajuste-barra aria-label="Alternativas avaliadas no limite da busca" value="0" max="600" class="w-full mt-2"></progress></div><p data-ajuste-mensagem role="status" aria-live="polite" class="text-sm text-slate-600 mt-3">${registro ? `Último ajuste aplicado: ${fmtHoras((registro.antes.minutosFaltantes - registro.depois.minutosFaltantes) / 60)} horas-pessoa de lacunas reduzidas.${podeDesfazer ? "" : " Houve alterações posteriores; desfazer está indisponível."}` : ""}</p><div data-ajuste-previa></div></section>`;
+    return `<section id="${id}" class="border border-slate-200 rounded-lg p-4 mb-4 bg-slate-50"><h3 class="font-display font-semibold text-fintria-navy mb-2">Readequar escala · ajustes de cobertura</h3><p class="text-sm text-slate-600 mb-3">Busque trocas de folga na mesma semana, ajustes de entrada/saída, redistribuição dos intervalos e realocação para funções habilitadas. Confira horários e intervalos antes de aplicar. A busca mantém horas semanais e dias de trabalho, respeita restrições e descanso e preserva dias editados manualmente. Ao ajustar a proposta 5×2, a escala de origem é preservada.</p><div class="flex flex-wrap gap-2"><button type="button" data-ajuste-buscar class="px-4 py-2 bg-fintria-navy text-white font-semibold rounded-md text-sm">Buscar ajustes de cobertura</button><button type="button" data-ajuste-cancelar hidden class="px-3 py-2 border border-slate-300 rounded-md text-sm">Cancelar busca</button><button type="button" data-ajuste-desfazer ${podeDesfazer ? "" : "disabled"} class="px-3 py-2 border border-slate-300 rounded-md text-sm disabled:opacity-50">Desfazer último ajuste</button></div><div data-ajuste-progresso hidden class="mt-3 rounded-md border border-slate-200 bg-white p-3"><div class="flex items-center gap-2 text-sm"><span class="ajuste-spinner" aria-hidden="true"></span><span data-ajuste-contador>Preparando a busca…</span></div><progress data-ajuste-barra aria-label="Alternativas avaliadas no limite da busca" value="0" max="600" class="w-full mt-2"></progress></div><p data-ajuste-mensagem role="status" aria-live="polite" class="text-sm text-slate-600 mt-3">${registro ? `Último ajuste aplicado: ${fmtHoras((registro.antes.minutosFaltantes - registro.depois.minutosFaltantes) / 60)} horas-pessoa de lacunas reduzidas.${podeDesfazer ? "" : " Houve alterações posteriores; desfazer está indisponível."}` : ""}</p><div data-ajuste-previa></div></section>`;
   }
   function checar() {
     if (!permitido())
@@ -89,16 +90,18 @@ export function createAjustesCoberturaUI({
   }
   function mostrarPrevia(texto) {
     const pessoas = state.escalaGerada.resultado;
+    const fixa = state.modeloEscala === "fixa";
+    const exibidas = fixa ? [...new Map(plano.alteracoes.map(a => [`${a.colaboradorId}:${a.depois.weekday}`,a])).values()] : plano.alteracoes;
     mensagem(texto);
     campo("previa").innerHTML =
       `<section class="diagnostico-executivo" data-situacao="${plano.depois.minutosFaltantes ? "ajustes" : "suficiente"}"><span class="diagnostico-etiqueta">${plano.alteracoes.length ? "Sugestões para revisar — ainda não aplicadas" : "Resultado da busca"}</span><h3>${plano.alteracoes.length ? "Há uma distribuição com melhor cobertura." : "Nenhuma alternativa segura encontrada nesta busca."}</h3><div class="diagnostico-indicadores"><div><span>Lacunas antes</span><strong>${fmtHoras(plano.antes.minutosFaltantes / 60)}</strong><small>Horas-pessoa</small></div><div><span>Lacunas após a sugestão</span><strong>${fmtHoras(plano.depois.minutosFaltantes / 60)}</strong><small>Horas-pessoa</small></div><div><span>Colaboradores envolvidos</span><strong>${new Set(plano.alteracoes.map(a=>a.colaboradorId)).size}</strong><small>${plano.tentativas} alternativas avaliadas</small></div></div><p>As horas semanais e os dias de trabalho foram preservados. Confira a prévia e aplique somente se os novos horários forem adequados à empresa.</p>${plano.acoes.some(a=>a.tipo === "horario_intervalo" || a.tipo === "funcoes_combinadas") ? '<p>A sugestão inclui mudanças combinadas de turno/intervalo ou realocação coordenada entre funções habilitadas.</p>' : ""}</section>${plano.explicacoes.map((t) => `<p class="text-sm text-slate-600 mt-2">${escapeHtml(t)}</p>`).join("")}${
         plano.alteracoes.length
-          ? `<div class="overflow-x-auto mt-3 max-h-96"><table class="w-full text-xs border-collapse"><caption class="text-left font-semibold mb-2">Prévia — alterações ainda não aplicadas (${plano.alteracoes.length} dias)</caption><thead><tr>${["Colaborador", "Data", "Antes", "Sugestão"].map((t) => `<th class="text-left p-2 border-b">${t}</th>`).join("")}</tr></thead><tbody>${plano.alteracoes
+          ? `<div class="overflow-x-auto mt-3 max-h-96"><table class="w-full text-xs border-collapse"><caption class="text-left font-semibold mb-2">Prévia — alterações ainda não aplicadas (${exibidas.length} ${fixa ? "alterações no padrão; repetem-se em todas as semanas" : "dias"})</caption><thead><tr>${["Colaborador", fixa ? "Dia da semana" : "Data", "Antes", "Sugestão"].map((t) => `<th class="text-left p-2 border-b">${t}</th>`).join("")}</tr></thead><tbody>${exibidas
               .map((a) => {
                 const c = pessoas.find(
                   (r) => r.colaborador.id === a.colaboradorId,
                 ).colaborador;
-                return `<tr><td class="p-2 border-b">${escapeHtml(c.nome)}</td><td class="p-2 border-b whitespace-nowrap">${formatDateBR(dateFromKey(a.data))}</td><td class="p-2 border-b">${escapeHtml(descricao(c, a.antes))}</td><td class="p-2 border-b">${escapeHtml(descricao(c, a.depois))}</td></tr>`;
+                return `<tr><td class="p-2 border-b">${escapeHtml(c.nome)}</td><td class="p-2 border-b whitespace-nowrap">${fixa ? DIAS_SEMANA[dateFromKey(a.data).getDay()] : formatDateBR(dateFromKey(a.data))}</td><td class="p-2 border-b">${escapeHtml(descricao(c, a.antes))}</td><td class="p-2 border-b">${escapeHtml(descricao(c, a.depois))}</td></tr>`;
               })
               .join("")}</tbody></table></div>${
               plano.avisosValidacao?.length
@@ -127,6 +130,7 @@ export function createAjustesCoberturaUI({
     });
   }
   function bindEvents() {
+    campo("configurar")?.addEventListener("click", () => env.document.querySelector('[data-etapa-link="sec-cobertura"]')?.click());
     if (!state.coberturaAtiva) return;
     campo("buscar")?.addEventListener("click", async () => {
       try {

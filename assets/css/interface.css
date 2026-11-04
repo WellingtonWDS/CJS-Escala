@@ -967,3 +967,13 @@ label:has(> .ui-switch) {
 }
 
 .colaborador-campo > [data-sexo-estimativa]:empty { display:none; }
+
+.escala-filtro { display:flex; flex-wrap:wrap; align-items:center; gap:14px; padding:14px 16px; border-bottom:1px solid var(--ui-line); background:#f8fafc; color:#172d43; }
+.escala-filtro label { display:grid; gap:6px; flex:0 1 300px; font-size:12px; font-weight:600; }
+.escala-filtro select { width:100%; min-height:40px; padding:8px 10px; border:1px solid #829eaf; border-radius:8px; background:white; color:inherit; }
+.escala-filtro p, .escala-filtro-vazio { font-size:12px; line-height:1.6; color:var(--ui-muted); }
+.escala-filtro p { flex:1 1 250px; }
+.escala-filtro-vazio { padding:12px 6px; }
+@media(max-width:600px) { .escala-filtro label { flex-basis:100%; } }
+.escala-filtro label, .escala-filtro select, .escala-filtro p { min-width:0; }
+.escala-filtro p { overflow-wrap:anywhere; }

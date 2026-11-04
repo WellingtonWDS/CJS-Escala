@@ -18,6 +18,7 @@ module.exports = async function ({ browser, baseURL }) {
           })
         : r.abort(),
     );
+    await page.clock.install({ time: new Date("2026-10-23T12:00:00Z") });
     await page.goto(baseURL);
     await page.waitForFunction(
       () => document.documentElement.dataset.ready === "true",

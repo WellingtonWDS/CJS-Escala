@@ -10,6 +10,16 @@ Consulte [Estado do projeto](docs/estado-do-projeto.md) para uma visão consolid
 
 O fluxo principal já inclui cadastro manual e por planilhas, importação Domínio, restrições individuais, habilitações por função, geração, conversão 6×1 → 5×2, comparação de cobertura, sugestões de ajustes com prévia/aplicação/desfazer, edição da grade, documentos PDF próprios, ZIP individual e impressão. O acesso oferece login individual por e-mail/senha integrado ao n8n e ao banco, com sessão de até 12 horas, menu por perfil, gestão de usuários e empresas e preenchimentos compartilhados por empresa autorizada. O modo compartilhado/local permanece disponível por configuração. Os detalhes de funcionamento e configuração estão nas seções abaixo.
 
+## Quadros por função e readequação fixa — 04/11/2026
+
+Os quadros **atual/avulso e proposto**, nos modelos dinâmico e fixo, oferecem **Filtrar por função**. As opções vêm do cargo cadastrado e das funções efetivamente alocadas na escala; acentos e diferenças de caixa não duplicam opções. O filtro mantém o contexto semanal completo dos colaboradores correspondentes e seus resumos. Não altera cadastros, escala, validações, cálculos, busca de ajustes ou PDFs exportados, que continuam considerando toda a equipe. A seleção acompanha as edições da grade enquanto ela estiver aberta; um novo contexto abre sem filtro.
+
+Corrigido o caminho de renderização da escala fixa, que omitia o painel **Readequar escala · ajustes de cobertura**. Com Cobertura operacional ativa, **Buscar ajustes de cobertura** executa o Worker também no fixo, com prévia, aplicação e desfazer. Os horários sugeridos repetem-se nos mesmos dias da semana em todas as ocorrências; a prévia agrupa por colaborador/dia da semana. Jornada, descanso, restrições e edições manuais continuam protegidos. Sem cobertura ativa, o painel fixo permanece visível, explica a dependência e oferece **Configurar cobertura operacional**; a busca fica desabilitada até a ativação.
+
+Removido o botão **Imprimir / PDF** da etapa Conversão e comparação. Os downloads próprios de PDF do empregador e ZIP dos colaboradores permanecem; impressão pelo navegador continua disponível por Ctrl+P. Nenhuma migração SQL ou variável nova.
+
+Validação: **536 testes unitários**, build e suíte completa de navegador aprovados. Nova regressão exercita filtros dinâmico/fixo, normalização de funções, resumos, edição pelo índice correto, preservação dos dados, busca fixa real em Worker, prévia/aplicar/desfazer e recorrência. As verificações finais incluem a função efetivamente alocada nos cards fixos, nomes longos e o atalho quando a cobertura está desligada. Duas fixtures antigas receberam verificações determinísticas de data/geometria para não depender do mês de execução ou de frames diferentes do navegador.
+
 ## Revisão integral do tema escuro — 30/10/2026
 
 O tema escuro passa a ter uma **paleta autoral por componente**, substituindo a conversão automática das cores do tema claro. O arquivo `assets/css/dark-palette.css` centraliza os tokens e as aplicações; `scripts/build-theme.mjs` apenas compila e restringe os seletores a `html[data-theme="dark"]` em tela. Edite a fonte, não `theme-dark.css`.

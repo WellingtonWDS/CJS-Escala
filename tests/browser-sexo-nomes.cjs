@@ -129,8 +129,11 @@ module.exports = async function testarSexoNomes({ browser, baseURL }) {
       await page.setViewportSize({width:1280,height:900});
     }
     await conferirAlinhamento();
-    const nota=await page.locator('[data-sexo-estimativa]').first().boundingBox(), select=await campo('sexo').boundingBox();
-    assert(nota.y>=select.y+select.height,'Descrição fica abaixo do seletor');
+    const posicao=await page.locator('#colab-list > div').first().evaluate(card=>({
+      nota:card.querySelector('[data-sexo-estimativa]').getBoundingClientRect().top,
+      fim:card.querySelector('[data-field="sexo"]').getBoundingClientRect().bottom,
+    }));
+    assert(posicao.nota+.5>=posicao.fim,'Descrição fica abaixo do seletor');
     await campo("sexo").selectOption("masculino");
     assert.equal((await saved()).colaboradores[0].sexoOrigem, "usuario");
     assert.equal(

@@ -22,7 +22,7 @@ module.exports=async({browser,baseURL})=>{
   await capture('01-configuracao');
   const failures=[];
   const lightSurfaces=[];
-  const boundaries="#btn-gerar, #btn-imprimir, [data-export-pdf], [data-escala-quadro], .escala-mensal th, .escala-mensal td";
+  const boundaries="#btn-gerar, [data-export-pdf], [data-escala-quadro], .escala-mensal th, .escala-mensal td";
   for(const id of ['sec-config','sec-tipo','sec-feriados','sec-jornada','sec-folgas','sec-cobertura','sec-pec','sec-gerar']){
    await page.locator(`[data-etapa-link="${id}"]`).click();
    if(id==='sec-config') await page.locator('#sec-config details').evaluateAll(els=>els.forEach(el=>el.open=true));

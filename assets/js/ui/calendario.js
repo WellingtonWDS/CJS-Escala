@@ -1,3 +1,4 @@
+import { configurarFiltroFuncao } from "./filtro-funcao.js";
 import { renderAvisosEscala } from "./avisos-escala.js";
 import { bindArrasteEscala } from "./arrastar-escala.js";
 import { editarHorario } from "./horario-manual.js";
@@ -211,13 +212,16 @@ export function createCalendarioUI({
   }
   function renderEscalaGerada() {
     if (!state.escalaGerada) return;
+    const filtroAnterior = document.getElementById(containerId)?.querySelector("[data-filtro-funcao]")?.value || "";
     if (state.modeloEscala === "fixa") {
       const config = configDaEscala(state);
       const container = document.getElementById(containerId);
       limparRolagem();
-      container.innerHTML = renderQuadroFixo(config, createDomain(config));
+      container.innerHTML = renderQuadroFixo(config, createDomain(config)) + ajustes.renderPainel();
+      ajustes.bindEvents();
       limparRolagem = configurarRolagemEscala(container, env.window);
       bindTrocas(container);
+      configurarFiltroFuncao(container, state.escalaGerada.resultado, filtroAnterior);
       container.querySelectorAll("[data-ri][data-di]").forEach((el) => {
         el.onclick = () => editarStatus(Number(el.dataset.ri), Number(el.dataset.di));
       });
@@ -427,7 +431,7 @@ export function createCalendarioUI({
       </div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5 p-3">`;
       mensal.forEach((x) => {
-        html += `<div class="border border-slate-200 rounded-lg p-3">
+        html += `<div data-resumo-mensal="${escapeHtml(x.r.colaborador.id)}" class="border border-slate-200 rounded-lg p-3">
         <div class="font-semibold text-fintria-navy">${escapeHtml(x.r.colaborador.nome || "(sem nome)")}</div>
         <div class="grid grid-cols-3 gap-2 mt-2 text-xs">
           <div><div class="font-bold text-fintria-navy">${fmtHoras(x.horas)}</div><div class="text-slate-500">Horas trabalhadas</div></div>
@@ -462,6 +466,7 @@ export function createCalendarioUI({
     bindTrocas(container);
     ajustes.bindEvents();
     edicaoManual.bindEvents();
+    configurarFiltroFuncao(container, resultado, filtroAnterior);
 
     container.querySelectorAll("[data-ri][data-di]").forEach((el) => {
       el.onclick = () =>

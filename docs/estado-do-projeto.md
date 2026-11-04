@@ -1,6 +1,6 @@
 # Estado do projeto — Reescala
 
-Atualizado em **30/10/2026**. Referência funcional: versão de regras `ec141-2026-10-30-11` ([histórico do projeto](https://github.com/WellingtonWDS/CJS-Escala/commits/main/)). Esta página resume o andamento; o [README](../README.md) detalha operação, arquitetura, configuração e testes.
+Atualizado em **04/11/2026**. Referência funcional: versão de regras `ec141-2026-10-30-11` ([histórico do projeto](https://github.com/WellingtonWDS/CJS-Escala/commits/main/)). Esta página resume o andamento; o [README](../README.md) detalha operação, arquitetura, configuração e testes.
 
 Identidade **Reescala** aplicada no login, cabeçalho, menu expandido/recolhido, carregamento, quadros de escala/impressão e ícone do navegador, usando os arquivos originais de `logos/`. A publicação inclui essa pasta e o login carrega suas imagens sem sessão; dados, chaves internas e permissões são preservados.
 
@@ -9,6 +9,14 @@ Logos com dimensões limitadas também no HTML para evitar crescimento com CSS a
 Quatro novas empresas por segmento e onze preenchimentos DEMO para comércio contínuo, fazenda com sábado compensado, entidade 24h com 12×36/administrativo e padaria até 20h30. Casos de cobertura, readequação e contratação; os ciclos mistos são analisados na prévia e continuam fora da conversão automática. [Instalação e resultados esperados](cenarios-demo-segmentos.md). Instalador testado localmente; execução remota ainda pendente.
 
 Carregamento imediato na geração atual/proposta, cálculo em Worker local, bloqueio de duplicação, liberação em falhas e proteção contra resultados de dados alterados. Resumo da busca de cobertura aparece primeiro em modal e depois abaixo do botão, com aplicação separada. Regras de cálculo e versões de dados preservadas.
+
+## Filtro e readequação do quadro fixo — 04/11/2026
+
+Filtro visual por cargo/função alocada nas grades atual/proposta, fixa/dinâmica, incluindo resumos. Normalização de nomes de função, contexto semanal e índices originais preservados para edição; sem modificar estado/exportações. Seleção mantida durante rerenderizações da grade, sem salvar como dado do preenchimento.
+
+Painel de ajustes de cobertura conectado ao caminho da escala fixa; exige cobertura ativa para buscar sugestões e oferece orientação/atalho de configuração quando ela está desligada. Busca real em Worker, prévia agrupada por dia da semana, aplicação/desfazer e recorrência em calendários de contexto. Removido o botão antigo Imprimir/PDF da conversão; documentos próprios e Ctrl+P permanecem. Sem mudança de regra de cálculo, API, SQL ou ambiente.
+
+Validação local: 536 testes unitários, build e suíte completa de navegador aprovados; regressões finais de filtro, função alocada, readequação fixa e grade fixa também passaram. Inclui busca/aplicação/desfazer real em Worker, recorrência e guia de configuração sem cobertura.
 
 ## Tema escuro com paleta autoral — 30/10/2026
 
