@@ -10,6 +10,10 @@ Quatro novas empresas por segmento e onze preenchimentos DEMO para comércio con
 
 Carregamento imediato na geração atual/proposta, cálculo em Worker local, bloqueio de duplicação, liberação em falhas e proteção contra resultados de dados alterados. Resumo da busca de cobertura aparece primeiro em modal e depois abaixo do botão, com aplicação separada. Regras de cálculo e versões de dados preservadas.
 
+## Estabilidade da rolagem horizontal — 04/11/2026
+
+Sincronização das duas barras ignora eventos programáticos defasados, evitando recuos no quadro. Medição de altura dos cards depende de largura/conteúdo/fontes; redimensionamento e impressão continuam suportados, sem reescrever alturas a cada rolagem. Limpeza dos observadores/listeners ao recriar. Build e regressões específicas de rolagem, prévias/edição/impressão e filtro/readequação fixa aprovados. Sem mudança de regra de geração ou persistência.
+
 ## Resumo operacional da etapa Folgas — 04/11/2026
 
 Removido o texto genérico **Por dia** dos três cartões de horários. Entrada/intervalo/saída são apresentados com os valores efetivos, agrupados pelos dias quando variam. Respeita fallback padrão, dias operacionais, sábado contínuo/legado, ausência de intervalo, noite e horário próprio do 12×36. Build e regressão de navegador com edição/toggle/recarga e contraste móvel claro/escuro aprovados. Cálculo e versão de regras preservados.

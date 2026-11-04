@@ -10,6 +10,12 @@ Consulte [Estado do projeto](docs/estado-do-projeto.md) para uma visão consolid
 
 O fluxo principal já inclui cadastro manual e por planilhas, importação Domínio, restrições individuais, habilitações por função, geração, conversão 6×1 → 5×2, comparação de cobertura, sugestões de ajustes com prévia/aplicação/desfazer, edição da grade, documentos PDF próprios, ZIP individual e impressão. O acesso oferece login individual por e-mail/senha integrado ao n8n e ao banco, com sessão de até 12 horas, menu por perfil, gestão de usuários e empresas e preenchimentos compartilhados por empresa autorizada. O modo compartilhado/local permanece disponível por configuração. Os detalhes de funcionamento e configuração estão nas seções abaixo.
 
+## Rolagem estável dos quadros — 04/11/2026
+
+Corrigida a sincronização entre as barras horizontais superior/inferior: eventos do espelhamento anterior não devolvem uma posição antiga ao gesto atual. A normalização da altura dos cards deixa de repetir medições quando a largura permanece igual; mudanças de conteúdo/filtro, fontes, redimensionamento e impressão continuam atualizando o layout. Observadores e eventos são liberados ao recriar a grade.
+
+Build e regressões de navegador aprovados: eventos defasados nas duas barras, gestos reais sem recuos/reescrita de alturas, cards uniformes, conteúdo variável, quadros fixo/dinâmico, filtro por função, preservação da posição após edição, celular/zoom e impressão. Sem alteração de escala, regras, SQL ou ambiente.
+
 ## Resumo de horários em Folgas — 04/11/2026
 
 Corrigido o resumo que substituía entrada, intervalo e saída por **Por dia** sempre que a opção de horários diferenciados estava ativa. Agora mostra os horários efetivos da empresa; valores iguais aparecem uma vez e valores diferentes são agrupados pelos respectivos dias operacionais. Sábado contínuo usa a saída real e **Sem intervalo**, incluindo cadastros legados com campos zerados. Dias fechados não entram no resumo; jornadas noturnas indicam a virada do dia e 12×36 usa seu horário próprio.
