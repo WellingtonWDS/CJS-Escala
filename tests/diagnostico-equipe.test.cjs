@@ -146,7 +146,10 @@ test("faixas adjacentes e funções intercaladas são agrupadas sem fragmentaç�
   };
   const d = analisar(s);
   assert.equal(d.grupos.filter((g) => g.funcao === "Supervisor").length, 1);
-  assert.equal(d.grupos.filter((g) => g.funcao === "Atendente").length, 2);
+    const atendente = d.grupos.filter(g => g.funcao === "Atendente");
+  assert.equal(atendente.length, 1);
+  assert.equal(atendente[0].tipo, "mista");
+  assert.equal(atendente[0].trechos.length, 2);
 });
 test("noite atravessando domingo não produz prova semanal ou dias-pessoa incorreta", () => {
   const s = empresa();

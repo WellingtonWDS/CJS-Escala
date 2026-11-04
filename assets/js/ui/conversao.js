@@ -74,6 +74,8 @@ export function createConversaoUI({
     el("conversao-folgas").value =
       state.destinoConversao?.folgas || "distribuir";
     atualizarOpcao42();
+    const c = state.conversao;
+    if (c && !c.desatualizada && c.versaoRegras === VERSAO_REGRAS) c.comparacao = compararConversao(c);
     renderConversao();
   }
   function marcarDesatualizada() {

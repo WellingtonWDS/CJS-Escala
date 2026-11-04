@@ -10,6 +10,14 @@ Consulte [Estado do projeto](docs/estado-do-projeto.md) para uma visão consolid
 
 O fluxo principal já inclui cadastro manual e por planilhas, importação Domínio, restrições individuais, habilitações por função, geração, conversão 6×1 → 5×2, comparação de cobertura, sugestões de ajustes com prévia/aplicação/desfazer, edição da grade, documentos PDF próprios, ZIP individual e impressão. O acesso oferece login individual por e-mail/senha integrado ao n8n e ao banco, com sessão de até 12 horas, menu por perfil, gestão de usuários e empresas e preenchimentos compartilhados por empresa autorizada. O modo compartilhado/local permanece disponível por configuração. Os detalhes de funcionamento e configuração estão nas seções abaixo.
 
+## Avisos contínuos e referência jurídica — 04/11/2026
+
+O diagnóstico reúne faixas consecutivas da mesma função e quantidade faltante em uma mensagem: **Aos sábados, das 08:00 às 14:00: falta 1 pessoa…**. Mudanças de causa ficam em **Ver causas por horário**, sem perder as verificações de capacidade. Quantidades diferentes, períodos cobertos e datas distintas não são unidos indevidamente. Corrigidas as preposições para sábados e domingos. Comparações salvas na versão de regras atual têm o diagnóstico atualizado ao abrir, preservando os horários gerados.
+
+A escala fixa confere o ACT/CCT pela **Data de referência** da Configuração inicial, não pelo calendário interno usado para calcular o padrão. Quando essa referência fica fora da vigência, o aviso mostra as datas de referência e do instrumento e indica onde conferir. A validação continua necessária para justificar as autorizações coletivas; aplicar o padrão em datas futuras exige conferir a vigência novamente. Sem alteração de regra jurídica, SQL ou ambiente.
+
+Validação: 543 testes unitários, build e suíte completa de navegador aprovados. As novas regressões verificam o agrupamento ao abrir comparações salvas e a mudança da referência jurídica do ACT/CCT.
+
 ## Quadros por função e readequação fixa — 04/11/2026
 
 Os quadros **atual/avulso e proposto**, nos modelos dinâmico e fixo, oferecem **Filtrar por função**. As opções vêm do cargo cadastrado e das funções efetivamente alocadas na escala; acentos e diferenças de caixa não duplicam opções. O filtro mantém o contexto semanal completo dos colaboradores correspondentes e seus resumos. Não altera cadastros, escala, validações, cálculos, busca de ajustes ou PDFs exportados, que continuam considerando toda a equipe. A seleção acompanha as edições da grade enquanto ela estiver aberta; um novo contexto abre sem filtro.

@@ -29,6 +29,7 @@ export const TITULOS_DIAGNOSTICO = {
   redistribuicao: "Há margem para testar uma redistribuição dos horários.",
 };
 export const CAUSAS_DIAGNOSTICO = {
+  mista: "A quantidade faltante é a mesma em toda a faixa, mas as causas variam. Confira o detalhamento por horário.",
   quadro: "Quadro habilitado insuficiente neste horário.",
   disponibilidade:
     "Disponibilidade incompatível: reveja janelas, folgas fixas, férias, afastamentos e admissões. Pode ser necessário reforço temporário.",
@@ -395,8 +396,16 @@ function deficitDoGrupo(pessoas, demandas, funcao) {
   );
   return a.necessarios - a.capacidade;
 }
+export function diasComPreposicao(dias) {
+  const femininos = dias.filter(d => d >= 1 && d <= 5);
+  const masculinos = dias.filter(d => d === 0 || d === 6);
+  if (!femininos.length) return `Aos ${diasEmTexto(masculinos)}`;
+  if (!masculinos.length) return `Às ${diasEmTexto(femininos)}`;
+  return `Às ${diasEmTexto(femininos)} e aos ${diasEmTexto(masculinos)}`;
+}
+
 function fraseGrupo(g) {
-  return `Às ${diasEmTexto(g.diasSemana)}, das ${horarioComDia(g.inicioMin)} às ${horarioComDia(g.fimMin)}: ${g.faltantes === 1 ? "falta 1 pessoa" : "faltam " + g.faltantes + " pessoas"} na função ${g.funcao}.`;
+  return `${diasComPreposicao(g.diasSemana)}, das ${horarioComDia(g.inicioMin)} às ${horarioComDia(g.fimMin)}: ${g.faltantes === 1 ? "falta 1 pessoa" : "faltam " + g.faltantes + " pessoas"} na função ${g.funcao}.`;
 }
 export function diagnosticarEquipe(config, resultado, relatorio = null) {
   config = configDaEscala(config);
@@ -750,13 +759,17 @@ export function diagnosticarEquipe(config, resultado, relatorio = null) {
       anterior.data === d.data &&
       normalizarFuncao(anterior.funcao) === normalizarFuncao(d.funcao) &&
       anterior.fimMin === d.inicioMin &&
-      anterior.faltantes === d.faltantes &&
-      anterior.tipo === d.tipo &&
-      anterior.deficitMinimo === d.deficitMinimo
+      anterior.faltantes === d.faltantes
     ) {
+      const trecho = anterior.trechos.at(-1);
+      if (trecho.tipo === d.tipo && trecho.deficitMinimo === d.deficitMinimo)
+        trecho.fimMin = d.fimMin;
+      else anterior.trechos.push({ inicioMin:d.inicioMin, fimMin:d.fimMin, tipo:d.tipo, deficitMinimo:d.deficitMinimo });
       anterior.fimMin = d.fimMin;
-      anterior.potenciais = Math.min(anterior.potenciais, d.potenciais);
-    } else linhas.push({ ...d });
+      anterior.tipo = new Set(anterior.trechos.map(t => t.tipo)).size > 1 ? "mista" : d.tipo;
+      anterior.deficitMinimo = Math.min(anterior.deficitMinimo, d.deficitMinimo);
+      anterior.potenciais = anterior.potenciais == null || d.potenciais == null ? null : Math.min(anterior.potenciais, d.potenciais);
+    } else linhas.push({ ...d, trechos:[{inicioMin:d.inicioMin, fimMin:d.fimMin, tipo:d.tipo, deficitMinimo:d.deficitMinimo}] });
   }
   const grupos = new Map();
   for (const d of linhas) {
@@ -765,8 +778,7 @@ export function diagnosticarEquipe(config, resultado, relatorio = null) {
       d.inicioMin,
       d.fimMin,
       d.faltantes,
-      d.tipo,
-      d.deficitMinimo,
+      d.trechos.map(t => [t.inicioMin,t.fimMin,t.tipo,t.deficitMinimo]),
     ]);
     if (!grupos.has(key)) grupos.set(key, { ...d, datas: [], diasSemana: [] });
     const g = grupos.get(key);

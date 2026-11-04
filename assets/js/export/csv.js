@@ -252,7 +252,7 @@ export function gerarCsv(state) {
       linhas.push([
         g.funcao,
         g.resumo,
-        CAUSAS_DIAGNOSTICO[g.tipo],
+        g.trechos?.length > 1 ? g.trechos.map(t => `${horarioComDia(t.inicioMin)}–${horarioComDia(t.fimMin)}: ${CAUSAS_DIAGNOSTICO[t.tipo]}`).join(" | ") : CAUSAS_DIAGNOSTICO[g.tipo],
         g.datas.join(", "),
         g.ocorrencias,
       ]);

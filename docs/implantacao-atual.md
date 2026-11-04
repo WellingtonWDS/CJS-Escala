@@ -2,6 +2,10 @@
 
 Consultar este registro antes de orientar o operador. Distinguir código disponível, testes locais e resultados informados pelo operador. Não contém senhas, chaves ou identificadores pessoais.
 
+## Diagnóstico contínuo e referência fixa — 04/11/2026
+
+Agrupamento dos avisos de cobertura por faixa contínua, função e quantidade; causas preservadas no detalhe e gramática de sábados/domingos corrigida. Comparações atuais salvas têm o diagnóstico atualizado ao abrir. Aviso de ACT/CCT do fixo agora explicita referência jurídica, vigência e ação de conferência. A validação continua usando a referência configurada; não houve mudança de regra, SQL, RPC, n8n ou variável de ambiente. Entrega pelo fluxo habitual da main. Validação local: 543 testes unitários, build e suíte completa de navegador aprovados, incluindo a atualização de diagnóstico salvo e a referência do ACT/CCT no fixo.
+
 ## Filtro por função e painel fixo — 04/11/2026
 
 Frontend oferece filtro visual dos quadros sem alterar a escala/exportação e renderiza os ajustes de cobertura no fixo. Prévia recorrente por dia da semana; botão de impressão avulsa removido da conversão. Usa os Workers e contratos existentes, sem novas RPCs, migrações, variáveis ou configuração na VPS. Publicar pela main como as entregas anteriores. Validação local: 536 testes unitários, build e suíte completa de navegador, com regressões finais de filtro/readequação fixa aprovadas. Sem nova execução de integração do banco, pois API/schema não mudaram.

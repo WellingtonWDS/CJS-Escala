@@ -7,7 +7,7 @@ import {
   referenciaDia,
   instrumentoValido,
 } from "./ec141.js";
-import { diasNoMes, isoDate } from "./datas-horas.js";
+import { diasNoMes, isoDate, dateFromKey, formatDateBR } from "./datas-horas.js";
 const issue = (tipo, severidade, mensagem, data = null) => ({
   tipo,
   severidade,
@@ -174,11 +174,16 @@ export function validarEnquadramento(state, c, dias) {
       vigentes.some((d) => d.data < i.inicio || d.data > i.fim)
     )
       out.push(
-        issue(
-          "INSTRUMENTO_FORA_VIGENCIA",
-          "erro",
-          "Há jornadas fora da vigência do ACT/CCT informado. A autorização não é estendida a essas datas.",
-        ),
+        {
+          ...issue(
+            "INSTRUMENTO_FORA_VIGENCIA",
+            "erro",
+            state.modeloEscala === "fixa"
+              ? `Na referência jurídica deste padrão (${formatDateBR(dateFromKey(state.dataReferenciaFixa))}), o ACT/CCT informado não está vigente. Vigência cadastrada: ${formatDateBR(dateFromKey(i.inicio))} a ${formatDateBR(dateFromKey(i.fim))}. A validação não usa as datas do calendário interno.`
+              : "Há jornadas fora da vigência do ACT/CCT informado. A autorização não é estendida a essas datas.",
+          ),
+          ...(state.modeloEscala === "fixa" ? {acao:"Confira o campo Data de referência na Configuração inicial e a vigência cadastrada do ACT/CCT. Antes de aplicar o padrão em datas reais, confira novamente o instrumento vigente."} : {}),
+        },
       );
     if (state.instrumentoCompensacao === "act_cct")
       out.push(

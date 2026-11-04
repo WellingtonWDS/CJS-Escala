@@ -55,7 +55,7 @@ module.exports = async ({ browser, baseURL }) => {
     assert.equal(await diagnostico.getAttribute("data-status"), "capacidade_insuficiente");
     const faixas = diagnostico.locator("[data-diagnostico-faixa]");
     assert(await faixas.count());
-    await faixas.first().locator("summary").click();
+    await faixas.first().locator("summary").filter({hasText:"ocorrência"}).click();
     assert.match(await faixas.first().innerText(), /\d{2}\/02\/2027/);
     const capacidade = page.locator("#conversao-comparacao > section > details").filter({ has: page.locator('summary', { hasText: "Capacidade por função" }) });
     await capacidade.locator("summary").click();

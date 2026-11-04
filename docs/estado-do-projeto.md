@@ -10,6 +10,12 @@ Quatro novas empresas por segmento e onze preenchimentos DEMO para comércio con
 
 Carregamento imediato na geração atual/proposta, cálculo em Worker local, bloqueio de duplicação, liberação em falhas e proteção contra resultados de dados alterados. Resumo da busca de cobertura aparece primeiro em modal e depois abaixo do botão, com aplicação separada. Regras de cálculo e versões de dados preservadas.
 
+## Faixas do diagnóstico e ACT/CCT no fixo — 04/11/2026
+
+Faixas contíguas com a mesma função/quantidade faltante são apresentadas juntas; causas diferentes permanecem no detalhamento por horário e as provas de capacidade são preservadas. Preposições corrigidas para **Aos sábados/domingos**. Diagnósticos salvos com regras atuais são recalculados ao abrir, sem alterar a escala.
+
+Aviso de ACT/CCT fora de vigência no fixo identifica a referência jurídica e a vigência cadastrada, orientando a revisão na Configuração inicial. O cálculo já utilizava essa referência, e continua sem usar as datas do calendário interno para a autorização. Sem migração SQL ou mudança de versão de regras. Validação: 543 testes unitários, build e suíte completa de navegador aprovados.
+
 ## Filtro e readequação do quadro fixo — 04/11/2026
 
 Filtro visual por cargo/função alocada nas grades atual/proposta, fixa/dinâmica, incluindo resumos. Normalização de nomes de função, contexto semanal e índices originais preservados para edição; sem modificar estado/exportações. Seleção mantida durante rerenderizações da grade, sem salvar como dado do preenchimento.
