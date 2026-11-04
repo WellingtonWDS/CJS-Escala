@@ -1,3 +1,4 @@
+import { descricaoFuncoes } from "../shared/funcoes-horarios.js";
 import { configurarFiltroFuncao } from "./filtro-funcao.js";
 import { renderAvisosEscala } from "./avisos-escala.js";
 import { bindArrasteEscala } from "./arrastar-escala.js";
@@ -11,7 +12,6 @@ import { configurarRolagemEscala } from "./rolagem-escala.js";
 import { configDaEscala } from "../domain/contexto-escala.js";
 import { createDomain } from "../domain/index.js";
 import { createAjustesCoberturaUI } from "./ajustes-cobertura.js";
-import { funcaoDoDia } from "../domain/funcoes.js";
 import { aplicarRestricoesDia } from "../domain/restricoes.js";
 import { configDoPerfil } from "../domain/perfil-dominio.js";
 import { apurarComputoCCT } from "../domain/computo-cct.js";
@@ -395,7 +395,7 @@ export function createCalendarioUI({
                         : x.obj.status;
                 return `<button data-ri="${x.ri}" data-di="${x.r.dias.indexOf(x.obj)}" class="escala-colaborador w-full text-left mb-2 last:mb-0 rounded border ${cls} hover:opacity-80" title="${escapeHtml(x.obj.restricao?.descricao || (trabalho ? "Trabalho" : x.obj.status === "NC" ? "Anterior à admissão" : "Folga"))}${trabalho && x.obj.intervaloInicioMin != null ? ` · Intervalo ${horarioComDia(x.obj.intervaloInicioMin)}–${horarioComDia(x.obj.intervaloFimMin)}` : ""} — clique para alterar">
               <div class="escala-colaborador-nome">${escapeHtml(x.r.colaborador.nome || "(sem nome)")}</div>
-              ${trabalho && x.obj.funcaoAlocada ? `<div class="escala-colaborador-detalhe font-semibold">Função: ${escapeHtml(funcaoDoDia(x.r.colaborador, x.obj))}</div>` : ""}
+              ${trabalho && (x.obj.funcaoAlocada || x.obj.alocacoesFuncao?.length) ? `<div class="escala-colaborador-detalhe font-semibold">Função: ${escapeHtml(descricaoFuncoes(x.r.colaborador, x.obj))}</div>` : ""}
               ${x.obj.intervaloSugerido ? `<div class="escala-colaborador-detalhe font-semibold">Intervalo sugerido para cobertura</div>` : ""}
               ${x.obj.ajusteAutomatico ? `<div class="escala-colaborador-detalhe">Ajuste de cobertura aplicado</div>` : ""}
               <div class="escala-colaborador-detalhe">${x.obj.restricao ? escapeHtml(x.obj.restricao.descricao) : status}${state.turnosRevezamento ? ` · ${x.obj.turno}` : ""}${x.obj.horas ? ` · ${fmtHoras(x.obj.horas)} trabalhadas` : ""}</div>

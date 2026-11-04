@@ -1,3 +1,4 @@
+import { descricaoFuncoes } from "../shared/funcoes-horarios.js";
 import { configDaEscala } from "../domain/contexto-escala.js";
 import { diasDoModelo, ocorrenciasDoModelo } from "../domain/modelo-escala.js";
 import { createDomain } from "../domain/index.js";
@@ -9,7 +10,6 @@ import {
   dateFromKey,
   formatDateBR,
 } from "../domain/datas-horas.js";
-import { funcaoDoDia } from "../domain/funcoes.js";
 export const nomeArquivo = (v) =>
   String(v || "sem-nome")
     .normalize("NFD")
@@ -104,7 +104,7 @@ export function prepararRelatorio(
               : "—",
           t ? horarioComDia(d.saidaMin) : "—",
           fmtHoras(d.horas),
-          funcaoDoDia(r.colaborador, d) || r.colaborador.cargo || "—",
+          descricaoFuncoes(r.colaborador, d) || r.colaborador.cargo || "—",
         ];
       }),
       ocorrencias: ocorrenciasDoModelo(

@@ -1,7 +1,7 @@
 import { configDaEscala } from "./contexto-escala.js";
 import { contextoModelo, periodoModelo } from "./modelo-escala.js";
 import { analisarCobertura, normalizarFuncao } from "./cobertura.js";
-import { habilitadoPara, funcaoDoDia } from "./funcoes.js";
+import { habilitadoPara, funcaoDoDia, alocacoesDoDia, validarAlocacoesFuncao } from "./funcoes.js";
 import { configDoPerfil, verificarPerfil } from "./perfil-dominio.js";
 import { janelasDeclaradas } from "./disponibilidade.js";
 import { validarRestricoes, bloqueioNaData } from "./restricoes.js";
@@ -123,7 +123,7 @@ export function compararPresencaAtual(config, referencia, proposta) {
       for (const d of dias.values()) {
         if (!trabalha(d)) continue;
         const funcao = funcaoDoDia(c, d);
-        if (!dataValida(d.data) || !normalizarFuncao(funcao) || !habilitadoPara(c, funcao)) {
+        if (!dataValida(d.data) || !normalizarFuncao(funcao) || (!habilitadoPara(c, funcao) || validarAlocacoesFuncao(c,d))) {
           relatorio.avisos.push(`${c.nome}: data ou função inválida na referência de presença.`);
           continue;
         }
@@ -140,13 +140,12 @@ export function compararPresencaAtual(config, referencia, proposta) {
           relatorio.avisos.push(`${c.nome} · ${d.data}: horário incompleto na referência de presença.`);
           continue;
         }
-        const key = normalizarFuncao(funcao);
-        if (!grupos.has(key)) grupos.set(key, { funcao: funcao.trim(), eventos: [] });
-        for (const [a, b] of segmentosAtuais(d)) {
-          const x = Math.max(inicio, base + Math.round(a)), y = Math.min(fim, base + Math.round(b));
-          if (y <= x) continue;
-          grupos.get(key).eventos.push({ minuto: x, tipo, id: c.id, delta: 1 },
-            { minuto: y, tipo, id: c.id, delta: -1 });
+        for (const trecho of alocacoesDoDia(c,d,segmentosAtuais(d))) {
+          const key = normalizarFuncao(trecho.funcao);
+          if (!grupos.has(key)) grupos.set(key, {funcao:trecho.funcao.trim(),eventos:[]});
+          const x=Math.max(inicio,base+trecho.inicioMin), y=Math.min(fim,base+trecho.fimMin);
+          if(y<=x) continue;
+          grupos.get(key).eventos.push({minuto:x,tipo,id:c.id,delta:1},{minuto:y,tipo,id:c.id,delta:-1});
         }
       }
     }
@@ -470,10 +469,11 @@ export function diagnosticarEquipe(config, resultado, relatorio = null) {
           trabalha(d) &&
           minuto(d.data) >= inicio &&
           minuto(d.data) < fim &&
-          normalizarFuncao(funcaoDoDia(r.colaborador, d)) ===
-            normalizarFuncao(f.funcao)
+          !validarAlocacoesFuncao(r.colaborador,d)
         )
-          f.disponiveis += d.horas;
+          f.disponiveis += alocacoesDoDia(r.colaborador,d,segmentosAtuais(d))
+            .filter(a=>normalizarFuncao(a.funcao)===normalizarFuncao(f.funcao))
+            .reduce((s,a)=>s+(a.fimMin-a.inicioMin)/60,0);
   }
   const ciclosOuNoturnos = pessoas.some((p) => p.noturno || p.especial);
   if (ciclosOuNoturnos)

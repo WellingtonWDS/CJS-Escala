@@ -5,7 +5,7 @@ import { diasDoModelo, escalaFixa } from "./modelo-escala.js";
 import { dateFromKey, weekKey } from "./datas-horas.js";
 
 /** Diagnóstico do rateio, calculado a partir do resultado vigente (inclusive
- * edições). A sugestão de duração não amplia uma janela nem reduz uma pausa. */
+ * edições). Restrições explícitas continuam obrigatórias na nova distribuição. */
 export function analisarRateioSemanal(config, resultado) {
   if (!config.aplicarProposta5x2 && config.tipoEscala !== "5x2") return [];
   return resultado.flatMap((r) => {

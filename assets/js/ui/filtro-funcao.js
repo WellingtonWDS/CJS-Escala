@@ -1,4 +1,4 @@
-import { normalizarFuncao, funcaoDoDia } from "../domain/funcoes.js";
+import { normalizarFuncao, alocacoesDoDia } from "../domain/funcoes.js";
 
 /** Presentation only: keep the original indices, calculations and exports. */
 export function configurarFiltroFuncao(container, resultado, selecionada = "") {
@@ -7,7 +7,7 @@ export function configurarFiltroFuncao(container, resultado, selecionada = "") {
   const document = container.ownerDocument, nomes = new Map();
   const chave = valor => normalizarFuncao(valor) ? `funcao:${normalizarFuncao(valor)}` : "sem-funcao";
   const funcoes = resultado.map(r => {
-    const valores = [r.colaborador.cargo, ...r.dias.filter(d => ["T", "FE"].includes(d.status)).map(d => funcaoDoDia(r.colaborador, d))];
+    const valores = [r.colaborador.cargo, ...r.dias.filter(d => ["T", "FE"].includes(d.status)).flatMap(d => alocacoesDoDia(r.colaborador,d).map(a=>a.funcao))];
     return new Set(valores.map(valor => {
       const key = chave(valor);
       if (!nomes.has(key)) nomes.set(key, String(valor || "").trim() || "Sem função informada");

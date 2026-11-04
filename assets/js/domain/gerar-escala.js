@@ -1,3 +1,4 @@
+import { planejamento5x2 } from "./janelas-planejamento.js";
 import { analisarRateioSemanal } from "./rateio-semanal.js";
 import { ajustarIntervaloDaProposta } from "./politica-intervalo.js";
 import { apurarSemana } from "./resumo-semanal.js";
@@ -279,7 +280,7 @@ export function createGerador(state, jornada, feriados, validacao) {
     }
 
     const periodo = dias.filter((d) => dateFromKey(d.data) >= dataInicio);
-    if (state.aplicarProposta5x2)
+    if (planejamento5x2(state))
       for (const d of periodo) d.jornadaAplicada = janelaDaProposta(state, colab, d,
         d.jornadaAplicada || obterJornadaDoDia(d.weekday));
     distribuirHorasIndividuais(colab, periodo);
@@ -288,7 +289,7 @@ export function createGerador(state, jornada, feriados, validacao) {
         aplicarRestricoesDia(colab, d, state, (dia) =>
           Object.assign(dia, apurarComputoCCT(state, dia)),
         );
-    if (state.aplicarProposta5x2)
+    if (planejamento5x2(state))
       for (const d of periodo) ajustarIntervaloDaProposta(d);
     ajustarSabadoCompensado(colab, periodo);
     return periodo;

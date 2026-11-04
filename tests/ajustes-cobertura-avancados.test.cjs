@@ -41,7 +41,7 @@ test('combina realocações por habilitação sem transferir a lacuna para outra
  s.demandasCobertura=['Atendente','Caixa','Estoque'].map((f,i)=>demanda(f,'09:00','12:00',i+1));
  gerar(s); const p=buscar(s);
  assert.equal(p.depois.minutosFaltantes,0);
- assert(p.acoes.every(a=>a.tipo==='funcoes_combinadas'));
+ assert(p.acoes.every(a=>['funcoes_combinadas','funcoes_periodo_combinadas'].includes(a.tipo)));
  const novo=conferir(s,p);
  for(const periodo of novo.coberturaOperacional.periodos) assert.equal(periodo.presentes,1);
  const semHabilitacao=structuredClone(s);

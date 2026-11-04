@@ -354,7 +354,7 @@ export function converterEscala(state, opcoes = {}) {
   config.folgasFimSemana = opcoes.folgas === "fim_semana";
   config.folgaTipo = "fixa";
   config.planoFolgasConversao = {};
-  // A disponibilidade atual é um teto; não estender saídas nem presumir ACT/CCT.
+  // Horários atuais são referência; restrições explícitas e ACT/CCT limitam a proposta.
   config.horarioPorDia = true;
   config.jornadaPorDia = {};
   for (let dia = 0; dia < 7; dia++) {

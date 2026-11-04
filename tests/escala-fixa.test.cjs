@@ -176,7 +176,7 @@ test('cenários de comércio, fazenda e padaria mantêm padrão fixo e distingue
         assert(c.comparacao.pessoas.every(p=>p.horasDepois===40&&!p.deficits),d.title);
         assert(e.coberturaOperacional.lacunas.some(l=>new Date(l.data+'T12:00:00').getDay()===6),d.title);
       } else assert.equal(e.coberturaOperacional.lacunas.length,0,d.title);
-      assert.equal(c.comparacao.status,empresa.name.startsWith('Fazenda')?'suficiente':'ajustes',d.title);
+      assert.equal(c.comparacao.status,empresa.name.startsWith('Comércio')?'ajustes':'suficiente',d.title);
     }
     simulados++;
   }

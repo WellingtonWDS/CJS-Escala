@@ -1,3 +1,4 @@
+import { alocacoesDoDia } from "./funcoes.js";
 import { timeToMin } from "./datas-horas.js";
 import { configDaEscala } from "./contexto-escala.js";
 import { escalaFixa } from "./modelo-escala.js";
@@ -54,6 +55,8 @@ export function aplicarHorarioManual(state, colaboradorId, data, status, jornada
     };
     for (const key of ["intervaloSugerido", "ajusteAutomatico", "sabadoCompensado", "reposicaoSabado", "repousoSeguranca"])
       delete depois[key];
+    if (normal && dia.alocacoesFuncao?.length) depois.alocacoesFuncao = alocacoesDoDia(pessoa.colaborador,depois);
+    else delete depois.alocacoesFuncao;
     Object.assign(depois, apurarComputoCCT(proprio, depois));
     const erros = violacoesDia(pessoa.colaborador, depois);
     if (erros.length) throw Error(erros.join("\n"));

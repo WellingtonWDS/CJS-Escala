@@ -1,3 +1,4 @@
+import { janelaPlanejada, planejamento5x2 } from "./janelas-planejamento.js";
 import { configDoPerfil, perfilAtivo } from "./perfil-dominio.js";
 import { bloqueioNaData, janelaPermitida } from "./restricoes.js";
 import { normalizarJornada, timeToMin } from "./datas-horas.js";
@@ -18,6 +19,13 @@ export function janelasDeclaradas(config, c, d) {
     : origem.horarioPorDia
       ? origem.jornadaPorDia?.[d.weekday] || origem.jornada
       : origem.jornada;
+  if (planejamento5x2(config)) {
+    const turnos = ["A", ...(!perfilAtivo(c) && origem.turnosRevezamento ? ["B"] : [])];
+    return turnos.map(turno => janelaPlanejada(
+      {...proprio, entradaTurnoB:origem.entradaTurnoB ?? proprio.entradaTurnoB},
+      c, {...d,turno}, fonte || proprio.jornada, true,
+    )).filter(j => j && j.fim > j.inicio);
+  }
   const j = normalizarJornada(fonte);
   if (!j) return [];
   const opcoes = [{ inicio: j.entrada, fim: j.saida }];

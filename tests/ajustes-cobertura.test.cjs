@@ -165,9 +165,9 @@ test("realoca supervisor habilitado para caixa sem descobrir a supervisão nem c
   const s = habilitados(),
     p = buscar(s);
   assert.equal(p.depois.minutosFaltantes, 0);
-  assert.ok(p.acoes.some((a) => a.tipo === "funcao"));
+  assert.ok(p.acoes.some((a) => ["funcao","funcao_periodo"].includes(a.tipo)));
   const novo = conferir(s, p);
-  assert.ok(novo.resultado[1].dias.some((d) => d.funcaoAlocada === "Caixa"));
+  assert.ok(novo.resultado[1].dias.some((d) => (d.funcaoAlocada === "Caixa" || d.alocacoesFuncao?.some(a=>a.funcao==="Caixa"))));
   assert.ok(
     novo.coberturaOperacional.periodos
       .filter((p) => p.funcao === "Supervisor")

@@ -1,3 +1,4 @@
+import { descricaoFuncoes } from "../shared/funcoes-horarios.js";
 import { configDaEscala } from "../domain/contexto-escala.js";
 import { gerarCsvFixo } from "./csv-fixo.js";
 import {
@@ -5,7 +6,6 @@ import {
   TITULOS_DIAGNOSTICO,
   CAUSAS_DIAGNOSTICO,
 } from "../domain/diagnostico-equipe.js";
-import { funcaoDoDia } from "../domain/funcoes.js";
 import {
   horarioComDia,
   dateFromKey,
@@ -25,7 +25,7 @@ export function gerarCsv(state) {
     r.dias.some((d) => d.intervaloSugerido || d.intervaloAjustadoPolitica || (d.ajusteManual && d.jornadaAplicada)),
   );
   const ajustes = resultado.some((r) =>
-    r.dias.some((d) => d.funcaoAlocada || d.ajusteAutomatico),
+    r.dias.some((d) => d.funcaoAlocada || d.alocacoesFuncao?.length || d.ajusteAutomatico),
   );
   const restricoes = resultado.some((r) => r.colaborador.restricoes);
   const dominio = resultado.some((r) => r.colaborador.quadroDominio);
@@ -182,7 +182,7 @@ export function gerarCsv(state) {
           : []),
         ...(ajustes
           ? [
-              trabalha ? funcaoDoDia(r.colaborador, d) : "",
+              trabalha ? descricaoFuncoes(r.colaborador, d) : "",
               d.ajusteAutomatico ? "Sim" : "",
             ]
           : []),

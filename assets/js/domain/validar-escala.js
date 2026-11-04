@@ -1,4 +1,5 @@
-import { habilitadoPara, funcaoDoDia } from "./funcoes.js";
+import { planejamento5x2 } from "./janelas-planejamento.js";
+import { habilitadoPara, funcaoDoDia, validarAlocacoesFuncao } from "./funcoes.js";
 import { contextoModelo, escalaFixa, colaboradorRecorrente } from "./modelo-escala.js";
 import { validarRestricoesEscala, ausenciaProgramada } from "./restricoes.js";
 import { politicaPlantaoDeclarada, temTrabalhoNoturno } from "./computo-cct.js";
@@ -79,7 +80,7 @@ export function createValidacao(state, jornada, feriados) {
             d.data,
           ),
         );
-      const limite = limiteHorasDia(state, d.weekday);
+      const limite = planejamento5x2(state) ? Infinity : limiteHorasDia(state, d.weekday);
       if (h > limite + 0.01)
         out.push(
           issue(
@@ -622,7 +623,7 @@ export function createValidacao(state, jornada, feriados) {
     if (escalaFixa(state)) {
       const padroes = new Map();
       for (const d of dias) {
-        const chave = JSON.stringify([d.status, d.horas, d.entradaMin, d.saidaMin, d.intervaloInicioMin, d.intervaloFimMin, d.funcaoAlocada || ""]);
+        const chave = JSON.stringify([d.status, d.horas, d.entradaMin, d.saidaMin, d.intervaloInicioMin, d.intervaloFimMin, d.funcaoAlocada || "", d.alocacoesFuncao || []]);
         if (padroes.has(d.weekday) && padroes.get(d.weekday) !== chave) {
           problemasFixos.push(issue("PADRAO_FIXO", "erro", "O resultado contém horários ou folgas diferentes no mesmo dia da semana. Gere novamente um padrão recorrente antes de utilizar."));
           break;
@@ -638,7 +639,7 @@ export function createValidacao(state, jornada, feriados) {
         .filter(
           (d) =>
             ["T", "FE"].includes(d.status) &&
-            !habilitadoPara(colab, funcaoDoDia(colab, d)),
+            (!habilitadoPara(colab, funcaoDoDia(colab, d)) || validarAlocacoesFuncao(colab,d)),
         )
         .map((d) =>
           issue(

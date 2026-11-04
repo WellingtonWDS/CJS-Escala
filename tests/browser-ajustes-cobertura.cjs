@@ -138,7 +138,7 @@ module.exports = async function ({ browser, baseURL }) {
     assert.ok(await painel.locator("[data-ajuste-desfazer]").isEnabled());
     const aplicado = structuredClone((await saved()).escalaGerada);
     await painel.locator("[data-ajuste-buscar]").click();
-    assert.match(await confirmarResultado(painel), /Nenhum ajuste seguro/);
+    assert.match(await confirmarResultado(painel), /Nenhum ajuste necessário/);
     assert.deepEqual((await saved()).escalaGerada, aplicado);
     await page.reload();
     await page.waitForFunction(
@@ -244,12 +244,12 @@ module.exports = async function ({ browser, baseURL }) {
     assert.ok(s.conversao.comparacao.faltantesDepois < faltantes);
     assert.ok(
       s.conversao.proposta.config.escalaGerada.resultado[1].dias.some(
-        (d) => d.funcaoAlocada === "Caixa",
+        (d) => d.funcaoAlocada === "Caixa" || d.alocacoesFuncao?.some(a=>a.funcao === "Caixa"),
       ),
     );
     assert.match(
       await page.locator("#resultado-proposta").textContent(),
-      /Função: Caixa/,
+      /Função:.*Caixa/s,
     );
     // A stale proposal cannot be optimized again.
     await irParaEtapa(page, "#tg-cobertura");

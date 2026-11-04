@@ -10,7 +10,7 @@ export function* alternativasIntervalo(c, d) {
   if (
     !["T", "FE"].includes(d.status) ||
     d.ajusteManual ||
-    d.restricao ||
+    (d.restricao && d.restricao.tipo !== "horario") ||
     d.creditoIntervaloCCT ||
     d.creditoNoturnoCCT ||
     !Number.isFinite(d.intervaloMin) ||

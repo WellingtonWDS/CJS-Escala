@@ -1,4 +1,4 @@
-import { normalizarFuncao, habilitadoPara, funcaoDoDia } from "./funcoes.js";
+import { normalizarFuncao, habilitadoPara, funcaoDoDia, alocacoesDoDia, validarAlocacoesFuncao } from "./funcoes.js";
 export { normalizarFuncao } from "./funcoes.js";
 import { diasNoMes, isoDate, timeToMin } from "./datas-horas.js";
 import { createFeriados } from "./feriados.js";
@@ -164,15 +164,13 @@ export function analisarCobertura(config, resultado) {
     for (const d of dias.values()) {
       if (
         ["T", "FE"].includes(d.status) &&
-        !habilitadoPara(r.colaborador, funcaoDoDia(r.colaborador, d))
+        (!habilitadoPara(r.colaborador, funcaoDoDia(r.colaborador, d)) || validarAlocacoesFuncao(r.colaborador,d))
       ) {
         relatorio.avisos.push(
           `${r.colaborador.nome || "(sem nome)"} · ${d.data}: função alocada sem habilitação cadastrada; não contabilizado na cobertura.`,
         );
         continue;
       }
-      const g = grupos.get(normalizarFuncao(funcaoDoDia(r.colaborador, d)));
-      if (!g) continue;
       const base = minutoData(d.data);
       if (base + 2 * DIA <= inicio || base >= fim) continue;
       const jornada =
@@ -188,12 +186,15 @@ export function analisarCobertura(config, resultado) {
         );
         continue;
       }
-      for (const [a, b] of partes)
+      for (const a of alocacoesDoDia(r.colaborador,d,partes)) {
+        const g=grupos.get(normalizarFuncao(a.funcao));
+        if (!g) continue;
         g.trabalho.push({
-          inicio: base + a,
-          fim: base + b,
+          inicio: base + a.inicioMin,
+          fim: base + a.fimMin,
           pessoa: r.colaborador.id ?? `linha-${indice}`,
         });
+      }
     }
   });
   for (const g of grupos.values()) {

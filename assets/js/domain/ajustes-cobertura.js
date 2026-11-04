@@ -1,8 +1,10 @@
+import { candidatosRateio, deficitContratual } from "./ajustes-rateio.js";
+import { analisarRateioSemanal } from "./rateio-semanal.js";
 import { alternativasIntervalo, faixaInicioIntervalo } from "./intervalos-cobertura.js";
 import { configDaEscala } from "./contexto-escala.js";
 import { janelasDeclaradas as janelas } from "./disponibilidade.js";
 import { analisarCobertura, normalizarFuncao } from "./cobertura.js";
-import { habilitadoPara, funcaoDoDia } from "./funcoes.js";
+import { habilitadoPara, funcaoDoDia, alocarFuncaoNoPeriodo, alocacoesDoDia, semAlocacoesFuncao } from "./funcoes.js";
 import { createDomain } from "./index.js";
 import { configDoPerfil } from "./perfil-dominio.js";
 import {
@@ -97,6 +99,7 @@ export function atualizarRelatoriosAjustes(config, escala) {
       r.diasApuracao,
     ),
   }));
+  escala.recomendacoesRateio = analisarRateioSemanal(config,escala.resultado);
   escala.avisosCobertura = domain.validarCobertura(escala.resultado);
   escala.coberturaOperacional = analisarCobertura(config, escala.resultado);
   return escala;
@@ -173,6 +176,7 @@ function horario(config, c, base, modelo, inicio, funcao) {
     intFim: minToTime(pausa ? novo.intervaloFimMin : saida),
     saida: minToTime(saida),
   };
+  delete novo.alocacoesFuncao;
   delete novo.ajusteRestricao;
   if (
     violacoesDia(c, novo).length ||
@@ -214,7 +218,7 @@ function podeMudar(config, c, d) {
   return (
     (config.modeloEscala === "fixa" || noPeriodo(config, d)) &&
     !d.ajusteManual &&
-    !d.restricao &&
+    (!d.restricao || d.restricao.tipo === "horario") &&
     !bloqueioNaData(c, d.data) &&
     !["VA", "AF", "I", "NC", "FC"].includes(d.status)
   );
@@ -249,6 +253,7 @@ function transformarEmFolga(de) {
     horasComputadasCCT: 0,
     ajusteAutomatico: true,
   };
+  delete folga.alocacoesFuncao;
   delete folga.funcaoAlocada;
   delete folga.ajusteRestricao;
   return folga;
@@ -358,7 +363,7 @@ function* realocacoesComReforco(config, escala, c, d, novo) {
       { colaboradorId: c.id, data: d.data, antes: structuredClone(d),
         depois: { ...novo, ajusteAutomatico: true } },
       { colaboradorId: r.colaborador.id, data: dia.data, antes: structuredClone(dia),
-        depois: { ...dia, funcaoAlocada: funcao, ajusteAutomatico: true } },
+        depois: semAlocacoesFuncao({ ...dia, funcaoAlocada: funcao, ajusteAutomatico: true }) },
     ] };
   }
 }
@@ -385,6 +390,26 @@ function* candidatos(config, escala, lacuna) {
         depois: { ...depois, ajusteAutomatico: true },
       });
       if (trabalha(d)) {
+        const offset=(diaSerial(lacuna.data)-diaSerial(d.data))*1440;
+        const inicio=lacuna.inicioMin+offset, fim=lacuna.fimMin+offset;
+        const parcial=alocarFuncaoNoPeriodo(c,d,lacuna.funcao,inicio,fim);
+        yield {tipo:"funcao_periodo",alteracoes:[alterar(parcial)]};
+        // Suporte habilitado pode assumir a função liberada só neste período.
+        for(const origem of alocacoesDoDia(c,d).filter(a=>a.fimMin>inicio&&a.inicioMin<fim)) {
+          if(normalizarFuncao(origem.funcao)===normalizarFuncao(lacuna.funcao)) continue;
+          for(const outro of escala.resultado) {
+            const dia=outro.dias.find(x=>x.data===d.data);
+            const perfil=configDoPerfil(config,outro.colaborador)||config;
+            if(outro.colaborador.id===c.id || !habilitadoPara(outro.colaborador,origem.funcao) ||
+              !dia || !trabalha(dia) || !podeMudar(config,outro.colaborador,dia) ||
+              perfil.tipoEscala==="12x36" || perfil.cicloQuadro) continue;
+            yield {tipo:"funcoes_periodo_combinadas",alteracoes:[alterar(parcial),{
+              colaboradorId:outro.colaborador.id,data:dia.data,antes:structuredClone(dia),
+              depois:{...alocarFuncaoNoPeriodo(outro.colaborador,dia,origem.funcao,
+                Math.max(inicio,origem.inicioMin),Math.min(fim,origem.fimMin)),ajusteAutomatico:true}
+            }]};
+          }
+        }
         for (const novo of alternativasIntervalo(c, d))
           yield { tipo: "intervalo", alteracoes: [alterar(novo)] };
         // A realocação para outra função vale pelo plantão, sem contagem simultânea.
@@ -392,7 +417,7 @@ function* candidatos(config, escala, lacuna) {
           normalizarFuncao(funcaoDoDia(c, d)) !==
           normalizarFuncao(lacuna.funcao)
         ) {
-          const novo = { ...d, funcaoAlocada: lacuna.funcao };
+          const novo = semAlocacoesFuncao({ ...d, funcaoAlocada: lacuna.funcao });
           yield { tipo: "funcao", alteracoes: [alterar(novo)] };
           yield* realocacoesComReforco(config, escala, c, d, novo);
         }
@@ -476,6 +501,7 @@ function seguro(config, antes, depois, alteracoes) {
     const r = depois.resultado.find(
       (r) => r.colaborador.id === a.colaboradorId,
     );
+    if(!r || !podeMudar(config,r.colaborador,a.antes)) return false;
     if (
       trabalha(a.depois) &&
       !janelas(config, r.colaborador, a.depois).some(
@@ -504,7 +530,8 @@ function seguro(config, antes, depois, alteracoes) {
       const previo = apurarSemana(r.colaborador, a, config),
         atual = apurarSemana(r.colaborador, b, config);
       if (
-        Math.abs(atual.computadas - previo.computadas) > 0.001 ||
+        (Math.abs(atual.computadas - previo.computadas) > 0.001 &&
+          !(atual.computadas > previo.computadas && atual.computadas <= atual.alvo + 0.001)) ||
         atual.alvo !== previo.alvo
       )
         return false;
@@ -528,6 +555,7 @@ export function buscarAjustesCobertura(config, opcoes = {}) {
     40,
     Math.max(1, Math.trunc(opcoes.limiteAcoes || 20)),
   );
+  const rejeicoes={semMelhoria:0,novaLacuna:0,regras:0,recorrencia:0};
   let tentativas = 0;
   const progresso = () =>
     opcoes.onProgresso?.({
@@ -537,7 +565,7 @@ export function buscarAjustesCobertura(config, opcoes = {}) {
     });
   progresso();
   while (
-    rel.lacunas.length &&
+    (rel.lacunas.length || deficitContratual(config,escala)>0) &&
     tentativas < limiteTentativas &&
     acoes.length < limiteAcoes
   ) {
@@ -547,10 +575,13 @@ export function buscarAjustesCobertura(config, opcoes = {}) {
       (b.fimMin - b.inicioMin) * b.faltantes - (a.fimMin - a.inicioMin) * a.faltantes ||
       a.data.localeCompare(b.data) || b.inicioMin - a.inicioMin ||
       normalizarFuncao(a.funcao).localeCompare(normalizarFuncao(b.funcao)));
-    busca: for (const lacuna of prioritarias)
-      for (const gerado of candidatos(config, escala, lacuna)) {
+    function* propostas() {
+      yield* candidatosRateio(config,escala,podeMudar);
+      for(const lacuna of prioritarias) yield* candidatos(config,escala,lacuna);
+    }
+    busca: for (const gerado of propostas()) {
         const recorrentes = expandirRecorrencia(config, escala, gerado.alteracoes);
-        if (!recorrentes) continue;
+        if (!recorrentes) {rejeicoes.recorrencia++;continue;}
         const candidato = { ...gerado, alteracoes: recorrentes };
         const chaveCandidato = JSON.stringify(
           candidato.alteracoes.map((a) => [
@@ -561,6 +592,7 @@ export function buscarAjustesCobertura(config, opcoes = {}) {
             a.depois.intervaloInicioMin,
             a.depois.intervaloFimMin,
             a.depois.funcaoAlocada,
+            a.depois.horas, a.depois.saidaMin, a.depois.alocacoesFuncao,
           ]),
         );
         if (vistos.has(chaveCandidato)) continue;
@@ -569,11 +601,14 @@ export function buscarAjustesCobertura(config, opcoes = {}) {
         if (tentativas % 10 === 0) progresso();
         const novo = substituir(escala, candidato.alteracoes);
         const cobertura = analisarCobertura(config, novo.resultado);
-        if (
-          minutosFaltantes(cobertura) < minutosFaltantes(rel) &&
-          coberturaNaoPiora(rel, cobertura) &&
-          seguro(config, escala, novo, candidato.alteracoes)
-        ) {
+        const melhoria=minutosFaltantes(cobertura)<minutosFaltantes(rel) ||
+          deficitContratual(config,novo)<deficitContratual(config,escala);
+        const preserva=melhoria && coberturaNaoPiora(rel,cobertura);
+        const valido=preserva && seguro(config,escala,novo,candidato.alteracoes);
+        if(!melhoria) rejeicoes.semMelhoria++;
+        else if(!preserva) rejeicoes.novaLacuna++;
+        else if(!valido) rejeicoes.regras++;
+        if (valido) {
           for (const a of candidato.alteracoes) {
             const k = `${a.colaboradorId}:${a.data}`,
               velho = alteracoes.get(k);
@@ -594,6 +629,12 @@ export function buscarAjustesCobertura(config, opcoes = {}) {
   }
   progresso();
   const explicacoes = [];
+  if(!acoes.length) explicacoes.push(!rel.lacunas.length && !deficitContratual(config,escala)
+    ? "As faixas cadastradas já estão cobertas e não há saldo contratual a distribuir em semanas completas."
+    : `${tentativas} alternativas foram avaliadas. Não foi encontrada melhoria que preservasse cobertura, descansos, restrições e carga semanal. Isso não comprova inviabilidade da escala.`);
+  if(rejeicoes.novaLacuna) explicacoes.push(`${rejeicoes.novaLacuna} alternativa(s) descartadas porque abririam ou agravariam lacunas em outro horário ou função.`);
+  if(rejeicoes.regras) explicacoes.push(`${rejeicoes.regras} alternativa(s) descartadas na conferência de jornada, descanso, restrições ou carga semanal. Confira também as incompatibilidades já sinalizadas na escala.`);
+  if(rejeicoes.recorrencia) explicacoes.push(`${rejeicoes.recorrencia} alternativa(s) não puderam ser repetidas com segurança em todas as semanas do padrão fixo.`);
   if (rel.lacunas.length)
     explicacoes.push(
       "Persistem horários descobertos. A busca é limitada e não comprova, isoladamente, necessidade de contratação. Revise disponibilidades, funções habilitadas e a demanda restante.",
@@ -640,9 +681,12 @@ export function buscarAjustesCobertura(config, opcoes = {}) {
     assinaturaDepois: assinaturaAjustes(config, escala),
     antes,
     depois: resumo(rel),
+    deficitAntesMin: deficitContratual(config,original),
+    deficitDepoisMin: deficitContratual(config,escala),
     alteracoes: [...alteracoes.values()],
     acoes,
     tentativas,
+    rejeicoes,
     limiteTentativas,
     limiteAcoes,
     explicacoes,
@@ -710,7 +754,8 @@ export function aplicarAjustesCobertura(config, plano) {
   if (
     assinaturaAjustes(config, novo) !== plano.assinaturaDepois ||
     !coberturaNaoPiora(antes, depois) ||
-    minutosFaltantes(depois) >= minutosFaltantes(antes) ||
+    (minutosFaltantes(depois) >= minutosFaltantes(antes) &&
+      deficitContratual(config,novo) >= deficitContratual(config,original)) ||
     !seguro(config, original, novo, plano.alteracoes)
   )
     throw new Error(

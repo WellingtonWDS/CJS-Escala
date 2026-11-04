@@ -63,13 +63,13 @@ module.exports = async ({ browser, baseURL }) => {
     const lacunas = page.locator("#conversao-comparacao > section > details").filter({ has: page.locator('summary', { hasText: "Horários descobertos" }) });
     await lacunas.locator("summary").click();
     assert.match(await lacunas.locator("tbody").innerText(), /\d{2}\/02\/2027/);
-    // A mesma janela com2h de pausa não comporta42h: não inventar minutos.
+    // O quadro atual é referência; a proposta pode sugerir saída 18h24 com ACT válido.
     c = await simular(120, "transicao42");
     const rateio = await page.locator(".diagnostico-rateio").innerText();
-    assert.match(rateio, /Rateio a revisar/);
-    assert.match(rateio, /Faltam 02:00 na semana/);
-    assert.match(rateio, /00:24 adicionais por dia/);
-    assert(c.proposta.config.escalaGerada.resultado[0].dias.every(d => !["T", "FE"].includes(d.status) || (d.saidaMin <= 1080 && d.intervaloMin === 120)));
+    assert.match(rateio, /Rateio aplicado/);
+    assert.match(rateio, /42:00/);
+    assert.match(rateio, /08:24/);
+    assert(c.proposta.config.escalaGerada.resultado[0].dias.filter(d=>d.data>="2027-02-08"&&d.data<="2027-02-12").every(d=>d.saidaMin===1104&&d.horas===8.4&&d.intervaloMin===120));
     await page.setViewportSize({ width: 390, height: 844 });
     for (const selector of ["#conversao-visao-geral", ".diagnostico-rateio", "#conversao-comparacao [data-diagnostico-equipe]"]) {
       assert(await page.locator(selector).evaluate(el => {
@@ -78,6 +78,6 @@ module.exports = async ({ browser, baseURL }) => {
       }), `Resumo sem transbordamento móvel: ${selector}`);
     }
     assert.deepEqual(errors, []);
-    console.log("OK: diagnóstico5x2 — rateio08h24 real, reforço condicional sem cobertura, datas/tabelas, janela limitada e resumo móvel");
+    console.log("OK: diagnóstico5x2 — rateio08h24 real, reforço condicional sem cobertura, datas/tabelas, nova janela autorizada e resumo móvel");
   } finally { await context.close(); }
 };

@@ -2,6 +2,10 @@
 
 Consultar este registro antes de orientar o operador. Distinguir código disponível, testes locais e resultados informados pelo operador. Não contém senhas, chaves ou identificadores pessoais.
 
+## Rateio e funções por período — 04/11/2026
+
+Nova regra `ec141-2026-11-04-12`: a proposta de conversão pode sugerir horários diferentes do quadro atual, preservando origem/restrições e conferindo limite diário/ACT/CCT por data ou referência fixa. Rateio de saldo semanal e alternância de funções habilitadas por período na busca, com prévia/aplicar/desfazer. Novos resultados exigem gerar novamente os anteriores. Dados de alocação estão no JSON de escala existente e seguem o mesmo transporte compactado; não requer SQL, RPC, variável, n8n ou reconfiguração da VPS. Publicação habitual pela main. Validação local: 556 testes unitários, build, suíte completa de navegador e regressões finais de geração/conversão/ajustes/fixo/11 modelos DEMO aprovados. Transporte compactado das alocações validado; sem execução administrativa na VPS.
+
 ## Diagnóstico contínuo e referência fixa — 04/11/2026
 
 Agrupamento dos avisos de cobertura por faixa contínua, função e quantidade; causas preservadas no detalhe e gramática de sábados/domingos corrigida. Comparações atuais salvas têm o diagnóstico atualizado ao abrir. Aviso de ACT/CCT do fixo agora explicita referência jurídica, vigência e ação de conferência. A validação continua usando a referência configurada; não houve mudança de regra, SQL, RPC, n8n ou variável de ambiente. Entrega pelo fluxo habitual da main. Validação local: 543 testes unitários, build e suíte completa de navegador aprovados, incluindo a atualização de diagnóstico salvo e a referência do ACT/CCT no fixo.

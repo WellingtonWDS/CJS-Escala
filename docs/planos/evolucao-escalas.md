@@ -8,6 +8,8 @@ O modo dinâmico usa mês/ano, datas, semanas civis e feriados nacionais/locais.
 
 As três entregas abaixo ampliam esse produto. Folgas fixas no calendário atual não equivalem ao novo modo de escala fixa; a grade mensal já mostrar dias não equivale ao novo quadro diário. Os novos PDFs próprios são independentes do CSV e da impressão da interface.
 
+Atualização de **04/11/2026**: a proposta trata horários importados como referência e permite rateio de 42h em cinco jornadas de 8h24, mediante ACT/CCT válido e limite diário suficiente. A busca testa completar saldo e alternar funções habilitadas por período; cards, PDFs, filtro e preenchimentos salvos mostram esses períodos. Isso fornece os dados para o futuro quadro diário, mas não substitui essa visualização específica. Origem e restrições explícitas são preservadas. Regras `ec141-2026-11-04-12`, com nova geração de resultados antigos e sem migração SQL.
+
 ## 1. Escala fixa com folgas fixas — primeira entrega implementada
 
 Disponível desde **28/10/2026**. Seleção inicial **mensal dinâmica / mensal fixa**, data de referência jurídica, etapa Feriados omitida no fixo, tutorial e navegação condicionais, folgas/turnos fixos, restrições semanais, cobertura/diagnóstico/comparação por semana, intervalos sugeridos recorrentes, grade e resumo semanal, CSV sem datas por dia e impressão. Estado antigo permanece dinâmico; novos campos são persistidos no JSON existente, sem migração SQL.

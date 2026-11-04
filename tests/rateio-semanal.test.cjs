@@ -44,13 +44,21 @@ test('perfis individuais importados também rateiam 42h, sem congelar as horas d
  assert.equal(rec(config,r).aplicado,true);
 });
 
-test('não reduz 2h de almoço nem amplia janela 08–18 para fingir 42h; recomenda os 24min necessários',()=>{
- const {config,r,dias}=dados(empresa(120));
+test('rateia 42h preservando 2h de intervalo e sugere saída 18h24, sem congelar a escala atual',()=>{
+ const s=empresa(120), original=structuredClone(s), {config,r,dias}=dados(s);
+ assert.deepEqual(s,original);
+ assert.equal(apurar(r.colaborador,dias,config).computadas,42);
+ assert(dias.filter(d=>d.status==='T').every(d=>d.intervaloMin===120 && d.horas===8.4 && d.entradaMin===480 && d.saidaMin===1104));
+ assert.equal(rec(config,r).aplicado,true);
+});
+
+test('limite individual explícito continua rígido mesmo com ACT autorizando 10h',()=>{
+ const s=empresa(120);
+ s.colaboradores[0].restricoes={horariosPermitidos:[1,2,3,4,5].map(dia=>({dia,entrada:'08:00',saida:'18:00'}))};
+ const {config,r,dias}=dados(s), aviso=rec(config,r);
  assert.equal(apurar(r.colaborador,dias,config).computadas,40);
- assert(dias.filter(d=>d.status==='T').every(d=>d.intervaloMin===120&&d.saidaMin<=1080));
- const aviso=rec(config,r);
- assert.equal(aviso.faltantesMin,120);assert.equal(aviso.acrescimoMedioMin,24);
- assert.equal(aviso.horasPorDiaMin,504);assert.equal(aviso.viavelLegalmente,true);assert.equal(aviso.motivo,'janela');
+ assert(dias.filter(d=>d.status==='T').every(d=>d.saidaMin<=1080));
+ assert.equal(aviso.faltantesMin,120);assert.equal(aviso.viavelLegalmente,true);
 });
 
 test('sem ACT não presume 08h24 e identifica autorização coletiva insuficiente',()=>{

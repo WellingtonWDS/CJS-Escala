@@ -229,7 +229,7 @@ test("fase de 42h não presume autorização para ultrapassar 8h diárias", () =
   assert.ok(c.comparacao.pessoas.some((p) => p.deficits));
   assert.notEqual(c.comparacao.status, "suficiente");
 });
-test("ACT válido permite distribuir 42h; horários originais são o teto", () => {
+test("ACT válido permite distribuir 42h respeitando o limite diário declarado", () => {
   const s = empresa();
   s.colaboradores.forEach((c) => (c.horasSemana = 44));
   s.jornada.saida = "18:00";

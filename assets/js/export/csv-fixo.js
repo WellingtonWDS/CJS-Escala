@@ -1,3 +1,4 @@
+import { descricaoFuncoes } from "../shared/funcoes-horarios.js";
 import { diasDoModelo, ocorrenciasDoModelo } from "../domain/modelo-escala.js";
 import { createDomain } from "../domain/index.js";
 import { analisarCobertura } from "../domain/cobertura.js";
@@ -24,7 +25,7 @@ export function gerarCsvFixo(config) {
   linhas.push(["Colaborador", "Função", "Dia da semana", "Status", "Entrada", "Início do intervalo", "Fim do intervalo", "Saída", "Horas trabalhadas", "Alvo semanal", "Contrato de referência"]);
   for (const r of escala.resultado) for (const d of diasDoModelo(config, r.dias)) {
     const trabalha = ["T", "FE"].includes(d.status);
-    linhas.push([r.colaborador.nome, r.colaborador.cargo, DIAS_SEMANA[d.weekday], d.sabadoCompensado ? "FC — Sábado compensado" : d.status,
+    linhas.push([r.colaborador.nome, trabalha ? descricaoFuncoes(r.colaborador,d) : r.colaborador.cargo, DIAS_SEMANA[d.weekday], d.sabadoCompensado ? "FC — Sábado compensado" : d.status,
       trabalha ? horarioComDia(d.entradaMin) : "", trabalha && d.intervaloInicioMin != null ? horarioComDia(d.intervaloInicioMin) : "",
       trabalha && d.intervaloFimMin != null ? horarioComDia(d.intervaloFimMin) : "", trabalha ? horarioComDia(d.saidaMin) : "",
       fmtHoras(d.horas), fmtHoras(d.alvoSemana), fmtHoras(r.colaborador.horasSemana)]);
