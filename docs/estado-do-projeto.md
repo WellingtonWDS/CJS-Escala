@@ -10,6 +10,10 @@ Quatro novas empresas por segmento e onze preenchimentos DEMO para comércio con
 
 Carregamento imediato na geração atual/proposta, cálculo em Worker local, bloqueio de duplicação, liberação em falhas e proteção contra resultados de dados alterados. Resumo da busca de cobertura aparece primeiro em modal e depois abaixo do botão, com aplicação separada. Regras de cálculo e versões de dados preservadas.
 
+## Resumo operacional da etapa Folgas — 04/11/2026
+
+Removido o texto genérico **Por dia** dos três cartões de horários. Entrada/intervalo/saída são apresentados com os valores efetivos, agrupados pelos dias quando variam. Respeita fallback padrão, dias operacionais, sábado contínuo/legado, ausência de intervalo, noite e horário próprio do 12×36. Build e regressão de navegador com edição/toggle/recarga e contraste móvel claro/escuro aprovados. Cálculo e versão de regras preservados.
+
 ## Rateio flexível e alternância de funções — 04/11/2026
 
 Proposta de conversão preserva a origem e passa a redistribuir a carga sem usar a duração dos horários antigos como teto. Cinco jornadas de 8h24 completam 42h quando contrato, fase e ACT/CCT vigente/limite diário autorizam. Mantendo 2h de intervalo e entrada às 08h, o exemplo sugere saída às 18h24. Restrição individual expressa continua rígida; pausa preenchida não é reduzida automaticamente para fabricar saldo.

@@ -10,6 +10,12 @@ Consulte [Estado do projeto](docs/estado-do-projeto.md) para uma visão consolid
 
 O fluxo principal já inclui cadastro manual e por planilhas, importação Domínio, restrições individuais, habilitações por função, geração, conversão 6×1 → 5×2, comparação de cobertura, sugestões de ajustes com prévia/aplicação/desfazer, edição da grade, documentos PDF próprios, ZIP individual e impressão. O acesso oferece login individual por e-mail/senha integrado ao n8n e ao banco, com sessão de até 12 horas, menu por perfil, gestão de usuários e empresas e preenchimentos compartilhados por empresa autorizada. O modo compartilhado/local permanece disponível por configuração. Os detalhes de funcionamento e configuração estão nas seções abaixo.
 
+## Resumo de horários em Folgas — 04/11/2026
+
+Corrigido o resumo que substituía entrada, intervalo e saída por **Por dia** sempre que a opção de horários diferenciados estava ativa. Agora mostra os horários efetivos da empresa; valores iguais aparecem uma vez e valores diferentes são agrupados pelos respectivos dias operacionais. Sábado contínuo usa a saída real e **Sem intervalo**, incluindo cadastros legados com campos zerados. Dias fechados não entram no resumo; jornadas noturnas indicam a virada do dia e 12×36 usa seu horário próprio.
+
+Build e regressão específica de navegador aprovados: edição, toggle, recarga, fallback para jornada padrão, campos incompletos/sem dias, sábado reduzido, noite, 12×36 e contraste móvel claro/escuro. Alteração de apresentação, sem mudança de cálculo, versão de regras, banco ou ambiente.
+
 ## Rateio autorizado e funções por período — 04/11/2026
 
 A proposta 5×2 usa os horários atuais/importados como **referência**, preservando a escala de origem. A duração histórica deixa de bloquear a nova jornada: com contrato de 44h, destino de 42h e ACT/CCT vigente autorizando pelo menos 8h24 diárias, cinco dias recebem **8h24 trabalhadas**. No exemplo 08h–18h com 2h de intervalo, a proposta preserva a pausa e apresenta **08h–18h24**; os novos horários devem ser conferidos na grade. Se houver limite individual explícito de saída às 18h, ele continua obrigatório e o saldo não é inventado. Contratos menores, créditos de feriado, férias, descanso e validade do ACT/CCT são respeitados. A referência/escala avulsa atual mantém seus horários; esta flexibilização pertence à proposta de conversão.
