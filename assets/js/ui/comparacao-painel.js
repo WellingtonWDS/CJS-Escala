@@ -38,12 +38,21 @@ function rateios(config) {
     return `<article class="diagnostico-rateio-pessoa"><h4>${e(p.nome)}</h4>${[...grupos.values()].map(({s,datas})=>`<div class="diagnostico-rateio-item" data-rateio="${s.aplicado ? "aplicado" : "pendente"}"><b>${s.aplicado ? "Rateio aplicado" : "Rateio a revisar"}</b><p>Alvo ${fmtHoras(s.alvoMin / 60)} · computado ${fmtHoras(s.computadosMin / 60)} · ${s.diasTrabalho} dia(s) de trabalho.</p><p>${s.horasPorDiaMin != null ? `Referência por dia: <strong>${fmtHoras(s.horasPorDiaMin / 60)}${s.horasPorDiaMax !== s.horasPorDiaMin ? ` a ${fmtHoras(s.horasPorDiaMax / 60)}` : ""}</strong>. ` : ""}${s.faltantesMin > 0 ? `Faltam ${fmtHoras(s.faltantesMin / 60)} na semana. ` : ""}${e(motivosRateio[s.motivo] || s.motivo || "")}</p>${!s.aplicado && s.faltantesMin > 0 && s.diasTrabalho ? `<p><b>Sugestão:</b> distribuir aproximadamente ${fmtHoras(Math.ceil(s.faltantesMin / s.diasTrabalho) / 60)} adicionais por dia, se houver janela, intervalo e autorização aplicáveis. O sistema mantém os limites informados quando essa ampliação não cabe.</p>` : ""}<details><summary>${datas.length} semana(s) — ver referências</summary><p>${datas.map(d=>formatDateBR(dateFromKey(d))).join(", ")}</p></details></div>`).join("")}</article>`;
   }).join("")}</section>`;
 }
+function domingos(m) {
+  const d = m.domingo?.depois, a = m.domingo?.antes;
+  if (!d || !d.pessoas) return "";
+  const texto = !d.operacional
+    ? "A empresa não funciona aos domingos: o domingo já é um dos repousos de todos os colaboradores."
+    : `${d.comFolga} de ${d.pessoas} colaborador(es) com ao menos um domingo de repouso no período (escala atual: ${a?.comFolga ?? 0}). A preferência é aplicada depois da legalidade, da carga contratual e da cobertura informada. ${m.baseCobertura === "escala_atual" ? "Sem cobertura cadastrada, cada função mantém no domingo ao menos a presença atual reduzida na proporção de 6 para 5 dias de trabalho." : "A cobertura cadastrada para o domingo é preservada."} Confira também as regras setoriais de revezamento dominical.`;
+  return `<aside class="diagnostico-nota" data-domingo-preferencial><p><b>Repouso aos domingos · art. 7º, XV.</b> ${e(texto)}</p></aside>`;
+}
 export function renderDetalhesConversao(c) {
   const m = c.comparacao, config = c.proposta.config, fixa = escalaFixa(config);
   const hora = n => n === 1440 ? "24:00" : minToTime(n);
   return `<section class="diagnostico-conversao"><h3>${fixa ? "Comparação dos padrões semanais · 6×1 → 5×2" : "Comparação e suficiência da equipe"}</h3><p id="conversao-diagnostico">${c.desatualizada ? "Comparação desatualizada. Gere novamente antes de utilizar." : m.baseCobertura === "escala_atual" ? (m.status === "insuficiente" ? "O quadro atual é insuficiente para manter a presença atual, se essa cobertura continuar necessária." : "Sem demanda operacional confirmada, não é possível concluir se a equipe atende toda a empresa. A comparação usa a presença da escala atual.") : titulos[m.status]}</p>
   ${c.desatualizada ? "" : renderDiagnosticoEquipe(m.diagnostico)}
   ${rateios(config)}
+  ${c.desatualizada ? "" : domingos(m)}
   ${c.buscaParcial || config.escalaGerada.limiteBuscaIntervalos ? '<aside class="diagnostico-nota">A busca atingiu seu limite de processamento. As sugestões não comprovam que esta seja a melhor escala possível nem que toda lacuna exija contratação.</aside>' : ""}
   ${(m.avisos || []).length ? `<aside class="diagnostico-nota">${m.avisos.map(a=>`<p>${e(a)}</p>`).join("")}</aside>` : ""}
   ${config.escalaGerada.sugestoesIntervalos?.length ? `<p>${config.escalaGerada.sugestoesIntervalos.length} intervalo(s) redistribuído(s) na proposta para melhorar a cobertura. Confira os horários na grade.</p>` : ""}

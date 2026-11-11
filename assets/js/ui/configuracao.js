@@ -128,6 +128,19 @@ export function createConfiguracaoUI({
         saveState();
       };
     }
+    const enquadramento = document.getElementById("tg-enquadramento");
+    if (enquadramento) {
+      const aviso = document.getElementById("enquadramento-aviso");
+      enquadramento.checked = state.analiseEnquadramentoAtiva === true;
+      if (aviso) aviso.hidden = !enquadramento.checked;
+      enquadramento.onchange = (e) => {
+        state.analiseEnquadramentoAtiva = e.target.checked;
+        if (aviso) aviso.hidden = !e.target.checked;
+        onInstrumentoChange();
+        invalidarEscala();
+        saveState();
+      };
+    }
     renderRegimeAlerta();
   }
 

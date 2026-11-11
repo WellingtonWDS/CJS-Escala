@@ -332,8 +332,16 @@
             <li><b>Regimes específicos (art. 8º):</b> a exceção de duração e controle de jornada exige diploma superior e remuneração de ao menos 2,5 vezes o teto do RGPS, ressalvadas as condições do artigo. O repouso continua protegido; a exceção não alcança empregados públicos da administração direta e indireta.</li>
             <li><b>Contratos públicos com emprego direto de mão de obra (art. 9º):</b> a redução da jornada depende do aditamento para reequilíbrio, limitado a 16/10/2027. Os empregados são abrangidos na formalização ou, independentemente dela, ao término desse prazo. Aditamentos realizados em até dois meses da publicação observam os inícios das vigências de cada etapa, conforme o § 3º.</li>
           </ul>
-          <p class="mt-2 text-xs text-slate-500">Os cálculos seguem a regra geral da vigência automática ou a fase simulada. A análise individual de enquadramento e proteção salarial está desativada nesta versão; condições documentais e regimes diferenciados continuam sujeitos à conferência aplicável.</p>
+          <p class="mt-2 text-xs text-slate-500">Os cálculos seguem a regra geral da vigência automática ou a fase simulada. Exceções individuais só são aplicadas quando a análise abaixo estiver ativada e os dados de cada colaborador forem informados; condições documentais e regimes diferenciados continuam sujeitos à conferência aplicável.</p>
         </details>
+        <div class="mt-4 border border-slate-200 rounded-lg bg-white p-4">
+          <label class="flex items-start gap-3 cursor-pointer">
+            <input id="tg-enquadramento" type="checkbox" class="w-4 h-4 mt-1 accent-blue-800">
+            <span><span class="block text-sm font-semibold text-fintria-navy">Analisar enquadramentos individuais (arts. 2º, 8º e 9º)</span>
+            <span class="block text-xs text-slate-500 mt-1">Ativa, na ficha de cada colaborador em <b>Colaboradores cadastrados/importados</b>, a seção <b>Enquadramento EC 141 e proteção salarial</b>: remunerações e pisos (art. 2º), exceção para diploma superior e remuneração de ao menos 2,5 vezes o teto do RGPS (art. 8º) e empregado alocado em contrato público com aditamento (art. 9º). Sem ativar, todos seguem a regra geral. Ativada, o sistema também aponta pendências de proteção salarial para quem não tiver remunerações e pisos informados. Os dados ficam no preenchimento e alterar a opção exige gerar novamente as escalas.</span></span>
+          </label>
+          <p id="enquadramento-aviso" class="text-xs text-fintria-vermelho mt-2" hidden>Análise ativada. A exceção do art. 8º afasta os limites de duração, mas mantém os dois repousos semanais (art. 7º, XV e § 2º) e não vale para empregados públicos. No art. 9º, só a redução da jornada aguarda o aditamento ou 16/10/2027; o segundo repouso vale desde 16/12/2026. Confira os documentos de cada caso.</p>
+        </div>
         <div class="flex items-center gap-2.5 mt-3.5 overflow-x-auto pb-1">
           <div class="text-center shrink-0"><div class="w-14 h-14 rounded-full flex flex-col items-center justify-center text-white text-[11px] font-bold mx-auto" style="background:#0B2545">44h<br>Base</div><div class="text-[11.5px] text-slate-500 mt-1.5 max-w-[90px]">Antes da 1ª fase</div></div>
           <div class="text-[11px] text-slate-500 text-center shrink-0 min-w-[60px]">16/12/2026<br>+ 2 meses →</div>
@@ -354,7 +362,7 @@
           <div><label for="conversao-fase" class="block text-xs font-semibold mb-1.5">Referência da mudança</label><select id="conversao-fase" class="w-full border border-slate-300 rounded-md p-2 bg-white"><option value="automatico">Automática — vigência nas datas</option><option value="transicao42">Simular fase de 42h</option><option value="definitivo40">Simular fase de 40h</option></select></div>
           <div><label for="conversao-folgas" class="block text-xs font-semibold mb-1.5">Folgas da proposta</label><select id="conversao-folgas" class="w-full border border-slate-300 rounded-md p-2 bg-white"><option value="distribuir">Distribuir para buscar cobertura</option><option value="fim_semana">Fixar sábado e domingo</option></select></div>
         </div>
-        <p class="text-xs text-slate-500 mb-3">As entradas, grupos de turno e janelas de horário atuais serão preservados. A conversão busca folgas entre os dias permitidos e respeita folgas fixas atuais. Não amplia saídas nem presume compensação coletiva. O 5×2 não fecha a empresa aos sábados.</p>
+        <p class="text-xs text-slate-500 mb-3">As entradas, grupos de turno e janelas de horário atuais serão preservados. A conversão busca folgas entre os dias permitidos, respeita folgas fixas atuais e, quando a empresa funciona aos domingos, prefere o domingo como um dos repousos (art. 7º, XV), sem prejudicar legalidade, carga contratual ou cobertura informada. Não amplia saídas nem presume compensação coletiva. O 5×2 não fecha a empresa aos sábados.</p>
         <div id="preenchimento-bloqueio" class="etapa-pendencias" role="alert" tabindex="-1" hidden></div>
         <button id="btn-converter" type="button" class="w-full bg-fintria-navy text-white px-6 py-4 rounded-lg font-display font-semibold text-lg shadow-md hover:bg-fintria-navySoft">Gerar proposta 5×2 e comparar</button>
         <p id="conversao-mensagem" role="alert" class="text-sm text-fintria-vermelho mt-3"></p>

@@ -1,5 +1,5 @@
 import { normalizarJornada, timeToMin } from "./datas-horas.js";
-import { limiteDiario } from "./ec141.js";
+import { limiteDiarioPlanejado } from "./ec141.js";
 import { janelaPermitida } from "./restricoes.js";
 import { habilitadoPara } from "./funcoes.js";
 
@@ -24,7 +24,7 @@ export function janelaPlanejada(config, colaborador, dia, fonte, explorar = fals
     }
     // Não reduz automaticamente a duração da pausa preenchida. Quando necessário,
     // a nova saída é sugerida e exibida na grade para conferência do usuário.
-    fim = Math.max(fim, inicio + Math.round(limiteDiario(config, dia.data) * 60) + j.intervalo);
+    fim = Math.max(fim, inicio + Math.round(limiteDiarioPlanejado(config, dia.data, colaborador) * 60) + j.intervalo);
   }
   const permitida = janelaPermitida(colaborador, dia);
   if (planejamento5x2(config) && permitida) {

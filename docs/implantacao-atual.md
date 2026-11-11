@@ -1,6 +1,10 @@
-# Registro de implantação — atualizado em 04/11/2026
+# Registro de implantação — atualizado em 11/11/2026
 
 Consultar este registro antes de orientar o operador. Distinguir código disponível, testes locais e resultados informados pelo operador. Não contém senhas, chaves ou identificadores pessoais.
+
+## Domingo preferencial e enquadramentos — 11/11/2026
+
+Regra `ec141-2026-11-11-13`: a conversão prefere o domingo como repouso (art. 7º, XV) e a etapa 7 permite ativar a análise dos arts. 2º, 8º e 9º. Resultados anteriores exigem nova geração, sem apagar cadastros. Não requer SQL, RPC, variável, n8n ou reconfiguração da VPS. Publicação pela main. Validação local: 561 testes unitários, build e suíte completa de navegador.
 
 ## Rateio e funções por período — 04/11/2026
 

@@ -214,7 +214,7 @@ function gerarPessoa(config, escala, indice, feriados) {
     diasApuracao: todos.filter((d) => dateFromKey(d.data) >= mes),
   };
 }
-function pontuacao(config, escala, cache) {
+function pontuacao(config, escala, cache, alvoDomingo = null) {
   const cobertura = analisarCobertura(config, escala.resultado);
   const faltantes = cobertura.lacunas.reduce((s, l) => s + (l.fimMin - l.inicioMin) * l.faltantes, 0);
   const domain = createDomain(config);
@@ -234,9 +234,84 @@ function pontuacao(config, escala, cache) {
   // Cobrir uma faixa não autoriza deixar horas contratuais sem distribuição
   // quando existe um plano legal que completa a meta semanal. Primeiro mantém
   // legalidade e carga; entre planos equivalentes, minimiza as lacunas.
-  return [erros, deficit, faltantes];
+  return [erros, deficit, faltantes, ...criteriosDominicais(config, escala, alvoDomingo)];
 }
 const melhor = (a, b) => a.some((v, i) => v < b[i] && a.slice(0, i).every((n, j) => n === b[j]));
+
+/* Inciso XV do art. 7º (EC 141): um dos dois repousos preferencialmente aos
+ * domingos. "Preferencialmente" não se sobrepõe à legalidade, à carga contratual
+ * nem à cobertura informada: entra como critério depois desses três. Sem
+ * cobertura cadastrada, a preferência não esvazia o domingo: cada função mantém
+ * ao menos a presença dominical atual reduzida na proporção de 6 para 5 dias. */
+const trabalhaNoDia = (d) => ["T", "FE"].includes(d.status);
+function presencaDominical(config, resultado) {
+  const datas = new Set(), porFuncao = new Map();
+  let trabalhados = 0;
+  for (const r of resultado)
+    for (const d of diasPeriodo(config, r.dias)) {
+      if (dateFromKey(d.data).getDay() !== 0) continue;
+      datas.add(d.data);
+      if (!trabalhaNoDia(d)) continue;
+      trabalhados++;
+      const f = normalizarFuncao(r.colaborador.cargo);
+      porFuncao.set(f, (porFuncao.get(f) || 0) + 1);
+    }
+  const n = datas.size || 1;
+  return { domingos: datas.size, trabalhados,
+    media: new Map([...porFuncao].map(([f, v]) => [f, v / n])) };
+}
+function coberturaInformada(config) {
+  return config.coberturaAtiva === true && (config.demandasCobertura || []).length > 0;
+}
+export function alvoDominical(config, referencia) {
+  if (config.folgasFimSemana || !(config.diasTrabalho || []).includes(0)) return null;
+  const minimos = new Map();
+  if (!coberturaInformada(config))
+    for (const [f, v] of presencaDominical(config, referencia).media)
+      if (v > 0) minimos.set(f, Math.max(1, Math.round((v * 5) / 6)));
+  return { minimos };
+}
+const cacheDominical = new WeakMap();
+function criteriosDominicais(config, escala, alvo) {
+  if (!alvo) return [0, 0];
+  const datas = new Set(), porFuncao = new Map();
+  let trabalhados = 0;
+  for (const r of escala.resultado) {
+    let p = cacheDominical.get(r);
+    if (!p) {
+      const domingos = diasPeriodo(config, r.dias).filter((d) => dateFromKey(d.data).getDay() === 0);
+      p = { datas: domingos.map((d) => d.data), trabalhados: domingos.filter(trabalhaNoDia).length,
+        funcao: normalizarFuncao(r.colaborador.cargo) };
+      cacheDominical.set(r, p);
+    }
+    for (const d of p.datas) datas.add(d);
+    trabalhados += p.trabalhados;
+    porFuncao.set(p.funcao, (porFuncao.get(p.funcao) || 0) + p.trabalhados);
+  }
+  const n = datas.size || 1;
+  let abaixo = 0;
+  for (const [f, minimo] of alvo.minimos)
+    abaixo += Math.max(0, minimo - (porFuncao.get(f) || 0) / n);
+  return [Math.round(abaixo * 100), trabalhados];
+}
+function ordenarPlanos(planos, cota) {
+  // Garante que planos com folga no domingo sejam avaliados mesmo quando a cota
+  // da busca não cobre todas as combinações.
+  if (planos.length <= cota) return planos;
+  return [...planos.filter((p) => p.includes(0)), ...planos.filter((p) => !p.includes(0))];
+}
+export function resumoDominical(config, resultado) {
+  const operacional = (config.diasTrabalho || []).includes(0);
+  let comFolga = 0, total = 0, domingos = 0;
+  for (const r of resultado) {
+    const dias = diasPeriodo(config, r.dias).filter((d) => dateFromKey(d.data).getDay() === 0 && d.status !== "NC");
+    if (!dias.length) continue;
+    total++;
+    domingos = Math.max(domingos, dias.length);
+    if (dias.some((d) => !trabalhaNoDia(d))) comFolga++;
+  }
+  return { operacional, pessoas: total, comFolga, semFolga: total - comFolga, domingos };
+}
 
 export function converterEscala(state, opcoes = {}) {
   conferirSuporteFixo(state);
@@ -372,7 +447,8 @@ export function converterEscala(state, opcoes = {}) {
   let escala = createDomain(config).gerarDadosEscala();
   const feriados = feriadosDaEscala(escala);
   const cache = new WeakMap();
-  let score = pontuacao(config, escala, cache),
+  const alvoDomingo = alvoDominical(config, referencia.escala.resultado);
+  let score = pontuacao(config, escala, cache, alvoDomingo),
     tentativas = 0;
   // Busca limitada e determinística. Lacunas remanescentes não provam inviabilidade.
   const limiteBusca = Math.max(120, Math.min(2400, config.colaboradores.length * 42));
@@ -388,13 +464,13 @@ export function converterEscala(state, opcoes = {}) {
         anterior = escala.resultado[i];
       let escolhido = anterior,
         planoEscolhido = config.planoFolgasConversao[c.id];
-      const planos = planosPorPessoa[i];
+      const planos = ordenarPlanos(planosPorPessoa[i], cotaPorPessoa);
       for (const plano of planos.slice(0, cotaPorPessoa)) {
         if (tentativas >= limiteBusca) break;
         tentativas++;
         config.planoFolgasConversao[c.id] = plano;
         escala.resultado[i] = gerarPessoa(config, escala, i, feriados);
-        const atual = pontuacao(config, escala, cache);
+        const atual = pontuacao(config, escala, cache, alvoDomingo);
         if (melhor(atual, score)) {
           score = atual;
           escolhido = escala.resultado[i];
@@ -408,7 +484,7 @@ export function converterEscala(state, opcoes = {}) {
     if (
       !mudou ||
       tentativas >= limiteBusca ||
-      (score[0] === 0 && score[1] === 0 && score[2] === 0)
+      score.every((v) => v === 0)
     )
       break;
   }
@@ -508,6 +584,10 @@ export function compararConversao(conversao) {
           : "suficiente";
   return {
     status,
+    domingo: {
+      antes: resumoDominical(config, conversao.referencia.escala.resultado),
+      depois: resumoDominical(config, escala.resultado),
+    },
     baseCobertura: inferida ? "escala_atual" : "informada",
     coberturaReferencia: inferida ? cobertura : null,
     funcoes: [...grupos.values()],

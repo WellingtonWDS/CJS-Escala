@@ -1,6 +1,6 @@
 # Estado do projeto — Reescala
 
-Atualizado em **04/11/2026**. Referência funcional: versão de regras `ec141-2026-11-04-12` ([histórico do projeto](https://github.com/WellingtonWDS/CJS-Escala/commits/main/)). Esta página resume o andamento; o [README](../README.md) detalha operação, arquitetura, configuração e testes.
+Atualizado em **11/11/2026**. Referência funcional: versão de regras `ec141-2026-11-11-13` ([histórico do projeto](https://github.com/WellingtonWDS/CJS-Escala/commits/main/)). Esta página resume o andamento; o [README](../README.md) detalha operação, arquitetura, configuração e testes.
 
 Identidade **Reescala** aplicada no login, cabeçalho, menu expandido/recolhido, carregamento, quadros de escala/impressão e ícone do navegador, usando os arquivos originais de `logos/`. A publicação inclui essa pasta e o login carrega suas imagens sem sessão; dados, chaves internas e permissões são preservados.
 
@@ -9,6 +9,10 @@ Logos com dimensões limitadas também no HTML para evitar crescimento com CSS a
 Quatro novas empresas por segmento e onze preenchimentos DEMO para comércio contínuo, fazenda com sábado compensado, entidade 24h com 12×36/administrativo e padaria até 20h30. Casos de cobertura, readequação e contratação; os ciclos mistos são analisados na prévia e continuam fora da conversão automática. [Instalação e resultados esperados](cenarios-demo-segmentos.md). Instalador testado localmente; execução remota ainda pendente.
 
 Carregamento imediato na geração atual/proposta, cálculo em Worker local, bloqueio de duplicação, liberação em falhas e proteção contra resultados de dados alterados. Resumo da busca de cobertura aparece primeiro em modal e depois abaixo do botão, com aplicação separada. Regras de cálculo e versões de dados preservadas.
+
+## Domingo preferencial e enquadramentos individuais — 11/11/2026
+
+Conversão 6×1 → 5×2 prefere o domingo como um dos repousos quando a empresa funciona aos domingos (art. 7º, XV), depois de legalidade, carga contratual e cobertura informada; sem cobertura, mantém por função ao menos 5/6 da presença dominical atual. Comparação mostra colaboradores com domingo de repouso antes/depois. Análise dos arts. 2º, 8º e 9º passa a ter controle na etapa 7 (desligado por padrão); na exceção do art. 8º, a proposta reparte o contrato sem o teto de 8h diárias, mantendo dois repousos. Texto oficial da EC 141 conferido em 11/11/2026 com o que o projeto adotava. Regras `ec141-2026-11-11-13`; sem SQL, RPC ou variável nova. Validação: 561 testes unitários e suíte completa de navegador.
 
 ## Estabilidade da rolagem horizontal — 04/11/2026
 

@@ -1,6 +1,6 @@
 import { REGIMES } from "../config/regras-jornada.js";
 import { dateFromKey, isoDate } from "./datas-horas.js";
-export const VERSAO_REGRAS = "ec141-2026-11-04-12";
+export const VERSAO_REGRAS = "ec141-2026-11-11-13";
 export const PUBLICACAO = "2026-10-16";
 export const PRIMEIRA_FASE = "2026-12-16";
 export const SEGUNDA_FASE = "2027-12-16";
@@ -118,4 +118,16 @@ export function unirDias(...listas) {
   return [...new Map(listas.flat().map((d) => [d.data, d])).values()].sort(
     (a, b) => a.data.localeCompare(b.data),
   );
+}
+
+/** Limite diário usado para planejar a proposta. Na exceção do art. 8º (análise
+ * ativada), as regras de duração não se aplicam: o contrato é repartido pelos
+ * dias de trabalho, sem ultrapassar 24h. Repousos e intervalos continuam valendo. */
+export function limiteDiarioPlanejado(state, data, c = {}) {
+  const geral = limiteDiario(state, data);
+  if (!referenciaDia(state, data, c).semLimiteJornada) return geral;
+  const contrato = Number(c.horasSemana);
+  return Number.isFinite(contrato) && contrato > 0
+    ? Math.min(24, Math.max(geral, Math.ceil((contrato / 5) * 60) / 60))
+    : geral;
 }

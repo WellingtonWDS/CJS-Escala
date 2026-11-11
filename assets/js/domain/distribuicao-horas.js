@@ -1,5 +1,5 @@
 import { planejamento5x2 } from "./janelas-planejamento.js";
-import { limiteDiario } from "./ec141.js";
+import { limiteDiarioPlanejado } from "./ec141.js";
 import { normalizarJornada } from "./datas-horas.js";
 
 /** O horário por dia limita a capacidade individual. O turno único, inclusive
@@ -32,7 +32,7 @@ export function distribuirCargaPrevista(colaborador, dias, config) {
     const pausa = j?.intervalo || 0;
     const tetoPausa = pausa < 15 ? 4 : pausa < 60 ? 6 : Infinity;
     const janela = j ? (j.saida - j.entrada - j.intervalo) / 60 : 0;
-    return Math.min(janela, limiteDiario(config, d.data), tetoPausa);
+    return Math.min(janela, limiteDiarioPlanejado(config, d.data, colaborador), tetoPausa);
   });
   const capacidades = limites.map((l) => Math.max(0, Math.floor(l * 60 + 1e-7)));
   const alocadas = previstos.map(() => 0);

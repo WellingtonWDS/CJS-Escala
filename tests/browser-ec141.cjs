@@ -35,13 +35,15 @@ module.exports = async function testarEc141({ browser, baseURL }) {
         ),
       ),
     );
-    // Reativa somente nesta fixture a análise avançada preservada no código.
-    await page.evaluate(() => {
-      const s = JSON.parse(localStorage.getItem("fintria-escala-dp-v2"));
-      s.analiseEnquadramentoAtiva = true;
-      s.escalaGerada = null;
-      localStorage.setItem("fintria-escala-dp-v2", JSON.stringify(s));
-    });
+    // A análise dos arts. 2º, 8º e 9º é ativada pelo controle da etapa 7.
+    await irParaEtapa(page, "#tg-enquadramento");
+    assert.equal(await page.locator("#tg-enquadramento").isChecked(), false);
+    assert.equal(await page.locator("#enquadramento-aviso").isHidden(), true);
+    await page.locator("#tg-enquadramento").check();
+    assert.equal(await page.locator("#enquadramento-aviso").isVisible(), true);
+    assert.equal((await saved()).analiseEnquadramentoAtiva, true);
+    assert.equal((await saved()).escalaGerada, null);
+    assert.ok((await page.locator("[data-ec141]").count()) > 0);
     await page.reload();
     await page.waitForFunction(
       () => document.documentElement.dataset.ready === "true",

@@ -1,5 +1,5 @@
 import { apurarSemana } from "./resumo-semanal.js";
-import { limiteDiario } from "./ec141.js";
+import { limiteDiarioPlanejado } from "./ec141.js";
 import { configDoPerfil } from "./perfil-dominio.js";
 import { diasDoModelo, escalaFixa } from "./modelo-escala.js";
 import { dateFromKey, weekKey } from "./datas-horas.js";
@@ -32,7 +32,7 @@ export function analisarRateioSemanal(config, resultado) {
       const trabalhoAlvoMin = Math.max(0, alvoMin - creditosMin);
       const horasPorDiaMin = Math.floor(trabalhoAlvoMin / trabalho.length);
       const horasPorDiaMax = Math.ceil(trabalhoAlvoMin / trabalho.length);
-      const capacidadeLegalMin = trabalho.reduce((s, d) => s + Math.floor(limiteDiario(individual, d.data) * 60 + 1e-7), 0);
+      const capacidadeLegalMin = trabalho.reduce((s, d) => s + Math.floor(limiteDiarioPlanejado(individual, d.data, r.colaborador) * 60 + 1e-7), 0);
       const viavelLegalmente = capacidadeLegalMin >= trabalhoAlvoMin;
       semanas.push({
         inicio: dias.map((d) => d.data).sort()[0],
