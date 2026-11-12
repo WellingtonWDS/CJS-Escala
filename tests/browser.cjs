@@ -330,6 +330,7 @@ const { chromium } = require("playwright");
     await require("./browser-resumo-folgas.cjs")({ browser, baseURL: `http://127.0.0.1:${server.address().port}` });
     await require("./browser-planejamento-flexivel.cjs")({ browser, baseURL: `http://127.0.0.1:${server.address().port}` });
     await require("./browser-transicao42-stf.cjs")({ browser, baseURL: `http://127.0.0.1:${server.address().port}` });
+    await require("./browser-diagnostico-layout.cjs")({ browser, baseURL: `http://127.0.0.1:${server.address().port}` });
     await require("./browser-diagnostico5x2.cjs")({ browser, baseURL: `http://127.0.0.1:${server.address().port}` });
     await require("./browser-horarios-escala.cjs")({ browser, baseURL: `http://127.0.0.1:${server.address().port}` });
     await require("./browser-loading.cjs")({

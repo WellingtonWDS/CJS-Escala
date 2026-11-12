@@ -28,6 +28,8 @@ Regras **`ec141-2026-11-11-13`**: gere novamente resultados anteriores; os cadas
 
 Nova opção **Diagnóstico** para Gerentes/Admins: entrevista de 34 perguntas em oito etapas, por empresa/unidade, com informações confirmadas, estimativas e pendências; horários operacionais, mínimos por função/faixa, condições obrigatórias/preferências e prioridades ordenadas. Salvar rascunho, concluir com conferência, revisar e consultar versões anteriores com autor/data. Proteção contra conflito e repetição de envio; mesma empresa pode ter análises diferentes. Copiar dados do preenchimento aberto exige confirmação e os marca como estimativa, sem alterar o gerador.
 
+**Correção visual do diagnóstico (12/11/2026):** a lista de empresas abre sobre o conteúdo, sem aumentar o campo Escritório nem deslocar as seções seguintes. Campos alinhados mesmo com razão social longa. Hover da etapa selecionada e das ações principais mantém fundo escuro e texto legível. Build e teste de navegador dedicado aprovados em 1440, 768 e 390px, nos temas claro/escuro, incluindo busca, seleção e teclado.
+
 **Ativação na VPS:** aplicar a migração **009_company_diagnostics.sql** após 001–008. A entrega usa a autenticação/API existentes, sem variável ou webhook novo. A gravação em produção depende dessa execução; não foi aplicada remotamente por este ambiente. [Operação, arquitetura, segurança e comando de ativação](docs/diagnostico-empresa.md).
 
 Validação local: 571 testes unitários, build, suíte completa de navegador e integração PostgreSQL 17/PostgREST 14.15 com navegador aprovados. Inclui autorização por perfil/escritório, rascunho/conclusão, histórico, conflito, envio repetido sem duplicação, descarte confirmado, cópia sem alterar escala, funcionamento 24h e contraste móvel claro/escuro.

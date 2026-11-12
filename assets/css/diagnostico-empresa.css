@@ -6,6 +6,7 @@
   --diag-panel: #f5f8fa;
   --diag-surface: #fff;
   --diag-primary: #126345;
+  --diag-primary-hover: #0d4e36;
   --diag-hover: #e8f0f3;
   max-width: 1250px;
   color: var(--diag-ink);
@@ -23,6 +24,13 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
   margin: 20px 0;
+}
+/* O menu de empresas sobrepõe o conteúdo sem esticar o campo vizinho. */
+#company-diagnostics .diag-selecao {
+  align-items: end;
+}
+#company-diagnostics .diag-selecao > label {
+  min-width: 0;
 }
 #company-diagnostics .diag-registros,
 #company-diagnostics .diag-meta {
@@ -68,6 +76,7 @@
   color: #fff;
 }
 #company-diagnostics .company-combobox {
+  position: relative;
   min-width: 0;
   align-self: end;
 }
@@ -76,6 +85,9 @@
   text-align: left;
 }
 #company-diagnostics .company-combobox-popup {
+  position: absolute;
+  top: 100%;
+  inset-inline: 0;
   z-index: 70;
 }
 #company-diagnostics .diag-etapas {
@@ -93,6 +105,12 @@
 #company-diagnostics button[aria-current="step"] {
   background: var(--diag-primary);
   border-color: var(--diag-primary);
+  color: #fff;
+}
+/* Ações com texto branco precisam de fundo escuro também no hover. */
+#company-diagnostics button:is([aria-current="step"], [data-diag-save], [data-diag-finish], [data-diag-next], [data-diag-retry]):hover:not(:disabled) {
+  background: var(--diag-primary-hover);
+  border-color: var(--diag-primary-hover);
   color: #fff;
 }
 #company-diagnostics [data-diag-form] {

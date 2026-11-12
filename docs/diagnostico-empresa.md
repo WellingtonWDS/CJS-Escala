@@ -2,6 +2,9 @@
 
 Entrega de **12/11/2026**. Acesso pelo menu **Diagnóstico**, no login individual, exclusivo de **Gerentes e Admins**. Operadores não têm acesso à tela nem às RPCs. Gerentes consultam os escritórios que administram; Admins podem consultar os escritórios ativos da plataforma.
 
+
+**Correção visual do diagnóstico (12/11/2026):** a lista de empresas abre sobre o conteúdo, sem aumentar o campo Escritório nem deslocar as seções seguintes. Campos alinhados mesmo com razão social longa. Hover da etapa selecionada e das ações principais mantém fundo escuro e texto legível. Build e teste de navegador dedicado aprovados em 1440, 768 e 390px, nos temas claro/escuro, incluindo busca, seleção e teclado.
+
 ## Uso
 
 1. Selecione o escritório e a empresa. O seletor de empresa reúne a seleção e a busca por razão social/CNPJ em um único controle.

@@ -24,6 +24,8 @@ Conversão 6×1 → 5×2 prefere o domingo como um dos repousos quando a empresa
 
 Menu de Gerentes/Admins com 34 perguntas em oito etapas, empresa/unidade, respostas confirmadas/estimativas/pendentes, rascunhos, conclusão, ficha de conferência e revisões datadas com autor. Consulta compartilhada entre gestores autorizados, isolamento no banco, concorrência e retentativa sem duplicação. Reaproveitamento explícito de dados do preenchimento aberto, sem alterar escala/cadastros. Celular e tema escuro incluídos.
 
+**Correção visual do diagnóstico (12/11/2026):** a lista de empresas abre sobre o conteúdo, sem aumentar o campo Escritório nem deslocar as seções seguintes. Campos alinhados mesmo com razão social longa. Hover da etapa selecionada e das ações principais mantém fundo escuro e texto legível. Build e teste de navegador dedicado aprovados em 1440, 768 e 390px, nos temas claro/escuro, incluindo busca, seleção e teclado.
+
 Necessita migração **009**, após 001–008, sem env ou webhook novo. Implementação/testes locais; aplicação na VPS ainda depende do operador. [Guia de uso e ativação](diagnostico-empresa.md). Versão das regras de geração preservada. Validação local: 571 testes unitários, build, suíte completa de navegador e integração PostgreSQL/PostgREST com navegador aprovados.
 
 ## Estabilidade da rolagem horizontal — 04/11/2026
