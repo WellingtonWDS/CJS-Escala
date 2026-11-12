@@ -60,11 +60,11 @@ test('fase automática fixa usa a data de referência inclusive nas duas viradas
     conferirRepeticao(e);
   }
 });
-test('42h em cinco dias não presume autorização acima de 8h; ACT válido libera somente a distribuição autorizada',()=>{
+test('42h sem ACT na transição permite 8h24; ACT informado segue seu limite e vigência',()=>{
   const s=empresa({dataReferenciaFixa:'2027-06-15'});
   s.jornada={entrada:'07:00',intInicio:'11:00',intFim:'12:00',saida:'17:00'};
   let c=converter(s,{fase:'transicao42',folgas:'fim_semana'});
-  assert.equal(c.comparacao.pessoas[0].horasDepois,40); assert(c.comparacao.pessoas[0].deficits);
+  assert.equal(c.comparacao.pessoas[0].horasDepois,42); assert(!c.comparacao.pessoas[0].deficits);
   s.instrumentoCompensacao='act_cct';
   Object.assign(s.instrumentoColetivo,{identificacao:'CCT teste',inicio:'2027-06-15',fim:'2027-06-15',compativelEC141:true,compensacaoDiaria:true,limiteDiario:9});
   c=converter(s,{fase:'transicao42',folgas:'fim_semana'});

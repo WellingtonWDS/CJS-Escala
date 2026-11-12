@@ -116,7 +116,7 @@ test("sonda B: ACT/CCT e banco não atenuam excesso semanal inserido manualmente
     );
   }
 });
-test("sonda C: 42h em 5 dias sem ACT gera erro diário; cláusula válida respeita limite declarado", () => {
+test("sonda C: transição sem ACT dispensa erro até 8h24; ACT informado respeita limite declarado", () => {
   const e = exemplo("2027-02-01");
   e.state.tipoEscala = "5x2";
   e.c.horasSemana = 42;
@@ -126,7 +126,7 @@ test("sonda C: 42h em 5 dias sem ACT gera erro diário; cláusula válida respei
       .validarJornadaDiaria(e.c, dias)
       .filter((i) => i.tipo === "JORNADA_DIARIA" && i.severidade === "erro")
       .length,
-    5,
+    0,
   );
   act(e.state);
   assert.ok(

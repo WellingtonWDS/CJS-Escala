@@ -1,5 +1,8 @@
 # Próximas funcionalidades do Reescala
 
+Atualização de **12/11/2026**: a distribuição de 42h em cinco dias de até 8h24 dispensa ACT/CCT de 16/12/2026 a 15/12/2027, conforme o item I da liminar de 12/11/2026 fornecida em PDF pelo cliente. Seleção, rateio, ajustes e validação usam a mesma exceção; a regra anterior permanece comentada. Resultados antigos devem ser gerados novamente (regras `ec141-2026-11-12-14`). [Condições e escopo](../transicao42-stf.md).
+
+
 Registrado em **27/10/2026**, conforme solicitação do proprietário. **Atualizado em 29/10/2026:** primeira entrega da escala fixa implementada; PDFs para empregador e colaboradores implementados em 29/10/2026; quadro diário continua planejado, sem prazo definido.
 
 ## Ponto de partida

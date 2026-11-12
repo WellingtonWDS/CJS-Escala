@@ -1,6 +1,6 @@
 # Estado do projeto — Reescala
 
-Atualizado em **11/11/2026**. Referência funcional: versão de regras `ec141-2026-11-11-13` ([histórico do projeto](https://github.com/WellingtonWDS/CJS-Escala/commits/main/)). Esta página resume o andamento; o [README](../README.md) detalha operação, arquitetura, configuração e testes.
+Atualizado em **12/11/2026**. Referência funcional: versão de regras `ec141-2026-11-12-14` ([histórico do projeto](https://github.com/WellingtonWDS/CJS-Escala/commits/main/)). Esta página resume o andamento; o [README](../README.md) detalha operação, arquitetura, configuração e testes.
 
 Identidade **Reescala** aplicada no login, cabeçalho, menu expandido/recolhido, carregamento, quadros de escala/impressão e ícone do navegador, usando os arquivos originais de `logos/`. A publicação inclui essa pasta e o login carrega suas imagens sem sessão; dados, chaves internas e permissões são preservados.
 
@@ -9,6 +9,12 @@ Logos com dimensões limitadas também no HTML para evitar crescimento com CSS a
 Quatro novas empresas por segmento e onze preenchimentos DEMO para comércio contínuo, fazenda com sábado compensado, entidade 24h com 12×36/administrativo e padaria até 20h30. Casos de cobertura, readequação e contratação; os ciclos mistos são analisados na prévia e continuam fora da conversão automática. [Instalação e resultados esperados](cenarios-demo-segmentos.md). Instalador testado localmente; execução remota ainda pendente.
 
 Carregamento imediato na geração atual/proposta, cálculo em Worker local, bloqueio de duplicação, liberação em falhas e proteção contra resultados de dados alterados. Resumo da busca de cobertura aparece primeiro em modal e depois abaixo do botão, com aplicação separada. Regras de cálculo e versões de dados preservadas.
+
+## Distribuição transitória de 42h sem ACT/CCT — 12/11/2026
+
+Implementada a distribuição 5×2 de **42h em cinco dias de até 8h24**, sem ACT/CCT, entre **16/12/2026 e 15/12/2027**, conforme o item I do dispositivo da liminar nas ADIs 8041/8042 (PDF de 12/11/2026 fornecido pelo cliente), sujeita a referendo. Opção de conversão, rateio, busca de ajustes, validações e orientações usam a mesma regra; fixo considera a referência jurídica, dinâmico considera cada data. Contratos menores, pausas, repousos e restrições continuam respeitados. ACT/CCT informado conserva sua própria vigência e teto; não é ignorado automaticamente se inválido. Regra anterior preservada em comentários e exceção centralizada para eventual reversão. Regras **`ec141-2026-11-12-14`**: gere novamente resultados antigos. Sem SQL, RPC, variável ou alteração do login. [Escopo, condições e fontes](transicao42-stf.md).
+
+Validação desta entrega: **581 testes unitários**, build e suíte completa de navegador aprovados. Após conferir o PDF, repetidos os testes unitários e o navegador específico de transição/fixo/dinâmico e layout móvel. Nenhuma migração de banco necessária.
 
 ## Domingo preferencial e enquadramentos individuais — 11/11/2026
 
@@ -30,7 +36,7 @@ Removido o texto genérico **Por dia** dos três cartões de horários. Entrada/
 
 ## Rateio flexível e alternância de funções — 04/11/2026
 
-Proposta de conversão preserva a origem e passa a redistribuir a carga sem usar a duração dos horários antigos como teto. Cinco jornadas de 8h24 completam 42h quando contrato, fase e ACT/CCT vigente/limite diário autorizam. Mantendo 2h de intervalo e entrada às 08h, o exemplo sugere saída às 18h24. Restrição individual expressa continua rígida; pausa preenchida não é reduzida automaticamente para fabricar saldo.
+Proposta de conversão preserva a origem e passa a redistribuir a carga sem usar a duração dos horários antigos como teto. Cinco jornadas de 8h24 completam 42h quando contrato e fase autorizam, sem ACT/CCT no período transitório de 16/12/2026 a 15/12/2027; instrumentos coletivos informados continuam sujeitos à própria vigência e limite diário. Mantendo 2h de intervalo e entrada às 08h, o exemplo sugere saída às 18h24. Restrição individual expressa continua rígida; pausa preenchida não é reduzida automaticamente para fabricar saldo.
 
 Busca de cobertura também testa completar saldo de semanas inteiras, com conferência legal/cobertura e aplicação separada. Funções habilitadas podem alternar por período, com presença exclusiva e pausa descontada. Cards, filtro, prévia, PDFs e persistência representam as atividades por horário; restauração compactada e desfazer mantêm as alocações. Resultado distingue operação já coberta, busca limitada e descartes por regras/nova lacuna/recorrência.
 
@@ -98,7 +104,7 @@ Painel de salvamento inicialmente recolhido, aberto por FAB verde **Salvar preen
 
 Horários individuais semanais podem ser replicados de outro colaborador com confirmação e cópia independente. Preserva dados pessoais, admissão, função e restrições; a referência contratual segue o checkbox existente. Alteração invalida a escala para nova geração.
 
-Simulação explícita de 42h na conversão exige ACT/CCT identificado, compatível, vigente em todo destino/referência fixa, com compensação diária e teto >=8h24. Opção desabilitada quando não atende; seleção anterior inválida é substituída por 40h. Referência automática e contexto jurídico da origem preservados.
+Simulação explícita de 42h na conversão permite a distribuição transitória sem ACT/CCT de 16/12/2026 a 15/12/2027, em cinco dias de até 8h24, ou instrumento coletivo identificado, compatível, vigente no destino/referência fixa, com compensação diária e teto >=8h24. Opção desabilitada fora dessas hipóteses; seleção anterior inválida é substituída por 40h. Referência automática e contexto jurídico da origem preservados.
 
 Arraste troca dois dias de trabalho/folga do mesmo colaborador; alternativa de seleção de dois cards permite teclado/toque. Confirmação com efeito nas lacunas, validação atômica, restrições/novos erros bloqueados, recálculo e desfazer com assinatura. Fixo altera o padrão recorrente, dinâmico altera as datas. Não troca identidades, não move ausências especiais nem readequa colegas automaticamente. Resultado e metadados acompanham o preenchimento/exports existentes. Sem migração SQL, variável ou mudança das regras de geração.
 

@@ -50,7 +50,8 @@ module.exports = async ({browser,baseURL}) => {
     assert.equal(await page.locator('.escala-marca-impressao').first().isVisible(),true);
     await page.emulateMedia({media:'screen'});
     await page.setViewportSize({width:390,height:844});
-    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+    // A saída da impressão e o resize atualizam a grade no próximo frame.
+    await page.waitForFunction(()=>document.documentElement.scrollWidth<=innerWidth+1);
    }
    assert.deepEqual(errors,[]);
   }finally{await context.close();}

@@ -57,7 +57,8 @@ export function createConversaoUI({
     const option=select.querySelector?.('[value="transicao42"]');
     if(!option)return;
     option.disabled=!permiteSimular42(state,el("conversao-periodo").value);
-    option.textContent=option.disabled?"42h — exige ACT/CCT vigente com compensação diária":"Simular fase de 42h";
+    // Antes da liminar: option.textContent=option.disabled?"42h — exige ACT/CCT vigente com compensação diária":"Simular fase de 42h";
+    option.textContent=option.disabled?"42h — confira o período e a base aplicável":"Simular fase de 42h";
     if(option.disabled && select.value==="transicao42") {
       select.value="definitivo40";
       if(state.destinoConversao)state.destinoConversao.fase="definitivo40";

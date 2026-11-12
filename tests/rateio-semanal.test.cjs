@@ -61,11 +61,13 @@ test('limite individual explícito continua rígido mesmo com ACT autorizando 10
  assert.equal(aviso.faltantesMin,120);assert.equal(aviso.viavelLegalmente,true);
 });
 
-test('sem ACT não presume 08h24 e identifica autorização coletiva insuficiente',()=>{
+test('sem ACT rateia 42h em cinco dias de 08h24 durante a transição',()=>{
  const s=empresa();s.instrumentoCompensacao='nenhuma';
  const {config,r,dias}=dados(s),aviso=rec(config,r);
- assert(dias.every(d=>d.horas<=8));assert.equal(aviso.faltantesMin,120);
- assert.equal(aviso.horasPorDiaMin,504);assert.equal(aviso.viavelLegalmente,false);assert.equal(aviso.motivo,'fundamento_coletivo');
+ assert(dias.every(d=>d.horas<=8.4));assert.equal(aviso.faltantesMin,0);
+ assert.equal(aviso.horasPorDiaMin,504);assert.equal(aviso.viavelLegalmente,true);
+ assert.equal(apurar(r.colaborador,dias,config).computadas,42);
+ assert(config.escalaGerada.validacoes[0].issues.some(i=>i.tipo==='TRANSICAO_42_SEM_ACT'));
 });
 
 test('preserva contratos menores e distribui restos em minutos sem perder carga',()=>{

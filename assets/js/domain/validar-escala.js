@@ -11,6 +11,7 @@ import {
   referenciaSemana,
   instrumentoValido,
   limiteDiario,
+  distribuicaoTransitoria42,
   unirDias,
 } from "./ec141.js";
 import {
@@ -111,7 +112,7 @@ export function createValidacao(state, jornada, feriados) {
       if (
         !referenciaDia(state, d.data, colab).semLimiteJornada &&
         h >
-          (state.tipoEscala === "12x36" ? 12 : limiteDiario(state, d.data)) +
+          (state.tipoEscala === "12x36" ? 12 : limiteDiario(state, d.data, colab)) +
             0.001
       ) {
         const fundamento =
@@ -122,7 +123,7 @@ export function createValidacao(state, jornada, feriados) {
           issue(
             "JORNADA_DIARIA",
             "erro",
-            `${d.data}: ${fmtHoras(h)} de trabalho efetivo no dia, acima de ${state.tipoEscala === "12x36" ? 12 : limiteDiario(state, d.data)}h. ${fundamento}${Number.isFinite(d.intervaloMin) ? ` Intervalo descontado neste dia: ${fmtHoras(d.intervaloMin / 60)}.` : ""}`,
+            `${d.data}: ${fmtHoras(h)} de trabalho efetivo no dia, acima de ${state.tipoEscala === "12x36" ? 12 : limiteDiario(state, d.data, colab)}h. ${fundamento}${Number.isFinite(d.intervaloMin) ? ` Intervalo descontado neste dia: ${fmtHoras(d.intervaloMin / 60)}.` : ""}`,
             d.data,
           ),
         );
@@ -142,6 +143,9 @@ export function createValidacao(state, jornada, feriados) {
         );
       }
     });
+    if (datas.some(d => distribuicaoTransitoria42(state, d.data, colab) && d.horas > 8 && d.horas <= 8.401))
+      out.push(issue("TRANSICAO_42_SEM_ACT", "info",
+        "Distribuição transitória de 42h em cinco dias: até 8h24 diárias sem ACT/CCT, de 16/12/2026 a 15/12/2027, conforme a liminar informada nas ADIs 8041/8042, sujeita a referendo. Os 24 minutos além de 8h integram a jornada ordinária nessa hipótese; intervalos e repousos permanecem obrigatórios."));
     return out;
   }
 
@@ -407,6 +411,11 @@ export function createValidacao(state, jornada, feriados) {
             `${semana[0]?.data}: faltam ${fmtHoras(apuracao.alvo - apuracao.computadas)} para a carga semanal. O sábado compensado não gera abono; informe disponibilidade de reposição ou revise os horários e as restrições.`,
           ),
         );
+      // A exceção de 8h24 pressupõe distribuição em até cinco dias de trabalho.
+      if (semana.filter(d => ["T", "FE"].includes(d.status)).length > 5 &&
+          semana.some(d => distribuicaoTransitoria42(state, d.data, colab) && d.horas > 8.001))
+        out.push(issue("DISTRIBUICAO_TRANSITORIA_42", "erro",
+          `${key}: a distribuição sem ACT/CCT de até 8h24 exige cinco dias de trabalho e dois repousos. Foram encontrados mais de cinco dias trabalhados nesta semana.`));
       const referencia = referenciaSemana(state, semana, colab);
       const referenciaLegal = referencia.horas;
       const total =

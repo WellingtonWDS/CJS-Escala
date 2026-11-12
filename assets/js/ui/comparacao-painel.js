@@ -15,7 +15,7 @@ const motivosRateio = {
   aplicado: "Carga semanal distribuída nos horários da proposta.",
   janela: "Os horários disponíveis não comportam todo o alvo semanal; reveja a janela de trabalho, os dias permitidos e o intervalo mínimo aplicável.",
   disponibilidade: "Os dias de trabalho disponíveis não comportam a distribuição habitual; confira férias, afastamentos, folgas e restrições individuais.",
-  fundamento_coletivo: "A distribuição exigiria ultrapassar o limite diário autorizado. Confira a vigência e as condições do ACT/CCT antes de ampliar a jornada.",
+  fundamento_coletivo: "A distribuição exigiria ultrapassar o limite diário autorizado. Confira o período da distribuição transitória sem ACT/CCT ou a vigência e as condições do instrumento coletivo informado.",
 };
 const numeros = (m) => `<div class="diagnostico-indicadores"><div><span>Horas-pessoa descobertas</span><strong>${fmtHoras(m.faltantesDepois)}</strong><small>Antes: ${fmtHoras(m.faltantesAntes)}</small></div><div><span>Incompatibilidades</span><strong>${m.erros}</strong><small>Conferir antes de adotar</small></div><div><span>Alertas e pendências</span><strong>${m.pendencias}</strong><small>Detalhes na validação da escala</small></div></div>`;
 export function renderResumoConversao(c) {
@@ -28,7 +28,7 @@ function tabela(titulo, colunas, linhas) {
 function rateios(config) {
   const itens = analisarRateioSemanal(config, config.escalaGerada.resultado);
   if (!itens.length) return "";
-  return `<section class="diagnostico-rateio"><h3>Distribuição da carga semanal</h3><p>As horas são rateadas em minutos entre os dias de trabalho, respeitando o contrato, o limite diário, o intervalo e a janela disponível. Uma jornada de 42h em cinco dias corresponde a 8h24 por dia e exige base coletiva válida para ultrapassar 8h.</p>${itens.map(p => {
+  return `<section class="diagnostico-rateio"><h3>Distribuição da carga semanal</h3><p>As horas são rateadas em minutos entre os dias de trabalho, respeitando o contrato, o limite diário, o intervalo e a janela disponível. Uma jornada de 42h em cinco dias corresponde a 8h24 por dia. Sem ACT/CCT, essa distribuição está limitada a 16/12/2026–15/12/2027, conforme a liminar informada nas ADIs 8041/8042, sujeita a referendo. Outras ampliações dependem da base aplicável.</p>${itens.map(p => {
     const grupos = new Map();
     for (const s of p.semanas) {
       const chave = [s.alvoMin,s.computadosMin,s.faltantesMin,s.diasTrabalho,s.horasPorDiaMin,s.horasPorDiaMax,s.viavelLegalmente,s.motivo,s.aplicado].join("|");

@@ -1,6 +1,6 @@
 import { REGIMES } from "../config/regras-jornada.js";
 import { dateFromKey, isoDate } from "./datas-horas.js";
-export const VERSAO_REGRAS = "ec141-2026-11-11-13";
+export const VERSAO_REGRAS = "ec141-2026-11-12-14";
 export const PUBLICACAO = "2026-10-16";
 export const PRIMEIRA_FASE = "2026-12-16";
 export const SEGUNDA_FASE = "2027-12-16";
@@ -105,6 +105,27 @@ export function instrumentoValido(state, data, uso) {
     i[uso] === true
   );
 }
+/** Regra provisória do item I do dispositivo das ADIs 8041/8042, p. 28
+ * do PDF de 12/11/2026 fornecido pelo cliente (docs/transicao42-stf.md).
+ * Centralizada para permitir revisão após o referendo do STF. Não autoriza
+ * compensação de repousos, banco de horas nem plantões 12×36. */
+export const TRANSICAO_42_SEM_ACT = Object.freeze({
+  ativa: true,
+  inicio: PRIMEIRA_FASE,
+  fim: "2027-12-15",
+  limiteDiario: 8.4,
+});
+export function distribuicaoTransitoria42(state, value, c = {}) {
+  const data = state.modeloEscala === "fixa" ? state.dataReferenciaFixa : chaveData(value);
+  if (!dataValida(data)) return false;
+  const referencia = referenciaDia(state, data, c);
+  return TRANSICAO_42_SEM_ACT.ativa &&
+    data >= TRANSICAO_42_SEM_ACT.inicio && data <= TRANSICAO_42_SEM_ACT.fim &&
+    state.tipoEscala === "5x2" &&
+    state.instrumentoCompensacao === "nenhuma" &&
+    referencia.horas === 42 && !referencia.semLimiteJornada;
+}
+/* Regra anterior à liminar: preservada para eventual reversão.
 export function limiteDiario(state, data) {
   const i = state.instrumentoColetivo || {};
   const limite = Number(i.limiteDiario);
@@ -113,6 +134,14 @@ export function limiteDiario(state, data) {
     limite <= 24
     ? limite
     : 8;
+}
+*/
+export function limiteDiario(state, data, c = {}) {
+  const i = state.instrumentoColetivo || {};
+  const limite = Number(i.limiteDiario);
+  if (instrumentoValido(state, data, "compensacaoDiaria") && limite >= 8 && limite <= 24)
+    return limite;
+  return distribuicaoTransitoria42(state, data, c) ? TRANSICAO_42_SEM_ACT.limiteDiario : 8;
 }
 export function unirDias(...listas) {
   return [...new Map(listas.flat().map((d) => [d.data, d])).values()].sort(
@@ -124,7 +153,7 @@ export function unirDias(...listas) {
  * ativada), as regras de duração não se aplicam: o contrato é repartido pelos
  * dias de trabalho, sem ultrapassar 24h. Repousos e intervalos continuam valendo. */
 export function limiteDiarioPlanejado(state, data, c = {}) {
-  const geral = limiteDiario(state, data);
+  const geral = limiteDiario(state, data, c);
   if (!referenciaDia(state, data, c).semLimiteJornada) return geral;
   const contrato = Number(c.horasSemana);
   return Number.isFinite(contrato) && contrato > 0

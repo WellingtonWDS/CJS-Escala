@@ -219,15 +219,16 @@ test("sábado reduzido não é estendido e a busca prioriza planos que completam
   assert.ok(c.comparacao.pessoas.every((p) => !p.deficits));
   assert.ok(c.comparacao.lacunas.some((l) => new Date(l.data + "T12:00:00").getDay() === 6));
 });
-test("fase de 42h não presume autorização para ultrapassar 8h diárias", () => {
+test("fase de 42h sem ACT permite até 8h24 durante a transição", () => {
   const s = empresa();
   s.colaboradores.forEach((c) => (c.horasSemana = 44));
   s.jornada.saida = "18:00";
   const c = converter(s, { ...op, periodo: "2027-02" });
   for (const r of c.proposta.config.escalaGerada.resultado)
-    assert.ok(r.dias.every((d) => d.horas <= 8));
-  assert.ok(c.comparacao.pessoas.some((p) => p.deficits));
-  assert.notEqual(c.comparacao.status, "suficiente");
+    assert.ok(r.dias.every((d) => d.horas <= 8.4));
+  assert.ok(c.proposta.config.escalaGerada.resultado.some(r => r.dias.some(d => d.horas > 8)));
+  assert.equal(c.comparacao.status, "suficiente");
+  assert.ok(c.comparacao.pessoas.every(p => p.deficits === 0));
 });
 test("ACT válido permite distribuir 42h respeitando o limite diário declarado", () => {
   const s = empresa();
