@@ -1,6 +1,12 @@
-# Registro de implantação — atualizado em 11/11/2026
+# Registro de implantação — atualizado em 12/11/2026
 
 Consultar este registro antes de orientar o operador. Distinguir código disponível, testes locais e resultados informados pelo operador. Não contém senhas, chaves ou identificadores pessoais.
+
+## Distribuição de 42h sem ACT/CCT — 12/11/2026
+
+Código enviado à `main` no commit [fd55c9c](https://github.com/WellingtonWDS/CJS-Escala/commit/fd55c9c), com regras **`ec141-2026-11-12-14`**. Na ausência de ACT/CCT celebrado até 15/12/2026, a distribuição 5×2 admite cinco dias de até 8h24, de 16/12/2026 a 15/12/2027, conforme o item I do dispositivo da liminar fornecida em PDF, sujeita a referendo. Seleção de 42h, geração fixa/dinâmica, rateio, ajustes e validação compartilham a regra; a exigência anterior permanece comentada para eventual reversão.
+
+**Após a publicação:** gerar novamente as escalas antigas e salvar o preenchimento para atualizar o resultado compartilhado. Não há SQL, RPC, variável, n8n ou reconfiguração da VPS nesta entrega. O envio à main foi confirmado; este registro não confirma o término do deploy da Vercel. Validação local: 581 testes unitários, build e suíte completa de navegador aprovados, mais regressões finais após a leitura do PDF. Os demais efeitos da liminar têm escopo e pendências registrados em [Transição de 42h](transicao42-stf.md#outros-pontos-do-dispositivo--fora-da-alteração-de-42h-desta-entrega).
 
 ## Domingo preferencial e enquadramentos — 11/11/2026
 
