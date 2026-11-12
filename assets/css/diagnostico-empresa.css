@@ -91,15 +91,16 @@
   z-index: 70;
 }
 #company-diagnostics .diag-etapas {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
   gap: 8px;
   padding: 12px 0;
   border-block: 1px solid var(--diag-line);
 }
 #company-diagnostics .diag-etapas button {
   font-size: 12px;
-  flex: 1 1 180px;
+  min-width: 0;
   text-align: left;
 }
 #company-diagnostics button[aria-current="step"] {
@@ -313,6 +314,11 @@
   overflow-wrap: anywhere;
   font-size: 13px;
 }
+@media (max-width: 900px) {
+  #company-diagnostics .diag-etapas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
 @media (max-width: 650px) {
   #company-diagnostics .diag-selecao,
   #company-diagnostics .diag-grid,
@@ -329,8 +335,5 @@
   #company-diagnostics .diag-horarios > div {
     grid-template-columns: 55px 1fr 1fr;
     gap: 8px;
-  }
-  #company-diagnostics .diag-etapas button {
-    flex-basis: 130px;
   }
 }

@@ -30,6 +30,15 @@ module.exports = async ({ browser, baseURL }) => {
       await page.evaluate(dark => document.documentElement.dataset.theme = dark ? 'dark' : 'light', dark);
       for (const width of [1440, 768, 390]) {
         await page.setViewportSize({ width, height: 900 });
+        const rows = await root.locator('[data-diag-step]').evaluateAll(buttons => {
+          const groups = new Map();
+          for (const button of buttons) {
+            const top = Math.round(button.getBoundingClientRect().top);
+            groups.set(top, (groups.get(top) || 0) + 1);
+          }
+          return [...groups.values()];
+        });
+        assert.deepEqual(rows, width > 900 ? [4, 4] : [2, 2, 2, 2], 'Etapas distribuídas em linhas equilibradas');
         await page.mouse.move(0, 0);
         const before = await geometry();
         await trigger.click();
