@@ -1,4 +1,4 @@
-export function initNavigation({ session, document, window }) {
+export function initNavigation({ session, document, window, app, workspace }) {
   const sidebar = document.getElementById("app-sidebar");
   sidebar.hidden = false;
   document.body.classList.add("has-app-sidebar");
@@ -30,6 +30,8 @@ export function initNavigation({ session, document, window }) {
         '<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M16 3v4M8 3v4M3 11h18M8 15h2M14 15h2"/>',
       workspace:
         '<path d="M3 7a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/>',
+      diagnostics:
+        '<path d="M9 4h6v3H9zM9 12h6M9 16h6"/><rect x="5" y="5" width="14" height="16" rx="2"/>',
       companies:
         '<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M10 21v-5h4v5"/>',
       offices: '<path d="m12 3 10 5-10 5L2 8Zm-9 9 9 5 9-5M3 17l9 5 9-5"/>',
@@ -76,10 +78,16 @@ export function initNavigation({ session, document, window }) {
   let management,
     companies,
     offices,
+    diagnostics,
     generation = 0;
   async function show(view) {
     if (
-      ["user-management", "company-management", "office-management"].some(
+      [
+        "user-management",
+        "company-management",
+        "office-management",
+        "company-diagnostics",
+      ].some(
         (id) =>
           document.getElementById(id).getAttribute("aria-busy") === "true",
       )
@@ -87,6 +95,13 @@ export function initNavigation({ session, document, window }) {
       return;
     if (view !== "schedule" && !canManage) return;
     if (view === "offices" && role !== "admin") return;
+    if (
+      document.body.dataset.appView === "diagnostics" &&
+      view !== "diagnostics" &&
+      diagnostics &&
+      !(await diagnostics.canLeave({ discard: true }))
+    )
+      return;
     const current = ++generation;
     document.getElementById("scheduler-view").hidden = view !== "schedule";
     document.getElementById("user-management").hidden = !["users"].includes(
@@ -94,6 +109,8 @@ export function initNavigation({ session, document, window }) {
     );
     document.getElementById("company-management").hidden = view !== "companies";
     document.getElementById("office-management").hidden = view !== "offices";
+    document.getElementById("company-diagnostics").hidden =
+      view !== "diagnostics";
     document.body.dataset.appView = view;
     buttons.forEach((b) =>
       b.dataset.appView === view
@@ -103,6 +120,21 @@ export function initNavigation({ session, document, window }) {
     if (view === "schedule") return;
     buttons.forEach((button) => (button.disabled = true));
     try {
+      if (view === "diagnostics") {
+        if (!diagnostics) {
+          const { createCompanyDiagnostics } = await import(
+            "./diagnostico-empresa.js"
+          );
+          diagnostics = createCompanyDiagnostics({
+            document,
+            window,
+            app,
+            workspace,
+          });
+        }
+        await diagnostics.show();
+        return;
+      }
       if (view === "offices") {
         if (!offices) {
           const { createOfficeRegistry } = await import("./office-registry.js");
@@ -128,8 +160,11 @@ export function initNavigation({ session, document, window }) {
       }
       await management.show(view);
     } catch {
-      document.getElementById("user-management").textContent =
-        "Não foi possível carregar a gestão de usuários. Recarregue a página.";
+      const target = document.getElementById(
+        view === "diagnostics" ? "company-diagnostics" : "user-management",
+      );
+      target.textContent =
+        "Não foi possível carregar esta seção. Recarregue a página.";
     } finally {
       buttons.forEach((button) => (button.disabled = false));
     }

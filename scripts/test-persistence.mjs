@@ -1,3 +1,4 @@
+import { testDiagnosticsIntegration } from "../tests/helpers/diagnostics-integration.mjs";
 import { testDemoSegmentosIntegration } from "../tests/helpers/demo-segmentos-integration.mjs";
 import { testDemoIntegration } from "../tests/helpers/demo-integration.mjs";
 import { testUsersIntegration } from "../tests/helpers/users-integration.mjs";
@@ -411,6 +412,7 @@ try {
     () => service.getDraft(admin, office, company, saved.id),
     (e) => e.status === 401,
   );
+  await testDiagnosticsIntegration({ env, sql, browserTest: process.argv.includes("--browser") });
   await testAdminIntegration({
     env,
     sql,

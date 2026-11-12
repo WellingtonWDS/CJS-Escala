@@ -6,6 +6,10 @@ Consultar este registro antes de orientar o operador. Distinguir código dispon�
 
 Regra `ec141-2026-11-11-13`: a conversão prefere o domingo como repouso (art. 7º, XV) e a etapa 7 permite ativar a análise dos arts. 2º, 8º e 9º. Resultados anteriores exigem nova geração, sem apagar cadastros. Não requer SQL, RPC, variável, n8n ou reconfiguração da VPS. Publicação pela main. Validação local: 561 testes unitários, build e suíte completa de navegador.
 
+## Diagnóstico por empresa — 12/11/2026
+
+Código da entrevista empresarial, menu de Gerentes/Admins, API `/api/diagnostics` e migração **009_company_diagnostics.sql** com tabelas/RPCs próprias, RLS, revisão e idempotência. Requer aplicar a 009 no banco `cjs_escala`, após 001–008; **não foi executada na VPS**. Sem variável, webhook, configuração de proxy ou credencial nova. Publicar pela main e seguir o [comando de ativação](diagnostico-empresa.md#ativação-no-banco-da-vps). O menu pode aparecer antes da migração; consultas/gravações informam a ausência da configuração, sem fingir sucesso. Validação local: 571 testes unitários, build, suíte completa de navegador e integração PostgreSQL 17/PostgREST 14.15 com navegador aprovados, incluindo a migração 009. Aplicação remota continua pendente.
+
 ## Rateio e funções por período — 04/11/2026
 
 Nova regra `ec141-2026-11-04-12`: a proposta de conversão pode sugerir horários diferentes do quadro atual, preservando origem/restrições e conferindo limite diário/ACT/CCT por data ou referência fixa. Rateio de saldo semanal e alternância de funções habilitadas por período na busca, com prévia/aplicar/desfazer. Novos resultados exigem gerar novamente os anteriores. Dados de alocação estão no JSON de escala existente e seguem o mesmo transporte compactado; não requer SQL, RPC, variável, n8n ou reconfiguração da VPS. Publicação habitual pela main. Validação local: 556 testes unitários, build, suíte completa de navegador e regressões finais de geração/conversão/ajustes/fixo/11 modelos DEMO aprovados. Transporte compactado das alocações validado; sem execução administrativa na VPS.

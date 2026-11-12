@@ -18,6 +18,14 @@ O fluxo principal já inclui cadastro manual e por planilhas, importação Domí
 
 Regras **`ec141-2026-11-11-13`**: gere novamente resultados anteriores; os cadastros permanecem. Sem migração SQL, nova RPC ou variável de ambiente.
 
+## Diagnóstico da empresa — 12/11/2026
+
+Nova opção **Diagnóstico** para Gerentes/Admins: entrevista de 34 perguntas em oito etapas, por empresa/unidade, com informações confirmadas, estimativas e pendências; horários operacionais, mínimos por função/faixa, condições obrigatórias/preferências e prioridades ordenadas. Salvar rascunho, concluir com conferência, revisar e consultar versões anteriores com autor/data. Proteção contra conflito e repetição de envio; mesma empresa pode ter análises diferentes. Copiar dados do preenchimento aberto exige confirmação e os marca como estimativa, sem alterar o gerador.
+
+**Ativação na VPS:** aplicar a migração **009_company_diagnostics.sql** após 001–008. A entrega usa a autenticação/API existentes, sem variável ou webhook novo. A gravação em produção depende dessa execução; não foi aplicada remotamente por este ambiente. [Operação, arquitetura, segurança e comando de ativação](docs/diagnostico-empresa.md).
+
+Validação local: 571 testes unitários, build, suíte completa de navegador e integração PostgreSQL 17/PostgREST 14.15 com navegador aprovados. Inclui autorização por perfil/escritório, rascunho/conclusão, histórico, conflito, envio repetido sem duplicação, descarte confirmado, cópia sem alterar escala, funcionamento 24h e contraste móvel claro/escuro.
+
 ## Rolagem estável dos quadros — 04/11/2026
 
 Corrigida a sincronização entre as barras horizontais superior/inferior: eventos do espelhamento anterior não devolvem uma posição antiga ao gesto atual. A normalização da altura dos cards deixa de repetir medições quando a largura permanece igual; mudanças de conteúdo/filtro, fontes, redimensionamento e impressão continuam atualizando o layout. Observadores e eventos são liberados ao recriar a grade.

@@ -1,0 +1,318 @@
+#company-diagnostics {
+  --diag-ink: #173247;
+  --diag-muted: #536879;
+  --diag-line: #ccd8e0;
+  --diag-control: #7b919f;
+  --diag-panel: #f5f8fa;
+  --diag-surface: #fff;
+  --diag-primary: #126345;
+  --diag-hover: #e8f0f3;
+  max-width: 1250px;
+  color: var(--diag-ink);
+}
+#company-diagnostics [hidden] {
+  display: none !important;
+}
+#company-diagnostics header p {
+  max-width: 850px;
+  line-height: 1.7;
+}
+#company-diagnostics .diag-selecao,
+#company-diagnostics .diag-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+#company-diagnostics .diag-registros,
+#company-diagnostics .diag-meta {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 20px 0;
+}
+#company-diagnostics .diag-registros > label {
+  flex: 1 1 220px;
+  min-width: 0;
+  max-width: 100%;
+}
+#company-diagnostics .diag-meta > p {
+  flex-basis: 100%;
+  font-size: 13px;
+}
+#company-diagnostics .diag-meta label {
+  min-width: 0;
+  max-width: 100%;
+}
+#company-diagnostics select {
+  min-width: 0;
+  max-width: 100%;
+}
+#company-diagnostics button {
+  background: var(--diag-surface);
+  border: 1px solid var(--diag-control);
+  color: var(--diag-ink);
+  min-height: 42px;
+  white-space: normal;
+}
+#company-diagnostics button:hover:not(:disabled) {
+  background: var(--diag-hover);
+}
+#company-diagnostics button[data-diag-save],
+#company-diagnostics button[data-diag-finish],
+#company-diagnostics button[data-diag-next],
+#company-diagnostics button[data-diag-retry] {
+  background: var(--diag-primary);
+  border-color: var(--diag-primary);
+  color: #fff;
+}
+#company-diagnostics .company-combobox {
+  min-width: 0;
+  align-self: end;
+}
+#company-diagnostics .company-combobox [data-company-trigger] {
+  width: 100%;
+  text-align: left;
+}
+#company-diagnostics .company-combobox-popup {
+  z-index: 70;
+}
+#company-diagnostics .diag-etapas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 0;
+  border-block: 1px solid var(--diag-line);
+}
+#company-diagnostics .diag-etapas button {
+  font-size: 12px;
+  flex: 1 1 180px;
+  text-align: left;
+}
+#company-diagnostics button[aria-current="step"] {
+  background: var(--diag-primary);
+  border-color: var(--diag-primary);
+  color: #fff;
+}
+#company-diagnostics [data-diag-form] {
+  display: block;
+  margin: 24px 0;
+}
+#company-diagnostics h3 {
+  font-weight: 700;
+  font-size: 19px;
+  margin: 20px 0;
+}
+#company-diagnostics .diag-pergunta {
+  margin: 22px 0;
+  padding: 20px;
+  min-width: 0;
+  background: var(--diag-surface);
+  border-color: var(--diag-line);
+}
+#company-diagnostics legend {
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1.6;
+  padding-inline: 6px;
+  color: var(--diag-ink);
+}
+#company-diagnostics .diag-essencial {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--diag-muted);
+}
+#company-diagnostics textarea {
+  display: block;
+  width: 100%;
+  resize: vertical;
+  min-height: 80px;
+  padding: 10px;
+  border: 1px solid var(--diag-control);
+  border-radius: 8px;
+  background: var(--diag-surface);
+  color: var(--diag-ink);
+}
+#company-diagnostics .diag-confianca {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 12px;
+  margin: 16px 0;
+  font-size: 12px;
+  color: var(--diag-muted);
+}
+#company-diagnostics .diag-confianca label {
+  max-width: 300px;
+}
+#company-diagnostics .diag-opcoes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+#company-diagnostics .diag-opcoes label,
+#company-diagnostics .diag-opcao,
+#company-diagnostics .diag-dias label,
+#company-diagnostics .diag-horarios > div > label:first-child {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+}
+#company-diagnostics input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  min-height: 18px;
+  padding: 0;
+  flex: none;
+}
+#company-diagnostics .diag-dias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  border: none;
+  padding: 8px 0;
+}
+#company-diagnostics .diag-dias legend {
+  font-size: 12px;
+}
+#company-diagnostics .diag-horarios > div {
+  display: grid;
+  grid-template-columns: 80px 1fr 1fr;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--diag-line);
+}
+#company-diagnostics .diag-horarios > div > span {
+  font-size: 13px;
+  color: var(--diag-muted);
+}
+#company-diagnostics .diag-linha {
+  margin-bottom: 14px;
+  background: var(--diag-panel);
+  min-width: 0;
+}
+#company-diagnostics .diag-ajuda,
+#company-diagnostics small {
+  font-size: 12px;
+  color: var(--diag-muted);
+  line-height: 1.6;
+}
+#company-diagnostics details > summary {
+  cursor: pointer;
+  color: var(--diag-ink);
+  padding-block: 8px;
+  font-size: 13px;
+}
+#company-diagnostics .diag-ordem {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+  list-style: none;
+  padding: 0;
+}
+#company-diagnostics .diag-ordem li {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+#company-diagnostics .diag-ordem span {
+  flex: 1;
+}
+#company-diagnostics .diag-paginacao {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+#company-diagnostics .diag-salvar {
+  position: sticky;
+  bottom: 12px;
+  padding: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--diag-panel);
+  border: 1px solid var(--diag-control);
+  border-radius: 12px;
+  z-index: 10;
+  box-shadow: 0 4px 20px #102b491a;
+}
+#company-diagnostics .diag-salvar strong {
+  font-size: 12px;
+}
+#company-diagnostics .diag-salvar > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+#company-diagnostics .diag-alerta {
+  padding: 16px;
+  border: 1px solid var(--diag-control);
+  border-radius: 10px;
+  background: var(--diag-panel);
+  margin: 20px 0;
+}
+#company-diagnostics .diag-alerta ul {
+  display: grid;
+  gap: 8px;
+  padding-top: 12px;
+}
+#company-diagnostics .diag-alerta button {
+  text-align: left;
+}
+#company-diagnostics .diag-resumo {
+  margin: 16px 0;
+  border: 1px solid var(--diag-line);
+  border-radius: 10px;
+  padding: 16px;
+}
+#company-diagnostics .diag-resumo dl > div {
+  padding: 12px 0;
+  border-top: 1px solid var(--diag-line);
+}
+#company-diagnostics .diag-resumo dt {
+  font-size: 13px;
+  font-weight: 600;
+}
+#company-diagnostics .diag-resumo dd {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  margin-top: 6px;
+}
+#company-diagnostics small {
+  display: block;
+  margin-top: 6px;
+}
+#company-diagnostics [data-diag-status] {
+  overflow-wrap: anywhere;
+  font-size: 13px;
+}
+@media (max-width: 650px) {
+  #company-diagnostics .diag-selecao,
+  #company-diagnostics .diag-grid,
+  #company-diagnostics .diag-opcoes {
+    grid-template-columns: 1fr;
+  }
+  #company-diagnostics .diag-pergunta {
+    padding: 14px;
+  }
+  #company-diagnostics .diag-salvar {
+    bottom: 6px;
+    padding: 12px;
+  }
+  #company-diagnostics .diag-horarios > div {
+    grid-template-columns: 55px 1fr 1fr;
+    gap: 8px;
+  }
+  #company-diagnostics .diag-etapas button {
+    flex-basis: 130px;
+  }
+}

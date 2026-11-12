@@ -87,7 +87,7 @@ if (session) {
   }
   if (session.user) {
     const { initNavigation } = await import("./ui/navigation.js");
-    initNavigation({ session, document, window });
+    initNavigation({ session, document, window, app, workspace });
     document.querySelector("[data-footer-storage]").textContent = session.persistenceEnabled
       ? "Salve seus preenchimentos por empresa para mantê-los no servidor."
       : "Preenchimento salvo localmente neste navegador.";

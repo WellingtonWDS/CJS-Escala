@@ -72,6 +72,10 @@ export function createPersistenceService({
       );
     }
     if (!res.ok) {
+      if (name.startsWith('diagnostic_') && res.status === 404) {
+        let error; try { error = await res.clone().json(); } catch {}
+        if (error?.code === 'PGRST202') throw new PersistenceError('Diagnóstico ainda não configurado no banco.');
+      }
       const statuses = {
         400: "Dados inválidos.",
         401: "Sessão expirada ou revogada.",
@@ -92,6 +96,10 @@ export function createPersistenceService({
   }
   // Não há método público que aceite nome arbitrário de RPC, papel ou identidade no corpo.
   return {
+    diagnosticOptions: identity => call('diagnostic_options',{},identity),
+    diagnosticList: (identity,{officeId,companyId}) => call('diagnostic_list',{p_office_id:officeId,p_company_id:companyId},identity),
+    diagnosticGet: (identity,{officeId,companyId,id,revision=null}) => call('diagnostic_get',{p_office_id:officeId,p_company_id:companyId,p_id:id,p_revision:revision},identity),
+    diagnosticSave: (identity,{officeId,companyId,id,revision,key,status,data}) => call('diagnostic_save',{p_office_id:officeId,p_company_id:companyId,p_id:id,p_revision:revision,p_key:key,p_status:status,p_data:data},identity),
     deleteDraft: (identity, { officeId, companyId, draftId, revision }) =>
       call(
         "delete_draft",

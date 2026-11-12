@@ -231,4 +231,9 @@ html[data-theme="dark"] #btn-converter:disabled, html[data-theme="dark"] #etapa-
   border-color:#4d6079 !important; box-shadow:none !important;
 }
 html[data-theme="dark"] .escala-filtro { background:var(--dark-raised); color:var(--dark-text); border-color:var(--dark-line); }
+/* Entrevista empresarial: mesmas superfícies e contrastes dos cadastros. */
+html[data-theme="dark"] #company-diagnostics {
+ --diag-ink:var(--dark-text);--diag-muted:var(--dark-muted);--diag-line:var(--dark-line);--diag-control:var(--dark-control);
+ --diag-panel:var(--dark-raised);--diag-surface:var(--dark-surface);--diag-primary:var(--dark-primary);--diag-hover:var(--dark-hover);
+}
 }

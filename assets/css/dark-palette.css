@@ -251,3 +251,8 @@ button[data-export-pdf]:hover:not(:disabled) { background:var(--dark-hover) !imp
   border-color:#4d6079 !important; box-shadow:none !important;
 }
 .escala-filtro { background:var(--dark-raised); color:var(--dark-text); border-color:var(--dark-line); }
+/* Entrevista empresarial: mesmas superfícies e contrastes dos cadastros. */
+#company-diagnostics {
+ --diag-ink:var(--dark-text);--diag-muted:var(--dark-muted);--diag-line:var(--dark-line);--diag-control:var(--dark-control);
+ --diag-panel:var(--dark-raised);--diag-surface:var(--dark-surface);--diag-primary:var(--dark-primary);--diag-hover:var(--dark-hover);
+}

@@ -14,6 +14,12 @@ Carregamento imediato na geração atual/proposta, cálculo em Worker local, blo
 
 Conversão 6×1 → 5×2 prefere o domingo como um dos repousos quando a empresa funciona aos domingos (art. 7º, XV), depois de legalidade, carga contratual e cobertura informada; sem cobertura, mantém por função ao menos 5/6 da presença dominical atual. Comparação mostra colaboradores com domingo de repouso antes/depois. Análise dos arts. 2º, 8º e 9º passa a ter controle na etapa 7 (desligado por padrão); na exceção do art. 8º, a proposta reparte o contrato sem o teto de 8h diárias, mantendo dois repousos. Texto oficial da EC 141 conferido em 11/11/2026 com o que o projeto adotava. Regras `ec141-2026-11-11-13`; sem SQL, RPC ou variável nova. Validação: 561 testes unitários e suíte completa de navegador.
 
+## Entrevista de diagnóstico — 12/11/2026
+
+Menu de Gerentes/Admins com 34 perguntas em oito etapas, empresa/unidade, respostas confirmadas/estimativas/pendentes, rascunhos, conclusão, ficha de conferência e revisões datadas com autor. Consulta compartilhada entre gestores autorizados, isolamento no banco, concorrência e retentativa sem duplicação. Reaproveitamento explícito de dados do preenchimento aberto, sem alterar escala/cadastros. Celular e tema escuro incluídos.
+
+Necessita migração **009**, após 001–008, sem env ou webhook novo. Implementação/testes locais; aplicação na VPS ainda depende do operador. [Guia de uso e ativação](diagnostico-empresa.md). Versão das regras de geração preservada. Validação local: 571 testes unitários, build, suíte completa de navegador e integração PostgreSQL/PostgREST com navegador aprovados.
+
 ## Estabilidade da rolagem horizontal — 04/11/2026
 
 Sincronização das duas barras ignora eventos programáticos defasados, evitando recuos no quadro. Medição de altura dos cards depende de largura/conteúdo/fontes; redimensionamento e impressão continuam suportados, sem reescrever alturas a cada rolagem. Limpeza dos observadores/listeners ao recriar. Build e regressões específicas de rolagem, prévias/edição/impressão e filtro/readequação fixa aprovados. Sem mudança de regra de geração ou persistência.

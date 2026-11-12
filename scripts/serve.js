@@ -52,7 +52,7 @@ export function createDevServer({
                   if (rejected) return;
                   size += chunk.length;
                   if (
-                    size > (pathname === "/api/persistence" ? 1100000 : 4096)
+                    size > (pathname === "/api/persistence" ? 1100000 : pathname === "/api/diagnostics" ? 200000 : 4096)
                   ) {
                     rejected = true;
                     chunks.length = 0;
@@ -81,7 +81,7 @@ export function createDevServer({
               { headers: { "Content-Type": "application/json" } },
             );
       } else if (
-        ["/api/persistence", "/api/admin", "/api/companies"].includes(pathname)
+        ["/api/persistence", "/api/admin", "/api/companies", "/api/diagnostics"].includes(pathname)
       )
         response = await routes(webRequest);
       else if (auth) response = await guard(webRequest, env, now());

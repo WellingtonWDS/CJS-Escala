@@ -1,8 +1,10 @@
+import { createDiagnosticsHandler } from "./diagnostics.js";
 import { authResponse, readSession } from "./auth.js";
 import { createPersistenceHandler } from "./persistence-api.js";
 import { createAdminHandler } from "./admin.js";
 import { createCompaniesHandler } from "./companies.js";
 export function createRoutes({ env, fetchImpl = fetch, now = Date.now }) {
+  const diagnostics = createDiagnosticsHandler({ env, fetchImpl, now });
   const admin = createAdminHandler({ env, fetchImpl, now });
   const companies = createCompaniesHandler({ env, fetchImpl, now });
   const persistence = createPersistenceHandler({
@@ -23,6 +25,7 @@ export function createRoutes({ env, fetchImpl = fetch, now = Date.now }) {
       return authResponse(request, env, now(), { fetchImpl, now });
     if (path === "/api/persistence") return persistence(request);
     if (path === "/api/admin") return admin(request);
+    if (path === "/api/diagnostics") return diagnostics(request);
     if (path === "/api/companies") return companies(request);
     return null;
   };
