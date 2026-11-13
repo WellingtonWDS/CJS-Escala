@@ -1,6 +1,8 @@
+import { initSeasonalDecorations } from "./seasonal.js";
 import { safeDestination } from "./session.js";
 import { initLoading } from "./ui/loading.js";
 initLoading(document);
+initSeasonalDecorations(document);
 const form = document.getElementById("login-form");
 const message = document.getElementById("login-message");
 const params = new URLSearchParams(location.search);

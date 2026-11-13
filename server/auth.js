@@ -136,6 +136,8 @@ export function publicPath(path) {
     "/assets/css/theme.css",
     "/assets/css/theme-dark.css",
     "/assets/js/theme.js",
+    "/assets/js/seasonal.js",
+    "/assets/js/config/calendario-sazonal.js",
     "/assets/css/motion.css",
     "/assets/js/login.js",
     "/assets/js/session.js",

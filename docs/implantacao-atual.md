@@ -1,6 +1,10 @@
-# Registro de implantação — atualizado em 12/11/2026
+# Registro de implantação — atualizado em 13/11/2026
 
 Consultar este registro antes de orientar o operador. Distinguir código disponível, testes locais e resultados informados pelo operador. Não contém senhas, chaves ou identificadores pessoais.
+
+## Calendário sazonal — 13/11/2026
+
+Frontend escolhe decorações do login/menu pela data de São Paulo, com atualização a cada minuto/retorno à aba, sem republicação por festa. Publicar juntos os módulos `seasonal.js` e `config/calendario-sazonal.js`, HTMLs, CSS compartilhado e a lista pública exata do guard do login. Sem migração SQL, RPC, variável, dependência ou alteração do n8n. Calendário puramente visual; não altera os feriados da empresa nem as regras de escala. [Períodos e operação](calendario-sazonal.md).
 
 ## Distribuição de 42h sem ACT/CCT — 12/11/2026
 

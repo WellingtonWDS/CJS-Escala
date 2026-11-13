@@ -20,9 +20,10 @@
 
 [data-phase-transition] { background:#B9791C; }
 
-/* Guirlanda natalina: decoração fora do fluxo e saudação no hover. */
+/* Calendário sazonal: decoração local, fora do fluxo e sem efeitos contínuos. */
 .login-card, .sidebar-brand { position: relative; }
-.christmas-detail {
+.seasonal-detail[hidden] { display: none !important; }
+.seasonal-detail {
   display: block;
   position: absolute;
   width: 48px;
@@ -31,9 +32,9 @@
   right: 12px;
   z-index: 2;
 }
-.christmas-wreath { display: block; width: 100%; height: 100%; transition: transform .2s ease; }
-.christmas-detail::after {
-  content: attr(data-christmas-message);
+.seasonal-icon { display: block; width: 100%; height: 100%; transition: transform .2s ease; }
+.seasonal-detail::after {
+  content: attr(data-seasonal-message);
   position: absolute;
   top: calc(100% + 6px);
   right: 0;
@@ -45,30 +46,71 @@
   font: 600 12px/1.4 Inter, system-ui, sans-serif;
   letter-spacing: 0;
   white-space: nowrap;
+  overflow-wrap: anywhere;
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
   box-shadow: 0 4px 14px #102b4926;
   transition: opacity .2s ease, visibility .2s ease;
 }
-.sidebar-brand .christmas-detail { width: 28px; height: 28px; top: -9px; right: -16px; }
-.sidebar-collapsed .sidebar-brand > .christmas-detail { display: block; width: 22px; height: 22px; right: -4px; }
-.sidebar-collapsed .sidebar-brand .christmas-detail::after { width: 64px; padding: 6px; white-space: normal; text-align: center; font-size: 11px; }
-.christmas-sparkle { opacity: .6; transition: opacity .2s ease; }
-.christmas-detail:hover::after { opacity: 1; visibility: visible; }
-.christmas-detail:hover .christmas-wreath { transform: rotate(-5deg); }
-.christmas-detail:hover .christmas-sparkle { opacity: 1; }
+.sidebar-brand .seasonal-detail::after { max-width: 188px; white-space: normal; text-align: center; }
+.sidebar-brand .seasonal-detail { width: 28px; height: 28px; top: -9px; right: -16px; }
+.sidebar-collapsed .sidebar-brand > .seasonal-detail { display: block; width: 22px; height: 22px; right: -4px; }
+.sidebar-collapsed .sidebar-brand .seasonal-detail::after { width: 64px; padding: 6px; white-space: normal; text-align: center; font-size: 11px; }
+.seasonal-sparkle { opacity: .6; transition: opacity .2s ease; }
+.seasonal-detail:is(:hover, .is-celebrating)::after { opacity: 1; visibility: visible; }
+.seasonal-detail:is(:hover, .is-celebrating) .seasonal-icon { transform: rotate(-5deg); }
+.seasonal-detail:is(:hover, .is-celebrating) .seasonal-sparkle { opacity: 1; }
 @media (max-width: 900px) {
-  .sidebar-brand .christmas-detail, .sidebar-collapsed .sidebar-brand > .christmas-detail {
+  .sidebar-brand .seasonal-detail, .sidebar-collapsed .sidebar-brand > .seasonal-detail {
     position: relative; top: auto; right: auto; flex: 0 0 28px; width: 28px; height: 28px;
   }
-  .sidebar-collapsed .sidebar-brand .christmas-detail::after { width: max-content; white-space: nowrap; font-size: 12px; }
+  .sidebar-collapsed .sidebar-brand .seasonal-detail::after { width: max-content; white-space: normal; font-size: 12px; }
 }
 @media (max-width: 360px) {
-  .sidebar-brand > span:not(.christmas-detail), .sidebar-collapsed .sidebar-brand > span:not(.christmas-detail) { display: none; }
+  .sidebar-brand > span:not(.seasonal-detail), .sidebar-collapsed .sidebar-brand > span:not(.seasonal-detail) { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .christmas-wreath, .christmas-sparkle, .christmas-detail::after { transition: none; }
-  .christmas-detail:hover .christmas-wreath { transform: none; }
+  .seasonal-icon, .seasonal-sparkle, .seasonal-detail::after { transition: none; }
+  .seasonal-detail:is(:hover, .is-celebrating) .seasonal-icon { transform: none; }
 }
-@media print { .christmas-detail { display: none !important; } }
+@media print { .seasonal-detail { display: none !important; } }
+
+.seasonal-burst, .seasonal-confetti { transform-box: fill-box; transform-origin: center; }
+.seasonal-burst { opacity: 0; }
+.seasonal-detail[data-seasonal-effect="fogos"]:is(:hover, .is-celebrating) .seasonal-icon,
+.seasonal-detail[data-seasonal-effect="confete"]:is(:hover, .is-celebrating) .seasonal-icon { transform: none; }
+.seasonal-detail[data-seasonal-effect="fogos"]:is(:hover, .is-celebrating) .seasonal-burst {
+  animation: seasonal-fireworks .9s ease-out var(--season-delay) 2 both;
+}
+.seasonal-detail[data-seasonal-effect="confete"]:is(:hover, .is-celebrating) .seasonal-confetti {
+  animation: seasonal-confetti .8s ease-in-out var(--season-delay) 2;
+}
+.seasonal-detail[data-seasonal-effect="balanco"]:is(:hover, .is-celebrating) .seasonal-icon {
+  animation: seasonal-sway .6s ease-in-out 2;
+}
+@keyframes seasonal-fireworks {
+  0% { opacity: 0; transform: scale(.1); }
+  20% { opacity: 1; }
+  75% { opacity: .9; }
+  100% { opacity: 0; transform: scale(1); }
+}
+@keyframes seasonal-confetti {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  50% { transform: translateY(8px) rotate(35deg); }
+}
+@keyframes seasonal-sway {
+  0%, 100% { transform: rotate(0); }
+  33% { transform: rotate(-7deg); }
+  66% { transform: rotate(5deg); }
+}
+@media (hover: none) {
+  .seasonal-detail:hover:not(.is-celebrating)::after { opacity: 0; visibility: hidden; }
+  .seasonal-detail:hover:not(.is-celebrating) .seasonal-icon,
+  .seasonal-detail:hover:not(.is-celebrating) .seasonal-confetti { animation: none; transform: none; }
+  .seasonal-detail:hover:not(.is-celebrating) .seasonal-burst { animation: none; opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .seasonal-icon, .seasonal-burst, .seasonal-confetti, .seasonal-sparkle, .seasonal-detail::after { animation: none !important; transition: none !important; transform: none !important; }
+  .seasonal-detail[data-seasonal-effect="fogos"]:is(:hover, .is-celebrating) .seasonal-burst { opacity: 1; }
+}
