@@ -1,8 +1,10 @@
 # Estado do projeto — Reescala
 
-Atualizado em **12/11/2026**. Referência funcional: versão de regras `ec141-2026-11-12-14` ([histórico do projeto](https://github.com/WellingtonWDS/CJS-Escala/commits/main/)). Esta página resume o andamento; o [README](../README.md) detalha operação, arquitetura, configuração e testes.
+Atualizado em **13/11/2026**. Referência funcional: versão de regras `ec141-2026-11-12-14` ([histórico do projeto](https://github.com/WellingtonWDS/CJS-Escala/commits/main/)). Esta página resume o andamento; o [README](../README.md) detalha operação, arquitetura, configuração e testes.
 
 Identidade **Reescala** aplicada no login, cabeçalho, menu expandido/recolhido, carregamento, quadros de escala/impressão e ícone do navegador, usando os arquivos originais de `logos/`. A publicação inclui essa pasta e o login carrega suas imagens sem sessão; dados, chaves internas e permissões são preservados.
+
+**Detalhe de Natal — 13/11/2026:** pequeno ramo de folhas e frutinhas no canto do login e na marca do menu lateral, com a mensagem “Boas festas! Jornadas em equilíbrio.” ao passar o mouse. SVG embutido, tamanhos reduzidos no menu recolhido e leve destaque apenas no hover. Movimento reduzido respeitado e decoração omitida na impressão. Build e verificação de navegador aprovados para temas claro/escuro, login, menu expandido/recolhido e celular.
 
 Logos com dimensões limitadas também no HTML para evitar crescimento com CSS antigo. Instalador administrativo do escritório/empresa **DEMO**, cinco colaboradores e preenchimento completo pronto para gerar/comparar: [ativação na VPS](empresa-demo.md). Instalador validado localmente; execução remota pendente.
 
