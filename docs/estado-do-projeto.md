@@ -4,7 +4,7 @@ Atualizado em **13/11/2026**. Referência funcional: versão de regras `ec141-20
 
 Identidade **Reescala** aplicada no login, cabeçalho, menu expandido/recolhido, carregamento, quadros de escala/impressão e ícone do navegador, usando os arquivos originais de `logos/`. A publicação inclui essa pasta e o login carrega suas imagens sem sessão; dados, chaves internas e permissões são preservados.
 
-**Detalhe de Natal — 13/11/2026:** pequeno ramo de folhas e frutinhas no canto do login e na marca do menu lateral, com a mensagem “Boas festas! Jornadas em equilíbrio.” ao passar o mouse. SVG embutido, tamanhos reduzidos no menu recolhido e leve destaque apenas no hover. Movimento reduzido respeitado e decoração omitida na impressão. Build e verificação de navegador aprovados para temas claro/escuro, login, menu expandido/recolhido e celular.
+**Detalhe de Natal — 13/11/2026:** guirlanda com gorro vermelho e branco e dois sinos dourados no login e no menu lateral. O hover mostra um balão com **“Feliz Natal!”**. SVG embutido com 48px no login, 28px no menu e 22px no menu recolhido do desktop; o movimento reduzido é respeitado e a decoração não aparece na impressão. Em telas de até 360px, a marca do menu mantém o símbolo para acomodar a guirlanda sem rolagem horizontal. Build e navegador aprovados nos temas claro/escuro, login e menu expandido/recolhido, incluindo larguras de 320 a 1440px.
 
 Logos com dimensões limitadas também no HTML para evitar crescimento com CSS antigo. Instalador administrativo do escritório/empresa **DEMO**, cinco colaboradores e preenchimento completo pronto para gerar/comparar: [ativação na VPS](empresa-demo.md). Instalador validado localmente; execução remota pendente.
 
