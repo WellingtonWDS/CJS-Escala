@@ -42,6 +42,20 @@ A prioridade é explícita no catálogo: Ano Novo, Carnaval e Dia da Mulher têm
 - No toque/clique, a saudação fica destacada por 2,5 segundos. Tocar no ornamento do menu não aciona o link de início.
 - Login usa 48px; menu, 28px; menu recolhido do desktop, 22px. Temas claro/escuro, telas de 320 a 1440px e impressão contemplados. Decorações não saem na impressão/PDF.
 
+## Prévia antes da data — somente Admin
+
+No menu lateral, o **Admin** encontra **Prévia das festividades**, acima do controle de tema. Gerentes e Operadores não recebem essa opção.
+
+1. Escolha uma das 20 festividades no campo **Festividade**.
+2. Veja o período e as amostras do login e do menu lateral.
+3. Passe o mouse/toque no enfeite ou clique em **Reproduzir efeito** para rever a animação.
+4. Use **Aparência da prévia** para conferir as amostras no modo claro/escuro.
+5. Feche com **Fechar**, com o X ou com Escape.
+
+A seleção é temporária e isolada dentro do modal: não muda o calendário real, a preferência de tema, a data do computador, os preenchimentos ou a aparência para outros usuários. Os efeitos respeitam movimento reduzido do dispositivo. O foco retorna ao botão de abertura ao fechar. Não há gravação de aprovação/reprovação; a janela serve à revisão visual dos efeitos.
+
+Implementação em `assets/js/ui/seasonal-preview.js`, carregada ao abrir pelo menu do Admin. Não cria rota pública nem operação de banco. Navegador verifica os três perfis, 20 seleções, replay/fogos/confetes, amostras nos dois temas, telas de 320/390px, Escape/foco, menu sem rolagem indevida e preservação dos dados reais.
+
 ## Manutenção
 
 - `assets/js/config/calendario-sazonal.js`: datas, prioridades, mensagens e seleção por fuso. Acrescentar novas festividades aqui.

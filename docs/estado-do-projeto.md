@@ -6,6 +6,8 @@ Identidade **Reescala** aplicada no login, cabeçalho, menu expandido/recolhido,
 
 **Calendário sazonal automático — 13/11/2026:** login e menu acompanham 20 festividades/datas comemorativas brasileiras. Natal até 25/12; de 26/12 a 06/01, Ano Novo com fogos no hover/toque. Carnaval tem máscara/confetes; Páscoa, datas cívicas, festas juninas/julinas e homenagens possuem temas próprios. Datas móveis calculadas automaticamente, fuso de São Paulo e atualização com a página aberta. SVGs locais, animações limitadas, movimento reduzido e impressão respeitados. [Períodos, prioridades e manutenção](calendario-sazonal.md).
 
+**Prévia exclusiva do Admin:** botão **Prévia das festividades** no menu lateral, com seletor dos 20 temas, amostras do login/menu, aparência clara/escura e replay dos efeitos. Escolhas isoladas no modal, sem alterar o calendário ou os dados reais. Gerentes e Operadores não têm essa opção. Verificado no navegador, inclusive celular, contraste, Escape e retorno do foco.
+
 Logos com dimensões limitadas também no HTML para evitar crescimento com CSS antigo. Instalador administrativo do escritório/empresa **DEMO**, cinco colaboradores e preenchimento completo pronto para gerar/comparar: [ativação na VPS](empresa-demo.md). Instalador validado localmente; execução remota pendente.
 
 Quatro novas empresas por segmento e onze preenchimentos DEMO para comércio contínuo, fazenda com sábado compensado, entidade 24h com 12×36/administrativo e padaria até 20h30. Casos de cobertura, readequação e contratação; os ciclos mistos são analisados na prévia e continuam fora da conversão automática. [Instalação e resultados esperados](cenarios-demo-segmentos.md). Instalador testado localmente; execução remota ainda pendente.

@@ -38,6 +38,8 @@
   position: absolute;
   top: calc(100% + 6px);
   right: 0;
+  width: max-content;
+  max-width: min(220px, calc(100vw - 32px));
   padding: 6px 10px;
   border: 1px solid #b99752;
   border-radius: 8px;
@@ -45,7 +47,7 @@
   color: #fffaf0;
   font: 600 12px/1.4 Inter, system-ui, sans-serif;
   letter-spacing: 0;
-  white-space: nowrap;
+  white-space: normal;
   overflow-wrap: anywhere;
   opacity: 0;
   visibility: hidden;
@@ -113,4 +115,49 @@
 @media (prefers-reduced-motion: reduce) {
   .seasonal-icon, .seasonal-burst, .seasonal-confetti, .seasonal-sparkle, .seasonal-detail::after { animation: none !important; transition: none !important; transform: none !important; }
   .seasonal-detail[data-seasonal-effect="fogos"]:is(:hover, .is-celebrating) .seasonal-burst { opacity: 1; }
+}
+
+/* Galeria visual restrita ao Admin; a amostra não modifica o tema real. */
+.app-sidebar .sidebar-seasonal-preview {
+  display: flex; align-items: center; gap: 9px; width: 100%; min-height: 40px;
+  padding: 8px 12px; border: 1px solid #47627c; border-radius: 9px;
+  background: #17354e; color: #edf4fb; font: 600 12px/1.5 Inter, system-ui, sans-serif;
+}
+.app-sidebar .sidebar-seasonal-preview:hover { background: #294b66; }
+.sidebar-collapsed .sidebar-seasonal-preview { justify-content: center; padding-inline: 4px; }
+.seasonal-preview { width: min(850px, calc(100% - 32px)); }
+.seasonal-preview header { justify-content: space-between; }
+.seasonal-preview header button { padding: 2px 10px; font-size: 24px; line-height: 1.4; }
+.seasonal-preview-controls { display: grid; grid-template-columns: 2fr 1fr; gap: 14px; }
+.seasonal-preview-stage {
+  --sample-surface: #fff; --sample-ink: #173247; --sample-line: #c3d0d9; --sample-field: #f3f6f8;
+  display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 24px;
+  padding: 24px; border: 1px solid #bccbd6; border-radius: 12px; background: #eef3f6;
+}
+.seasonal-preview-stage[data-preview-theme="dark"] {
+  --sample-surface: #162130; --sample-ink: #e8eef7; --sample-line: #7d93ae; --sample-field: #101b29;
+  background: #0d141e;
+}
+.seasonal-preview-login, .seasonal-preview-menu {
+  position: relative; min-width: 0; padding: 20px; border-radius: 12px;
+}
+.seasonal-preview-login { background: var(--sample-surface); color: var(--sample-ink); border: 1px solid var(--sample-line); }
+.seasonal-preview-menu { background: #102b43; color: #edf4fb; align-self: start; min-height: 220px; }
+.seasonal-preview-stage[data-preview-theme="dark"] .seasonal-preview-menu { background: #101b29; color: #e8eef7; }
+.seasonal-preview-caption { font-size: 11px; margin-bottom: 20px; font-weight: 600; }
+.seasonal-preview-login > .seasonal-detail { top: 12px; right: 12px; }
+.seasonal-preview-login > .seasonal-detail::after { max-width: 180px; white-space: normal; text-align: center; }
+.seasonal-preview-sample-brand { display: flex; align-items: center; gap: 8px; position: relative; min-width: 0; }
+.seasonal-preview-sample-brand img { object-fit: contain; flex-shrink: 0; }
+.seasonal-preview-sample-brand strong { font-size: 18px; }
+.seasonal-preview-menu .seasonal-detail { width: 28px; height: 28px; right: -8px; top: -14px; }
+.seasonal-preview-menu .seasonal-detail::after { max-width: 180px; white-space: normal; text-align: center; }
+.seasonal-preview-login-placeholder { margin-top: 22px; font-size: 13px; }
+.seasonal-preview-login-placeholder > div { margin-top: 12px; border: 1px solid var(--sample-line); padding: 8px; border-radius: 6px; background: var(--sample-field); }
+.seasonal-preview-login-placeholder .seasonal-preview-fake-button { background: #126345; border-color: #126345; color: #fff; text-align: center; font-weight: 600; }
+.seasonal-preview-menu-placeholder { margin-top: 28px; font-size: 12px; line-height: 2.5; }
+@media (max-width: 650px) {
+  .seasonal-preview-controls, .seasonal-preview-stage { grid-template-columns: minmax(0, 1fr); }
+  .seasonal-preview-stage { padding: 16px; gap: 16px; }
+  .seasonal-preview form { padding: 18px; }
 }

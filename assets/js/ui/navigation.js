@@ -61,6 +61,27 @@ export function initNavigation({ session, document, window, app, workspace }) {
   document.getElementById("sidebar-role").textContent =
     { admin: "Admin", manager: "Gerente", operator: "Operador" }[role] ||
     "Operador";
+  if (role === "admin") {
+    const preview = document.createElement("button");
+    preview.type = "button";
+    preview.className = "sidebar-seasonal-preview";
+    preview.dataset.seasonalPreviewOpen = "";
+    preview.setAttribute("aria-label", "Prévia das festividades");
+    preview.setAttribute("aria-haspopup", "dialog");
+    preview.title = "Prévia das festividades";
+    preview.innerHTML = '<span class="sidebar-icon" aria-hidden="true">✦</span><span class="sidebar-label">Prévia das festividades</span>';
+    preview.addEventListener("click", async () => {
+      preview.disabled = true;
+      try {
+        const { openSeasonalPreview } = await import("./seasonal-preview.js");
+        openSeasonalPreview({ document, role, returnFocus: preview });
+      } catch {
+        const { getDialogs } = await import("./dialogs.js");
+        await getDialogs(document).alert("Não foi possível abrir a prévia. Tente recarregar a página.");
+      } finally { preview.disabled = false; }
+    });
+    accountActions.prepend(preview);
+  }
   const canManage = ["admin", "manager"].includes(role);
   const buttons = [...sidebar.querySelectorAll("[data-app-view]")];
   buttons.forEach((button) => {
