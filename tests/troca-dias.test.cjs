@@ -37,6 +37,19 @@ test("empresa fechada impede troca de trabalho com domingo nos dois sentidos, mo
     }
   }
 });
+test("sábado reduzido bloqueia jornada longa nos dois sentidos antes dos avisos legais, sem troca parcial", async () => {
+  const { trocarDias } = await import("../assets/js/domain/troca-dias.js");
+  for (const fixa of [false, true]) for (const atual of [false, true]) {
+    const s = await estado(fixa, false, atual), r = s.escalaGerada.resultado[0];
+    const a = r.dias.find(d => d.weekday === 1 && d.status === "T");
+    const b = r.dias.find(d => d.weekday === 6 && d.data > a.data);
+    const snapshot = structuredClone(s);
+    for (const [de, para] of [[a,b],[b,a]]) {
+      assert.throws(() => trocarDias(s,r.colaborador.id,de.data,para.data), /funcionamento da empresa.*Sáb.*08:00–12:00/);
+      assert.deepEqual(s,snapshot);
+    }
+  }
+});
 test("troca atômica por data e padrão, horários completos, origem intacta e desfazer", async () => {
   const { trocarDias, desfazerTroca } =
     await import("../assets/js/domain/troca-dias.js");

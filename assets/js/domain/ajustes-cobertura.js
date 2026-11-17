@@ -2,6 +2,7 @@ import { candidatosRateio, deficitContratual } from "./ajustes-rateio.js";
 import { analisarRateioSemanal } from "./rateio-semanal.js";
 import { alternativasIntervalo, faixaInicioIntervalo } from "./intervalos-cobertura.js";
 import { configDaEscala } from "./contexto-escala.js";
+import { trabalhoDentroDoFuncionamento } from "./funcionamento-empresa.js";
 import { janelasDeclaradas as janelas } from "./disponibilidade.js";
 import { analisarCobertura, normalizarFuncao } from "./cobertura.js";
 import { habilitadoPara, funcaoDoDia, alocarFuncaoNoPeriodo, alocacoesDoDia, semAlocacoesFuncao } from "./funcoes.js";
@@ -496,6 +497,7 @@ export function coberturaNaoPiora(antes, depois) {
   return true;
 }
 function seguro(config, antes, depois, alteracoes) {
+  if (alteracoes.some(a => !trabalhoDentroDoFuncionamento(config, a.depois))) return false;
   const domain = createDomain(config);
   for (const a of alteracoes) {
     const r = depois.resultado.find(

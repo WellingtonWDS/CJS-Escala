@@ -1,4 +1,5 @@
 import { configDaEscala } from "./contexto-escala.js";
+import { trabalhoDentroDoFuncionamento } from "./funcionamento-empresa.js";
 import { createDomain } from "./index.js";
 import { configDoPerfil } from "./perfil-dominio.js";
 import { analisarCobertura } from "./cobertura.js";
@@ -113,6 +114,7 @@ function diferencas(antes, depois) {
   return out;
 }
 function permitido(config, original, novo, registro, alteracoes) {
+  if (alteracoes.some(a => !trabalhoDentroDoFuncionamento(config, a.depois))) return false;
   const domain = createDomain(config),
     editado = novo.resultado
       .find((r) => r.colaborador.id === registro.colaboradorId)

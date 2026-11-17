@@ -10,6 +10,8 @@ module.exports=async({browser,baseURL})=>{
    await page.clock.install({time:new Date('2026-10-28T12:00:00Z')});
    await page.goto(baseURL);await page.waitForFunction(()=>document.documentElement.dataset.ready==='true');
    const seed=criarEstadoDemo();seed.modeloEscala=fixa?'fixa':'dinamica';
+   // O cenário também edita um turno noturno: a empresa precisa permitir essa janela.
+   seed.jornadaPorDia[2]={...seed.jornada,saida:'06:00'};
    await page.evaluate(s=>localStorage.setItem('fintria-escala-dp-v2',JSON.stringify(s)),seed);
    await page.reload();await page.waitForFunction(()=>document.documentElement.dataset.ready==='true');
    await page.locator('[data-etapa-link="sec-gerar"]').click();await clicarCalculo(page,'#btn-converter');

@@ -30,9 +30,9 @@ module.exports = async ({ browser, baseURL }) => {
       const panel = page.locator("#resultado-proposta");
       const card = d => panel.locator(`[data-ri="0"][data-di="${r.dias.indexOf(d)}"]`);
       const alert = page.locator('dialog[data-app-dialog="alert"][open]');
-      async function bloqueado() {
+      async function bloqueado(mensagem = /empresa não funciona.*Dom/i) {
         await alert.waitFor();
-        assert.match(await alert.textContent(), /empresa não funciona.*Dom/i);
+        assert.match(await alert.textContent(), mensagem);
         assert.equal(await page.locator('dialog[data-app-dialog="confirm"][open]').count(), 0);
         await alert.locator("[data-dialog-accept]").click();
         await alert.waitFor({ state: "hidden" });
@@ -57,8 +57,26 @@ module.exports = async ({ browser, baseURL }) => {
         await form.locator(`[data-dialog-time="${key}"]`).fill(value);
       await form.locator("[data-dialog-accept]").click();
       await bloqueado();
+      const sab = dias.find(d => d.weekday === 6 && d.data > seg.data);
+      await card(seg).dragTo(card(sab));
+      await bloqueado(/funcionamento da empresa.*Sáb.*08:00–12:00/);
+      await panel.locator("[data-troca-selecionar]").click();
+      await card(sab).click();
+      await card(seg).click();
+      await bloqueado(/funcionamento da empresa.*Sáb.*08:00–12:00/);
+      for (const [entrada,saida] of [["07:59","12:00"],["09:00","13:00"],["08:00","12:01"]]) {
+        await card(sab).click();
+        await prompt.waitFor();
+        await prompt.locator("select").selectOption("T");
+        await prompt.locator("[data-dialog-accept]").click();
+        await form.waitFor();
+        for (const [key,value] of Object.entries({entrada,saida,intInicio:"",intFim:""}))
+          await form.locator(`[data-dialog-time="${key}"]`).fill(value);
+        await form.locator("[data-dialog-accept]").click();
+        await bloqueado(/funcionamento da empresa.*08:00–12:00/);
+      }
       assert.deepEqual(errors, []);
-      console.log(`OK: ${fixa ? "fixa" : "dinâmica"} impede trabalho em domingo fechado por arraste, seleção de dois dias e edição manual, sem alterar dados salvos.`);
+      console.log(`OK: ${fixa ? "fixa" : "dinâmica"} bloqueia domingo fechado e sábado fora de 08–12 por arraste, seleção e formulário, sem alterar dados salvos.`);
     } finally { await ctx.close(); }
   }
 };

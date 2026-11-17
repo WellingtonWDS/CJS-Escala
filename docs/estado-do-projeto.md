@@ -20,6 +20,10 @@ A validação compartilhada pela edição manual e pelas trocas de cards impede 
 
 Validação: **604 testes unitários**, build e navegador nos dois modelos: arraste real, seleção de dois dias, formulário, rejeição sem gravação parcial, troca válida em empresa aberta aos domingos, desfazer, horários noturnos, persistência e formulário móvel.
 
+**Ampliação para horários reduzidos:** alterações de trabalho precisam respeitar entrada e saída globais do dia. A troca verifica os dois destinos antes da apuração legal; formulários, busca de cobertura e readequação após edição usam o mesmo limite. Não basta ter duração líquida compatível: sábado 08–12 rejeita também 09–13. Perfis próprios, turno B e compensação coletiva não ampliam esse funcionamento. Horário padrão/por dia, fallback, preenchimento legado de meio período e virada noturna previstos na abertura são tratados. Não altera os intervalos de referência nem impede redistribuí-los dentro da abertura. Cadastros/resultados existentes preservados, sem migração ou mudança de versão de regras.
+
+Validação ampliada: **608 testes unitários**, build e regressões reais de navegador para arraste/formulário, trocas válidas/desfazer, horários reduzidos e noturnos, persistência e formulário móvel nos dois modelos. Teste do rateio automático confere rejeição além da abertura e liberação após configurar funcionamento suficiente.
+
 ## Liberação de 42h e referência jurídica — 17/11/2026
 
 **Orientação de 42h — 17/11/2026:** o seletor passa a explicar o bloqueio por referência/mês fora da transição ou por instrumento coletivo selecionado com condições insuficientes. No fixo, **01/12/2026** é anterior ao início; com referência **16/12/2026**, a opção é liberada sem ACT/CCT. A empresa sem instrumento mantém **Nenhuma compensação informada**. Instrução visível e acessível junto ao seletor; regra/versão de cálculo preservada. 601 testes unitários, build e navegador aprovados, com geração real de 42h sem ACT nesse caso. [Orientações](transicao42-stf.md).

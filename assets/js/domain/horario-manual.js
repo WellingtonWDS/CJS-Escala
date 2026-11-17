@@ -1,7 +1,7 @@
 import { alocacoesDoDia } from "./funcoes.js";
 import { timeToMin } from "./datas-horas.js";
 import { configDaEscala } from "./contexto-escala.js";
-import { DIAS_SEMANA } from "../config/regras-jornada.js";
+import { validarFuncionamentoEmpresa } from "./funcionamento-empresa.js";
 import { escalaFixa } from "./modelo-escala.js";
 import { apurarComputoCCT } from "./computo-cct.js";
 import { configDoPerfil } from "./perfil-dominio.js";
@@ -39,10 +39,10 @@ export function aplicarHorarioManual(state, colaboradorId, data, status, jornada
   // O funcionamento da empresa é uma restrição global. O perfil importado do
   // colaborador pode ter outros dias, mas não autoriza abrir um dia fechado.
   // Folgas continuam permitidas para corrigir resultados antigos.
-  if (["T", "FE"].includes(status) && !config.diasTrabalho.includes(original.weekday))
-    throw Error(`A empresa não funciona neste dia (${DIAS_SEMANA[original.weekday]}). Não é possível transferir ou cadastrar trabalho nele. Para trabalhar neste dia, revise os dias de funcionamento na aba Jornada.`);
+  if (["T", "FE"].includes(status)) validarFuncionamentoEmpresa(config, original);
   const proprio = configDoPerfil(config, pessoa.colaborador) || config;
   const normal = ["T", "FE"].includes(status) ? validarHorarioManual(jornada) : null;
+  if (normal) validarFuncionamentoEmpresa(config, original, normal);
   const dias = fixa ? [...new Map([
     ...(pessoa.diasContexto || []), ...(pessoa.diasApuracao || []), ...pessoa.dias,
   ].filter((d) => d.weekday === original.weekday).map((d) => [d.data, d])).values()] : [original];

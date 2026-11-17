@@ -10,6 +10,10 @@ Trocas por arraste, seleção de dois dias e edição manual bloqueiam trabalho 
 
 Validação: **604 testes unitários**, build e regressões de navegador de bloqueio, trocas válidas, confirmação/desfazer e edição de horários aprovados nos dois modelos, incluindo persistência e formulário móvel.
 
+**Limites de horário:** entrada e saída das alterações também precisam caber no funcionamento do dia, antes das conferências legais. Exemplo: sábado das **08h às 12h** rejeita tanto o turno de segunda das 08h às 18h quanto quatro horas das 09h às 13h. Regra compartilhada por arraste, edição manual, busca de cobertura e readequação após edição. Horários individuais e ACT/CCT não ampliam a abertura global. Respeita horário padrão/por dia, meio período legado e virada noturna quando prevista no funcionamento; o intervalo pode continuar sendo redistribuído dentro da abertura.
+
+Validação ampliada: **608 testes unitários**, build e navegador nos modelos fixo/dinâmico, com bloqueio sem gravação parcial, troca válida/desfazer, horários reduzidos, noite e persistência. O rateio automático de 42h só amplia a saída se couber no funcionamento cadastrado.
+
 ## Transição de 42h sem ACT/CCT — 12/11/2026
 
 **Orientação de 42h — 17/11/2026:** o seletor passa a explicar o bloqueio por referência/mês fora da transição ou por instrumento coletivo selecionado com condições insuficientes. No fixo, **01/12/2026** é anterior ao início; com referência **16/12/2026**, a opção é liberada sem ACT/CCT. A empresa sem instrumento mantém **Nenhuma compensação informada**. Instrução visível e acessível junto ao seletor; regra/versão de cálculo preservada. 601 testes unitários, build e navegador aprovados, com geração real de 42h sem ACT nesse caso. [Orientações](docs/transicao42-stf.md).

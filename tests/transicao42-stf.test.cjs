@@ -122,6 +122,10 @@ test('buscar ajustes pode recuperar as 2h faltantes sem ACT na transição', asy
   for (const r of config.escalaGerada.resultado) for (const campo of ['dias', 'diasContexto', 'diasApuracao']) for (const d of r[campo] || []) {
     if (d.status === 'T') Object.assign(d, { horas: 8, horasPrevistas: 8, horasComputadasCCT: 8, saidaMin: 1080 });
   }
+  // Autorização legal não estende o funcionamento operacional.
+  const bloqueado = buscarAjustesCobertura(config);
+  assert.equal(bloqueado.alteracoes.length, 0);
+  for (const dia of [1,2,3,4,5]) config.jornadaPorDia[dia] = { ...config.jornadaPorDia[dia], saida: '18:24' };
   const plano = buscarAjustesCobertura(config);
   assert(plano.acoes.some(a => a.tipo === 'rateio'));
   assert(plano.deficitAntesMin > 0);

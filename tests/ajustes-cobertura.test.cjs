@@ -537,6 +537,12 @@ test("alternativa de turno B utiliza apenas a janela declarada e preserva descan
     fim: "21:00",
   };
   gerar(s);
+  // Horários atuais preservados; a empresa declara abertura até 23h.
+  s.horariosOrigemCobertura = {
+    jornada: structuredClone(s.jornada), horarioPorDia: false,
+    turnosRevezamento: true, entradaTurnoB: "14:00",
+  };
+  s.jornada.saida = "23:00";
   const p = buscar(s);
   assert.ok(
     p.alteracoes.some(
@@ -549,7 +555,7 @@ test("alternativa de turno B utiliza apenas a janela declarada e preserva descan
   assert.ok(
     novo.resultado[indice].dias
       .filter((d) => d.ajusteAutomatico)
-      .every((d) => d.saidaMin <= 1440),
+      .every((d) => d.saidaMin <= 23 * 60),
   );
 });
 

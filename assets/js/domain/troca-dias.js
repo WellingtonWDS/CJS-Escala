@@ -1,4 +1,5 @@
-import { aplicarHorarioManual } from "./horario-manual.js";
+import { aplicarHorarioManual, validarHorarioManual } from "./horario-manual.js";
+import { validarFuncionamentoEmpresa } from "./funcionamento-empresa.js";
 import { configDaEscala } from "./contexto-escala.js";
 import {
   atualizarRelatoriosAjustes,
@@ -28,6 +29,11 @@ export function trocarDias(state, colaboradorId, dataA, dataB) {
   if (a.weekday === b.weekday && state.modeloEscala === "fixa")
     throw Error("Escolha outro dia da semana.");
   const config = configDaEscala(trabalhoState);
+  // Confira os dois destinos antes de apurar qualquer regra legal da troca.
+  for (const [de, para] of [[a, b], [b, a]]) if (trabalho(de)) {
+    validarFuncionamentoEmpresa(config, para);
+    validarFuncionamentoEmpresa(config, para, validarHorarioManual(horario(de)));
+  }
   const antes = atualizarRelatoriosAjustes(config, escala);
   const erros = new Set(
     antes.validacoes.flatMap((v) =>

@@ -60,7 +60,7 @@ test('restrições individuais impedem alterações inválidas sem mutação e e
  assert.throws(()=>desfazer(s),/escala mudou/);
 });
 test('CSV conserva os horários editados, intervalo e virada de dia nos dois modelos',()=>{
- for(const fixa of [false,true]){const s=empresa(fixa),d=primeiro(s);s.escalaGerada=editar(s,1,d.data,'T',horario('22:00','06:00','02:00','03:00'));const arquivo=csv(s);assert.match(arquivo,/22:00/);assert.match(arquivo,/06:00/);assert.match(arquivo,/01:00/);assert.match(arquivo,/02:00 \(\+1d\)/);assert.match(arquivo,/03:00 \(\+1d\)/);}
+ for(const fixa of [false,true]){const s=empresa(fixa),d=primeiro(s);s.jornada=horario('22:00','06:00','02:00','03:00');s.escalaGerada=editar(s,1,d.data,'T',horario('22:00','06:00','02:00','03:00'));const arquivo=csv(s);assert.match(arquivo,/22:00/);assert.match(arquivo,/06:00/);assert.match(arquivo,/01:00/);assert.match(arquivo,/02:00 \(\+1d\)/);assert.match(arquivo,/03:00 \(\+1d\)/);}
 });
 test('edição de trabalho no feriado retira abono e mantém alerta sem alterar o feriado dos colegas',()=>{
  const s=empresa(),data='2026-10-12',antes=structuredClone(s.escalaGerada);
@@ -94,6 +94,25 @@ test('o bloqueio segue os dias configurados, permite domingo aberto e preserva t
  assert.throws(()=>editar(s,id,segunda.data,'T',horario()),/empresa não funciona.*Seg/i);
  assert.equal(editar(s,id,domingo.data,'T',horario()).resultado[0].dias.find(d=>d.data===domingo.data).status,'T');
  s.diasTrabalho=s.diasTrabalho.filter(d=>d!==0);
+ s.horarioPorDia=true;s.jornadaPorDia[6]=horario('22:00','06:00','02:00','03:00');
  const noite=editar(s,id,sabado.data,'T',horario('22:00','06:00','02:00','03:00'));
  assert.equal(noite.resultado[0].dias.find(d=>d.data===sabado.data).saidaMin,1800);
+});
+test('funcionamento da empresa limita horários manuais, antes do perfil individual e da permissão coletiva',()=>{
+ for(const fixa of [false,true]){
+  const s=empresa(fixa),sab=primeiro(s,6),seg=primeiro(s,1),id=s.escalaGerada.resultado[0].colaborador.id;
+  s.horarioPorDia=true;s.jornadaPorDia[6]=horario('08:00','12:00','','');
+  s.instrumentoCompensacao='act_cct';s.instrumentoColetivo={identificacao:'CCT',compensacaoDiaria:true,limiteDiario:10,inicio:'2026-01-01',fim:'2028-12-31',compativelEC141:true};
+  s.escalaGerada.resultado[0].colaborador.quadroDominio={ativo:true,tipo:'semanal',modelo:'5x2',semana:{6:{status:'trabalho',jornada:horario('07:00','18:00')}}};
+  const snapshot=structuredClone(s);
+  for(const j of [horario('07:59','12:00','',''),horario('08:00','12:01','',''),horario('09:00','13:00','',''),horario('08:00','18:00'),horario('22:00','02:00','','')]){
+   assert.throws(()=>editar(s,id,sab.data,'T',j),/funcionamento da empresa.*08:00–12:00/);
+   assert.deepEqual(s,snapshot);
+  }
+  assert.throws(()=>editar(s,id,seg.data,'T',horario('08:00','17:24')),/funcionamento da empresa.*08:00–17:00/);
+  delete s.escalaGerada.resultado[0].colaborador.quadroDominio;
+  const nova=editar(s,id,sab.data,'T',horario('08:00','12:00','',''));
+  assert.equal(nova.resultado[0].dias.find(d=>d.data===sab.data).horas,4);
+  if(fixa)assert(nova.resultado[0].dias.filter(d=>d.weekday===6).every(d=>d.saidaMin===720));
+ }
 });

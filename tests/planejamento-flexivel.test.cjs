@@ -47,6 +47,8 @@ test('buscar ajustes completa saldo de 40 para 42h, inclusive quando a cobertura
  for(const r of p.escalaGerada.resultado)for(const campo of ['dias','diasContexto','diasApuracao'])for(const d of r[campo]||[]){
   if(d.status==='T'){d.horas=8;d.horasPrevistas=8;d.horasComputadasCCT=8;d.saidaMin=1080;}
  }
+ // O rateio só pode ampliar o turno se a empresa também estiver aberta.
+ for(const dia of [1,2,3,4,5]) p.jornadaPorDia[dia]={...p.jornadaPorDia[dia],saida:'18:24'};
  const original=structuredClone(p.escalaGerada),plano=buscar(p);
  assert(plano.acoes.some(a=>a.tipo==='rateio'));assert(plano.deficitAntesMin>0);assert.equal(plano.deficitDepoisMin,0);
  assert.equal(plano.antes.minutosFaltantes,0);assert.equal(plano.depois.minutosFaltantes,0);
@@ -148,6 +150,8 @@ test('rateio em mês iniciado no meio da semana não altera o contexto fora do p
  const p=converter(s,{...op,periodo:'2027-04'}).proposta.config;
  for(const r of p.escalaGerada.resultado)for(const campo of ['dias','diasContexto','diasApuracao'])for(const d of r[campo]||[])
   if(d.status==='T'){d.horas=8;d.horasPrevistas=8;d.horasComputadasCCT=8;d.saidaMin=1080;}
+ // O rateio só pode ampliar o turno se a empresa também estiver aberta.
+ for(const dia of [1,2,3,4,5]) p.jornadaPorDia[dia]={...p.jornadaPorDia[dia],saida:'18:24'};
  const original=structuredClone(p.escalaGerada),plano=buscar(p);
  assert(plano.alteracoes.length>0);
  assert(plano.alteracoes.every(a=>a.data>='2027-04-01'&&a.data<='2027-04-30'));
