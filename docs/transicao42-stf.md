@@ -14,6 +14,18 @@ Referências: [ADI 8041](https://portal.stf.jus.br/processos/detalhe.asp?inciden
 - A dispensa não se aplica automaticamente à referência atual 6×1/44h, a 12×36, à compensação de repousos, ao banco de horas ou a jornadas maiores. Intervalos, descanso entre jornadas, salário e duas folgas continuam sujeitos às respectivas regras.
 - O resultado explica a aplicação provisória. Fora do período, a hipótese sem acordo retorna ao limite geral de 8h; a simulação explícita não prolonga a liminar.
 
+## Se a opção de 42h estiver desabilitada — orientação de 17/11/2026
+
+A opção usa o período da **proposta**, não apenas o fato de a empresa ter ou não ACT/CCT:
+
+- **Escala fixa:** a Data de referência da Configuração precisa estar entre **16/12/2026 e 15/12/2027** para a hipótese sem acordo. Por exemplo, **01/12/2026** ainda é anterior à transição; alterar para **16/12/2026** libera o teste sem preencher ACT/CCT. A referência de 01/12 continua válida para analisar a fase anterior; não é uma exigência de acordo coletivo.
+- **Escala dinâmica:** confira o **Mês da proposta 5×2**, na etapa Conversão e comparação. Escolha dezembro/2026 a dezembro/2027; os dias fora da janela legal nos meses de fronteira conservam seus limites próprios.
+- **Empresa sem instrumento coletivo:** em Tipo de escala, mantenha **Nenhuma compensação informada**. Não é preciso marcar cláusulas ou cadastrar um ACT/CCT fictício. Se um ACT/CCT/banco estiver selecionado, as condições declaradas continuam sendo verificadas; o sistema não as apaga silenciosamente.
+
+O seletor agora mostra o motivo específico e uma orientação acessível logo abaixo, inclusive a referência atual no modo fixo. Mudanças de referência invalidam os resultados dependentes normalmente; depois de ajustar, gere novamente a proposta. A regra de cálculo/versão `ec141-2026-11-12-14` não mudou nesta revisão de orientação.
+
+Verificação: **601 testes unitários**, build e navegador aprovados, incluindo a reprodução 01/12 bloqueada → 16/12 liberada → geração fixa de cinco dias de 8h24 sem ACT, além dos modos fixo/dinâmico e contraste claro/escuro.
+
 ## Reversibilidade e publicação
 
 `TRANSICAO_42_SEM_ACT`, em `assets/js/domain/ec141.js`, concentra vigência, teto e ativação. O limite diário anterior e a antiga exigência do seletor permanecem em blocos comentados; o ramo coletivo continua ativo para os demais casos. Para desativar a exceção, alterar `ativa` para `false`, atualizar a versão de regras, revisar as orientações e repetir os testes.

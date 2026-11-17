@@ -1,4 +1,4 @@
-import { permiteSimular42 } from "../domain/simulacao42.js";
+import { diagnosticoSimulacao42 } from "../domain/simulacao42.js";
 import { executarCalculoEscala } from "./calculo-escala.js";
 import { renderResumoConversao, renderDetalhesConversao } from "./comparacao-painel.js";
 import { converterEscala, compararConversao } from "../domain/conversao.js";
@@ -56,9 +56,15 @@ export function createConversaoUI({
     const select=el("conversao-fase");
     const option=select.querySelector?.('[value="transicao42"]');
     if(!option)return;
-    option.disabled=!permiteSimular42(state,el("conversao-periodo").value);
+    const regra = diagnosticoSimulacao42(state,el("conversao-periodo").value);
+    option.disabled=!regra.permitida;
+    const orientacao = el("conversao-regra42");
+    if (orientacao) {
+      if (orientacao.textContent !== regra.mensagem) orientacao.textContent = regra.mensagem;
+      orientacao.dataset.motivo = regra.motivo;
+    }
     // Antes da liminar: option.textContent=option.disabled?"42h — exige ACT/CCT vigente com compensação diária":"Simular fase de 42h";
-    option.textContent=option.disabled?"42h — confira o período e a base aplicável":"Simular fase de 42h";
+    option.textContent=regra.rotulo;
     if(option.disabled && select.value==="transicao42") {
       select.value="definitivo40";
       if(state.destinoConversao)state.destinoConversao.fase="definitivo40";

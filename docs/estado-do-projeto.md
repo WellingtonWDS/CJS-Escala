@@ -14,6 +14,10 @@ Quatro novas empresas por segmento e onze preenchimentos DEMO para comércio con
 
 Carregamento imediato na geração atual/proposta, cálculo em Worker local, bloqueio de duplicação, liberação em falhas e proteção contra resultados de dados alterados. Resumo da busca de cobertura aparece primeiro em modal e depois abaixo do botão, com aplicação separada. Regras de cálculo e versões de dados preservadas.
 
+## Liberação de 42h e referência jurídica — 17/11/2026
+
+**Orientação de 42h — 17/11/2026:** o seletor passa a explicar o bloqueio por referência/mês fora da transição ou por instrumento coletivo selecionado com condições insuficientes. No fixo, **01/12/2026** é anterior ao início; com referência **16/12/2026**, a opção é liberada sem ACT/CCT. A empresa sem instrumento mantém **Nenhuma compensação informada**. Instrução visível e acessível junto ao seletor; regra/versão de cálculo preservada. 601 testes unitários, build e navegador aprovados, com geração real de 42h sem ACT nesse caso. [Orientações](transicao42-stf.md).
+
 ## Síntese do PDF do empregador — 17/11/2026
 
 **PDF do empregador mais enxuto — 17/11/2026:** quadro de horários com dias iguais agrupados por colaborador, tabela semanal única com abonos/créditos e cores, cobertura por faixas consolidadas e pontos de atenção sem repetir o mesmo texto para cada pessoa/data. Mantém nomes completos, horários/intervalos, funções e referências dos alertas. No DEMO de cinco colaboradores, mensal **22 → 3 páginas** e fixo **7 → 2**. PDFs individuais do ZIP continuam detalhados. [Formato, limites e validação](pdf-empregador.md).
