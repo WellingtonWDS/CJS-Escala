@@ -4,6 +4,12 @@ Para cadastrar um escritório/empresa com cinco colaboradores e preenchimento fi
 
 Ferramenta para configurar, gerar e revisar escalas de trabalho e comparar a escala atual 6×1 com uma proposta 5×2. A interface e os cálculos usam HTML, CSS e módulos JavaScript nativos no navegador, sem bundler ou compilação do JavaScript da aplicação. A autenticação depende de código no servidor: middleware e função de login na Vercel. Por padrão, os cadastros e as escalas ficam no navegador. O modo individual com PostgreSQL e n8n é opcional e exige a configuração de homologação descrita adiante.
 
+## Edição da escala e dias de funcionamento — 17/11/2026
+
+Trocas por arraste, seleção de dois dias e edição manual bloqueiam trabalho em dias em que a empresa não funciona, conforme a aba Jornada. A regra vale nos quadros atual/proposta e nos modelos fixo/dinâmico; horários individuais importados não autorizam abrir um dia fechado. A tentativa mostra um aviso sem alterar os dias, o histórico ou os dados salvos. Continua possível corrigir um dia para folga e trocar trabalho entre dias abertos. Cadastros e escalas salvas são preservados; sem migração SQL ou variável nova.
+
+Validação: **604 testes unitários**, build e regressões de navegador de bloqueio, trocas válidas, confirmação/desfazer e edição de horários aprovados nos dois modelos, incluindo persistência e formulário móvel.
+
 ## Transição de 42h sem ACT/CCT — 12/11/2026
 
 **Orientação de 42h — 17/11/2026:** o seletor passa a explicar o bloqueio por referência/mês fora da transição ou por instrumento coletivo selecionado com condições insuficientes. No fixo, **01/12/2026** é anterior ao início; com referência **16/12/2026**, a opção é liberada sem ACT/CCT. A empresa sem instrumento mantém **Nenhuma compensação informada**. Instrução visível e acessível junto ao seletor; regra/versão de cálculo preservada. 601 testes unitários, build e navegador aprovados, com geração real de 42h sem ACT nesse caso. [Orientações](docs/transicao42-stf.md).

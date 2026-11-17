@@ -1,19 +1,42 @@
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
-async function estado(fixa = false) {
+async function estado(fixa = false, domingoAberto = true, atual = false) {
   const { criarEstadoDemo } = await import("../database/demo/state.mjs");
   const { converterEscala } = await import("../assets/js/domain/conversao.js");
   const s = criarEstadoDemo();
   s.modeloEscala = fixa ? "fixa" : "dinamica";
   s.coberturaAtiva = false;
   s.atividadeComercio = false;
+  // Os testes de troca válida precisam de uma empresa que abra aos domingos.
+  if (domingoAberto) {
+    s.diasTrabalho = [0, 1, 2, 3, 4, 5, 6];
+    s.jornadaPorDia[0] = structuredClone(s.jornada);
+  }
   s.colaboradores.forEach((c) => (c.sexo = "masculino"));
-  return converterEscala(s, {
+  const conversao = converterEscala(s, {
     periodo: "2028-02",
     fase: "definitivo40",
     folgas: "fim_semana",
-  }).proposta.config;
+  });
+  return atual
+    ? { ...conversao.origem.config, escalaGerada: conversao.origem.escala }
+    : conversao.proposta.config;
 }
+test("empresa fechada impede troca de trabalho com domingo nos dois sentidos, modelos e quadros", async () => {
+  const { trocarDias } = await import("../assets/js/domain/troca-dias.js");
+  for (const fixa of [false, true]) for (const atual of [false, true]) {
+    const s = await estado(fixa, false, atual);
+    const r = s.escalaGerada.resultado[0];
+    const a = r.dias.find(d => d.weekday === 1 && d.status === "T");
+    const b = r.dias.find(d => d.weekday === 0 && d.data > a.data);
+    assert.equal(b.status, "F");
+    const snapshot = structuredClone(s);
+    for (const [de, para] of [[a, b], [b, a]]) {
+      assert.throws(() => trocarDias(s, r.colaborador.id, de.data, para.data), /empresa não funciona.*Dom/i);
+      assert.deepEqual(s, snapshot);
+    }
+  }
+});
 test("troca atômica por data e padrão, horários completos, origem intacta e desfazer", async () => {
   const { trocarDias, desfazerTroca } =
     await import("../assets/js/domain/troca-dias.js");

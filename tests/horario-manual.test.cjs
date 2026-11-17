@@ -71,3 +71,29 @@ test('edição de trabalho no feriado retira abono e mantém alerta sem alterar 
  assert.deepEqual(s.escalaGerada.resultado[1],antes.resultado[1]);
  assert.equal(antes.resultado[0].dias.find(d=>d.data===data).feriado.trabalhado,false);
 });
+test('edição manual bloqueia trabalho em dia fechado, inclusive feriado e perfil próprio, sem impedir correção para folga',()=>{
+ for(const fixa of [false,true]){
+  const s=empresa(fixa),d=primeiro(s,0),id=s.escalaGerada.resultado[0].colaborador.id;
+  // Um perfil individual que mencione domingo não altera o funcionamento global.
+  s.escalaGerada.resultado[0].colaborador.quadroDominio={ativo:true,tipo:'semanal',modelo:'5x2',semana:{0:{status:'trabalho',jornada:horario()}}};
+  const snapshot=structuredClone(s);
+  for(const status of fixa?['T']:['T','FE']){
+   assert.throws(()=>editar(s,id,d.data,status,horario()),/empresa não funciona.*Dom/i);
+   assert.deepEqual(s,snapshot);
+  }
+  delete s.escalaGerada.resultado[0].colaborador.quadroDominio;
+  d.status='T';d.horas=8;
+  const corrigida=editar(s,id,d.data,'F');
+  assert.equal(corrigida.resultado[0].dias.find(x=>x.data===d.data).status,'F');
+ }
+});
+test('o bloqueio segue os dias configurados, permite domingo aberto e preserva turno noturno iniciado em dia aberto',()=>{
+ const s=empresa(),id=s.escalaGerada.resultado[0].colaborador.id;
+ const segunda=primeiro(s,1),domingo=primeiro(s,0),sabado=primeiro(s,6);
+ s.diasTrabalho=s.diasTrabalho.filter(d=>d!==1).concat(0);
+ assert.throws(()=>editar(s,id,segunda.data,'T',horario()),/empresa não funciona.*Seg/i);
+ assert.equal(editar(s,id,domingo.data,'T',horario()).resultado[0].dias.find(d=>d.data===domingo.data).status,'T');
+ s.diasTrabalho=s.diasTrabalho.filter(d=>d!==0);
+ const noite=editar(s,id,sabado.data,'T',horario('22:00','06:00','02:00','03:00'));
+ assert.equal(noite.resultado[0].dias.find(d=>d.data===sabado.data).saidaMin,1800);
+});

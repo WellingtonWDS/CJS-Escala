@@ -21,6 +21,8 @@ module.exports = async ({ browser, baseURL }) => {
       seed.modeloEscala = fixa ? "fixa" : "dinamica";
       seed.atividadeComercio = false;
       seed.coberturaAtiva = false;
+      seed.diasTrabalho = [0, 1, 2, 3, 4, 5, 6];
+      seed.jornadaPorDia[0] = structuredClone(seed.jornada);
       seed.colaboradores.forEach((c) => (c.sexo = "masculino"));
       await page.evaluate(
         (s) => localStorage.setItem("fintria-escala-dp-v2", JSON.stringify(s)),

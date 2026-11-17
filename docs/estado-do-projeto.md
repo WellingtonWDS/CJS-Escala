@@ -14,6 +14,12 @@ Quatro novas empresas por segmento e onze preenchimentos DEMO para comércio con
 
 Carregamento imediato na geração atual/proposta, cálculo em Worker local, bloqueio de duplicação, liberação em falhas e proteção contra resultados de dados alterados. Resumo da busca de cobertura aparece primeiro em modal e depois abaixo do botão, com aplicação separada. Regras de cálculo e versões de dados preservadas.
 
+## Bloqueio de trabalho em dias fechados — 17/11/2026
+
+A validação compartilhada pela edição manual e pelas trocas de cards impede atribuir trabalho a um dia fora do funcionamento configurado na aba Jornada, inclusive se o perfil individual importado mencionar esse dia. Aplica-se às escalas atual/proposta e fixa/dinâmica. A troca rejeitada não altera nenhum dos dias nem os dados salvos; a correção para folga permanece disponível. Turnos noturnos iniciados em dia aberto conservam a virada de dia. Sem alteração de cadastros, versão de regras, SQL ou configuração de ambiente.
+
+Validação: **604 testes unitários**, build e navegador nos dois modelos: arraste real, seleção de dois dias, formulário, rejeição sem gravação parcial, troca válida em empresa aberta aos domingos, desfazer, horários noturnos, persistência e formulário móvel.
+
 ## Liberação de 42h e referência jurídica — 17/11/2026
 
 **Orientação de 42h — 17/11/2026:** o seletor passa a explicar o bloqueio por referência/mês fora da transição ou por instrumento coletivo selecionado com condições insuficientes. No fixo, **01/12/2026** é anterior ao início; com referência **16/12/2026**, a opção é liberada sem ACT/CCT. A empresa sem instrumento mantém **Nenhuma compensação informada**. Instrução visível e acessível junto ao seletor; regra/versão de cálculo preservada. 601 testes unitários, build e navegador aprovados, com geração real de 42h sem ACT nesse caso. [Orientações](transicao42-stf.md).
