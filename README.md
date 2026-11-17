@@ -4,6 +4,12 @@ Para cadastrar um escritório/empresa com cinco colaboradores e preenchimento fi
 
 Ferramenta para configurar, gerar e revisar escalas de trabalho e comparar a escala atual 6×1 com uma proposta 5×2. A interface e os cálculos usam HTML, CSS e módulos JavaScript nativos no navegador, sem bundler ou compilação do JavaScript da aplicação. A autenticação depende de código no servidor: middleware e função de login na Vercel. Por padrão, os cadastros e as escalas ficam no navegador. O modo individual com PostgreSQL e n8n é opcional e exige a configuração de homologação descrita adiante.
 
+## Explicação das tentativas de cobertura — 17/11/2026
+
+Após **Buscar ajustes de cobertura**, abra **Entenda a busca: tentativas e impedimentos** para conferir as estratégias avaliadas, quantidades aceitas/descartadas, exemplos reais e a regra ou lacuna que impediu cada alternativa. A triagem separa bloqueios de configuração — como sábado/domingo fixos — de tentativas completas e mostra, quando aplicável, a conta do conflito entre sábado reduzido e referência contratual. O diagnóstico distingue falta de capacidade nas condições cadastradas de busca sem solução; não conclui contratação apenas porque não encontrou ajuste. Explicações acompanham o registro dos ajustes aplicados. Tema claro/escuro e celular; sem mudar regras de geração ou exigir SQL. [Funcionamento, limites e testes](docs/explicacao-busca-cobertura.md).
+
+Validação: **613 testes unitários**, build e navegador aprovados, incluindo os dois modelos, Worker, temas/celular, exemplos reais, aplicação/desfazer, recarga e edição manual.
+
 ## Edição da escala e dias de funcionamento — 17/11/2026
 
 Trocas por arraste, seleção de dois dias e edição manual bloqueiam trabalho em dias em que a empresa não funciona, conforme a aba Jornada. A regra vale nos quadros atual/proposta e nos modelos fixo/dinâmico; horários individuais importados não autorizam abrir um dia fechado. A tentativa mostra um aviso sem alterar os dias, o histórico ou os dados salvos. Continua possível corrigir um dia para folga e trocar trabalho entre dias abertos. Cadastros e escalas salvas são preservados; sem migração SQL ou variável nova.

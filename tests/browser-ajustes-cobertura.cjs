@@ -134,6 +134,9 @@ module.exports = async function ({ browser, baseURL }) {
     let s = await saved();
     assert.equal(s.escalaGerada.coberturaOperacional.lacunas.length, 0);
     assert.ok(s.escalaGerada.ajustesCobertura);
+    assert.ok(s.escalaGerada.ajustesCobertura.diagnosticoBusca);
+    assert.equal(await painel.locator('[data-busca-detalhes]').count(),1);
+    assert.match(await painel.innerText(),/Registro da última busca aplicada/);
     assert.equal(await diagnostico.getAttribute("data-status"), "coberta");
     assert.ok(await painel.locator("[data-ajuste-desfazer]").isEnabled());
     const aplicado = structuredClone((await saved()).escalaGerada);

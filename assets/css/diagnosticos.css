@@ -54,5 +54,17 @@
 }
 .diagnostico-provas { list-style: disc; padding: 0 24px 16px 38px; font-size: 14px; }
 .diagnostico-provas li + li { margin-top: 10px; }
+.busca-auditoria { --busca-linha:#dce5ee; --busca-fundo:#f5f8fb; }
+.busca-auditoria-conteudo { padding:0 16px 16px; min-width:0; overflow-wrap:anywhere; }
+.busca-auditoria-conteudo h4 { font-size:15px; font-weight:750; margin:22px 0 10px; }
+.busca-auditoria-conteudo h5, .busca-auditoria-conteudo summary { font-weight:650; }
+.busca-auditoria-conteudo p { font-size:13px; line-height:1.65; margin:10px 0; }
+.busca-auditoria-conteudo summary { cursor:pointer; line-height:1.6; }
+.busca-auditoria-exemplo { margin:12px 0; padding:12px; border:1px solid var(--busca-linha); border-radius:8px; background:var(--busca-fundo); font-size:13px; }
+.busca-auditoria-tabela { max-width:100%; overflow:auto; border:1px solid var(--busca-linha); border-radius:10px; }
+.busca-auditoria-tabela table { min-width:590px; width:100%; border-collapse:collapse; font-size:13px; }
+.busca-auditoria-tabela th, .busca-auditoria-tabela td { padding:12px; text-align:left; border-bottom:1px solid var(--busca-linha); vertical-align:top; }
+.busca-auditoria-tabela th { background:var(--busca-fundo); }
+html[data-theme="dark"] .busca-auditoria { --busca-linha:var(--dark-line); --busca-fundo:var(--dark-raised); }
 .diagnostico-premissas { padding: 0 16px 16px; }
 .diagnostico-subtitulo { font-size: 15px; font-weight: 700; margin-top: 20px; }

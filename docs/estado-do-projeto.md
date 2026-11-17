@@ -14,6 +14,12 @@ Quatro novas empresas por segmento e onze preenchimentos DEMO para comércio con
 
 Carregamento imediato na geração atual/proposta, cálculo em Worker local, bloqueio de duplicação, liberação em falhas e proteção contra resultados de dados alterados. Resumo da busca de cobertura aparece primeiro em modal e depois abaixo do botão, com aplicação separada. Regras de cálculo e versões de dados preservadas.
 
+## Tentativas de cobertura explicadas — 17/11/2026
+
+Resultado da busca com área expansível **Entenda a busca: tentativas e impedimentos**: estratégias/contagens, motivos de descarte com exemplos reais de horários/intervalos/funções, regra legal ou lacuna criada e motivo de encerramento. Triagem das lacunas mostra folgas fixas, dias preservados e habilitações; diferencia filtros de avaliações completas. Exibe limite contratual otimista do sábado reduzido quando aplicável e reutiliza as evidências do diagnóstico de equipe, sem tratar insucesso como prova de contratação. Explicação dos ajustes aplicados acompanha o registro já salvo da escala; buscas não aplicadas ficam na prévia da aba. Amostras limitadas, dados escapados, Worker/cancelamento e regras preservados; claro/escuro e celular. Sem migração ou alteração de versão. [Detalhes e limites](explicacao-busca-cobertura.md).
+
+Validação: **613 testes unitários**, build e regressões reais de navegador aprovados nos dois modelos, incluindo contagens, teto contratual, temas/celular, aplicação/desfazer, recarga e edição manual.
+
 ## Bloqueio de trabalho em dias fechados — 17/11/2026
 
 A validação compartilhada pela edição manual e pelas trocas de cards impede atribuir trabalho a um dia fora do funcionamento configurado na aba Jornada, inclusive se o perfil individual importado mencionar esse dia. Aplica-se às escalas atual/proposta e fixa/dinâmica. A troca rejeitada não altera nenhum dos dias nem os dados salvos; a correção para folga permanece disponível. Turnos noturnos iniciados em dia aberto conservam a virada de dia. Sem alteração de cadastros, versão de regras, SQL ou configuração de ambiente.

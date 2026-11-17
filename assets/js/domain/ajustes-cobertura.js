@@ -2,7 +2,8 @@ import { candidatosRateio, deficitContratual } from "./ajustes-rateio.js";
 import { analisarRateioSemanal } from "./rateio-semanal.js";
 import { alternativasIntervalo, faixaInicioIntervalo } from "./intervalos-cobertura.js";
 import { configDaEscala } from "./contexto-escala.js";
-import { trabalhoDentroDoFuncionamento } from "./funcionamento-empresa.js";
+import { trabalhoDentroDoFuncionamento, validarFuncionamentoEmpresa } from "./funcionamento-empresa.js";
+import { criarRegistroBusca, explicarResultadoBusca } from "./explicacao-busca.js";
 import { janelasDeclaradas as janelas } from "./disponibilidade.js";
 import { analisarCobertura, normalizarFuncao } from "./cobertura.js";
 import { habilitadoPara, funcaoDoDia, alocarFuncaoNoPeriodo, alocacoesDoDia, semAlocacoesFuncao } from "./funcoes.js";
@@ -496,31 +497,32 @@ export function coberturaNaoPiora(antes, depois) {
   }
   return true;
 }
-function seguro(config, antes, depois, alteracoes) {
-  if (alteracoes.some(a => !trabalhoDentroDoFuncionamento(config, a.depois))) return false;
+function motivoInseguro(config, antes, depois, alteracoes) {
+  for (const a of alteracoes) if (!trabalhoDentroDoFuncionamento(config, a.depois)) {
+    try { validarFuncionamentoEmpresa(config, a.depois, {entrada:a.depois.entradaMin,saida:a.depois.saidaMin}); }
+    catch (e) { return {codigo:"funcionamento",mensagem:e.message}; }
+    return {codigo:"funcionamento",mensagem:"Horário inválido para o funcionamento da empresa."};
+  }
   const domain = createDomain(config);
   for (const a of alteracoes) {
     const r = depois.resultado.find(
       (r) => r.colaborador.id === a.colaboradorId,
     );
-    if(!r || !podeMudar(config,r.colaborador,a.antes)) return false;
+    if(!r || !podeMudar(config,r.colaborador,a.antes)) return {codigo:"preservado",mensagem:"O dia está protegido contra alterações automáticas."};
     if (
       trabalha(a.depois) &&
       !janelas(config, r.colaborador, a.depois).some(
         (j) => a.depois.entradaMin >= j.inicio && a.depois.saidaMin <= j.fim,
       )
     )
-      return false;
+      return {codigo:"janela",mensagem:"O horário proposto não cabe na disponibilidade declarada para o colaborador."};
   }
   for (const id of new Set(alteracoes.map((a) => a.colaboradorId))) {
     const r = depois.resultado.find((r) => r.colaborador.id === id),
       anterior = antes.resultado.find((r) => r.colaborador.id === id);
-    if (
-      domain
-        .validarLegal(r.colaborador, r.dias, r.diasContexto, r.diasApuracao)
-        .some((i) => i.severidade === "erro")
-    )
-      return false;
+    const erro = domain.validarLegal(r.colaborador, r.dias, r.diasContexto, r.diasApuracao)
+      .find(i => i.severidade === "erro");
+    if (erro) return {codigo:"legal",mensagem:`${r.colaborador.nome}: ${erro.mensagem}`};
     for (const key of new Set(
       alteracoes
         .filter((a) => a.colaboradorId === id)
@@ -528,7 +530,7 @@ function seguro(config, antes, depois, alteracoes) {
     )) {
       const a = anterior.dias.filter((d) => semana(d.data) === key),
         b = r.dias.filter((d) => semana(d.data) === key);
-      if (a.filter(trabalha).length !== b.filter(trabalha).length) return false;
+      if (a.filter(trabalha).length !== b.filter(trabalha).length) return {codigo:"dias",mensagem:`${r.colaborador.nome}: a troca mudaria a quantidade de dias de trabalho nesta semana.`};
       const previo = apurarSemana(r.colaborador, a, config),
         atual = apurarSemana(r.colaborador, b, config);
       if (
@@ -536,10 +538,13 @@ function seguro(config, antes, depois, alteracoes) {
           !(atual.computadas > previo.computadas && atual.computadas <= atual.alvo + 0.001)) ||
         atual.alvo !== previo.alvo
       )
-        return false;
+        return {codigo:"carga",mensagem:`${r.colaborador.nome}: a alternativa reduziria as horas computadas, ultrapassaria a meta ou mudaria o alvo semanal.`};
     }
   }
-  return true;
+  return null;
+}
+function seguro(config, antes, depois, alteracoes) {
+  return !motivoInseguro(config, antes, depois, alteracoes);
 }
 export function buscarAjustesCobertura(config, opcoes = {}) {
   config = configDaEscala(config);
@@ -558,6 +563,7 @@ export function buscarAjustesCobertura(config, opcoes = {}) {
     Math.max(1, Math.trunc(opcoes.limiteAcoes || 20)),
   );
   const rejeicoes={semMelhoria:0,novaLacuna:0,regras:0,recorrencia:0};
+  const registroBusca=criarRegistroBusca(original);
   let tentativas = 0;
   const progresso = () =>
     opcoes.onProgresso?.({
@@ -583,7 +589,7 @@ export function buscarAjustesCobertura(config, opcoes = {}) {
     }
     busca: for (const gerado of propostas()) {
         const recorrentes = expandirRecorrencia(config, escala, gerado.alteracoes);
-        if (!recorrentes) {rejeicoes.recorrencia++;continue;}
+        if (!recorrentes) {rejeicoes.recorrencia++;registroBusca.registrar(gerado,"recorrencia","A alteração não pode ser replicada em todas as ocorrências do padrão.",false);continue;}
         const candidato = { ...gerado, alteracoes: recorrentes };
         const chaveCandidato = JSON.stringify(
           candidato.alteracoes.map((a) => [
@@ -606,7 +612,15 @@ export function buscarAjustesCobertura(config, opcoes = {}) {
         const melhoria=minutosFaltantes(cobertura)<minutosFaltantes(rel) ||
           deficitContratual(config,novo)<deficitContratual(config,escala);
         const preserva=melhoria && coberturaNaoPiora(rel,cobertura);
-        const valido=preserva && seguro(config,escala,novo,candidato.alteracoes);
+        const impedimento=preserva ? motivoInseguro(config,escala,novo,candidato.alteracoes) : null;
+        const valido=preserva && !impedimento;
+        const codigo=!melhoria?"sem_melhoria":!preserva?"nova_lacuna":impedimento?.codigo;
+        let motivo=impedimento?.mensagem || "";
+        if(codigo==="nova_lacuna") {
+          const nova=cobertura.lacunas.find(l=>!coberturaNaoPiora(rel,{lacunas:[l],avisos:[]}));
+          if(nova)motivo=`${nova.data}: descobriria ou agravaria a função ${nova.funcao}, das ${minToTime(nova.inicioMin)} às ${minToTime(nova.fimMin)} (${nova.faltantes} pessoa(s) faltando).`;
+        }
+        registroBusca.registrar(candidato,codigo,motivo);
         if(!melhoria) rejeicoes.semMelhoria++;
         else if(!preserva) rejeicoes.novaLacuna++;
         else if(!valido) rejeicoes.regras++;
@@ -676,7 +690,12 @@ export function buscarAjustesCobertura(config, opcoes = {}) {
         .filter((i) => ["pendencia", "alerta"].includes(i.severidade))
         .map((i) => ({ ...i, nome: r.colaborador.nome })),
     );
+  const encerramento=!rel.lacunas.length && !deficitContratual(config,escala)?"objetivos_atendidos"
+    :tentativas>=limiteTentativas?"limite_tentativas":acoes.length>=limiteAcoes?"limite_acoes"
+    :tentativas?"sem_melhoria":"sem_alternativas";
+  const diagnosticoBusca=explicarResultadoBusca(config,escala,rel,registroBusca.resultado(),encerramento,{podeMudar,podeVirarFolga});
   return {
+    diagnosticoBusca,
     avisosValidacao,
     versaoRegras: VERSAO_REGRAS,
     assinaturaAntes: assinaturaAjustes(config, original),
