@@ -17,6 +17,7 @@ import {
 } from "./diagnostico-equipe.js";
 
 export const TIPOS_TENTATIVA = {
+  redistribuicao_combinada: "Redistribuição combinada em duas operações",
   rateio: "Ratear saldo semanal",
   intervalo: "Redistribuir intervalos",
   horario: "Alterar entrada e saída",
@@ -80,13 +81,11 @@ const breve = (d, c) => ({
   intervaloInicioMin: d.intervaloInicioMin,
   intervaloFimMin: d.intervaloFimMin,
   funcao: funcaoDoDia(c, d),
-  alocacoesFuncao: (d.alocacoesFuncao || [])
-    .slice(0, 4)
-    .map((a) => ({
-      funcao: a.funcao,
-      inicioMin: a.inicioMin,
-      fimMin: a.fimMin,
-    })),
+  alocacoesFuncao: (d.alocacoesFuncao || []).slice(0, 4).map((a) => ({
+    funcao: a.funcao,
+    inicioMin: a.inicioMin,
+    fimMin: a.fimMin,
+  })),
   alocacoesOmitidas: Math.max(0, (d.alocacoesFuncao?.length || 0) - 4),
 });
 
@@ -155,7 +154,8 @@ function tetoComDiaCurto(config, r, dia) {
     p.tipoEscala !== "5x2" ||
     dia.status !== "F" ||
     (p.instrumentoCompensacao === "act_cct" &&
-      (p.instrumentoColetivo?.repousoMensal || p.instrumentoColetivo?.compensacaoHoras)) ||
+      (p.instrumentoColetivo?.repousoMensal ||
+        p.instrumentoColetivo?.compensacaoHoras)) ||
     r.dias.some((d) => d.creditoIntervaloCCT || d.creditoNoturnoCCT)
   )
     return null;
@@ -200,7 +200,7 @@ export function explicarResultadoBusca(
   rel,
   registro,
   estado,
-  { podeMudar, podeVirarFolga },
+  { podeMudar, podeVirarFolga, ampliada = false },
 ) {
   const grupos = new Map();
   let lacunasLimitadas = false;
@@ -336,13 +336,18 @@ export function explicarResultadoBusca(
     capacidade: capacidade
       ? {
           status: capacidade.status,
-          titulo: TITULOS_DIAGNOSTICO[capacidade.status],
+          titulo:
+            capacidade.status === "redistribuicao"
+              ? ampliada
+                ? "A busca ampliada ainda não fechou a cobertura com segurança."
+                : "A capacidade agregada não demonstra falta de pessoal, mas a busca inicial ainda não fechou a cobertura."
+              : TITULOS_DIAGNOSTICO[capacidade.status],
           provas: capacidade.provas.slice(0, 4).map((p) => p.mensagem),
           avisos: capacidade.avisos.slice(0, 4),
           orientacao:
             capacidade.status === "capacidade_insuficiente"
               ? "Há limites de capacidade demonstrados nas condições cadastradas. Avalie reforço parcial/temporário, disponibilidade e dimensionamento da operação; a quantidade e o tipo de contratação dependem dessa revisão."
-              : "O insucesso desta busca não prova que contratar seja a única saída. Capacidade total, cobertura por horário e cumprimento da meta contratual são análises diferentes.",
+              : `${capacidade.status === "redistribuicao" ? (ampliada ? `Foram avaliadas ${registro.tipos.find((t) => t.tipo === "redistribuicao_combinada")?.avaliadas || 0} combinações de duas operações dentro dos limites desta busca. Outros arranjos podem existir. ` : "Use Testar redistribuição ampliada para avaliar mudanças que precisam acontecer juntas. ") : ""}O insucesso desta busca não prova que contratar seja a única saída. Capacidade total, cobertura por horário e cumprimento da meta contratual são análises diferentes.`,
         }
       : null,
   };

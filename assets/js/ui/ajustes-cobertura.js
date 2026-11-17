@@ -36,6 +36,7 @@ export function createAjustesCoberturaUI({
     parar();
     if (campo("buscar")) {
       campo("buscar").disabled = false;
+      if(campo("ampliar"))campo("ampliar").disabled=false;
       campo("cancelar").hidden = true;
       campo("progresso").hidden = true;
       elemento().removeAttribute("aria-busy");
@@ -53,7 +54,7 @@ export function createAjustesCoberturaUI({
     const registro = state.escalaGerada?.ajustesCobertura;
     const podeDesfazer =
       registro?.assinaturaDepois === assinaturaAjustes(state);
-    return `<section id="${id}" class="border border-slate-200 rounded-lg p-4 mb-4 bg-slate-50"><h3 class="font-display font-semibold text-fintria-navy mb-2">Readequar escala · ajustes de cobertura</h3><p class="text-sm text-slate-600 mb-3">Busque trocas de folga na mesma semana, ajustes de entrada/saída, redistribuição dos intervalos e realocação para funções habilitadas. Confira horários e intervalos antes de aplicar. A busca preserva os dias de trabalho, pode completar o saldo semanal autorizado por rateio, respeita restrições e descanso e preserva dias editados manualmente. Ao ajustar a proposta 5×2, a escala de origem é preservada.</p><div class="flex flex-wrap gap-2"><button type="button" data-ajuste-buscar class="px-4 py-2 bg-fintria-navy text-white font-semibold rounded-md text-sm">Buscar ajustes de cobertura</button><button type="button" data-ajuste-cancelar hidden class="px-3 py-2 border border-slate-300 rounded-md text-sm">Cancelar busca</button><button type="button" data-ajuste-desfazer ${podeDesfazer ? "" : "disabled"} class="px-3 py-2 border border-slate-300 rounded-md text-sm disabled:opacity-50">Desfazer último ajuste</button></div><div data-ajuste-progresso hidden class="mt-3 rounded-md border border-slate-200 bg-white p-3"><div class="flex items-center gap-2 text-sm"><span class="ajuste-spinner" aria-hidden="true"></span><span data-ajuste-contador>Preparando a busca…</span></div><progress data-ajuste-barra aria-label="Alternativas avaliadas no limite da busca" value="0" max="600" class="w-full mt-2"></progress></div><p data-ajuste-mensagem role="status" aria-live="polite" class="text-sm text-slate-600 mt-3">${registro ? `Último ajuste aplicado: ${fmtHoras((registro.antes.minutosFaltantes - registro.depois.minutosFaltantes) / 60)} horas-pessoa de lacunas reduzidas.${podeDesfazer ? "" : " Houve alterações posteriores; desfazer está indisponível."}` : ""}</p><div data-ajuste-previa>${registro?.diagnosticoBusca ? `<p class="text-sm text-slate-600 mt-3">Registro da última busca aplicada. ${podeDesfazer ? "Retrata os dados avaliados naquela busca." : "A escala mudou desde então; estes detalhes são históricos. Faça nova busca para analisar a configuração atual."}</p>${renderExplicacaoBusca(registro)}` : ""}</div></section>`;
+    return `<section id="${id}" class="border border-slate-200 rounded-lg p-4 mb-4 bg-slate-50"><h3 class="font-display font-semibold text-fintria-navy mb-2">Readequar escala · ajustes de cobertura</h3><p class="text-sm text-slate-600 mb-3">Busque trocas de folga na mesma semana, ajustes de entrada/saída, redistribuição dos intervalos e realocação para funções habilitadas. Confira horários e intervalos antes de aplicar. A busca preserva os dias de trabalho, pode completar o saldo semanal autorizado por rateio, respeita restrições e descanso e preserva dias editados manualmente. Ao ajustar a proposta 5×2, a escala de origem é preservada. A busca ampliada testa combinações de duas operações que podem não melhorar a cobertura isoladamente.</p><div class="flex flex-wrap gap-2"><button type="button" data-ajuste-buscar class="px-4 py-2 bg-fintria-navy text-white font-semibold rounded-md text-sm">Buscar ajustes de cobertura</button><button type="button" data-ajuste-ampliar class="px-4 py-2 border border-slate-300 text-fintria-navy font-semibold rounded-md text-sm">Testar redistribuição ampliada</button><button type="button" data-ajuste-cancelar hidden class="px-3 py-2 border border-slate-300 rounded-md text-sm">Cancelar busca</button><button type="button" data-ajuste-desfazer ${podeDesfazer ? "" : "disabled"} class="px-3 py-2 border border-slate-300 rounded-md text-sm disabled:opacity-50">Desfazer último ajuste</button></div><div data-ajuste-progresso hidden class="mt-3 rounded-md border border-slate-200 bg-white p-3"><div class="flex items-center gap-2 text-sm"><span class="ajuste-spinner" aria-hidden="true"></span><span data-ajuste-contador>Preparando a busca…</span></div><progress data-ajuste-barra aria-label="Alternativas avaliadas no limite da busca" value="0" max="600" class="w-full mt-2"></progress></div><p data-ajuste-mensagem role="status" aria-live="polite" class="text-sm text-slate-600 mt-3">${registro ? `Último ajuste aplicado: ${fmtHoras((registro.antes.minutosFaltantes - registro.depois.minutosFaltantes) / 60)} horas-pessoa de lacunas reduzidas.${podeDesfazer ? "" : " Houve alterações posteriores; desfazer está indisponível."}` : ""}</p><div data-ajuste-previa>${registro?.diagnosticoBusca ? `<p class="text-sm text-slate-600 mt-3">Registro da última busca aplicada. ${podeDesfazer ? "Retrata os dados avaliados naquela busca." : "A escala mudou desde então; estes detalhes são históricos. Faça nova busca para analisar a configuração atual."}</p>${renderExplicacaoBusca(registro)}` : ""}</div></section>`;
   }
   function checar() {
     if (!permitido())
@@ -134,7 +135,7 @@ export function createAjustesCoberturaUI({
   function bindEvents() {
     campo("configurar")?.addEventListener("click", () => env.document.querySelector('[data-etapa-link="sec-cobertura"]')?.click());
     if (!state.coberturaAtiva) return;
-    campo("buscar")?.addEventListener("click", async () => {
+    async function iniciarBusca(ampliada=false) {
       try {
         checar();
         parar();
@@ -154,12 +155,13 @@ export function createAjustesCoberturaUI({
         const atual = worker,
           raiz = elemento();
         campo("buscar").disabled = true;
+        campo("ampliar").disabled = true;
         campo("cancelar").hidden = false;
         campo("progresso").hidden = false;
         campo("barra").value = 0;
         campo("contador").textContent = "Preparando a busca…";
         elemento().setAttribute("aria-busy", "true");
-        mensagem("Buscando alternativas de cobertura…");
+        mensagem(ampliada ? "Testando redistribuições combinadas…" : "Buscando alternativas de cobertura…");
         worker.onmessage = async (event) => {
           if (worker !== atual) return;
           if (elemento() !== raiz) {
@@ -208,15 +210,18 @@ export function createAjustesCoberturaUI({
             "Não foi possível concluir a busca. Confira a conexão e tente novamente.", raiz,
           );
         };
-        worker.postMessage({ config });
+        worker.postMessage({ config,ampliada });
       } catch (error) {
         terminarBusca();
         await informarErro(error.message);
       }
-    });
+    }
+    campo("buscar")?.addEventListener("click",()=>iniciarBusca(false));
+    campo("ampliar")?.addEventListener("click",()=>iniciarBusca(true));
     campo("cancelar")?.addEventListener("click", () => {
       parar();
       campo("buscar").disabled = false;
+      if(campo("ampliar"))campo("ampliar").disabled=false;
       campo("cancelar").hidden = true;
       campo("progresso").hidden = true;
       elemento().removeAttribute("aria-busy");

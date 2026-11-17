@@ -39,6 +39,7 @@ export function renderExplicacaoBusca(plano) {
   return `<details class="diagnostico-detalhes busca-auditoria" data-busca-detalhes>
     <summary>Entenda a busca: tentativas e impedimentos</summary>
     <div class="busca-auditoria-conteudo">
+    <p>Modalidade: ${plano.buscaAmpliada ? "busca ampliada com combinações de até duas operações" : "busca inicial de ajustes"}. Os limites de avaliação não esgotam todas as distribuições possíveis.</p>
     <h4>Por que a busca terminou?</h4><p>${h(ENCERRAMENTO[d.encerramento] || "Busca concluída.")}</p>
     <p>${plano.tentativas} alternativas avaliadas · ${plano.acoes.length} ajustes aceitos na prévia · limite de ${plano.limiteTentativas} avaliações. Nenhuma mudança é aplicada sem confirmação.</p>
     ${d.tipos.length ? `<h4>O que foi avaliado</h4><div class="busca-auditoria-tabela" tabindex="0" role="region" aria-label="Alternativas avaliadas por tipo"><table><thead><tr><th>Estratégia</th><th>Avaliadas</th><th>Aceitas</th><th>Descartadas</th><th>Filtradas antes da avaliação</th></tr></thead><tbody>${d.tipos.map((t) => `<tr><td>${h(t.titulo)}</td><td>${t.avaliadas}</td><td>${t.aceitas}</td><td>${t.descartadas}</td><td>${t.filtradas}</td></tr>`).join("")}</tbody></table></div>` : "<p>As configurações ou disponibilidades impediram a geração de alternativas. Isso é diferente de avaliar uma troca e rejeitá-la.</p>"}

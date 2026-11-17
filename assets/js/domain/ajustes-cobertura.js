@@ -546,6 +546,34 @@ function motivoInseguro(config, antes, depois, alteracoes) {
 function seguro(config, antes, depois, alteracoes) {
   return !motivoInseguro(config, antes, depois, alteracoes);
 }
+
+const chaveDiaBusca=d=>JSON.stringify([d.status,d.horas,d.entradaMin,d.saidaMin,d.intervaloInicioMin,d.intervaloFimMin,d.funcaoAlocada,d.alocacoesFuncao]);
+
+/** Explora duas operações atomicamente. A escala intermediária nunca é aplicada:
+ * pode abrir uma lacuna, mas deve respeitar os limites individuais. O resultado
+ * combinado passa novamente por todas as verificações contra a escala original. */
+function* redistribuicoesCombinadas(config,escala,rel,sementes) {
+  for(const s of sementes) {
+    const parcial=substituir(escala,s.candidato.alteracoes);
+    const cobertura=analisarCobertura(config,parcial.resultado);
+    const lacunas=[...cobertura.lacunas].sort((a,b)=>
+      Number(!coberturaNaoPiora(rel,{lacunas:[b],avisos:[]}))-Number(!coberturaNaoPiora(rel,{lacunas:[a],avisos:[]})) ||
+      (b.fimMin-b.inicioMin)*b.faltantes-(a.fimMin-a.inicioMin)*a.faltantes || a.data.localeCompare(b.data));
+    let geradas=0;
+    proximaSemente: for(const l of lacunas.slice(0,8)) for(const segunda of candidatos(config,parcial,l)) {
+      if(++geradas>160) break proximaSemente;
+      const recorrentes=expandirRecorrencia(config,parcial,segunda.alteracoes);
+      if(!recorrentes)continue;
+      const mapa=new Map(s.candidato.alteracoes.map(a=>[`${a.colaboradorId}:${a.data}`,a]));
+      for(const a of recorrentes) {
+        const key=`${a.colaboradorId}:${a.data}`,primeira=mapa.get(key);
+        mapa.set(key,{...a,antes:primeira?.antes || a.antes});
+      }
+      const alteracoes=[...mapa.values()].filter(a=>chaveDiaBusca(a.antes)!==chaveDiaBusca(a.depois));
+      if(alteracoes.length)yield {tipo:"redistribuicao_combinada",recorrentes:true,alteracoes};
+    }
+  }
+}
 export function buscarAjustesCobertura(config, opcoes = {}) {
   config = configDaEscala(config);
   const original = config.escalaGerada;
@@ -554,13 +582,14 @@ export function buscarAjustesCobertura(config, opcoes = {}) {
   const antes = resumo(rel),
     acoes = [],
     alteracoes = new Map();
+  const ampliada=opcoes.ampliada===true;
   const limiteTentativas = Math.min(
-    1200,
-    Math.max(1, Math.trunc(opcoes.limiteTentativas || 600)),
+    ampliada?2400:1200,
+    Math.max(1, Math.trunc(opcoes.limiteTentativas || (ampliada?2400:600))),
   );
   const limiteAcoes = Math.min(
     40,
-    Math.max(1, Math.trunc(opcoes.limiteAcoes || 20)),
+    Math.max(1, Math.trunc(opcoes.limiteAcoes || (ampliada?40:20))),
   );
   const rejeicoes={semMelhoria:0,novaLacuna:0,regras:0,recorrencia:0};
   const registroBusca=criarRegistroBusca(original);
@@ -579,16 +608,25 @@ export function buscarAjustesCobertura(config, opcoes = {}) {
   ) {
     let aceito = false;
     const vistos = new Set();
+    const sementes=[];
     const prioritarias = [...rel.lacunas].sort((a, b) =>
       (b.fimMin - b.inicioMin) * b.faltantes - (a.fimMin - a.inicioMin) * a.faltantes ||
       a.data.localeCompare(b.data) || b.inicioMin - a.inicioMin ||
       normalizarFuncao(a.funcao).localeCompare(normalizarFuncao(b.funcao)));
     function* propostas() {
-      yield* candidatosRateio(config,escala,podeMudar);
-      for(const lacuna of prioritarias) yield* candidatos(config,escala,lacuna);
+      function* diretas() {
+        yield* candidatosRateio(config,escala,podeMudar);
+        for(const lacuna of prioritarias) yield* candidatos(config,escala,lacuna);
+      }
+      const tetoDiretas=Math.min(limiteTentativas,tentativas+Math.max(1,Math.min(80,Math.floor((limiteTentativas-tentativas)/3))));
+      for(const candidata of diretas()) {
+        if(ampliada && tentativas>=tetoDiretas)break;
+        yield candidata;
+      }
+      if(ampliada)yield* redistribuicoesCombinadas(config,escala,rel,sementes);
     }
     busca: for (const gerado of propostas()) {
-        const recorrentes = expandirRecorrencia(config, escala, gerado.alteracoes);
+        const recorrentes = gerado.recorrentes ? gerado.alteracoes : expandirRecorrencia(config, escala, gerado.alteracoes);
         if (!recorrentes) {rejeicoes.recorrencia++;registroBusca.registrar(gerado,"recorrencia","A alteração não pode ser replicada em todas as ocorrências do padrão.",false);continue;}
         const candidato = { ...gerado, alteracoes: recorrentes };
         const chaveCandidato = JSON.stringify(
@@ -621,6 +659,22 @@ export function buscarAjustesCobertura(config, opcoes = {}) {
           if(nova)motivo=`${nova.data}: descobriria ou agravaria a função ${nova.funcao}, das ${minToTime(nova.inicioMin)} às ${minToTime(nova.fimMin)} (${nova.faltantes} pessoa(s) faltando).`;
         }
         registroBusca.registrar(candidato,codigo,motivo);
+        if(ampliada && !valido && !["redistribuicao_combinada","funcao_periodo"].includes(candidato.tipo) &&
+          candidato.alteracoes.some(a=>chaveDiaBusca(a.antes)!==chaveDiaBusca(a.depois))) {
+          const grupo=[...new Set(candidato.alteracoes.map(a=>`${a.colaboradorId}:${config.modeloEscala==="fixa"?a.depois.weekday:a.data}`))].sort().join(",");
+          const pontuacao=minutosFaltantes(cobertura);
+          const deslocamento=candidato.alteracoes.reduce((n,a)=>n+Math.abs((a.depois.entradaMin||0)-(a.antes.entradaMin||0)),0);
+          const iguais=sementes.filter(s=>s.grupo===grupo);
+          const pior=iguais.sort((a,b)=>b.pontuacao-a.pontuacao)[0];
+          if((iguais.length<2 || pontuacao<pior.pontuacao) &&
+            (sementes.length<12 || pontuacao<sementes.at(-1).pontuacao) &&
+            !motivoInseguro(config,escala,novo,candidato.alteracoes)) {
+            if(iguais.length>=2)sementes.splice(sementes.indexOf(pior),1);
+            sementes.push({candidato,grupo,pontuacao,deslocamento});
+            sementes.sort((a,b)=>a.pontuacao-b.pontuacao || b.deslocamento-a.deslocamento);
+            sementes.splice(12);
+          }
+        }
         if(!melhoria) rejeicoes.semMelhoria++;
         else if(!preserva) rejeicoes.novaLacuna++;
         else if(!valido) rejeicoes.regras++;
@@ -645,6 +699,7 @@ export function buscarAjustesCobertura(config, opcoes = {}) {
   }
   progresso();
   const explicacoes = [];
+  if(ampliada)explicacoes.push("Busca ampliada: permite combinar até duas operações por tentativa, dentro do orçamento de avaliações. As contagens mostram o que foi efetivamente avaliado. Somente o resultado conjunto pode ser sugerido; nenhuma etapa intermediária é aplicada. Folgas fixas, dias protegidos, funcionamento e limites legais continuam obrigatórios.");
   if(!acoes.length) explicacoes.push(!rel.lacunas.length && !deficitContratual(config,escala)
     ? "As faixas cadastradas já estão cobertas e não há saldo contratual a distribuir em semanas completas."
     : `${tentativas} alternativas foram avaliadas. Não foi encontrada melhoria que preservasse cobertura, descansos, restrições e carga semanal. Isso não comprova inviabilidade da escala.`);
@@ -693,8 +748,9 @@ export function buscarAjustesCobertura(config, opcoes = {}) {
   const encerramento=!rel.lacunas.length && !deficitContratual(config,escala)?"objetivos_atendidos"
     :tentativas>=limiteTentativas?"limite_tentativas":acoes.length>=limiteAcoes?"limite_acoes"
     :tentativas?"sem_melhoria":"sem_alternativas";
-  const diagnosticoBusca=explicarResultadoBusca(config,escala,rel,registroBusca.resultado(),encerramento,{podeMudar,podeVirarFolga});
+  const diagnosticoBusca=explicarResultadoBusca(config,escala,rel,registroBusca.resultado(),encerramento,{podeMudar,podeVirarFolga,ampliada});
   return {
+    buscaAmpliada:ampliada,
     diagnosticoBusca,
     avisosValidacao,
     versaoRegras: VERSAO_REGRAS,

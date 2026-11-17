@@ -4,6 +4,12 @@ Para cadastrar um escritório/empresa com cinco colaboradores e preenchimento fi
 
 Ferramenta para configurar, gerar e revisar escalas de trabalho e comparar a escala atual 6×1 com uma proposta 5×2. A interface e os cálculos usam HTML, CSS e módulos JavaScript nativos no navegador, sem bundler ou compilação do JavaScript da aplicação. A autenticação depende de código no servidor: middleware e função de login na Vercel. Por padrão, os cadastros e as escalas ficam no navegador. O modo individual com PostgreSQL e n8n é opcional e exige a configuração de homologação descrita adiante.
 
+## Redistribuição ampliada de cobertura — 17/11/2026
+
+Nova ação **Testar redistribuição ampliada**, ao lado de Buscar ajustes de cobertura. Testa combinações de até duas operações que podem falhar isoladamente: uma mudança abre uma lacuna intermediária e outra a cobre. Somente o resultado conjunto, com melhoria e sem criar novas lacunas, pode ser sugerido. Funcionamento da empresa, folgas fixas, jornada, descanso, habilitações, restrições e dias editados continuam obrigatórios. Worker com progresso/cancelamento, prévia, aplicação e desfazer; orçamento explícito de até **2.400 avaliações e 40 ajustes**, sem prometer esgotar todas as possibilidades. A conclusão agora distingue capacidade agregada de uma redistribuição efetivamente encontrada. [Como usar e limites](docs/explicacao-busca-cobertura.md).
+
+Validação: **619 testes unitários**, build e navegador aprovados. Caso antes sem melhoria passa a cobrir 09–17 por mudanças combinadas; mês completo com 22 lacunas diárias fechado. Inclui modelos fixo/dinâmico, cancelamento, prévia sem mutação, aplicação/desfazer, recarga e celular.
+
 ## Explicação das tentativas de cobertura — 17/11/2026
 
 Após **Buscar ajustes de cobertura**, abra **Entenda a busca: tentativas e impedimentos** para conferir as estratégias avaliadas, quantidades aceitas/descartadas, exemplos reais e a regra ou lacuna que impediu cada alternativa. A triagem separa bloqueios de configuração — como sábado/domingo fixos — de tentativas completas e mostra, quando aplicável, a conta do conflito entre sábado reduzido e referência contratual. O diagnóstico distingue falta de capacidade nas condições cadastradas de busca sem solução; não conclui contratação apenas porque não encontrou ajuste. Explicações acompanham o registro dos ajustes aplicados. Tema claro/escuro e celular; sem mudar regras de geração ou exigir SQL. [Funcionamento, limites e testes](docs/explicacao-busca-cobertura.md).

@@ -14,6 +14,12 @@ Quatro novas empresas por segmento e onze preenchimentos DEMO para comércio con
 
 Carregamento imediato na geração atual/proposta, cálculo em Worker local, bloqueio de duplicação, liberação em falhas e proteção contra resultados de dados alterados. Resumo da busca de cobertura aparece primeiro em modal e depois abaixo do botão, com aplicação separada. Regras de cálculo e versões de dados preservadas.
 
+## Redistribuição combinada — 17/11/2026
+
+Implementado **Testar redistribuição ampliada**: busca em duas operações combinadas para sair de situações em que cada alteração isolada é descartada. Nenhuma escala intermediária é aplicada; só um resultado conjunto que melhore a cobertura/saldo sem agravar outras faixas e respeite as regras pode aparecer na prévia. Reserva avaliações para combinações, mantém candidatos intermediários limitados e conta as tentativas na explicação. Até 2.400 avaliações e 40 ajustes; não relaxa folgas fixas, funcionamento, disponibilidade, edições manuais, horas ou descanso. Loading/cancelamento em Worker, aplicação/desfazer e persistência existentes. O trecho genérico “Há margem para testar” foi substituído, no resultado da busca, por uma conclusão coerente com o que a busca inicial/ampliada realmente encontrou. Sem SQL, variável ou mudança da versão de regras. [Uso e limites](explicacao-busca-cobertura.md).
+
+Validação: **619 testes unitários**, build e navegador aprovados nos dois modelos, incluindo um mês completo, solução coordenada antes inalcançada, bloqueios individuais/operacionais, cancelamento, aplicação/desfazer, recarga e celular.
+
 ## Tentativas de cobertura explicadas — 17/11/2026
 
 Resultado da busca com área expansível **Entenda a busca: tentativas e impedimentos**: estratégias/contagens, motivos de descarte com exemplos reais de horários/intervalos/funções, regra legal ou lacuna criada e motivo de encerramento. Triagem das lacunas mostra folgas fixas, dias preservados e habilitações; diferencia filtros de avaliações completas. Exibe limite contratual otimista do sábado reduzido quando aplicável e reutiliza as evidências do diagnóstico de equipe, sem tratar insucesso como prova de contratação. Explicação dos ajustes aplicados acompanha o registro já salvo da escala; buscas não aplicadas ficam na prévia da aba. Amostras limitadas, dados escapados, Worker/cancelamento e regras preservados; claro/escuro e celular. Sem migração ou alteração de versão. [Detalhes e limites](explicacao-busca-cobertura.md).
