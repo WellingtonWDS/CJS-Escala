@@ -67,6 +67,8 @@ O desenho final do quadro — tabela, faixas de horário ou combinação — ser
 
 ## 3. Exportação para empregador e colaboradores — implementada em 29/10/2026
 
+**PDF do empregador mais enxuto — 17/11/2026:** quadro de horários com dias iguais agrupados por colaborador, tabela semanal única com abonos/créditos e cores, cobertura por faixas consolidadas e pontos de atenção sem repetir o mesmo texto para cada pessoa/data. Mantém nomes completos, horários/intervalos, funções e referências dos alertas. No DEMO de cinco colaboradores, mensal **22 → 3 páginas** e fixo **7 → 2**. PDFs individuais do ZIP continuam detalhados. [Formato, limites e validação](../pdf-empregador.md).
+
 **Entrega:** PDFs A4 em paisagem, gerados localmente com jsPDF/AutoTable, sem captura da interface ou serviço externo. Logo Reescala, empresa/CNPJ quando disponíveis, origem (atual/proposta), mês ou padrão fixo, horários, intervalos, função, folgas, totais semanais, pendências, identificação de rascunho e páginas. O empregador recebe um PDF com todas as pessoas e cobertura; os colaboradores recebem PDFs isolados em um único ZIP (fflate), com nomes que distinguem homônimos. Disponível nos dois modos, preservando edições aplicadas. Propostas desatualizadas são bloqueadas. Salvar/exportar não significa aprovar a escala.
 
 **Objetivo:** distribuir a mesma escala em dois tipos de documento, adequados a quem vai recebê-los.
@@ -92,7 +94,7 @@ Critérios de aceite:
 4. Nomes dos arquivos distinguem empresa, período/padrão e colaborador, inclusive homônimos.
 5. A exportação não usa silenciosamente um resultado antigo após alteração do preenchimento.
 
-**Formato entregue:** PDF para o documento completo e ZIP contendo um PDF por colaborador. O CSV e a impressão do navegador permanecem disponíveis separadamente. Não há envio automático, assinatura, aprovação/publicação ou aplicação do padrão fixo a datas reais.
+**Formato entregue:** PDF para o documento completo e ZIP contendo um PDF por colaborador. A impressão do navegador permanece disponível separadamente; CSV é um serializador interno. Não há envio automático, assinatura, aprovação/publicação ou aplicação do padrão fixo a datas reais.
 
 ## Sequência e verificações
 

@@ -1,11 +1,5 @@
 import { VERSAO_REGRAS, referenciaDia } from "../domain/ec141.js";
-import { analisarCobertura } from "../domain/cobertura.js";
-import {
-  horarioComDia,
-  dateFromKey,
-  formatDateBR,
-} from "../domain/datas-horas.js";
-import { DIAS_SEMANA } from "../config/regras-jornada.js";
+import { renderPdfEmpregador } from "./pdf-empregador.js";
 export async function criarPdf(
   rel,
   pessoas,
@@ -41,151 +35,95 @@ export async function criarPdf(
   };
   const nova = () => doc.addPage();
   const titulares = new Map();
-  if (empregador) {
-    const y = texto("Resumo da equipe", 49, 16);
-    tabela(
-      [
-        "Colaborador",
-        "Função",
-        "Horas computadas / alvo por semana",
-        "Conferências",
-      ],
-      pessoas.map((p) => [
-        p.nome,
-        p.cargo,
-        p.semanas.map((s) => `${s[0]}: ${s[4]} / ${s[5]} (${s[6]})`).join("\n"),
-        `${p.ocorrencias.filter((i) => i.severidade === "erro").length} erro(s) • ${p.ocorrencias.length} ocorrência(s)`,
-      ]),
-      y,
-      {
-        columnStyles: {
-          0: { cellWidth: 65 },
-          1: { cellWidth: 45 },
-          2: { cellWidth: 110 },
-        },
-      },
-    );
-  }
-  for (let pi = 0; pi < pessoas.length; pi++) {
-    if (pi || empregador) nova();
-    const p = pessoas[pi];
-    const primeiraPagina = doc.getNumberOfPages();
-    let y = texto(p.nome, 49, 16);
-    y = texto(`Função: ${p.cargo || "Não informada"}`, y);
-    const erros = p.ocorrencias.filter((i) => i.severidade === "erro").length;
-    y = texto(
-      erros
-        ? `RASCUNHO COM INCOMPATIBILIDADES: ${erros} ocorrência(s). Confira as pendências ao final.`
-        : "RASCUNHO PARA CONFERÊNCIA • Consulte as pendências ao final.",
-      y,
-      9,
-    );
-    tabela(
-      [
-        "Dia",
-        "Situação",
-        "Entrada",
-        "Intervalo",
-        "Saída",
-        "Trabalho",
-        "Função no dia",
-      ],
-      p.linhas,
-      y,
-      {
-        columnStyles: {
-          0: { cellWidth: 43 },
-          1: { cellWidth: 42 },
-          2: { cellWidth: 24 },
-          3: { cellWidth: 41 },
-          4: { cellWidth: 24 },
-          5: { cellWidth: 23 },
-        },
-        didParseCell(data) {
-          if (data.section === "body" && data.row.raw[1] === "Folga") {
-            data.cell.styles.fillColor = azul;
-            data.cell.styles.textColor = navy;
-          }
-        },
-      },
-    );
-    y = doc.lastAutoTable.finalY + 8;
-    if (y > 158) {
-      nova();
-      y = 49;
-    }
-    y = texto("Resumo semanal", y, 12);
-    tabela(
-      [
-        "Semana iniciada em",
-        "Trabalhadas",
-        "Abonadas",
-        "Créditos CCT",
-        "Computadas",
-        "Alvo",
-        "Situação",
-      ],
-      p.semanas,
-      y,
-      {
-        didParseCell(data) {
-          if (data.section === "body" && data.column.index === 6) {
-            const s = data.cell.raw;
-            data.cell.styles.textColor =
-              s === "Horas OK"
-                ? [17, 117, 76]
-                : s === "Acima"
-                  ? [180, 40, 40]
-                  : [154, 95, 15];
-          }
-        },
-      },
-    );
-    if (p.ocorrencias.length) {
-      nova();
-      y = texto(`Conferências • ${p.nome}`, 49, 13);
-      tabela(
-        ["Nível", "Conferência necessária"],
-        p.ocorrencias.map((i) => [i.severidade, i.mensagem]),
+  if (empregador) renderPdfEmpregador({ doc, rel, pessoas, tabela });
+  else
+    for (let pi = 0; pi < pessoas.length; pi++) {
+      if (pi || empregador) nova();
+      const p = pessoas[pi];
+      const primeiraPagina = doc.getNumberOfPages();
+      let y = texto(p.nome, 49, 16);
+      y = texto(`Função: ${p.cargo || "Não informada"}`, y);
+      const erros = p.ocorrencias.filter((i) => i.severidade === "erro").length;
+      y = texto(
+        erros
+          ? `RASCUNHO COM INCOMPATIBILIDADES: ${erros} ocorrência(s). Confira as pendências ao final.`
+          : "RASCUNHO PARA CONFERÊNCIA • Consulte as pendências ao final.",
         y,
+        9,
       );
-    }
-    for (let n = primeiraPagina; n <= doc.getNumberOfPages(); n++)
-      titulares.set(n, p.nome);
-  }
-  if (empregador) {
-    nova();
-    let y = texto("Visão da operação • cobertura", 49, 16);
-    const cobertura = analisarCobertura(
-      rel.config,
-      rel.config.escalaGerada.resultado,
-    );
-    y = texto(
-      !rel.config.coberturaAtiva
-        ? "Cobertura não avaliada: demanda operacional não cadastrada."
-        : cobertura.lacunas.length
-          ? "Há horários descobertos. As lacunas não demonstram, isoladamente, necessidade de contratação."
-          : "Não foram identificadas lacunas nas faixas cadastradas. Confira os avisos e as pendências individuais.",
-      y,
-    );
-    if (cobertura.avisos?.length) y = texto(cobertura.avisos.join(" "), y, 9);
-    if (cobertura.lacunas.length)
       tabela(
-        ["Dia", "Função", "De", "Até", "Necessários", "Presentes", "Faltantes"],
-        cobertura.lacunas.map((l) => [
-          rel.fixa
-            ? DIAS_SEMANA[dateFromKey(l.data).getDay()]
-            : formatDateBR(dateFromKey(l.data)),
-          l.funcao,
-          horarioComDia(l.inicioMin),
-          horarioComDia(l.fimMin),
-          l.necessarios,
-          l.presentes,
-          l.faltantes,
-        ]),
+        [
+          "Dia",
+          "Situação",
+          "Entrada",
+          "Intervalo",
+          "Saída",
+          "Trabalho",
+          "Função no dia",
+        ],
+        p.linhas,
         y,
+        {
+          columnStyles: {
+            0: { cellWidth: 43 },
+            1: { cellWidth: 42 },
+            2: { cellWidth: 24 },
+            3: { cellWidth: 41 },
+            4: { cellWidth: 24 },
+            5: { cellWidth: 23 },
+          },
+          didParseCell(data) {
+            if (data.section === "body" && data.row.raw[1] === "Folga") {
+              data.cell.styles.fillColor = azul;
+              data.cell.styles.textColor = navy;
+            }
+          },
+        },
       );
-  }
+      y = doc.lastAutoTable.finalY + 8;
+      if (y > 158) {
+        nova();
+        y = 49;
+      }
+      y = texto("Resumo semanal", y, 12);
+      tabela(
+        [
+          "Semana iniciada em",
+          "Trabalhadas",
+          "Abonadas",
+          "Créditos CCT",
+          "Computadas",
+          "Alvo",
+          "Situação",
+        ],
+        p.semanas,
+        y,
+        {
+          didParseCell(data) {
+            if (data.section === "body" && data.column.index === 6) {
+              const s = data.cell.raw;
+              data.cell.styles.textColor =
+                s === "Horas OK"
+                  ? [17, 117, 76]
+                  : s === "Acima"
+                    ? [180, 40, 40]
+                    : [154, 95, 15];
+            }
+          },
+        },
+      );
+      if (p.ocorrencias.length) {
+        nova();
+        y = texto(`Conferências • ${p.nome}`, 49, 13);
+        tabela(
+          ["Nível", "Conferência necessária"],
+          p.ocorrencias.map((i) => [i.severidade, i.mensagem]),
+          y,
+        );
+      }
+      for (let n = primeiraPagina; n <= doc.getNumberOfPages(); n++)
+        titulares.set(n, p.nome);
+    }
   const total = doc.getNumberOfPages();
   for (let n = 1; n <= total; n++) {
     doc.setPage(n);

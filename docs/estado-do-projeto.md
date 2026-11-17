@@ -1,6 +1,6 @@
 # Estado do projeto — Reescala
 
-Atualizado em **13/11/2026**. Referência funcional: versão de regras `ec141-2026-11-12-14` ([histórico do projeto](https://github.com/WellingtonWDS/CJS-Escala/commits/main/)). Esta página resume o andamento; o [README](../README.md) detalha operação, arquitetura, configuração e testes.
+Atualizado em **17/11/2026**. Referência funcional: versão de regras `ec141-2026-11-12-14` ([histórico do projeto](https://github.com/WellingtonWDS/CJS-Escala/commits/main/)). Esta página resume o andamento; o [README](../README.md) detalha operação, arquitetura, configuração e testes.
 
 Identidade **Reescala** aplicada no login, cabeçalho, menu expandido/recolhido, carregamento, quadros de escala/impressão e ícone do navegador, usando os arquivos originais de `logos/`. A publicação inclui essa pasta e o login carrega suas imagens sem sessão; dados, chaves internas e permissões são preservados.
 
@@ -13,6 +13,12 @@ Logos com dimensões limitadas também no HTML para evitar crescimento com CSS a
 Quatro novas empresas por segmento e onze preenchimentos DEMO para comércio contínuo, fazenda com sábado compensado, entidade 24h com 12×36/administrativo e padaria até 20h30. Casos de cobertura, readequação e contratação; os ciclos mistos são analisados na prévia e continuam fora da conversão automática. [Instalação e resultados esperados](cenarios-demo-segmentos.md). Instalador testado localmente; execução remota ainda pendente.
 
 Carregamento imediato na geração atual/proposta, cálculo em Worker local, bloqueio de duplicação, liberação em falhas e proteção contra resultados de dados alterados. Resumo da busca de cobertura aparece primeiro em modal e depois abaixo do botão, com aplicação separada. Regras de cálculo e versões de dados preservadas.
+
+## Síntese do PDF do empregador — 17/11/2026
+
+**PDF do empregador mais enxuto — 17/11/2026:** quadro de horários com dias iguais agrupados por colaborador, tabela semanal única com abonos/créditos e cores, cobertura por faixas consolidadas e pontos de atenção sem repetir o mesmo texto para cada pessoa/data. Mantém nomes completos, horários/intervalos, funções e referências dos alertas. No DEMO de cinco colaboradores, mensal **22 → 3 páginas** e fixo **7 → 2**. PDFs individuais do ZIP continuam detalhados. [Formato, limites e validação](pdf-empregador.md).
+
+598 testes unitários, build e downloads reais de PDF/ZIP aprovados; páginas conferidas visualmente. Mudança de apresentação, sem recalcular escalas existentes, alterar regras ou executar migração.
 
 ## Distribuição transitória de 42h sem ACT/CCT — 12/11/2026
 
