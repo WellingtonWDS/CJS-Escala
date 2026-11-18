@@ -29,10 +29,11 @@ module.exports = async function testarSci({ browser, baseURL }) {
     // CNPJ obrigatório e validado antes de confirmar.
     assert.equal(await page.locator("#sci-confirmar").isDisabled(), true);
     await page.locator("#sci-cnpj").fill("11.222.333/0001-80");
-    assert.match(await page.locator("#sci-cnpj-erro").innerText(), /CNPJ inválido/);
+    await page.waitForFunction(() => /CNPJ inválido/.test(document.getElementById("sci-cnpj-erro").textContent));
     assert.equal(await page.locator("#sci-confirmar").isDisabled(), true);
     await page.locator("#sci-cnpj").fill("11222333000181");
-    assert.equal(await page.locator("#sci-cnpj-erro").innerText(), "");
+    await page.waitForFunction(() => document.getElementById("sci-cnpj-erro").textContent === "" &&
+      !document.getElementById("sci-confirmar").disabled);
     assert.match(await page.locator("#sci-empresa").innerText(), /CNPJ: 11\.222\.333\/0001-81/);
     await page.locator("#sci-confirmar").click();
     await page.waitForFunction(() => /Quadro importado/.test(document.getElementById("sci-mensagem").textContent));

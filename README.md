@@ -4,6 +4,14 @@ Para cadastrar um escritório/empresa com cinco colaboradores e preenchimento fi
 
 Ferramenta para configurar, gerar e revisar escalas de trabalho e comparar a escala atual 6×1 com uma proposta 5×2. A interface e os cálculos usam HTML, CSS e módulos JavaScript nativos no navegador, sem bundler ou compilação do JavaScript da aplicação. A autenticação depende de código no servidor: middleware e função de login na Vercel. Por padrão, os cadastros e as escalas ficam no navegador. O modo individual com PostgreSQL e n8n é opcional e exige a configuração de homologação descrita adiante.
 
+## Termo aditivo ao contrato de trabalho — 18/11/2026
+
+Em **Conversão e comparação → Documentos da proposta 5×2**, o bloco **Termo aditivo ao contrato de trabalho — modelo de cláusulas** gera um termo por colaborador, em **PDF** e em **Word (.docx)**, entregues em ZIP com um `LEIA-ME.txt`. Há também uma prévia na tela. O texto é preenchido com empresa, CNPJ, endereço, nome, cargo, CTPS/série (quando importados), o horário semanal da proposta (dias, entrada, intervalo, saída e horas) e as duas folgas.
+
+Cláusulas: objeto (EC 141); duração (redução de 44h para 42h a partir de 16/12/2026, ou da assinatura se posterior; contratos de até 40h mantidos sem redução, art. 4º); horário; repouso semanal remunerado (dois dias, um preferencialmente aos domingos); remuneração sem redução, inclusive do piso (art. 2º), com **salário em branco**; distribuição diária, quando a jornada passa de 8h, com **fundamento em branco** (preenchido automaticamente apenas se houver ACT/CCT vigente cadastrado); segunda etapa de 40h a partir de 16/12/2027 (contratos acima de 40h); ratificação; local, data, assinaturas e testemunhas. Na escala dinâmica, o horário vem da semana mais frequente; se as folgas variam entre semanas, o termo remete à escala mensal.
+
+É um **modelo de referência**, não um parecer jurídico: conferir com a assessoria jurídica e contábil e a convenção coletiva antes da assinatura. O Word é gerado diretamente pelo sistema (sem dependência nova). Módulos: `export/termo-aditivo.js`, `export/termo-aditivo-documentos.js` e `export/termo-aditivo-download.js`. Testes: `tests/termo-aditivo.test.cjs` e `tests/browser-termo-aditivo.cjs`. Sem migração SQL, RPC ou variável de ambiente.
+
 ## Importação do relatório da SCI Sistemas (PDF) — 18/11/2026
 
 Em **Colaboradores**, a seção **Importar relatório da SCI Sistemas — Horário de Trabalho (PDF)** lê o relatório *Horário de Trabalho* exportado em PDF pela folha da SCI (SCI Visual Practice), até 5 MB e 50 páginas. A leitura ocorre no navegador com o pdf.js publicado localmente pelo build (`assets/vendor/pdf.min.mjs` e o worker), sem enviar o arquivo a serviços externos.

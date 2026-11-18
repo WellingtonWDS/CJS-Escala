@@ -16,6 +16,10 @@ Carregamento imediato na geração atual/proposta, cálculo em Worker local, blo
 
 
 
+
+## Termo aditivo da EC 141 — 18/11/2026
+
+Modelo de termo aditivo por colaborador, em PDF e Word (ZIP com LEIA-ME), gerado a partir da proposta 5×2 na etapa Conversão e comparação, com prévia na tela. Salário e fundamento da distribuição diária em branco; modelo de referência a conferir pela assessoria. Sem SQL, RPC, variável ou dependência nova.
 ## Importação SCI em PDF — 18/11/2026
 
 Nova importação do relatório Horário de Trabalho da SCI em PDF, lido no navegador com pdf.js (dependência `pdfjs-dist` 6.5.438 publicada pelo build em `assets/vendor`). CNPJ informado manualmente e validado, pois o relatório não o contém; mesma estrutura, prévia e aplicação da importação Domínio. Validação: testes unitários e de navegador com PDF fictício; conferida também com três relatórios reais fornecidos, não versionados.
