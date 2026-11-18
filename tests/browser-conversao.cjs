@@ -277,6 +277,8 @@ module.exports = async function testarConversao({ browser, baseURL }) {
     assert.equal(s.escalaGerada.referenciaAtual44, true);
     assert.equal(s.conversao.proposta.config.regimeJornada, "transicao42");
     assert.ok(!s.conversao.proposta.config.escalaGerada.referenciaAtual44);
+    // A escala atual fica recolhida por padrão desde 18/11.
+    await irParaEtapa(page, "#resultado-gerar");
     const atual = page.locator("#resultado-gerar");
     assert.ok(await atual.locator("[data-referencia-atual]").count());
     assert.doesNotMatch(

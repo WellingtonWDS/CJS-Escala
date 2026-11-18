@@ -37,26 +37,23 @@ module.exports = async ({ browser, baseURL }) => {
       await painel.locator("[data-ajuste-buscar]").click();
       const modal = page.locator('dialog[data-app-dialog="alert"][open]');
       await modal.waitFor();
-      assert.match(await modal.innerText(),/Nenhuma melhoria encontrada nas [1-9]\d* alternativas/);
+      // Sábado de 08h às 14h: quem trabalha nele não fecha 42h. A lacuna é
+      // comprovada de imediato, com a recomendação de contratação ou redução de carga.
+      assert.match(await modal.innerText(),/A escala já está na menor lacuna possível/);
       assert.doesNotMatch(await modal.innerText(),/tempo máximo|30 segundos/);
       await modal.locator("[data-dialog-accept]").click();
       await modal.waitFor({ state: "hidden" });
+      const limites = painel.locator("[data-limites-cobertura]");
+      await limites.waitFor();
+      assert.match(await limites.innerText(), /Resultado ótimo comprovado/);
+      assert.match(await limites.innerText(), /Aos sábados a empresa funciona das 08:00 às 14:00/);
+      assert.match(await limites.innerText(), /contratar colaborador\(es\) específico\(s\) para os sábados/);
+      assert.match(await limites.innerText(), /redução salarial é vedada/);
+      assert.doesNotMatch(await painel.innerText(),/Tempo de busca|30 segundos|espera obrigatória/);
       const detalhes = painel.locator("[data-busca-detalhes]");
       await detalhes.waitFor();
       await detalhes.locator("> summary").click();
-      assert(await detalhes.locator('[data-busca-triagem="dia_anterior_sem_alcance"]').isVisible());
-      assert(await detalhes.locator('[data-busca-motivo="configuracao"]').isVisible());
-      assert.match(await detalhes.innerText(),/não são tentativas completas/);
-      assert.doesNotMatch(await painel.innerText(),/Tempo de busca|30 segundos|espera obrigatória/);
       assert.match(await detalhes.innerText(), /O que foi avaliado/);
-      assert.match(
-        await detalhes.innerText(),
-        /Sábado e domingo estão definidos como folgas fixas/,
-      );
-      assert.match(
-        await detalhes.innerText(),
-        /Isso significa que é preciso contratar/,
-      );
 
       const limite = detalhes
         .locator("details")

@@ -92,8 +92,8 @@ export function createAjustesCoberturaUI({
     const rateio = Math.max(0,(plano.deficitAntesMin || 0)-(plano.deficitDepoisMin || 0));
     if(plano.alteracoes.length) return `Sugestão encontrada: redução de ${fmtHoras(reducao)} horas-pessoa descobertas.${rateio ? ` Rateio: ${fmtHoras(rateio/60)} de saldo contratual distribuídas.` : ""} ${fmtHoras(plano.depois.minutosFaltantes/60)} continuam sem cobertura. Confira as alterações antes de aplicar.`;
     if(!plano.antes.minutosFaltantes && !plano.deficitAntesMin) return "As faixas cadastradas já estão cobertas e a carga das semanas completas está atendida. Nenhum ajuste necessário.";
-    if(plano.diagnosticoBusca?.encerramento==="sem_alternativas")return `Busca concluída na triagem: nenhuma alternativa compatível chegou à avaliação completa. ${plano.diagnosticoBusca.resumo} Abra “Entenda a busca” para conferir os filtros e exemplos.`;
     if(plano.limitesCobertura?.comprovado && plano.antes.minutosFaltantes) return `A escala já está na menor lacuna possível com as regras e os cadastros atuais (${fmtHoras(plano.depois.minutosFaltantes/60)} horas-pessoa). Veja abaixo por que esses horários não podem ser cobertos e o que fazer.`;
+    if(plano.diagnosticoBusca?.encerramento==="sem_alternativas")return `Busca concluída na triagem: nenhuma alternativa compatível chegou à avaliação completa. ${plano.diagnosticoBusca.resumo} Abra “Entenda a busca” para conferir os filtros e exemplos.`;
     return `Nenhuma melhoria encontrada nas ${avaliadas()} alternativas avaliadas. ${plano.diagnosticoBusca?.resumo || "Confira os motivos abaixo."} Abra “Entenda a busca” para ver tentativas, impedimentos e limites desta análise. Este resultado não comprova inviabilidade da escala.`;
   }
   function mostrarPrevia(texto) {

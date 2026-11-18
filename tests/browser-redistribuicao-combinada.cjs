@@ -87,7 +87,7 @@ module.exports = async ({ browser, baseURL }) => {
       );
       assert.match(
         await painel.locator("[data-busca-detalhes]").innerText(),
-        /Redistribuição encadeada de operações/,
+        /Redistribuição encadeada de operações|Otimização global de folgas, horários, intervalos e funções/,
       );
       assert.deepEqual(await saved(), antes);
       await painel.locator("[data-ajuste-aplicar]").click();

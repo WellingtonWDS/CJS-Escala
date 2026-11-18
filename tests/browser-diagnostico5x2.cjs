@@ -63,13 +63,13 @@ module.exports = async ({ browser, baseURL }) => {
     const lacunas = page.locator("#conversao-comparacao > section > details").filter({ has: page.locator('summary', { hasText: "Horários descobertos" }) });
     await lacunas.locator("summary").click();
     assert.match(await lacunas.locator("tbody").innerText(), /\d{2}\/02\/2027/);
-    // O quadro atual é referência; a proposta pode sugerir saída 18h24 com ACT válido.
+    // O quadro atual é referência; com funcionamento até 18h, a proposta reduz o almoço para 1h36.
     c = await simular(120, "transicao42");
     const rateio = await page.locator(".diagnostico-rateio").innerText();
     assert.match(rateio, /Rateio aplicado/);
     assert.match(rateio, /42:00/);
     assert.match(rateio, /08:24/);
-    assert(c.proposta.config.escalaGerada.resultado[0].dias.filter(d=>d.data>="2027-02-08"&&d.data<="2027-02-12").every(d=>d.saidaMin===1104&&d.horas===8.4&&d.intervaloMin===120));
+    assert(c.proposta.config.escalaGerada.resultado[0].dias.filter(d=>d.data>="2027-02-08"&&d.data<="2027-02-12").every(d=>d.saidaMin===1080&&d.horas===8.4&&d.intervaloMin===96));
     await page.setViewportSize({ width: 390, height: 844 });
     for (const selector of ["#conversao-visao-geral", ".diagnostico-rateio", "#conversao-comparacao [data-diagnostico-equipe]"]) {
       assert(await page.locator(selector).evaluate(el => {

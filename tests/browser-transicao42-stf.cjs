@@ -135,7 +135,7 @@ module.exports = async ({ browser, baseURL }) => {
       assert(
         dias
           .filter((d) => d.status === "T")
-          .every((d) => d.horas === 8.4 && d.intervaloMin === 120),
+          .every((d) => d.horas === 8.4 && d.intervaloMin === 96 && d.saidaMin === 1080),
       );
       assert(
         !config.escalaGerada.validacoes[0].issues.some(

@@ -67,6 +67,9 @@ module.exports = async function ({ browser, baseURL }) {
     );
     await page.locator('[data-etapa-link="sec-gerar"]').click();
     await waitForDialogs(page);
+    // A escala atual fica recolhida por padrão desde 18/11.
+    if (!(await page.locator("#escala-atual-previa").evaluate((e) => e.open)))
+      await page.locator("#escala-atual-previa > summary").click();
     for (const id of ["resultado-gerar", "resultado-proposta"]) {
       const container = page.locator("#" + id);
       assert.equal(
@@ -176,6 +179,8 @@ module.exports = async function ({ browser, baseURL }) {
     );
     await page.locator('[data-etapa-link="sec-gerar"]').click();
     await waitForDialogs(page);
+    if (!(await page.locator("#escala-atual-previa").evaluate((e) => e.open)))
+      await page.locator("#escala-atual-previa > summary").click();
     const atual = page.locator("#resultado-gerar");
     assert.equal(
       await atual.evaluate((el) =>
