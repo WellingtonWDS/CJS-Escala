@@ -21,6 +21,10 @@ await cp(
   join(root, "node_modules/@e965/xlsx/LICENSE"),
   join(dist, "assets/vendor/LICENSE-xlsx.txt"),
 );
+// Leitor de PDF usado somente na importação do relatório da SCI.
+for (const arquivo of ["pdf.min.mjs", "pdf.worker.min.mjs"])
+  await cp(join(root, "node_modules/pdfjs-dist/build", arquivo), join(dist, "assets/vendor", arquivo));
+await cp(join(root, "node_modules/pdfjs-dist/LICENSE"), join(dist, "assets/vendor/LICENSE-pdfjs.txt"));
 execFileSync(
   process.execPath,
   [

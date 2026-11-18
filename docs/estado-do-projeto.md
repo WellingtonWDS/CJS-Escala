@@ -15,6 +15,10 @@ Quatro novas empresas por segmento e onze preenchimentos DEMO para comércio con
 Carregamento imediato na geração atual/proposta, cálculo em Worker local, bloqueio de duplicação, liberação em falhas e proteção contra resultados de dados alterados. Resumo da busca de cobertura aparece primeiro em modal e depois abaixo do botão, com aplicação separada. Regras de cálculo e versões de dados preservadas.
 
 
+
+## Importação SCI em PDF — 18/11/2026
+
+Nova importação do relatório Horário de Trabalho da SCI em PDF, lido no navegador com pdf.js (dependência `pdfjs-dist` 6.5.438 publicada pelo build em `assets/vendor`). CNPJ informado manualmente e validado, pois o relatório não o contém; mesma estrutura, prévia e aplicação da importação Domínio. Validação: testes unitários e de navegador com PDF fictício; conferida também com três relatórios reais fornecidos, não versionados.
 ## Otimização global da readequação — 18/11/2026
 
 Buscar ajustes de cobertura começa por um otimizador global (opções por dia, trocas de folga na semana, troca de turnos entre colegas, avaliação incremental minuto a minuto, recozimento simulado com reinícios) e depois refina com as operações pontuais. Limite inferior comprovável da lacuna e mensagem de ótimo comprovado; explicação de cada lacuna inevitável; recomendação de contratação específica ou redução de carga sem redução salarial para dias de funcionamento curto, também na comparação da conversão. Funcionamento da aba Jornada (unido aos turnos individuais) é limite rígido: a proposta reduz o intervalo até 1h em vez de estender a saída. Almoço entre 3h e 5h após a entrada para jornadas acima de 6h. Regras `ec141-2026-11-18-15`; sem SQL, RPC ou variável nova. Validação: 632 testes unitários e suíte completa de navegador.

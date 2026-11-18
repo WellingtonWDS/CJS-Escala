@@ -27,6 +27,7 @@
     "@vercel/functions": "3.10.3",
     "fflate": "0.8.3",
     "jspdf": "4.2.1",
-    "jspdf-autotable": "5.0.9"
+    "jspdf-autotable": "5.0.9",
+    "pdfjs-dist": "6.5.438"
   }
 }

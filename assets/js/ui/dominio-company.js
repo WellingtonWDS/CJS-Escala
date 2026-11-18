@@ -62,8 +62,8 @@ function chooseCompany({ document, workspace, quadro, service }) {
     const dialog = document.createElement("dialog");
     dialog.className = "remote-workspace no-print";
     dialog.id = "dominio-company-dialog";
-    dialog.setAttribute("aria-label", "Empresa do relatório Domínio");
-    dialog.innerHTML = `<h2>Empresa do relatório Domínio</h2><p data-company-import-name></p><p data-company-import-cnpj></p><label>Escritório<select data-company-import-office></select></label><p data-company-import-status role="status" aria-live="polite"></p><div class="remote-actions"><button type="button" data-company-import-confirm disabled>Identificando empresa…</button><button type="button" data-company-import-cancel>Cancelar</button></div><p class="text-xs">O CNPJ identifica a empresa dentro deste escritório. Se for outra empresa, o preenchimento atual ficará preservado e a importação será aberta em um novo rascunho.</p>`;
+    dialog.setAttribute("aria-label", "Empresa do relatório importado");
+    dialog.innerHTML = `<h2>Empresa do relatório importado</h2><p data-company-import-name></p><p data-company-import-cnpj></p><label>Escritório<select data-company-import-office></select></label><p data-company-import-status role="status" aria-live="polite"></p><div class="remote-actions"><button type="button" data-company-import-confirm disabled>Identificando empresa…</button><button type="button" data-company-import-cancel>Cancelar</button></div><p class="text-xs">O CNPJ identifica a empresa dentro deste escritório. Se for outra empresa, o preenchimento atual ficará preservado e a importação será aberta em um novo rascunho.</p>`;
     const office = dialog.querySelector("select"),
       status = dialog.querySelector("[role=status]"),
       confirm = dialog.querySelector("[data-company-import-confirm]"),

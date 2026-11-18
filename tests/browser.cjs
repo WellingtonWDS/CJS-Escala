@@ -100,6 +100,7 @@ const { chromium } = require("playwright");
         "importacao-colaboradores",
         "cadastro-manual-colaboradores",
         "importacao-dominio",
+        "importacao-sci",
       ],
     );
     await irParaEtapa(page, "#cadastro-manual-colaboradores > summary");
@@ -293,6 +294,10 @@ const { chromium } = require("playwright");
     await require("./browser-etapas.cjs")({
       browser,
       baseURL: `http://127.0.0.1:${server.address().port}`,
+    });
+    await require("./browser-sci.cjs")({
+      browser,
+      baseURL: `http://127.0.0.1:${server.address().port}/`,
     });
     await require("./browser-dominio.cjs")({
       browser,

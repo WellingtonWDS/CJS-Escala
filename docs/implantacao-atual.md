@@ -4,6 +4,10 @@ Consultar este registro antes de orientar o operador. Distinguir código dispon�
 
 
 
+
+## Importação SCI em PDF — 18/11/2026
+
+Nova importação do relatório Horário de Trabalho da SCI em PDF, lido no navegador com pdf.js (dependência `pdfjs-dist` 6.5.438 publicada pelo build em `assets/vendor`). CNPJ informado manualmente e validado, pois o relatório não o contém; mesma estrutura, prévia e aplicação da importação Domínio. O build passa a copiar `pdf.min.mjs`, `pdf.worker.min.mjs` e a licença do pdf.js; nenhuma variável, SQL, RPC ou configuração na VPS.
 ## Feriados na escala dinâmica — 18/11/2026
 
 Regra `ec141-2026-11-18-16`: o padrão de feriado passa a manter as folgas e acrescentar o feriado; contar entre as folgas deixa de abonar e distribui a carga cheia. Instaladores DEMO (`database/demo/*.sql`) regenerados apenas com a nova política padrão; reexecutá-los é opcional. Sem migração, RPC, variável ou n8n.

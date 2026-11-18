@@ -4,6 +4,17 @@ Para cadastrar um escritório/empresa com cinco colaboradores e preenchimento fi
 
 Ferramenta para configurar, gerar e revisar escalas de trabalho e comparar a escala atual 6×1 com uma proposta 5×2. A interface e os cálculos usam HTML, CSS e módulos JavaScript nativos no navegador, sem bundler ou compilação do JavaScript da aplicação. A autenticação depende de código no servidor: middleware e função de login na Vercel. Por padrão, os cadastros e as escalas ficam no navegador. O modo individual com PostgreSQL e n8n é opcional e exige a configuração de homologação descrita adiante.
 
+## Importação do relatório da SCI Sistemas (PDF) — 18/11/2026
+
+Em **Colaboradores**, a seção **Importar relatório da SCI Sistemas — Horário de Trabalho (PDF)** lê o relatório *Horário de Trabalho* exportado em PDF pela folha da SCI (SCI Visual Practice), até 5 MB e 50 páginas. A leitura ocorre no navegador com o pdf.js publicado localmente pelo build (`assets/vendor/pdf.min.mjs` e o worker), sem enviar o arquivo a serviços externos.
+
+- São lidos escritório emissor, razão social, endereço, atividade (CNAE), código, nome, cargo, carteira de trabalho e série, a linha de dias com entrada/intervalo/saída (por exemplo, "Seg, Ter, Qua, Qui, Sex"), horários especiais (`*** SÁBADO : 08:00 as 12:00`) e o descanso semanal. Relatórios com várias páginas são reunidos.
+- O relatório **não traz CNPJ nem data de admissão**. O **CNPJ é obrigatório** num campo próprio, validado antes de liberar a confirmação; no modo com servidor, a empresa é identificada por ele, como na Domínio. A admissão fica em branco.
+- O resultado usa a mesma estrutura da importação Domínio: prévia com pendências, adicionar/substituir, horário individual por dia, sexo estimado pelo nome (≥ 99%) e identificação automática do modelo (por exemplo, 6×1 de segunda a sábado).
+- PDFs que não sejam o Horário de Trabalho, arquivos que não sejam PDF, linhas de dias não reconhecidas e códigos repetidos com dados diferentes são recusados com explicação; horários inconsistentes ficam como pendência.
+
+Módulos: `import/sci.js` (interpretação), `import/arquivo-sci.js` (leitura do PDF) e `ui/importar-dominio.js` (interface comum às duas fontes). Testes com PDF fictício gerado em memória: `tests/sci.test.cjs` e `tests/browser-sci.cjs`. Nova dependência fixada: `pdfjs-dist` 6.5.438. Sem migração SQL, RPC ou variável de ambiente.
+
 ## Feriados na escala dinâmica — 18/11/2026
 
 Semanas com feriado deixavam de aplicar as 8h24 da fase de 42h: com a política padrão **Contar entre as folgas**, o feriado era abonado e, ao mesmo tempo, a outra folga era liberada para trabalho, resultando em cinco dias de cerca de 6h43. A escala fixa não tem feriados, por isso não apresentava o problema.
@@ -438,7 +449,7 @@ O módulo `domain/cobertura.js` é independente da interface e não modifica a c
 
 ## Cadastro por planilha
 
-Além do CSV e do cadastro manual, a terceira seção recolhível **Importar planilha da Domínio — Quadro de Horário de Trabalho** aceita relatórios `.xls` e `.xlsx` de até 5 MB. As três formas começam fechadas. A prévia informa empresa, CNPJ, empregador/endereço, pessoas e pendências antes de alterar o cadastro. O conteúdo original dos relatórios enviados por usuários não é publicado com a aplicação.
+Além do CSV e do cadastro manual, a terceira seção recolhível **Importar planilha da Domínio — Quadro de Horário de Trabalho** aceita relatórios `.xls` e `.xlsx` de até 5 MB. As quatro formas (manual, CSV, Domínio e SCI) começam fechadas. A prévia informa empresa, CNPJ, empregador/endereço, pessoas e pendências antes de alterar o cadastro. O conteúdo original dos relatórios enviados por usuários não é publicado com a aplicação.
 
 O importador identifica as colunas pelo título e reúne linhas de cada colaborador pelo código. Preserva nome, cargo, admissão, CTPS/série com zeros à esquerda, visto fiscal, dias agrupados ou separados, entradas, intervalos, saídas, folgas e ciclos. Empresa, páginas indicadas, licenciamento do relatório e células adicionais ficam guardados como metadados. A lista **Colaboradores cadastrados/importados**, ao final da seção, permite consultar os valores originais e revisar os horários individuais, sem sobrescrever o registro original da importação.
 

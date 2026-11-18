@@ -97,6 +97,17 @@ export function createApplication({ env, now = () => new Date() }) {
     renderColaboradores: colaboradores.renderColaboradores,
     renderResumo: resumo.renderResumo,
   });
+  const atualizarAposImportar = () => {
+    if (!state.feriados.length) inicializarFeriadosDoMes();
+    feriados.renderFeriados();
+    cobertura.renderCoberturaConfig();
+    colaboradores.renderColaboradores();
+    configuracao.renderTipoEscala();
+    jornada.renderJornadaSection();
+    jornada.renderFolgasSection();
+    resumo.renderResumo();
+  };
+  const sciImportacao = createImportarDominioUI({ ...deps, fonte: "sci", atualizarInterface: atualizarAposImportar });
   const dominioImportacao = createImportarDominioUI({
     ...deps,
     atualizarInterface() {
@@ -129,6 +140,7 @@ export function createApplication({ env, now = () => new Date() }) {
       importacao,
       conversaoUI,
       dominioImportacao,
+      sciImportacao,
     ])
       ui.bindEvents();
     bindExportEvents(state, env);
@@ -163,6 +175,7 @@ export function createApplication({ env, now = () => new Date() }) {
       tutorial.close();
       importacao.resetContext();
       dominioImportacao.resetContext();
+      sciImportacao.resetContext();
       document.getElementById("colab-form")?.reset?.();
       document.getElementById("colab-form-mensagem").textContent = "";
       for (const id of [

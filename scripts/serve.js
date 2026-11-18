@@ -116,6 +116,10 @@ export function createDevServer({
         pathname === "/assets/vendor/xlsx.mjs"
       )
         file = resolve(projectRoot, "node_modules/@e965/xlsx/xlsx.mjs");
+      // Leitor de PDF (importação SCI), servido do pacote como no build.
+      if (resolve(root) === resolve(projectRoot) &&
+          ["/assets/vendor/pdf.min.mjs", "/assets/vendor/pdf.worker.min.mjs"].includes(pathname))
+        file = resolve(projectRoot, "node_modules/pdfjs-dist/build", pathname.split("/").pop());
       if (!(await stat(file)).isFile()) {
         res.writeHead(404).end("Not found");
         return;
