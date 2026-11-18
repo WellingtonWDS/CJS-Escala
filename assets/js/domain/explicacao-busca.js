@@ -17,6 +17,7 @@ import {
 } from "./diagnostico-equipe.js";
 
 export const TIPOS_TENTATIVA = {
+  otimizacao_global: "Otimização global de folgas, horários, intervalos e funções",
   redistribuicao_combinada: "Redistribuição encadeada de operações",
   rateio: "Ratear saldo semanal",
   intervalo: "Redistribuir intervalos",

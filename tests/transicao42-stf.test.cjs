@@ -72,14 +72,14 @@ function converter(contrato = 44, fixa = false) {
   assert.deepEqual(s, original);
   return c.proposta.config;
 }
-test('conversão sem ACT: 504 minutos, dois repousos, pausa preservada, sem erro diário em ambos os modelos', () => {
+test('conversão sem ACT: 504 minutos, dois repousos, pausa reduzida até caber no funcionamento, sem erro diário', () => {
   for (const fixa of [false, true]) {
     const config = converter(44, fixa), r = config.escalaGerada.resultado[0];
     const dias = r.dias.filter(d => d.data >= '2027-02-08' && d.data <= '2027-02-14');
     const trabalho = dias.filter(d => d.status === 'T');
     assert.equal(trabalho.length, 5);
     assert.equal(dias.filter(d => d.status === 'F').length, 2);
-    assert(trabalho.every(d => Math.round(d.horas * 60) === 504 && d.intervaloMin === 120));
+    assert(trabalho.every(d => Math.round(d.horas * 60) === 504 && d.intervaloMin >= 60 && d.intervaloMin <= 120));
     assert.equal(trabalho.reduce((a, d) => a + Math.round(d.horas * 60), 0), 2520);
     const issues = config.escalaGerada.validacoes[0].issues;
     assert(!issues.some(i => i.tipo === 'JORNADA_DIARIA'));
@@ -122,9 +122,7 @@ test('buscar ajustes pode recuperar as 2h faltantes sem ACT na transição', asy
   for (const r of config.escalaGerada.resultado) for (const campo of ['dias', 'diasContexto', 'diasApuracao']) for (const d of r[campo] || []) {
     if (d.status === 'T') Object.assign(d, { horas: 8, horasPrevistas: 8, horasComputadasCCT: 8, saidaMin: 1080 });
   }
-  // Autorização legal não estende o funcionamento operacional.
-  const bloqueado = buscarAjustesCobertura(config);
-  assert.equal(bloqueado.alteracoes.length, 0);
+  // Autorização legal não estende o funcionamento; a pausa pode ser reduzida até 1h.
   for (const dia of [1,2,3,4,5]) config.jornadaPorDia[dia] = { ...config.jornadaPorDia[dia], saida: '18:24' };
   const plano = buscarAjustesCobertura(config);
   assert(plano.acoes.some(a => a.tipo === 'rateio'));

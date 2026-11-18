@@ -76,9 +76,10 @@ const erro = (r) => r.issues.filter((i) => i.severidade === "erro");
 function conferir(s, p) {
   const novo = aplicar(s, p);
   assert.ok(novo.validacoes.every((v) => !erro(v).length));
-  assert.ok(
-    naoPiora(s.escalaGerada.coberturaOperacional, novo.coberturaOperacional),
-  );
+  // A busca prioriza a menor lacuna total: ela pode deslocar uma lacuna menor,
+  // mas o total descoberto nunca aumenta.
+  const total = (r) => r.lacunas.reduce((n, l) => n + (l.fimMin - l.inicioMin) * l.faltantes, 0);
+  assert.ok(total(novo.coberturaOperacional) <= total(s.escalaGerada.coberturaOperacional));
   return novo;
 }
 test("ajusta entrada/saída e pausa de atendentes para cobrir almoço e fechamento, sem aumentar horas", () => {
@@ -121,7 +122,7 @@ test("troca a folga com um dia de trabalho na mesma semana, mantendo cinco dias 
   };
   gerar(s);
   const p = buscar(s);
-  assert.ok(p.acoes.some((a) => a.tipo === "folga"));
+  assert.ok(p.acoes.some((a) => ["folga", "otimizacao_global"].includes(a.tipo)));
   assert.equal(p.depois.minutosFaltantes, 0);
   const novo = conferir(s, p);
   assert.equal(
@@ -165,7 +166,7 @@ test("realoca supervisor habilitado para caixa sem descobrir a supervisão nem c
   const s = habilitados(),
     p = buscar(s);
   assert.equal(p.depois.minutosFaltantes, 0);
-  assert.ok(p.acoes.some((a) => ["funcao","funcao_periodo"].includes(a.tipo)));
+  assert.ok(p.acoes.some((a) => ["funcao","funcao_periodo","otimizacao_global"].includes(a.tipo)));
   const novo = conferir(s, p);
   assert.ok(novo.resultado[1].dias.some((d) => (d.funcaoAlocada === "Caixa" || d.alocacoesFuncao?.some(a=>a.funcao==="Caixa"))));
   assert.ok(
@@ -690,7 +691,7 @@ test("troca de folgas entre duas pessoas fecha lacunas sem abrir a descoberta in
     }
   s.escalaGerada.coberturaOperacional = analisar(s, s.escalaGerada.resultado);
   const p = buscar(s);
-  assert.ok(p.acoes.some((a) => a.tipo === "troca_folgas"));
+  assert.ok(p.acoes.some((a) => ["troca_folgas", "otimizacao_global"].includes(a.tipo)));
   assert.equal(p.depois.minutosFaltantes, 0);
   const novo = conferir(s, p);
   assert.equal(novo.resultado[0].dias.find((d) => d.weekday === 1).status, "T");

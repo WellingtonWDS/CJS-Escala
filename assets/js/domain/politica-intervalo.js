@@ -3,7 +3,9 @@ import { minToTime } from "./datas-horas.js";
 // Product policy for shifts near eight effective hours (7h through 9h).
 // All offsets are absolute minutes, including shifts crossing midnight.
 export function faixaInicioIntervalo(d) {
-  const proximaDeOito = d.horas >= 7 && d.horas <= 9;
+  // Jornadas acima de 6h (pausa mínima de 1h): almoço entre 3h e 5h após a
+  // entrada, próximo do horário habitual. Critério do produto, não do art. 71.
+  const proximaDeOito = d.horas > 6 && d.horas <= 9;
   return {
     inicio: Math.max(d.entradaMin + (proximaDeOito ? 180 : 60), d.saidaMin - d.intervaloMin - 360),
     fim: Math.min(d.entradaMin + (proximaDeOito ? 300 : 240), d.saidaMin - d.intervaloMin - 60),
@@ -12,7 +14,7 @@ export function faixaInicioIntervalo(d) {
 
 /** Adjust only newly generated proposals; actual schedules and manual edits remain authoritative. */
 export function ajustarIntervaloDaProposta(d) {
-  if (!["T", "FE"].includes(d.status) || d.ajusteManual || d.horas < 7 || d.horas > 9 ||
+  if (!["T", "FE"].includes(d.status) || d.ajusteManual || d.horas <= 6 || d.horas > 9 ||
       d.intervaloMin < 60 || d.intervaloMin > 120 || d.creditoIntervaloCCT || d.creditoNoturnoCCT) return;
   const {inicio, fim} = faixaInicioIntervalo(d);
   if (!Number.isFinite(d.intervaloInicioMin) || inicio > fim) return;

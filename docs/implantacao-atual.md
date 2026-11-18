@@ -1,7 +1,11 @@
-# Registro de implantação — atualizado em 17/11/2026
+# Registro de implantação — atualizado em 18/11/2026
 
 Consultar este registro antes de orientar o operador. Distinguir código disponível, testes locais e resultados informados pelo operador. Não contém senhas, chaves ou identificadores pessoais.
 
+
+## Otimização global da readequação — 18/11/2026
+
+Regra `ec141-2026-11-18-15`: busca de ajustes com otimização global e comprovação de limites; proposta respeita o funcionamento da aba Jornada, reduzindo o intervalo até 1h. Resultados anteriores exigem nova geração, sem apagar cadastros. Não requer SQL, RPC, variável, n8n ou reconfiguração da VPS. Publicação pela main.
 ## PDF resumido do empregador — 17/11/2026
 
 Publicação dos módulos de exportação e do texto dos botões pela main. O empregador recebe horários agrupados, tabela semanal da equipe, cobertura consolidada e avisos agrupados por condição com referências. Reexportar PDFs existentes; não é preciso regenerar a escala por esta mudança. PDFs individuais/ZIP mantêm o detalhamento. Sem SQL, RPC, variável ou dependência nova; versão de regras preservada. Validação local: 598 testes unitários, build, downloads reais das quatro combinações atual/proposta × mensal/fixo para PDF e ZIP, texto extraído e conferência visual. [Formato e redução de páginas](pdf-empregador.md).

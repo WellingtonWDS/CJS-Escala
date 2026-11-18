@@ -31,13 +31,13 @@ test('limite diário autorizado controla o rateio em minutos: 8h18 não basta; 8
   assert(dias.every(d=>d.horas<=limite+1e-7));assert.equal(erros(p.escalaGerada).length,0);
  }
 });
-test('horário importado de 08–18/2h também propõe 08h24 no fixo e dinâmico sem alterar origem',()=>{
+test('horário importado de 08–18/2h propõe 08h24 dentro do funcionamento, reduzindo o almoço para 1h36',()=>{
  for(const fixa of [false,true]){
   const s=empresa();if(fixa)Object.assign(s,{modeloEscala:'fixa',dataReferenciaFixa:'2027-02-08'});
   s.colaboradores[0].quadroDominio={ativo:true,tipo:'semanal',modelo:'6x1',semana:Object.fromEntries(Array.from({length:7},(_,d)=>[d,d===0?{status:'folga'}:{status:'trabalho',jornada:d===6?s.jornadaPorDia[6]:s.jornada}])),pendencias:[]};
   const antes=structuredClone(s),c=converter(s,op),p=c.proposta.config;
   assert.deepEqual(s,antes);assert.equal(c.origem.escala.resultado[0].dias.find(d=>d.weekday===1).saidaMin,1080);
-  assert(semana(p.escalaGerada.resultado[0]).filter(d=>d.status==='T').every(d=>d.horas===8.4&&d.saidaMin===1104));
+  assert(semana(p.escalaGerada.resultado[0]).filter(d=>d.status==='T').every(d=>d.horas===8.4&&d.saidaMin===1080&&d.intervaloMin===96));
   assert.equal(erros(p.escalaGerada).length,0);
  }
 });

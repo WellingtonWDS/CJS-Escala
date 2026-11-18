@@ -1,6 +1,6 @@
 # Estado do projeto — Reescala
 
-Atualizado em **18/11/2026**. Referência funcional: versão de regras `ec141-2026-11-12-14` ([histórico do projeto](https://github.com/WellingtonWDS/CJS-Escala/commits/main/)). Esta página resume o andamento; o [README](../README.md) detalha operação, arquitetura, configuração e testes.
+Atualizado em **18/11/2026**. Referência funcional: versão de regras `ec141-2026-11-18-15` ([histórico do projeto](https://github.com/WellingtonWDS/CJS-Escala/commits/main/)). Esta página resume o andamento; o [README](../README.md) detalha operação, arquitetura, configuração e testes.
 
 Identidade **Reescala** aplicada no login, cabeçalho, menu expandido/recolhido, carregamento, quadros de escala/impressão e ícone do navegador, usando os arquivos originais de `logos/`. A publicação inclui essa pasta e o login carrega suas imagens sem sessão; dados, chaves internas e permissões são preservados.
 
@@ -14,6 +14,10 @@ Quatro novas empresas por segmento e onze preenchimentos DEMO para comércio con
 
 Carregamento imediato na geração atual/proposta, cálculo em Worker local, bloqueio de duplicação, liberação em falhas e proteção contra resultados de dados alterados. Resumo da busca de cobertura aparece primeiro em modal e depois abaixo do botão, com aplicação separada. Regras de cálculo e versões de dados preservadas.
 
+
+## Otimização global da readequação — 18/11/2026
+
+Buscar ajustes de cobertura começa por um otimizador global (opções por dia, trocas de folga na semana, troca de turnos entre colegas, avaliação incremental minuto a minuto, recozimento simulado com reinícios) e depois refina com as operações pontuais. Limite inferior comprovável da lacuna e mensagem de ótimo comprovado; explicação de cada lacuna inevitável; recomendação de contratação específica ou redução de carga sem redução salarial para dias de funcionamento curto, também na comparação da conversão. Funcionamento da aba Jornada (unido aos turnos individuais) é limite rígido: a proposta reduz o intervalo até 1h em vez de estender a saída. Almoço entre 3h e 5h após a entrada para jornadas acima de 6h. Regras `ec141-2026-11-18-15`; sem SQL, RPC ou variável nova. Validação: 632 testes unitários e suíte completa de navegador.
 ## Busca encadeada e prévia atual recolhida — 18/11/2026
 
 Um único **Buscar ajustes de cobertura** testa ajustes simples e sequências sem teto fixo de profundidade. Estados intermediários não são aplicados; o resultado completo precisa melhorar cobertura/saldo, não agravar faixas e passar pelas verificações operacionais e legais. Exploração iterativa com estados visitados, fronteira limitada e janela de **30 segundos**, até 12.000 avaliações e cancelamento em Worker. Não há um limite independente de 20/40 operações aceitas: os recursos da busca limitam o processamento. Explicação apresenta propostas concretas, horários e motivos de descarte, sem cronômetro ou mensagens técnicas de prazo; não promete examinar todas as distribuições.

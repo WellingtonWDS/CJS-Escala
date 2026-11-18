@@ -1,4 +1,5 @@
 import { sugerirIntervalosCobertura } from "./intervalos-cobertura.js";
+import { recomendacoesJornadaCurta } from "./otimizador-cobertura.js";
 import { contextoModelo, escalaFixa, diasDoModelo, conferirSuporteFixo, ocorrenciasDoModelo } from "./modelo-escala.js";
 import { configDaEscala } from "./contexto-escala.js";
 import { diagnosticarEquipe, compararPresencaAtual } from "./diagnostico-equipe.js";
@@ -584,6 +585,7 @@ export function compararConversao(conversao) {
           : "suficiente";
   return {
     status,
+    jornadaCurta: recomendacoesJornadaCurta(config, escala, cobertura.lacunas),
     domingo: {
       antes: resumoDominical(config, conversao.referencia.escala.resultado),
       depois: resumoDominical(config, escala.resultado),

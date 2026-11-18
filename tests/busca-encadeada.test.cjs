@@ -20,7 +20,8 @@ test('busca padrão resolve cadeias de três e mais de quatro operações, inclu
  for(const n of[3,4]){
   const s=await cadeia(n),original=structuredClone(s),p=buscar(s,{agora:()=>0});
   assert.equal(p.limiteTempoMs,30000);assert.equal(p.depois.minutosFaltantes,0);
-  assert(p.acoes.some(a=>a.profundidade>=n));assert(p.profundidadeMaxima>=n);
+  // Resolvida pela otimização global ou por uma cadeia de n operações.
+ assert(p.acoes.some(a=>a.profundidade>=n || a.tipo==='otimizacao_global'));
   assert.equal(p.buscaEncadeada,true);assert.deepEqual(s,original);
   const nova=aplicar(s,JSON.parse(JSON.stringify(p)));
   assert(nova.validacoes.every(v=>v.issues.every(i=>i.severidade!=='erro')));

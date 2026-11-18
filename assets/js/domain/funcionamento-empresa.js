@@ -1,6 +1,7 @@
 import { DIAS_SEMANA } from "../config/regras-jornada.js";
 import { normalizarJornada, jornadaValidaEstrutural, horarioComDia } from "./datas-horas.js";
 import { createJornada } from "./jornada.js";
+import { funcionamentoDoDia } from "./janelas-planejamento.js";
 
 /** Usa a configuração global, antes de aplicar horários/perfis individuais.
  * A pausa é uma referência de intervalo, não um fechamento da empresa.
@@ -11,7 +12,7 @@ export function validarFuncionamentoEmpresa(config, dia, horario = null) {
     throw Error(`A empresa não funciona neste dia (${nome}). Não é possível transferir ou cadastrar trabalho nele. Para trabalhar neste dia, revise os dias de funcionamento na aba Jornada.`);
   if (!horario) return;
   const fonte = createJornada(config).obterJornadaDoDia(dia.weekday);
-  const janela = normalizarJornada(fonte);
+  const janela = funcionamentoDoDia(config, dia.weekday);
   if (!janela || !jornadaValidaEstrutural(fonte))
     throw Error(`Revise o horário de funcionamento da empresa (${nome}) na aba Jornada antes de alterar o trabalho neste dia.`);
   if (horario.entrada < janela.entrada || horario.saida > janela.saida)

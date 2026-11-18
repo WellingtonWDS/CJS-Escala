@@ -67,6 +67,7 @@ export function configDoPerfil(state, c) {
   const config = {
     ...state,
     perfilDominioId: c.id,
+    funcionamentoEmpresa: state.funcionamentoEmpresa || { jornada: state.jornada, jornadaPorDia: state.jornadaPorDia, horarioPorDia: state.horarioPorDia },
     tipoEscala: tipo,
     jornada: fonte,
     jornadaPorDia: {},

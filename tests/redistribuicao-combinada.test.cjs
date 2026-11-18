@@ -19,7 +19,7 @@ test("redistribuição coordenada fecha 09–17 quando nenhuma alteração isola
     assert.equal(inicial.alteracoes.length, 0);
     assert.equal(inicial.depois.minutosFaltantes, 300);
     assert.equal(ampliada.depois.minutosFaltantes, 0);
-    assert(ampliada.acoes.some((a) => a.tipo === "redistribuicao_combinada"));
+    assert(ampliada.acoes.some((a) => ["redistribuicao_combinada", "otimizacao_global"].includes(a.tipo)));
     assert(ampliada.tentativas <= 1200);
     assert.equal(ampliada.buscaAmpliada, true);
     assert.equal(

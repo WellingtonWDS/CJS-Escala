@@ -1,4 +1,4 @@
-import { planejamento5x2 } from "./janelas-planejamento.js";
+import { planejamento5x2, pausaMinimaPlanejada } from "./janelas-planejamento.js";
 import { analisarRateioSemanal } from "./rateio-semanal.js";
 import { ajustarIntervaloDaProposta } from "./politica-intervalo.js";
 import { apurarSemana } from "./resumo-semanal.js";
@@ -420,8 +420,19 @@ export function createGerador(state, jornada, feriados, validacao) {
       (state.tipoEscala === "12x36"
         ? state.jornada
         : obterJornadaDoDia(d.weekday));
-    const pausa = Math.max(0, intervaloMin(j) || 0);
+    let pausa = Math.max(0, intervaloMin(j) || 0);
     d.entradaMin = timeToMin(d.turno === "B" && !state.aplicarProposta5x2 ? state.entradaTurnoB : j.entrada);
+    delete d.intervaloReduzido;
+    if (state.aplicarProposta5x2 && d.jornadaAplicada && pausa > 60 && d.horas > 0) {
+      // Funcionamento rígido: reduz a pausa (mínimo 1h) em vez de estender a saída.
+      let limite = timeToMin(d.jornadaAplicada.saida);
+      if (limite <= d.entradaMin) limite += 1440;
+      const cabe = limite - d.entradaMin - Math.round(d.horas * 60);
+      if (cabe < pausa) {
+        const reduzida = Math.max(pausaMinimaPlanejada(pausa), cabe);
+        if (reduzida < pausa) { d.intervaloReduzido = { de: pausa, para: reduzida }; pausa = reduzida; }
+      }
+    }
     d.intervaloMin = pausa;
     d.saidaMin = d.entradaMin + d.horas * 60 + pausa;
     const intervalo = calcularPausaEfetiva(d, j);

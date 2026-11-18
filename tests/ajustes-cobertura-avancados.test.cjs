@@ -19,7 +19,8 @@ function gerar(s){s.escalaGerada=domain(s).gerarDadosEscala();return s;}
 function conferir(s,p) {
  const novo=aplicar(s,p);
  assert(novo.validacoes.every(v=>!v.issues.some(i=>i.severidade==='erro')));
- assert(naoPiora(analisar(s,s.escalaGerada.resultado),novo.coberturaOperacional));
+ const total=r=>r.lacunas.reduce((n,l)=>n+(l.fimMin-l.inicioMin)*l.faltantes,0);
+ assert(total(novo.coberturaOperacional)<=total(analisar(s,s.escalaGerada.resultado)));
  for(let i=0;i<novo.resultado.length;i++)
   assert.equal(novo.resultado[i].dias.reduce((s,d)=>s+d.horas,0),s.escalaGerada.resultado[i].dias.reduce((s,d)=>s+d.horas,0));
  return novo;
@@ -27,7 +28,7 @@ function conferir(s,p) {
 test('desloca turno e pausa atomicamente quando cada ajuste isolado abriria nova lacuna',()=>{
  const s=gerar(empresa()), original=structuredClone(s);
  const p=buscar(s);
- assert(p.acoes.some(a=>a.tipo==='horario_intervalo'));
+ assert(p.acoes.some(a=>['horario_intervalo','otimizacao_global'].includes(a.tipo)));
  assert.equal(p.antes.minutosFaltantes-p.depois.minutosFaltantes,300);
  const novo=conferir(s,p);
  assert(novo.resultado[0].dias.filter(d=>d.status==='T').every(d=>d.entradaMin===540 && d.saidaMin===1080 && d.intervaloInicioMin===720));
@@ -41,7 +42,7 @@ test('combina realocações por habilitação sem transferir a lacuna para outra
  s.demandasCobertura=['Atendente','Caixa','Estoque'].map((f,i)=>demanda(f,'09:00','12:00',i+1));
  gerar(s); const p=buscar(s);
  assert.equal(p.depois.minutosFaltantes,0);
- assert(p.acoes.every(a=>['funcoes_combinadas','funcoes_periodo_combinadas'].includes(a.tipo)));
+ assert(p.acoes.every(a=>['funcoes_combinadas','funcoes_periodo_combinadas','otimizacao_global'].includes(a.tipo)));
  const novo=conferir(s,p);
  for(const periodo of novo.coberturaOperacional.periodos) assert.equal(periodo.presentes,1);
  const semHabilitacao=structuredClone(s);

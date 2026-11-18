@@ -5,6 +5,8 @@ import { configDaEscala } from "./contexto-escala.js";
 import { trabalhoDentroDoFuncionamento, validarFuncionamentoEmpresa } from "./funcionamento-empresa.js";
 import { criarRegistroBusca, explicarResultadoBusca } from "./explicacao-busca.js";
 import { janelasDeclaradas as janelas } from "./disponibilidade.js";
+import { pausaMinimaPlanejada } from "./janelas-planejamento.js";
+import { otimizarCobertura, limitesCobertura, explicarLimites } from "./otimizador-cobertura.js";
 import { analisarCobertura, normalizarFuncao } from "./cobertura.js";
 import { habilitadoPara, funcaoDoDia, alocarFuncaoNoPeriodo, alocacoesDoDia, semAlocacoesFuncao } from "./funcoes.js";
 import { createDomain } from "./index.js";
@@ -128,8 +130,15 @@ function substituir(escala, alteracoes) {
     }),
   };
 }
-function horario(config, c, base, modelo, inicio, funcao, conferirJanela=true) {
-  const duracao = Math.round(modelo.horas * 60 + modelo.intervaloMin);
+function horario(config, c, base, modelo, inicio, funcao, conferirJanela=true, pausaDesejada=null) {
+  let pausa = pausaDesejada ?? modelo.intervaloMin;
+  const trabalho = Math.round(modelo.horas * 60);
+  if (conferirJanela && inicio >= 0 && inicio < 1440) {
+    // Funcionamento rígido: se não couber, a pausa pode ser reduzida até 1h.
+    const janela = janelas(config, c, base).find((j) => inicio >= j.inicio && inicio + trabalho + pausaMinimaPlanejada(pausa) <= j.fim);
+    if (janela) pausa = Math.min(pausa, Math.max(pausaMinimaPlanejada(pausa), janela.fim - inicio - trabalho));
+  }
+  const duracao = trabalho + pausa;
   if (
     inicio < 0 ||
     inicio >= 1440 ||
@@ -139,7 +148,6 @@ function horario(config, c, base, modelo, inicio, funcao, conferirJanela=true) {
     ))
   )
     return null;
-  const pausa = modelo.intervaloMin;
   const distancia =
     modelo.intervaloInicioMin == null
       ? Math.min(240, duracao - pausa)
@@ -166,7 +174,7 @@ function horario(config, c, base, modelo, inicio, funcao, conferirJanela=true) {
     creditoNoturnoCCT: 0,
     horasComputadasCCT: modelo.horas,
   };
-  if (pausa && modelo.horas >= 7 && modelo.horas <= 9) {
+  if (pausa && modelo.horas > 6 && modelo.horas <= 9) {
     const faixa = faixaInicioIntervalo(novo);
     if (faixa.inicio > faixa.fim) return null;
     novo.intervaloInicioMin = Math.max(faixa.inicio, Math.min(pInicio, faixa.fim));
@@ -180,6 +188,9 @@ function horario(config, c, base, modelo, inicio, funcao, conferirJanela=true) {
   };
   delete novo.alocacoesFuncao;
   delete novo.ajusteRestricao;
+  delete novo.intervaloReduzido;
+  const pausaOriginal = modelo.intervaloReduzido?.de ?? modelo.intervaloMin;
+  if (pausa < pausaOriginal) novo.intervaloReduzido = { de: pausaOriginal, para: pausa };
   if (
     violacoesDia(c, novo).length ||
     (c.quadroDominio?.admissaoIso && novo.data < c.quadroDominio.admissaoIso)
@@ -259,6 +270,36 @@ function transformarEmFolga(de) {
   delete folga.funcaoAlocada;
   delete folga.ajusteRestricao;
   return folga;
+}
+/** Folga que pode virar trabalho numa troca dentro da semana. */
+function podeTrabalhar(config, r, d) {
+  const c = r.colaborador, proprio = configDoPerfil(config, c) || config;
+  return d.status === "F" && !d.repousoSeguranca && !(d.feriado && !d.feriado.trabalhado) &&
+    !proprio.folgasFimSemana && podeMudar(config, c, d) &&
+    !(config.aplicarProposta5x2 && (config.folgasFixasOrigemCobertura || []).includes(d.weekday)) &&
+    janelas(config, c, d).length > 0;
+}
+/** Confere a proposta global pessoa a pessoa com as validações completas.
+ * Quem não passa tem suas mudanças descartadas; o restante é mantido. */
+function conferirOtimizacao(config, escala, rel, alteracoesBrutas) {
+  let alteracoes = expandirRecorrencia(config, escala, alteracoesBrutas);
+  if (!alteracoes) {
+    const porPessoa = new Map();
+    for (const a of alteracoesBrutas) porPessoa.set(a.colaboradorId, [...(porPessoa.get(a.colaboradorId) || []), a]);
+    alteracoes = [...porPessoa.values()].flatMap((lista) => expandirRecorrencia(config, escala, lista) || []);
+  }
+  for (let rodada = 0; rodada < 50 && alteracoes.length; rodada++) {
+    const novo = substituir(escala, alteracoes);
+    const reprovada = [...new Set(alteracoes.map((a) => a.colaboradorId))].find((id) =>
+      motivoInseguro(config, escala, novo, alteracoes.filter((a) => a.colaboradorId === id)));
+    if (reprovada == null) {
+      const cobertura = analisarCobertura(config, novo.resultado);
+      if (cobertura.avisos.length || minutosFaltantes(cobertura) >= minutosFaltantes(rel)) return null;
+      return { escala: novo, rel: cobertura, alteracoes };
+    }
+    alteracoes = alteracoes.filter((a) => a.colaboradorId !== reprovada);
+  }
+  return null;
 }
 function* trocasEntrePessoas(config, escala, c, d, de, primeiras) {
   let parceiros = 0;
@@ -660,8 +701,52 @@ export function buscarAjustesCobertura(config, opcoes = {}) {
       profundidadeMaxima,tempoDecorridoMs:Math.round(agora()-inicioBusca),limiteTempoMs,
     });
   progresso();
+  // 1ª etapa: otimização global, que aceita pioras temporárias para chegar
+  // à menor lacuna. A 2ª etapa (abaixo) refina com as operações pontuais.
+  const ctxOtimizacao = { podeMudar, podeVirarFolga, podeTrabalhar, janelas, horario, transformarEmFolga, agora };
+  const limites = limitesCobertura(config, escala, ctxOtimizacao);
+  let otimizacao = null;
+  if (ampliada && rel.lacunas.length && minutosFaltantes(rel) > limites.limiteInferiorMin) {
+    // Várias rodadas com sementes diferentes, cada uma partindo da melhor
+    // solução anterior, até o mínimo comprovado ou o orçamento de tempo.
+    const inicioOtimizacao = agora(), orcamento = Math.min(15000, limiteTempoMs * 0.5);
+    const iteracoes = opcoes.iteracoesOtimizacao ?? (opcoes.limiteTentativas ? opcoes.limiteTentativas * 30 : undefined);
+    let atual = escala, semGanho = 0, rodadas = 0, avaliadas = 0;
+    while (rodadas < 8 && semGanho < 2 && agora() - inicioOtimizacao < orcamento) {
+      const bruto = otimizarCobertura(config, atual, { ...ctxOtimizacao, semente: 20261118 + rodadas * 7919,
+        limiteMs: orcamento - (agora() - inicioOtimizacao), limiteInferiorMin: limites.limiteInferiorMin, iteracoes });
+      rodadas++;
+      avaliadas += bruto?.avaliadas || 0;
+      if (!bruto?.alteracoes.length || bruto.lacunaFinalMin >= bruto.lacunaInicialMin) { semGanho++; continue; }
+      semGanho = 0;
+      atual = substituir(atual, bruto.alteracoes);
+      if (bruto.lacunaFinalMin <= limites.limiteInferiorMin || iteracoes) break;
+    }
+    const diferencas = [];
+    atual.resultado.forEach((r, n) => {
+      const antigos = new Map(escala.resultado[n].dias.map((d) => [d.data, d]));
+      for (const d of r.dias) {
+        const o = antigos.get(d.data);
+        if (o && chaveDiaBusca(o) !== chaveDiaBusca(d))
+          diferencas.push({ colaboradorId: r.colaborador.id, data: d.data, antes: structuredClone(o), depois: structuredClone(d) });
+      }
+    });
+    otimizacao = { avaliadas, rodadas, duracaoMs: Math.round(agora() - inicioOtimizacao), aplicada: false };
+    const conferida = diferencas.length ? conferirOtimizacao(config, escala, rel, diferencas) : null;
+    tentativas++;
+    if (conferida) {
+      for (const a of conferida.alteracoes) alteracoes.set(`${a.colaboradorId}:${a.data}`, a);
+      acoes.push({ tipo: "otimizacao_global", profundidade: 1,
+        reducaoMinutos: minutosFaltantes(rel) - minutosFaltantes(conferida.rel) });
+      registroBusca.registrar({ tipo: "otimizacao_global", alteracoes: conferida.alteracoes }, "");
+      escala = conferida.escala;
+      rel = conferida.rel;
+      otimizacao.aplicada = true;
+    } else registroBusca.registrar({ tipo: "otimizacao_global", alteracoes: diferencas }, "sem_melhoria");
+    progresso();
+  }
   while (
-    (rel.lacunas.length || deficitContratual(config,escala)>0) &&
+    ((rel.lacunas.length && minutosFaltantes(rel) > limites.limiteInferiorMin) || deficitContratual(config,escala)>0) &&
     tentativas < limiteTentativas &&
     acoes.length < limiteAcoes && !controle.esgotado()
   ) {
@@ -673,6 +758,8 @@ export function buscarAjustesCobertura(config, opcoes = {}) {
       (ampliada?b.data.localeCompare(a.data):a.data.localeCompare(b.data)) || b.inicioMin - a.inicioMin ||
       normalizarFuncao(a.funcao).localeCompare(normalizarFuncao(b.funcao)));
     function* propostas() {
+      // Lacuna já no mínimo comprovado: resta apenas tentar o saldo contratual.
+      if (minutosFaltantes(rel) <= limites.limiteInferiorMin) { yield* candidatosRateio(config,escala,podeMudar); return; }
       function* diretas() {
         yield* candidatosRateio(config,escala,podeMudar);
         for(const lacuna of prioritarias) yield* candidatos(config,escala,lacuna,registroBusca.registrarTriagem);
@@ -820,6 +907,9 @@ export function buscarAjustesCobertura(config, opcoes = {}) {
   const diagnosticoBusca=explicarResultadoBusca(config,escala,rel,registroBusca.resultado(),encerramento,{podeMudar,podeVirarFolga,ampliada});
   return {
     buscaAmpliada:ampliada,
+    otimizacao, limitesCobertura: { ...limites, lacunaRestanteMin: minutosFaltantes(rel),
+      comprovado: minutosFaltantes(rel) <= limites.limiteInferiorMin,
+      explicacoes: explicarLimites(config, escala, limites, minutosFaltantes(rel), rel.lacunas) },
     buscaEncadeada:ampliada,limiteTempoMs,duracaoBuscaMs,profundidadeMaxima,memoriaLimitada:controle.memoriaLimitada,
     diagnosticoBusca,
     avisosValidacao,
@@ -900,7 +990,7 @@ export function aplicarAjustesCobertura(config, plano) {
     depois = analisarCobertura(config, novo.resultado);
   if (
     assinaturaAjustes(config, novo) !== plano.assinaturaDepois ||
-    !coberturaNaoPiora(antes, depois) ||
+    depois.avisos.length ||
     (minutosFaltantes(depois) >= minutosFaltantes(antes) &&
       deficitContratual(config,novo) >= deficitContratual(config,original)) ||
     !seguro(config, original, novo, plano.alteracoes)

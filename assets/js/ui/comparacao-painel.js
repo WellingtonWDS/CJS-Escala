@@ -53,6 +53,7 @@ export function renderDetalhesConversao(c) {
   ${c.desatualizada ? "" : renderDiagnosticoEquipe(m.diagnostico)}
   ${rateios(config)}
   ${c.desatualizada ? "" : domingos(m)}
+  ${!c.desatualizada && m.jornadaCurta?.length ? `<aside class="diagnostico-nota" data-jornada-curta>${m.jornadaCurta.map((t) => `<p>${e(t)}</p>`).join("")}</aside>` : ""}
   ${c.buscaParcial || config.escalaGerada.limiteBuscaIntervalos ? '<aside class="diagnostico-nota">A busca atingiu seu limite de processamento. As sugestões não comprovam que esta seja a melhor escala possível nem que toda lacuna exija contratação.</aside>' : ""}
   ${(m.avisos || []).length ? `<aside class="diagnostico-nota">${m.avisos.map(a=>`<p>${e(a)}</p>`).join("")}</aside>` : ""}
   ${config.escalaGerada.sugestoesIntervalos?.length ? `<p>${config.escalaGerada.sugestoesIntervalos.length} intervalo(s) redistribuído(s) na proposta para melhorar a cobertura. Confira os horários na grade.</p>` : ""}
