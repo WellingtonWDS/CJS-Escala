@@ -12,6 +12,10 @@ Ferramenta para configurar, gerar e revisar escalas de trabalho e comparar a esc
 
 Validação: **622 testes unitários**, build e testes de navegador aprovados. Inclui sequências de três e cinco operações, prazo com relógio controlado, cancelamento, aplicação/desfazer, recarga, celular e prévia atual recolhida.
 
+**Clareza da triagem — 18/11/2026:** “0 alternativas” agora é distinguido das verificações feitas antes de gerar uma tentativa. A mensagem principal informa quando a busca terminou na triagem e explica que 30 segundos são o tempo máximo, não uma espera obrigatória. Os detalhes registram filtros com contagens e exemplos: dia anterior sem janela que alcance a lacuna e folgas fixas preservadas. No cenário equivalente com dois motoristas e dois vendedores, a comparação com `2bde7eb` reproduziu **36 → 0**: as 36 alternativas antigas mudavam a sexta sem cobrir o sábado e não produziam melhoria. A busca atual mantém a mesma lacuna e as folgas configuradas, sem gastar avaliações nessas mudanças sem alcance.
+
+Validação dessa revisão: **625 testes unitários**, build e navegador aprovados, incluindo zero alternativas com filtros explícitos, redistribuições viáveis, plantões noturnos, contagens separadas, exemplos limitados e temas claro/escuro no celular.
+
 ## Explicação das tentativas de cobertura — 17/11/2026
 
 Após **Buscar ajustes de cobertura**, abra **Entenda a busca: tentativas e impedimentos** para conferir as estratégias avaliadas, quantidades aceitas/descartadas, exemplos reais e a regra ou lacuna que impediu cada alternativa. A triagem separa bloqueios de configuração — como sábado/domingo fixos — de tentativas completas e mostra, quando aplicável, a conta do conflito entre sábado reduzido e referência contratual. O diagnóstico distingue falta de capacidade nas condições cadastradas de busca sem solução; não conclui contratação apenas porque não encontrou ajuste. Explicações acompanham o registro dos ajustes aplicados. Tema claro/escuro e celular; sem mudar regras de geração ou exigir SQL. [Funcionamento, limites e testes](docs/explicacao-busca-cobertura.md).

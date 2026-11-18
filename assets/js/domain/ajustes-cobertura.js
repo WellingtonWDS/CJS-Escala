@@ -369,7 +369,7 @@ function* realocacoesComReforco(config, escala, c, d, novo) {
     ] };
   }
 }
-function* candidatos(config, escala, lacuna) {
+function* candidatos(config, escala, lacuna, registrarTriagem = () => {}) {
   for (const r of escala.resultado) {
     const c = r.colaborador,
       proprio = configDoPerfil(config, c) || config;
@@ -388,7 +388,15 @@ function* candidatos(config, escala, lacuna) {
       // O dia anterior só pode atender à lacuna por uma janela noturna real.
       // Não percorra combinações de intervalos diurnos que nunca alcançam a faixa.
       if(d.data!==lacuna.data && !janelas(config,c,d).some(j=>
-        j.inicio<lacuna.fimMin+1440 && j.fim>lacuna.inicioMin+1440))continue;
+        j.inicio<lacuna.fimMin+1440 && j.fim>lacuna.inicioMin+1440)){
+        registrarTriagem("dia_anterior_sem_alcance","A janela de trabalho no dia anterior não alcança o horário descoberto. Alterar seus intervalos ou funções não cobriria essa lacuna.",{nome:c.nome,funcao:lacuna.funcao,dataOrigem:d.data,dataLacuna:lacuna.data});
+        continue;
+      }
+      // Com folgas fixas, nenhuma troca de dia na semana pode ser gerada.
+      if(d.status==="F" && proprio.folgasFimSemana){
+        registrarTriagem("folgas_fixas","Sábado e domingo estão fixados como folga. A busca preserva essa escolha; não pode substituí-la por rodízio durante a semana.",{nome:c.nome,funcao:lacuna.funcao,dataOrigem:d.data,dataLacuna:lacuna.data});
+        continue;
+      }
       const alterar = (depois) => ({
         colaboradorId: c.id,
         data: d.data,
@@ -578,7 +586,7 @@ function* redistribuicoesCombinadas(config,escala,rel,sementes,controle) {
       Number(!coberturaNaoPiora(rel,{lacunas:[b],avisos:[]}))-Number(!coberturaNaoPiora(rel,{lacunas:[a],avisos:[]})) ||
       (b.fimMin-b.inicioMin)*b.faltantes-(a.fimMin-a.inicioMin)*a.faltantes || a.data.localeCompare(b.data));
     let geradas=0;
-    proximoEstado: for(const l of lacunas.slice(0,8)) for(const segunda of candidatos(config,parcial,l)) {
+    proximoEstado: for(const l of lacunas.slice(0,8)) for(const segunda of candidatos(config,parcial,l,controle.registrarTriagem)) {
       if(++geradas>160 || controle.esgotado())break proximoEstado;
       const recorrentes=expandirRecorrencia(config,parcial,segunda.alteracoes);
       if(!recorrentes)continue;
@@ -624,6 +632,7 @@ export function buscarAjustesCobertura(config, opcoes = {}) {
   const limiteAcoes = Math.min(limiteTentativas,Math.max(1,Math.trunc(opcoes.limiteAcoes || (ampliada?limiteTentativas:20))));
   const rejeicoes={semMelhoria:0,novaLacuna:0,regras:0,recorrencia:0};
   const registroBusca=criarRegistroBusca(original);
+  controle.registrarTriagem=registroBusca.registrarTriagem;
   let tentativas = 0;
   const progresso = () =>
     opcoes.onProgresso?.({
@@ -648,7 +657,7 @@ export function buscarAjustesCobertura(config, opcoes = {}) {
     function* propostas() {
       function* diretas() {
         yield* candidatosRateio(config,escala,podeMudar);
-        for(const lacuna of prioritarias) yield* candidatos(config,escala,lacuna);
+        for(const lacuna of prioritarias) yield* candidatos(config,escala,lacuna,registroBusca.registrarTriagem);
       }
       const tetoDiretas=Math.min(limiteTentativas,tentativas+Math.max(1,Math.min(80,Math.floor((limiteTentativas-tentativas)/3))));
       for(const candidata of diretas()) {

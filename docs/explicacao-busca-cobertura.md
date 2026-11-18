@@ -24,6 +24,16 @@ O texto **“Há margem para testar uma redistribuição”** não aparece mais 
 
 Os grupos de lacuna mostram uma data de referência por padrão de função/dia/horário e o número de ocorrências. A triagem é diferente de uma tentativa completa: descreve as configurações preservadas, sem afirmar que o algoritmo simulou todas as combinações possíveis. Uma alternativa recebe o primeiro motivo decisivo encontrado; ela pode ter outros impedimentos.
 
+## Por que pode aparecer zero alternativas em menos de um segundo
+
+O contador de alternativas mede tentativas que chegaram à avaliação completa. Antes disso, o gerador verifica se o colaborador/dia pode contribuir para a lacuna e se a troca é permitida. Se todas essas opções forem bloqueadas, a busca pode terminar rapidamente; não precisa esperar 30 segundos nem produzir tentativas sem efeito para aumentar o contador.
+
+A seção **Verificações filtradas antes de gerar alternativas** apresenta contagens e até dois exemplos por filtro, com colaborador, função, dia de origem e data da lacuna. Essas contagens não são somadas ao contador de tentativas. Uma pessoa pode ser verificada para mais de uma função/data ou em diferentes etapas da busca.
+
+Comparação em 18/11/2026 com a versão `2bde7eb`: padrão fixo, dois motoristas e dois vendedores habilitados, operação de sábado 08–14 descoberta e folgas fixas no sábado/domingo. A versão anterior avaliava **36 alternativas**, todas sem melhoria, mudando funções/intervalos da sexta-feira. Os horários diurnos da sexta não alcançavam o sábado. O filtro atual elimina essas verificações antes de gerar mudanças e preserva as folgas fixas: **0 alternativas completas**, quatro verificações filtradas por falta de alcance do dia anterior e quatro por folgas fixas. As 12 horas-pessoa descobertas permanecem iguais nas duas versões. No modo dinâmico equivalente, a contagem se repete por data; não há liberação automática de rodízio.
+
+O aviso principal explica a conclusão na triagem e o bloqueio identificado. Para avaliar rodízio no sábado, a configuração de folgas precisa permiti-lo; mudar essa configuração não garante que o restante da carga e da cobertura possa ser atendido. Turnos noturnos que realmente alcançam o dia seguinte continuam elegíveis.
+
 ## Exemplo: 42h e sábado reduzido
 
 Se **Folgas da proposta** fixa sábado e domingo, a busca não troca silenciosamente essa escolha por folga em dia útil. O resultado explica como permitir um teste de rodízio: mudar essa opção e gerar novamente. Isso não assegura que o rodízio resolverá o restante.
@@ -47,6 +57,8 @@ Textos de colaboradores, funções e validações são escapados ao renderizar. 
 ## Validação
 
 **622 testes unitários**, build e testes de navegador aprovados em 18/11/2026.
+
+Revisão de triagem em 18/11/2026: **625 testes unitários**, build e navegador aprovados. Regressão 36 → 0 com datas/funções, mesmo resultado operacional, contagens de filtros separadas, exemplos limitados e escapados, manutenção de redistribuições viáveis e dos turnos noturnos.
 
 A validação inclui cenários que exigem sequências de três e de cinco operações, virada noturna, prazo controlado por relógio determinístico, mês completo, aplicação atômica/desfazer, funcionamento reduzido, restrições, folgas fixas, dias manuais e planos obsoletos/adulterados. Navegador com botão único, cancelamento, prévia sem mutação, aplicação, recarga/desfazer e celular.
 

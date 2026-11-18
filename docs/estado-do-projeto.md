@@ -22,6 +22,10 @@ A seção **Escala atual / prévia avulsa** reúne geração, PDFs e quadro em u
 
 Validação: **622 testes unitários**, build e navegador aprovados: cadeias com três e cinco operações, prazo controlado, cancelamento em Worker, aplicação/desfazer nos dois modelos, recarga, temas/celular e abertura explícita da prévia atual.
 
+**Triagem antes das tentativas — 18/11/2026:** resultado com zero alternativas informa conclusão na triagem, em vez de apenas “nenhuma melhoria em 0 tentativas”. Os detalhes mostram filtros, contagens e amostras separadas das avaliações completas. Comparação controlada com `2bde7eb` reproduziu 36 → 0 no padrão fixo com quatro profissionais habilitados e lacuna no sábado: as avaliações anteriores só alteravam a sexta sem alcançar a faixa descoberta. Mantidos os resultados e as folgas fixas; validado também que redistribuições viáveis continuam sendo avaliadas. O prazo de 30 segundos é máximo e não exige ocupar esse tempo sem alternativas úteis.
+
+Validação da triagem: **625 testes unitários**, build e navegador aprovados, com filtros explícitos nos dois modelos, modo claro/escuro, celular e regressões de busca, aplicação/desfazer, persistência e trabalho noturno.
+
 ## Tentativas de cobertura explicadas — 17/11/2026
 
 Resultado da busca com área expansível **Entenda a busca: tentativas e impedimentos**: estratégias/contagens, motivos de descarte com exemplos reais de horários/intervalos/funções, regra legal ou lacuna criada e motivo de encerramento. Triagem das lacunas mostra folgas fixas, dias preservados e habilitações; diferencia filtros de avaliações completas. Exibe limite contratual otimista do sábado reduzido quando aplicável e reutiliza as evidências do diagnóstico de equipe, sem tratar insucesso como prova de contratação. Explicação dos ajustes aplicados acompanha o registro já salvo da escala; buscas não aplicadas ficam na prévia da aba. Amostras limitadas, dados escapados, Worker/cancelamento e regras preservados; claro/escuro e celular. Sem migração ou alteração de versão. [Detalhes e limites](explicacao-busca-cobertura.md).

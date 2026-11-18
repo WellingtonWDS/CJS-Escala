@@ -88,6 +88,7 @@ export function createAjustesCoberturaUI({
     const rateio = Math.max(0,(plano.deficitAntesMin || 0)-(plano.deficitDepoisMin || 0));
     if(plano.alteracoes.length) return `Sugestão encontrada: redução de ${fmtHoras(reducao)} horas-pessoa descobertas.${rateio ? ` Rateio: ${fmtHoras(rateio/60)} de saldo contratual distribuídas.` : ""} ${fmtHoras(plano.depois.minutosFaltantes/60)} continuam sem cobertura. Confira as alterações antes de aplicar.`;
     if(!plano.antes.minutosFaltantes && !plano.deficitAntesMin) return "As faixas cadastradas já estão cobertas e a carga das semanas completas está atendida. Nenhum ajuste necessário.";
+    if(plano.diagnosticoBusca?.encerramento==="sem_alternativas")return `Busca concluída na triagem: nenhuma alternativa compatível chegou à avaliação completa. ${plano.diagnosticoBusca.resumo} Os 30 segundos são o tempo máximo de exploração, não uma espera obrigatória. Abra “Entenda a busca” para conferir os filtros e exemplos.`;
     return `Nenhuma melhoria encontrada nas ${plano.tentativas} alternativas avaliadas. ${plano.diagnosticoBusca?.resumo || "Confira os motivos abaixo."} Abra “Entenda a busca” para ver tentativas, impedimentos e limites desta análise. Este resultado não comprova inviabilidade da escala.`;
   }
   function mostrarPrevia(texto) {

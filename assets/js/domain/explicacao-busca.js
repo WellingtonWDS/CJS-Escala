@@ -92,8 +92,14 @@ const breve = (d, c) => ({
 /** Contagens completas e amostras limitadas: não guarda centenas de escalas. */
 export function criarRegistroBusca(escala) {
   const tipos = new Map(),
-    motivos = new Map();
+    motivos = new Map(),
+    triagem = new Map();
   return {
+    registrarTriagem(codigo, texto, exemplo) {
+      if(!triagem.has(codigo))triagem.set(codigo,{codigo,texto,total:0,exemplos:[]});
+      const item=triagem.get(codigo);item.total++;
+      if(item.exemplos.length<2)item.exemplos.push(exemplo);
+    },
     registrar(candidato, codigo, mensagem = "", avaliada = true) {
       const tipo = candidato.tipo;
       if (!tipos.has(tipo))
@@ -141,6 +147,7 @@ export function criarRegistroBusca(escala) {
     resultado() {
       return {
         tipos: [...tipos.values()],
+        triagem:[...triagem.values()],
         motivos: [...motivos.values()].sort((a, b) => b.total - a.total),
       };
     },
@@ -319,9 +326,8 @@ export function explicarResultadoBusca(
     ? diagnosticarEquipe(config, escala.resultado, rel)
     : null;
   const motivos = registro.motivos;
-  const bloqueio = [...grupos.values()]
-    .flatMap((g) => g.bloqueios)
-    .find((b) => b.codigo === "folgas_fim_semana");
+  const bloqueios = [...grupos.values()].flatMap(g=>g.bloqueios);
+  const bloqueio = bloqueios.find(b=>b.codigo==="folgas_fim_semana") || (!motivos.length ? bloqueios[0] : null);
   const resumo = bloqueio
     ? bloqueio.texto
     : motivos.length
