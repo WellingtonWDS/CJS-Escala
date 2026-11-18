@@ -46,7 +46,7 @@ module.exports=async({browser,baseURL})=>{
    const {aplicarHorarioManual}=await import('/assets/js/domain/horario-manual.js');
    const {compararConversao}=await import('/assets/js/domain/conversao.js');
    const proposta=s.conversao.proposta.config,id=proposta.colaboradores[0].id;
-   proposta.escalaGerada=aplicarHorarioManual(proposta,id,'2028-02-07','T',{entrada:'08:00',intInicio:'11:00',intFim:'13:00',saida:'19:00'});
+   proposta.escalaGerada=aplicarHorarioManual(proposta,id,'2028-02-07','T',{entrada:'08:00',intInicio:'11:00',intFim:'12:00',saida:'18:00'}); // 9h dentro do funcionamento → ACIMA
    proposta.escalaGerada=aplicarHorarioManual(proposta,id,'2028-02-14','T',{entrada:'08:00',intInicio:'11:00',intFim:'13:00',saida:'17:00'});
    s.conversao.comparacao=compararConversao(s.conversao);
    localStorage.setItem('fintria-escala-dp-v2',JSON.stringify(s));
@@ -59,6 +59,8 @@ module.exports=async({browser,baseURL})=>{
   assert.deepEqual(await contrast.borders(page,boundaries),[],"Bordas dinâmicas com contraste 3:1");
   await page.locator('#resultado-proposta').scrollIntoViewIfNeeded();
   await capture('02-escala');
+  // O botão secundário fica dentro da escala atual, recolhida por padrão.
+  if(!(await page.locator('#escala-atual-previa').evaluate(el=>el.open)))await page.locator('#escala-atual-previa > summary').click();
   assert.notEqual(await page.locator('#btn-converter').evaluate(el=>getComputedStyle(el).backgroundColor),await page.locator('#btn-gerar').evaluate(el=>getComputedStyle(el).backgroundColor),'Ação principal e secundária visualmente distintas');
   await page.locator('#btn-gerar').hover();
   failures.push(...await contrast(page));

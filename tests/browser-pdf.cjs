@@ -1,3 +1,4 @@
+const { abrirEscalaAtual } = require("./helpers/etapas.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs/promises");
 const { clicarCalculo } = require("./helpers/calculo.cjs");
@@ -30,6 +31,7 @@ module.exports = async ({ browser, baseURL }) => {
       );
       await page.locator('[data-etapa-link="sec-gerar"]').click();
       await clicarCalculo(page, "#btn-converter");
+      await abrirEscalaAtual(page);
       for (const origem of ["atual", "proposta"])
         for (const tipo of ["empregador", "colaboradores"]) {
           const button = page.locator(

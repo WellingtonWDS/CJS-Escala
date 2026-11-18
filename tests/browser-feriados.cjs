@@ -1,3 +1,4 @@
+const { abrirEscalaAtual } = require("./helpers/etapas.cjs");
 const { clicarCalculo } = require("./helpers/calculo.cjs");
 const {
   respondToDialogs,
@@ -75,6 +76,8 @@ module.exports = async function testarFeriados({ browser, baseURL }) {
     await page.waitForFunction(
       () => document.documentElement.dataset.ready === "true",
     );
+    await irParaEtapa(page, "#resultado-gerar");
+    await abrirEscalaAtual(page);
     assert.match(await resumo.innerText(), /ABAIXO/);
     assert.match(await resumo.innerText(), /08:00 abonadas/);
     assert.deepEqual(errors, []);

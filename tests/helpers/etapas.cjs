@@ -12,4 +12,10 @@ async function irParaEtapa(page, seletor) {
   if(await atual.count() && await campo.evaluate(el=>!!el.closest('#escala-atual-previa')) && !(await atual.evaluate(el=>el.open)))
     await atual.locator('> summary').click();
 }
-module.exports = { irParaEtapa };
+// A escala atual / prévia avulsa fica recolhida por padrão desde 18/11/2026.
+async function abrirEscalaAtual(page) {
+  const atual = page.locator('#escala-atual-previa');
+  if (await atual.count() && !(await atual.evaluate((el) => el.open)))
+    await atual.locator('> summary').click();
+}
+module.exports = { irParaEtapa, abrirEscalaAtual };

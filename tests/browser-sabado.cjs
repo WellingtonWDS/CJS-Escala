@@ -1,3 +1,4 @@
+const { abrirEscalaAtual } = require("./helpers/etapas.cjs");
 const { clicarCalculo } = require("./helpers/calculo.cjs");
 const { irParaEtapa } = require("./helpers/etapas.cjs");
 const assert = require("node:assert/strict");
@@ -45,6 +46,7 @@ module.exports = async function testarSabado({ browser, baseURL }) {
       assert.equal(sabado.entradaMin, 480);
       assert.equal(sabado.saidaMin, 720);
       assert.equal(sabado.intervaloMin, 0);
+      await abrirEscalaAtual(page);
       const resumo = page.locator(
         '[data-resumo-semanal][data-colaborador="1"][data-semana="2026-10-26"]',
       );

@@ -1,3 +1,4 @@
+const { abrirEscalaAtual } = require("./helpers/etapas.cjs");
 const assert = require('node:assert/strict');
 const {clicarCalculo} = require('./helpers/calculo.cjs');
 module.exports = async ({browser,baseURL}) => {
@@ -42,6 +43,7 @@ module.exports = async ({browser,baseURL}) => {
    assert.match(await filtro.innerText(),/Caixa/);
    await page.reload();await pronta();
    await page.locator('[data-etapa-link="sec-gerar"]').click();
+   await abrirEscalaAtual(page);
    assert.equal((await salvo()).escalaGerada.coberturaOperacional.lacunas.length,0);
    await page.locator('#resultado-gerar-ajustes [data-ajuste-desfazer]').click();
    assert.deepEqual((await salvo()).escalaGerada.resultado,original.resultado);

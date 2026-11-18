@@ -1,3 +1,4 @@
+const { abrirEscalaAtual } = require("./helpers/etapas.cjs");
 const assert=require('node:assert/strict');
 const {clicarCalculo}=require('./helpers/calculo.cjs');
 module.exports=async({browser,baseURL})=>{
@@ -35,6 +36,7 @@ module.exports=async({browser,baseURL})=>{
   });
   await page.reload();await page.waitForFunction(()=>document.documentElement.dataset.ready==='true');
   await page.locator('[data-etapa-link="sec-gerar"]').click();
+  await abrirEscalaAtual(page);
   const aviso=page.locator('#resultado-gerar [data-aviso-tipo="INSTRUMENTO_FORA_VIGENCIA"]');
   assert.match(await aviso.innerText(),/16\/06\/2027/);assert.match(await aviso.innerText(),/15\/06\/2027/);
   assert.match(await aviso.locator('.aviso-escala-acao').innerText(),/campo Data de referência/);

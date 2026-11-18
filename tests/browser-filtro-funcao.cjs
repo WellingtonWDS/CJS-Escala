@@ -1,3 +1,4 @@
+const { abrirEscalaAtual } = require("./helpers/etapas.cjs");
 const assert = require('node:assert/strict');
 const {respondToDialogs, waitForDialogs} = require('./helpers/dialogs.cjs');
 module.exports = async ({browser,baseURL}) => {
@@ -22,6 +23,7 @@ module.exports = async ({browser,baseURL}) => {
    await page.reload();
    await page.waitForFunction(()=>document.documentElement.dataset.ready==='true');
    await page.locator('[data-etapa-link="sec-gerar"]').click();
+   await abrirEscalaAtual(page);
   }
   const saved=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('fintria-escala-dp-v2')));
   for(const modelo of ['dinamica','fixa']) {
@@ -84,6 +86,7 @@ module.exports = async ({browser,baseURL}) => {
   });
   await page.reload();await page.waitForFunction(()=>document.documentElement.dataset.ready==='true');
   await page.locator('[data-etapa-link="sec-gerar"]').click();
+  await abrirEscalaAtual(page);
   assert(await panel.locator('[data-ajuste-buscar]').isVisible());
   assert(await panel.locator('[data-ajuste-buscar]').isDisabled());
   await panel.locator('[data-ajuste-configurar]').click();
@@ -98,6 +101,7 @@ module.exports = async ({browser,baseURL}) => {
   });
   await page.reload();await page.waitForFunction(()=>document.documentElement.dataset.ready==='true');
   await page.locator('[data-etapa-link="sec-gerar"]').click();
+  await abrirEscalaAtual(page);
   await page.locator('#resultado-gerar [data-filtro-funcao]').selectOption('funcao:supervisor de atendimento e operacoes');
   assert.equal(await page.locator('#resultado-gerar [data-ri="1"][data-di]:visible').count(),0);
   assert.match((await page.locator('#resultado-gerar [data-ri="0"][data-di]:visible').allTextContents()).join(' '),/Função: Supervisor de Atendimento e Operações/);

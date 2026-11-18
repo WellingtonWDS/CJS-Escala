@@ -39,7 +39,7 @@ module.exports = async ({ browser, baseURL }) => {
       document.body.classList.add("has-app-sidebar", "sidebar-collapsed");
     });
     assert.equal(await page.locator(".sidebar-brand img").isVisible(), true);
-    assert.equal(await page.locator(".sidebar-brand > span").isVisible(), false);
+    assert.equal(await page.locator(".sidebar-brand > span:not([data-seasonal-ornament])").isVisible(), false);
     await page.evaluate(() => {
       document.getElementById("app-sidebar").hidden = true;
       document.body.classList.remove("has-app-sidebar", "sidebar-collapsed");
