@@ -4,6 +4,12 @@ Para cadastrar um escritório/empresa com cinco colaboradores e preenchimento fi
 
 Ferramenta para configurar, gerar e revisar escalas de trabalho e comparar a escala atual 6×1 com uma proposta 5×2. A interface e os cálculos usam HTML, CSS e módulos JavaScript nativos no navegador, sem bundler ou compilação do JavaScript da aplicação. A autenticação depende de código no servidor: middleware e função de login na Vercel. Por padrão, os cadastros e as escalas ficam no navegador. O modo individual com PostgreSQL e n8n é opcional e exige a configuração de homologação descrita adiante.
 
+## Página de apresentação pública (/sobre) — 18/11/2026
+
+`https://reescala.fintria.com.br/sobre` apresenta o sistema sem login: proposta de valor para a EC 141, como funciona em quatro passos, recursos, demonstrações com capturas fictícias, linha do tempo da transição, privacidade, público e contato pelo WhatsApp (33) 98857-1697, além do botão **Entrar**. Não cita sistemas contábeis específicos ("sistemas contábeis mais usados"). Tema claro/escuro compartilhado com o sistema e layout para celular.
+
+Arquivos em `sobre/` (HTML, CSS próprio e imagens WebP), copiados pelo build para `dist/sobre`. O guard (`server/auth.js`) libera apenas `/sobre` e `/sobre/*`; aplicação, módulos e API continuam exigindo sessão. As capturas usam dados fictícios gerados a partir dos cenários DEMO. Testes: `tests/auth.test.cjs` (acesso) e `tests/browser-sobre.cjs`. Sem SQL, RPC, variável de ambiente ou alteração de DNS.
+
 ## Termo aditivo ao contrato de trabalho — 18/11/2026
 
 Em **Conversão e comparação → Documentos da proposta 5×2**, o bloco **Termo aditivo ao contrato de trabalho — modelo de cláusulas** gera um termo por colaborador, em **PDF** e em **Word (.docx)**, entregues em ZIP com um `LEIA-ME.txt`. Há também uma prévia na tela. O texto é preenchido com empresa, CNPJ, endereço, nome, cargo, CTPS/série (quando importados), o horário semanal da proposta (dias, entrada, intervalo, saída e horas) e as duas folgas.

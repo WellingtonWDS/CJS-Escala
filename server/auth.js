@@ -127,6 +127,8 @@ export async function readSession(cookie, env, now = Date.now()) {
   }
 }
 export function publicPath(path) {
+  // Página de apresentação pública (/sobre), sem dados nem chamadas à API.
+  if (path === "/sobre" || path.startsWith("/sobre/")) return true;
   return [
     "/login.html",
     "/logos/Reescala_original_transparente.png",

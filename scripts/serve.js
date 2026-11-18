@@ -14,6 +14,7 @@ const types = {
   ".css": "text/css; charset=utf-8",
   ".json": "application/json",
   ".png": "image/png",
+  ".webp": "image/webp",
 };
 const developmentEnv = {
   ...process.env,
@@ -95,7 +96,9 @@ export function createDevServer({
           pathname,
         ) &&
         !pathname.startsWith("/assets/") &&
-        !pathname.startsWith("/logos/")
+        !pathname.startsWith("/logos/") &&
+        pathname !== "/sobre" &&
+        !pathname.startsWith("/sobre/")
       ) {
         res.writeHead(404).end("Not found");
         return;
@@ -120,6 +123,8 @@ export function createDevServer({
       if (resolve(root) === resolve(projectRoot) &&
           ["/assets/vendor/pdf.min.mjs", "/assets/vendor/pdf.worker.min.mjs"].includes(pathname))
         file = resolve(projectRoot, "node_modules/pdfjs-dist/build", pathname.split("/").pop());
+      // Pasta pública (ex.: /sobre) abre o index.html correspondente.
+      if ((await stat(file).catch(() => null))?.isDirectory()) file = resolve(file, "index.html");
       if (!(await stat(file)).isFile()) {
         res.writeHead(404).end("Not found");
         return;

@@ -173,3 +173,13 @@ test("adaptadores da Vercel aplicam proteção e emitem o cookie de login", asyn
       else process.env[name] = value;
   }
 });
+
+test("página de apresentação /sobre é pública e não abre o sistema nem a API", async () => {
+  const { guard } = await load();
+  const env = { AUTH_SESSION_SECRET: "x".repeat(40) };
+  for (const path of ["/sobre", "/sobre/", "/sobre/index.html", "/sobre/sobre.css", "/sobre/img/proposta.webp"])
+    assert.equal(await guard(new Request("https://example.com" + path), env), null, path);
+  for (const path of ["/", "/index.html", "/sobreescala", "/assets/js/app.js"])
+    assert.equal((await guard(new Request("https://example.com" + path), env)).status, 303, path);
+  assert.equal((await guard(new Request("https://example.com/api/persistence"), env)).status, 401);
+});

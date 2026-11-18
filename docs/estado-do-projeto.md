@@ -17,6 +17,10 @@ Carregamento imediato na geração atual/proposta, cálculo em Worker local, blo
 
 
 
+
+## Página pública /sobre — 18/11/2026
+
+Apresentação do sistema sem login em `/sobre` (pasta `sobre/` publicada pelo build), com contato por WhatsApp e acesso ao login. Guard libera somente `/sobre` e seus arquivos. Validação: teste de acesso e de navegador (desktop/celular, temas).
 ## Termo aditivo da EC 141 — 18/11/2026
 
 Modelo de termo aditivo por colaborador, em PDF e Word (ZIP com LEIA-ME), gerado a partir da proposta 5×2 na etapa Conversão e comparação, com prévia na tela. Salário e fundamento da distribuição diária em branco; modelo de referência a conferir pela assessoria. Sem SQL, RPC, variável ou dependência nova.

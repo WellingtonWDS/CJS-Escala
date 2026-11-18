@@ -397,7 +397,7 @@ export function createCalendarioUI({
               <div class="escala-colaborador-nome">${escapeHtml(x.r.colaborador.nome || "(sem nome)")}</div>
               ${trabalho && (x.obj.funcaoAlocada || x.obj.alocacoesFuncao?.length) ? `<div class="escala-colaborador-detalhe font-semibold">Função: ${escapeHtml(descricaoFuncoes(x.r.colaborador, x.obj))}</div>` : ""}
               ${x.obj.intervaloSugerido ? `<div class="escala-colaborador-detalhe font-semibold">Intervalo sugerido para cobertura</div>` : ""}
-              ${x.obj.intervaloReduzido ? `<div class="escala-colaborador-detalhe">Intervalo reduzido para ${fmtHoras(x.obj.intervaloReduzido.para / 60)} para caber no funcionamento</div>` : ""}
+              ${x.obj.intervaloReduzido ? `<div class="escala-colaborador-detalhe">Intervalo ajustado ao expediente (${fmtHoras(x.obj.intervaloReduzido.para / 60)})</div>` : ""}
               ${x.obj.ajusteAutomatico ? `<div class="escala-colaborador-detalhe">Ajuste de cobertura aplicado</div>` : ""}
               <div class="escala-colaborador-detalhe">${x.obj.restricao ? escapeHtml(x.obj.restricao.descricao) : status}${state.turnosRevezamento ? ` · ${x.obj.turno}` : ""}${x.obj.horas ? ` · ${fmtHoras(x.obj.horas)} trabalhadas` : ""}</div>
               ${trabalho && x.obj.horas ? `<div class="escala-colaborador-detalhe">Horário: ${horarioComDia(x.obj.entradaMin)}–${horarioComDia(x.obj.saidaMin)}</div><div class="escala-colaborador-detalhe">${x.obj.intervaloInicioMin != null && x.obj.intervaloFimMin != null ? `Intervalo: ${horarioComDia(x.obj.intervaloInicioMin)}–${horarioComDia(x.obj.intervaloFimMin)}` : "Sem intervalo"}</div>` : ""}
