@@ -488,6 +488,7 @@ test("compensação mensal não libera período incompleto, cláusula expirada o
 test("política de feriado adicional preserva duas folgas e política anterior é marcada para conferir fundamento", () => {
   const e = exemplo("2026-10-12");
   e.state.tipoEscala = "5x2";
+  e.state.politicaFeriados = "conta_folga";
   const f = { "2026-10-12": { nome: "Feriado", trabalhado: false } };
   let dias = e.gerar("2026-10-12", null, f);
   assert.equal(dias.filter((d) => d.status === "F").length, 2);

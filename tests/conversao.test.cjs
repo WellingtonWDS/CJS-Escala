@@ -150,8 +150,9 @@ test("empresa aberta todos os dias mantém a folga fixa atual e limita sequênci
     }
   }
 });
-test("Natal no destino conta na distribuição de repouso sem perder o abono", () => {
+test("Natal no destino contado como folga mantém a carga semanal cheia", () => {
   const s = empresa();
+  s.politicaFeriados = "conta_folga";
   const c = converter(s, { ...op, periodo: "2028-12" });
   for (const r of c.proposta.config.escalaGerada.resultado) {
     const semana = r.dias.filter(

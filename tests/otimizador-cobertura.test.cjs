@@ -14,9 +14,22 @@ const seg = [1, 2, 3, 4, 5, 6];
 function empresa({ n, minimo, jornada = J("08:00", "12:00", "13:00", "17:00"), extra = {} }) {
   const s = base(new Date(2026, 9, 21));
   s.colaboradores = Array.from({ length: n }, (_, i) => ({ id: i + 1, nome: `P${i + 1}`, sexo: "masculino", cargo: "Atendente", horasSemana: 44 }));
-  Object.assign(s, { jornada, diasTrabalho: seg, folgaDiasPermitidos: [...seg], coberturaAtiva: true,
+  Object.assign(s, { jornada, diasTrabalho: seg, folgaDiasPermitidos: [...seg], coberturaAtiva: true, politicaFeriados: "conta_folga",
     demandasCobertura: [{ id: 1, funcao: "Atendente", inicio: jornada.entrada, fim: jornada.saida, minimo, diasSemana: seg, incluirFeriados: false }], ...extra });
   return converter(s, { periodo: "2027-03", fase: "automatico", folgas: "distribuir" }).proposta.config;
+}
+/** Junta todos os almoços às 12h (válido: 4h após a entrada), abrindo lacunas
+ * que a busca precisa desfazer escalonando almoços e trocando folgas. */
+function juntarAlmocos(cfg) {
+  const minToTime = (m) => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
+  for (const r of cfg.escalaGerada.resultado)
+    for (const campo of ["dias", "diasContexto", "diasApuracao"])
+      for (const d of r[campo] || []) {
+        if (!["T", "FE"].includes(d.status) || !d.intervaloMin) continue;
+        d.intervaloInicioMin = 720; d.intervaloFimMin = 720 + d.intervaloMin;
+        d.jornadaAplicada = { ...d.jornadaAplicada, intInicio: minToTime(720), intFim: minToTime(720 + d.intervaloMin) };
+      }
+  return cfg;
 }
 const total = (rel) => rel.lacunas.reduce((n, l) => n + (l.fimMin - l.inicioMin) * l.faltantes, 0);
 // Relógio congelado e orçamento fixo: resultado determinístico e rápido.
@@ -42,7 +55,7 @@ function conferirPlano(cfg, plano) {
 }
 
 test("otimização global fecha a cobertura quando a troca de folgas exige escalonar almoços", () => {
-  const cfg = empresa({ n: 4, minimo: 2 }), original = structuredClone(cfg);
+  const cfg = juntarAlmocos(empresa({ n: 4, minimo: 2 })), original = structuredClone(cfg);
   const plano = buscar(cfg, opcoes);
   assert(plano.antes.minutosFaltantes > 0);
   assert.equal(plano.depois.minutosFaltantes, 0);
@@ -56,7 +69,7 @@ test("otimização global fecha a cobertura quando a troca de folgas exige escal
 test("quando não há solução completa, chega ao mínimo e o comprova com a explicação do almoço", () => {
   // 5 pessoas para 3 presentes o dia inteiro: dias com 4 pessoas têm 1h
   // inevitável, pois os almoços obrigatórios ocorrem entre 11h e 14h.
-  const cfg = empresa({ n: 5, minimo: 3 });
+  const cfg = juntarAlmocos(empresa({ n: 5, minimo: 3 }));
   const plano = buscar(cfg, opcoes);
   assert(plano.depois.minutosFaltantes < plano.antes.minutosFaltantes);
   assert.equal(plano.limitesCobertura.comprovado, true);

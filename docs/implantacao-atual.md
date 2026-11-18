@@ -3,6 +3,10 @@
 Consultar este registro antes de orientar o operador. Distinguir código disponível, testes locais e resultados informados pelo operador. Não contém senhas, chaves ou identificadores pessoais.
 
 
+
+## Feriados na escala dinâmica — 18/11/2026
+
+Regra `ec141-2026-11-18-16`: o padrão de feriado passa a manter as folgas e acrescentar o feriado; contar entre as folgas deixa de abonar e distribui a carga cheia. Instaladores DEMO (`database/demo/*.sql`) regenerados apenas com a nova política padrão; reexecutá-los é opcional. Sem migração, RPC, variável ou n8n.
 ## Otimização global da readequação — 18/11/2026
 
 Regra `ec141-2026-11-18-15`: busca de ajustes com otimização global e comprovação de limites; proposta respeita o funcionamento da aba Jornada, reduzindo o intervalo até 1h. Resultados anteriores exigem nova geração, sem apagar cadastros. Não requer SQL, RPC, variável, n8n ou reconfiguração da VPS. Publicação pela main.

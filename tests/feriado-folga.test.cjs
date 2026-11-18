@@ -8,6 +8,7 @@ before(async () => {
 });
 function exemplo(mudar = () => {}) {
   const state = createDefaultState(new Date(2026, 9, 19));
+  state.politicaFeriados = "conta_folga"; // padrão anterior, objeto destes testes
   state.tipoEscala = "5x2";
   state.horarioPorDia = true;
   state.jornada = {
@@ -52,10 +53,12 @@ test("cenário da imagem: feriado de 12/10 e domingo são as duas folgas, sem qu
     assert.equal(dias.filter((d) => d.status === "T").length, 5);
     assert.equal(dias[5].saidaMin, 720);
     const a = apurarSemana(e.state.colaboradores[idx], dias, e.state);
+    // Contado como folga, o feriado não gera abono: a semana mostra o mesmo
+    // déficit de uma semana sem feriado, cujos horários só comportam 36h.
     assert.equal(a.trabalhadas, 36);
-    assert.equal(a.abonadas, 8);
-    assert.equal(a.computadas, 44);
-    assert.equal(a.estado, "ok");
+    assert.equal(a.abonadas, 0);
+    assert.equal(a.computadas, 36);
+    assert.equal(a.estado, "abaixo");
   }
 });
 test("sem feriado continuam duas folgas e déficit real quando horários só comportam 36h", () => {
@@ -171,7 +174,7 @@ test("feriados na virada de mês/ano geram a mesma escala em períodos sobrepost
   );
 });
 
-test("abono mantém as 8h originalmente previstas em contrato de 40h, sem duplicar a carga ao liberar outra folga", () => {
+test("feriado contado como folga não gera abono: a carga cheia de 40h vai para os cinco dias trabalhados", () => {
   const e = exemplo((s) => {
     s.horarioPorDia = false;
     s.colaboradores[0].horasSemana = 40;
@@ -179,14 +182,14 @@ test("abono mantém as 8h originalmente previstas em contrato de 40h, sem duplic
   const dias = e.gerar({ "2026-10-12": feriado });
   const a = apurarSemana(e.state.colaboradores[0], dias, e.state);
   assert.equal(folgas(dias).length, 2);
-  assert.equal(a.abonadas, 8);
-  assert.equal(a.trabalhadas, 32);
+  assert.equal(a.abonadas, 0);
+  assert.equal(a.trabalhadas, 40);
   assert.equal(a.computadas, 40);
   assert.equal(a.estado, "ok");
   dias.forEach((d) => delete d.horasPrevistas);
   assert.equal(
     apurarSemana(e.state.colaboradores[0], dias, e.state).abonadas,
-    8,
+    0,
   );
 });
 

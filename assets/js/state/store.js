@@ -29,7 +29,7 @@ export function createDefaultState(now = new Date()) {
     tipoEscala: "6x1",
     regimeJornada: "atual44",
     modoRegime: "automatico",
-    politicaFeriados: "conta_folga",
+    politicaFeriados: "adicional",
     instrumentoColetivo: {
       identificacao: "",
       inicio: "",

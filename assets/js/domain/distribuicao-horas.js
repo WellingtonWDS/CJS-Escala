@@ -1,5 +1,5 @@
 import { planejamento5x2, pausaMinimaPlanejada } from "./janelas-planejamento.js";
-import { limiteDiarioPlanejado } from "./ec141.js";
+import { limiteDiarioPlanejado, referenciaDia } from "./ec141.js";
 import { normalizarJornada } from "./datas-horas.js";
 
 /** O horário por dia limita a capacidade individual. O turno único, inclusive
@@ -80,6 +80,20 @@ export function distribuirCargaComAbonos(colaborador, dias, config) {
     config,
   );
   const dispensado = (d) => d.previsto && d.feriado && !d.feriado.trabalhado;
+  // "Contar entre as folgas": se o feriado ocupou uma das folgas e a semana
+  // mantém a quantidade normal de dias de trabalho, ele é repouso, não abono.
+  // A carga cheia é distribuída nos dias trabalhados (ex.: cinco dias de 8h24).
+  if (config.politicaFeriados !== "adicional" && ["5x2", "6x1"].includes(config.tipoEscala) &&
+      dias.length === 7 && dias.some(dispensado)) {
+    const folgas = config.tipoEscala === "5x2" ? 2 : referenciaDia(config, dias.at(-1).data).folgas;
+    const trabalho = dias.filter((d) => d.previsto && !dispensado(d)).length;
+    if (trabalho >= 7 - folgas) {
+      const carga = distribuirCargaPrevista(colaborador,
+        dias.map((d) => ({ ...d, previsto: d.previsto && !dispensado(d) })), config);
+      for (const d of dias.filter(dispensado)) carga.set(d.data, 0);
+      return carga;
+    }
+  }
   const abonadas = dias
     .filter(dispensado)
     .reduce((s, d) => s + (original.get(d.data) ?? 0), 0);

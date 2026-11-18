@@ -104,8 +104,9 @@ test("5x2 é estável entre períodos sobrepostos, inclusive na virada do ano", 
     conferir(curto);
   }
 });
-test("feriado dispensado ocupa uma das duas folgas e mantém seu abono", () => {
+test("feriado contado como folga ocupa uma das duas folgas, sem abono e com a carga cheia", () => {
   const e = exemplo();
+  e.state.politicaFeriados = "conta_folga";
   const inicio = new Date(2026, 8, 7),
     fim = new Date(2026, 8, 13);
   const base = e.gerar(inicio, fim);
@@ -115,5 +116,6 @@ test("feriado dispensado ocupa uma das duas folgas e mantém seu abono", () => {
   });
   assert.equal(dias.filter((d) => d.status === "T").length, 5);
   assert.equal(dias.filter((d) => d.status === "F").length, 2);
-  assert.ok(dias.find((d) => d.data === trabalho.data).horasPrevistas > 0);
+  assert.equal(dias.find((d) => d.data === trabalho.data).horasPrevistas, 0);
+  assert.equal(dias.reduce((s, d) => s + d.horas, 0), base.reduce((s, d) => s + d.horas, 0));
 });

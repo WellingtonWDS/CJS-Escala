@@ -47,6 +47,10 @@ module.exports = async function testarFeriadoFolga({ browser, baseURL }) {
         await input.dispatchEvent("change");
       }
     }
+    // Política "contar entre as folgas" escolhida na própria tela (o padrão
+    // desde 18/11/2026 é manter as folgas e acrescentar o feriado).
+    await irParaEtapa(page, "#politica-feriados");
+    await page.locator("#politica-feriados").selectOption("conta_folga");
     const checkbox = page.getByLabel("Trabalhar neste feriado");
     await irParaEtapa(page, "#sec-feriados");
     await checkbox.waitFor();
@@ -70,12 +74,12 @@ module.exports = async function testarFeriadoFolga({ browser, baseURL }) {
         const resumo = page.locator(
           `[data-resumo-semanal][data-colaborador="${r.colaborador.id}"][data-semana="2026-10-12"]`,
         );
-        assert.match(await resumo.innerText(), /OK/);
-        assert.match(
-          await resumo.innerText(),
-          /36:00 trabalhadas \+ 08:00 abonadas/,
-        );
-        assert.match(await resumo.innerText(), /total 44:00 \/ alvo 44:00/);
+        // Contado como folga, o feriado não é abonado: o sábado curto só
+        // comporta 36h, o mesmo déficit de uma semana sem feriado.
+        assert.match(await resumo.innerText(), /ABAIXO/);
+        assert.match(await resumo.innerText(), /36:00 trabalhadas/);
+        assert.doesNotMatch(await resumo.innerText(), /abonadas/);
+        assert.match(await resumo.innerText(), /total 36:00 \/ alvo 44:00/);
         assert.match(await resumo.innerText(), /Folgas: 12\/10, 18\/10/);
       }
     };

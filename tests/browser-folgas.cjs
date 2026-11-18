@@ -47,14 +47,16 @@ module.exports = async function testarFolgas({ browser, baseURL }) {
         }
         for (let i = 0; i < r.dias.length; i += 7) {
           const semana = r.dias.slice(i, i + 7);
+          // Padrão: o feriado não trabalhado se soma às duas folgas.
+          const feriados = semana.filter((d) => d.feriado && !d.feriado.trabalhado && d.status === "F").length;
           assert.equal(
             semana.filter((d) => ["T", "FE"].includes(d.status)).length,
-            5,
+            5 - feriados,
             semana[0].data,
           );
           assert.equal(
             semana.filter((d) => d.status === "F").length,
-            2,
+            2 + feriados,
             semana[0].data,
           );
         }
