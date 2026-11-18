@@ -37,16 +37,17 @@ module.exports = async ({ browser, baseURL }) => {
       await painel.locator("[data-ajuste-buscar]").click();
       const modal = page.locator('dialog[data-app-dialog="alert"][open]');
       await modal.waitFor();
-      assert.match(await modal.innerText(),/Busca concluída na triagem/);
-      assert.match(await modal.innerText(),/tempo máximo/);
+      assert.match(await modal.innerText(),/Nenhuma melhoria encontrada nas [1-9]\d* alternativas/);
+      assert.doesNotMatch(await modal.innerText(),/tempo máximo|30 segundos/);
       await modal.locator("[data-dialog-accept]").click();
       await modal.waitFor({ state: "hidden" });
       const detalhes = painel.locator("[data-busca-detalhes]");
       await detalhes.waitFor();
       await detalhes.locator("> summary").click();
       assert(await detalhes.locator('[data-busca-triagem="dia_anterior_sem_alcance"]').isVisible());
-      assert(await detalhes.locator('[data-busca-triagem="folgas_fixas"]').isVisible());
+      assert(await detalhes.locator('[data-busca-motivo="configuracao"]').isVisible());
       assert.match(await detalhes.innerText(),/não são tentativas completas/);
+      assert.doesNotMatch(await painel.innerText(),/Tempo de busca|30 segundos|espera obrigatória/);
       assert.match(await detalhes.innerText(), /O que foi avaliado/);
       assert.match(
         await detalhes.innerText(),

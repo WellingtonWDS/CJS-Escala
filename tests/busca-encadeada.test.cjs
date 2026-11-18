@@ -35,7 +35,8 @@ test('prazo encerra com explicação correta e conserva escala, usando relógio 
  const p=buscarAjustesCobertura(s,{limiteTempoMs:15,agora:()=>tempo+=10});
  assert.equal(p.diagnosticoBusca.encerramento,'limite_tempo');
  assert.equal(p.alteracoes.length,0);assert.deepEqual(s,original);
- assert.match(renderExplicacaoBusca(p),/janela de tempo/);
+ assert.match(renderExplicacaoBusca(p),/não esgotar todas as combinações|sem esgotar todas as combinações/);
+ assert.doesNotMatch(renderExplicacaoBusca(p),/30 segundos|Tempo de busca|tempo máximo/);
  assert.match(renderExplicacaoBusca(p),/sem teto fixo de profundidade/);
 });
 test('orçamento de estados e avaliações não vira um limite fixo de operações por cadeia',async()=>{

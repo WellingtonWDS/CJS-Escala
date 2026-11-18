@@ -2,7 +2,7 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const cenario=require('./helpers/cenario-explicacao-busca.cjs');
 
-test('regressão 36 para zero: opções da sexta não alcançam sábado com folgas fixas',async()=>{
+test('trocas concretas de dias são avaliadas e rejeitadas com explicação, sem liberar folgas fixas',async()=>{
  const {converterEscala}=await import('../assets/js/domain/conversao.js');
  const {buscarAjustesCobertura:buscar}=await import('../assets/js/domain/ajustes-cobertura.js');
  for(const fixa of[true,false]){
@@ -12,14 +12,17 @@ test('regressão 36 para zero: opções da sexta não alcançam sábado com folg
   seed.colaboradores=seed.colaboradores.filter(c=>c.id!==3);
   const p=converterEscala(seed,seed.destinoConversao).proposta.config;
   const antes=structuredClone(p),plano=buscar(p,{agora:()=>0});
-  assert.equal(plano.tentativas,0);assert.equal(plano.alteracoes.length,0);
-  assert.equal(plano.diagnosticoBusca.encerramento,'sem_alternativas');
+  assert.equal(plano.tentativas,20*(fixa?1:plano.antes.dias));assert.equal(plano.alteracoes.length,0);
+  assert.equal(plano.diagnosticoBusca.encerramento,'sem_melhoria');
+  const bloqueio=plano.diagnosticoBusca.motivos.find(m=>m.codigo==='configuracao');
+  assert.equal(bloqueio.total,plano.tentativas);
+  assert.equal(plano.rejeicoes.regras,bloqueio.total);
+  for(const e of bloqueio.exemplos){assert.equal(e.alteracoes.length,2);assert(e.alteracoes.some(a=>a.antes.status==='F'&&a.depois.status==='T'));assert(e.alteracoes.some(a=>a.antes.status==='T'&&a.depois.status==='F'));}
   assert.equal(plano.antes.minutosFaltantes,plano.depois.minutosFaltantes);
   if(fixa)assert.equal(plano.depois.minutosFaltantes,720);
   const triagem=plano.diagnosticoBusca.triagem;
   const dias=fixa?1:plano.antes.dias;
   assert.equal(triagem.find(t=>t.codigo==='dia_anterior_sem_alcance').total,4*dias);
-  assert.equal(triagem.find(t=>t.codigo==='folgas_fixas').total,4*dias);
   for(const e of triagem.find(t=>t.codigo==='dia_anterior_sem_alcance').exemplos){
    assert.equal(new Date(e.dataOrigem+'T12:00:00').getDay(),5);
    assert.equal(new Date(e.dataLacuna+'T12:00:00').getDay(),6);
@@ -46,6 +49,6 @@ test('contagens de triagem são completas, exemplos limitados e HTML escapado',a
  const d=r.resultado();assert.equal(d.triagem[0].total,1000);assert.equal(d.triagem[0].exemplos.length,2);
  assert.equal(d.tipos.length,0);assert(JSON.stringify(d).length<2000);
  const html=renderExplicacaoBusca({tentativas:0,acoes:[],limiteTentativas:12000,diagnosticoBusca:{...d,encerramento:'sem_alternativas',lacunas:[],capacidade:null}});
- assert.match(html,/não são tentativas completas/);assert.match(html,/tempo máximo/);
+ assert.match(html,/não são tentativas completas/);assert.doesNotMatch(html,/tempo máximo|30 segundos|Tempo de busca/);
  assert.match(html,/&lt;img/);assert(!html.includes('<img src=x'));
 });

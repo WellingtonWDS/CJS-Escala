@@ -9,10 +9,10 @@ const ENCERRAMENTO = {
   objetivos_atendidos:
     "As faixas cadastradas e o saldo contratual das semanas completas foram atendidos.",
   sem_alternativas:
-    "Nenhuma alternativa chegou à avaliação completa com as configurações preservadas. Confira a triagem abaixo; zero tentativas não significa falha no processamento. Os 30 segundos são o tempo máximo da busca, não uma espera obrigatória.",
+    "Nenhuma alternativa chegou à avaliação completa com as configurações preservadas. Confira a triagem abaixo; zero tentativas não significa falha no processamento.",
   sem_melhoria:
     "A busca parou porque não encontrou outra melhoria segura entre as alternativas que gerou.",
-  limite_tempo:"A janela de tempo da busca foi atingida. Confira a melhor prévia encontrada; isso não prova inviabilidade. É possível aplicar os ajustes seguros e buscar novamente.",
+  limite_tempo:"A busca foi concluída sem esgotar todas as combinações possíveis. Confira as sugestões encontradas e os impedimentos das alternativas descartadas.",
   limite_tentativas:
     "A busca atingiu seu limite de alternativas. Outros arranjos podem existir; o resultado não é uma prova de inviabilidade.",
   limite_acoes:
@@ -41,7 +41,7 @@ export function renderExplicacaoBusca(plano) {
     <summary>Entenda a busca: tentativas e impedimentos</summary>
     <div class="busca-auditoria-conteudo">
     <p>Modalidade: ${plano.buscaEncadeada ? "busca de sequências sem teto fixo de profundidade" : plano.buscaAmpliada ? "busca combinada (registro anterior)" : "busca inicial de ajustes"}. Os limites de avaliação não esgotam todas as distribuições possíveis.</p>
-    ${plano.buscaEncadeada ? `<p>Tempo de busca: ${(plano.duracaoBuscaMs/1000).toFixed(1)}s de ${Math.round(plano.limiteTempoMs/1000)}s · maior sequência avaliada: ${plano.profundidadeMaxima} operações. ${plano.memoriaLimitada ? "Algumas ramificações foram descartadas para limitar o uso de memória; outras distribuições podem existir." : ""}</p>` : ""}<h4>Por que a busca terminou?</h4><p>${h(ENCERRAMENTO[d.encerramento] || "Busca concluída.")}</p>
+    <h4>Por que a busca terminou?</h4><p>${h(ENCERRAMENTO[d.encerramento] || "Busca concluída.")}</p>
     <p>${plano.tentativas} alternativas avaliadas · ${plano.acoes.length} ajustes aceitos na prévia · limite de ${plano.limiteTentativas} avaliações. Nenhuma mudança é aplicada sem confirmação.</p>
     ${d.triagem?.length ? `<h4>Verificações filtradas antes de gerar alternativas</h4><p>Estas verificações não são tentativas completas e não aumentam o contador de alternativas. Uma mesma pessoa pode ser verificada para mais de uma função, data ou etapa da busca.</p>${d.triagem.map(t=>`<article class="diagnostico-faixa" data-busca-triagem="${h(t.codigo)}"><h5>${t.total} verificação(ões) filtrada(s)</h5><p>${h(t.texto)}</p>${t.exemplos.map(e=>`<p>${h(e.nome)} · ${h(e.funcao)} · dia de origem ${h(formatDateBR(dateFromKey(e.dataOrigem)))} · lacuna ${h(formatDateBR(dateFromKey(e.dataLacuna)))}</p>`).join("")}</article>`).join("")}` : ""}
     <h4>O que foi avaliado</h4>${d.tipos.length ? `<div class="busca-auditoria-tabela" tabindex="0" role="region" aria-label="Alternativas avaliadas por tipo"><table><thead><tr><th>Estratégia</th><th>Avaliadas</th><th>Aceitas</th><th>Descartadas</th><th>Filtradas antes da avaliação</th></tr></thead><tbody>${d.tipos.map((t) => `<tr><td>${h(t.titulo)}</td><td>${t.avaliadas}</td><td>${t.aceitas}</td><td>${t.descartadas}</td><td>${t.filtradas}</td></tr>`).join("")}</tbody></table></div>` : "<p>As configurações ou disponibilidades impediram a geração de alternativas. Isso é diferente de avaliar uma troca e rejeitá-la.</p>"}

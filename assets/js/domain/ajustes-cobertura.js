@@ -128,15 +128,15 @@ function substituir(escala, alteracoes) {
     }),
   };
 }
-function horario(config, c, base, modelo, inicio, funcao) {
+function horario(config, c, base, modelo, inicio, funcao, conferirJanela=true) {
   const duracao = Math.round(modelo.horas * 60 + modelo.intervaloMin);
   if (
     inicio < 0 ||
     inicio >= 1440 ||
     duracao <= 0 ||
-    !janelas(config, c, base).some(
+    (conferirJanela && !janelas(config, c, base).some(
       (j) => inicio >= j.inicio && inicio + duracao <= j.fim,
-    )
+    ))
   )
     return null;
   const pausa = modelo.intervaloMin;
@@ -394,7 +394,16 @@ function* candidatos(config, escala, lacuna, registrarTriagem = () => {}) {
       }
       // Com folgas fixas, nenhuma troca de dia na semana pode ser gerada.
       if(d.status==="F" && proprio.folgasFimSemana){
-        registrarTriagem("folgas_fixas","Sábado e domingo estão fixados como folga. A busca preserva essa escolha; não pode substituí-la por rodízio durante a semana.",{nome:c.nome,funcao:lacuna.funcao,dataOrigem:d.data,dataLacuna:lacuna.data});
+        // Materializa as trocas concretas para avaliá-las e explicar o bloqueio.
+        // A regra permanece obrigatória na validação central e na aplicação.
+        for(const de of r.dias){
+          if(!trabalha(de) || semana(de.data)!==semana(d.data) || !podeMudar(config,c,de))continue;
+          const novo=horario(config,c,d,de,de.entradaMin,lacuna.funcao,false);
+          if(novo)yield {tipo:"folga",alteracoes:[
+            {colaboradorId:c.id,data:d.data,antes:structuredClone(d),depois:{...novo,ajusteAutomatico:true}},
+            {colaboradorId:c.id,data:de.data,antes:structuredClone(de),depois:transformarEmFolga(de)},
+          ]};
+        }
         continue;
       }
       const alterar = (depois) => ({
@@ -509,7 +518,16 @@ export function coberturaNaoPiora(antes, depois) {
   }
   return true;
 }
+function motivoConfiguracao(config,escala,alteracoes){
+  for(const a of alteracoes){
+    const c=escala.resultado.find(r=>r.colaborador.id===a.colaboradorId)?.colaborador;
+    if(c && trabalha(a.antes) && !trabalha(a.depois) && !podeVirarFolga(config,c,a.antes))
+      return {codigo:"configuracao",mensagem:`${c.nome}: trocar o trabalho de ${a.antes.data} pela folga de outro dia contraria as folgas fixas ou os dias permitidos cadastrados. A alternativa foi verificada e não será aplicada.`};
+  }
+  return null;
+}
 function motivoInseguro(config, antes, depois, alteracoes) {
+  const configuracao=motivoConfiguracao(config,antes,alteracoes);if(configuracao)return configuracao;
   for (const a of alteracoes) if (!trabalhoDentroDoFuncionamento(config, a.depois)) {
     try { validarFuncionamentoEmpresa(config, a.depois, {entrada:a.depois.entradaMin,saida:a.depois.saidaMin}); }
     catch (e) { return {codigo:"funcionamento",mensagem:e.message}; }
@@ -693,9 +711,10 @@ export function buscarAjustesCobertura(config, opcoes = {}) {
         const melhoria=minutosFaltantes(cobertura)<minutosFaltantes(rel) ||
           deficitContratual(config,novo)<deficitContratual(config,escala);
         const preserva=melhoria && coberturaNaoPiora(rel,cobertura);
-        const impedimento=preserva ? motivoInseguro(config,escala,novo,candidato.alteracoes) : null;
+        const bloqueioConfiguracao=motivoConfiguracao(config,escala,candidato.alteracoes);
+        const impedimento=bloqueioConfiguracao || (preserva ? motivoInseguro(config,escala,novo,candidato.alteracoes) : null);
         const valido=preserva && !impedimento;
-        const codigo=!melhoria?"sem_melhoria":!preserva?"nova_lacuna":impedimento?.codigo;
+        const codigo=bloqueioConfiguracao?"configuracao":!melhoria?"sem_melhoria":!preserva?"nova_lacuna":impedimento?.codigo;
         let motivo=impedimento?.mensagem || "";
         if(codigo==="nova_lacuna") {
           const nova=cobertura.lacunas.find(l=>!coberturaNaoPiora(rel,{lacunas:[l],avisos:[]}));
@@ -722,7 +741,8 @@ export function buscarAjustesCobertura(config, opcoes = {}) {
             sementes.splice(12);
           }
         }
-        if(!melhoria) rejeicoes.semMelhoria++;
+        if(bloqueioConfiguracao) rejeicoes.regras++;
+        else if(!melhoria) rejeicoes.semMelhoria++;
         else if(!preserva) rejeicoes.novaLacuna++;
         else if(!valido) rejeicoes.regras++;
         if (valido) {
@@ -748,12 +768,12 @@ export function buscarAjustesCobertura(config, opcoes = {}) {
   progresso();
   const duracaoBuscaMs=Math.round(agora()-inicioBusca),limiteTempoAtingido=controle.esgotado();
   const explicacoes = [];
-  if(ampliada)explicacoes.push("Busca encadeada: combina sequências de operações, sem teto fixo de profundidade, dentro dos limites de tempo, memória e avaliações. As contagens mostram o que foi efetivamente avaliado. Somente o resultado conjunto pode ser sugerido; nenhuma etapa intermediária é aplicada. Folgas fixas, dias protegidos, funcionamento e limites legais continuam obrigatórios.");
+  if(ampliada)explicacoes.push("A busca considera mudanças de dias, horários, intervalos e funções. Confira as propostas verificadas e seus impedimentos nos detalhes. Nenhuma alteração foi aplicada automaticamente; folgas fixas, dias protegidos, funcionamento e limites legais continuam respeitados.");
   if(!acoes.length) explicacoes.push(!rel.lacunas.length && !deficitContratual(config,escala)
     ? "As faixas cadastradas já estão cobertas e não há saldo contratual a distribuir em semanas completas."
     : `${tentativas} alternativas foram avaliadas. Não foi encontrada melhoria que preservasse cobertura, descansos, restrições e carga semanal. Isso não comprova inviabilidade da escala.`);
   if(rejeicoes.novaLacuna) explicacoes.push(`${rejeicoes.novaLacuna} alternativa(s) descartadas porque abririam ou agravariam lacunas em outro horário ou função.`);
-  if(rejeicoes.regras) explicacoes.push(`${rejeicoes.regras} alternativa(s) descartadas na conferência de jornada, descanso, restrições ou carga semanal. Confira também as incompatibilidades já sinalizadas na escala.`);
+  if(rejeicoes.regras) explicacoes.push(`${rejeicoes.regras} alternativa(s) descartadas na conferência das folgas configuradas, jornada, descanso, restrições ou carga semanal. Confira também as incompatibilidades já sinalizadas na escala.`);
   if(rejeicoes.recorrencia) explicacoes.push(`${rejeicoes.recorrencia} alternativa(s) não puderam ser repetidas com segurança em todas as semanas do padrão fixo.`);
   if (rel.lacunas.length)
     explicacoes.push(

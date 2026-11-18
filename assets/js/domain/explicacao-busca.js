@@ -30,6 +30,7 @@ export const TIPOS_TENTATIVA = {
   funcoes_periodo_combinadas: "Combinar funções por horário",
 };
 export const MOTIVOS_BUSCA = {
+  configuracao:["Troca incompatível com as folgas cadastradas","As trocas propostas foram verificadas, mas não podem substituir folgas fixas ou desrespeitar os dias permitidos."],
   sem_melhoria: [
     "Não reduz a lacuna nem o saldo",
     "A alternativa não melhorou a cobertura ou a carga contratual nas semanas completas.",
@@ -127,12 +128,17 @@ export function criarRegistroBusca(escala) {
         });
       const m = motivos.get(codigo);
       m.total++;
-      if (m.exemplos.length < 2)
+      if (m.exemplos.length < 2) {
+        const distintos=new Map();
+        for(const a of candidato.alteracoes){
+          const key=JSON.stringify([a.colaboradorId,a.depois.weekday ?? dateFromKey(a.depois.data).getDay(),a.antes.status,a.depois.status]);
+          if(!distintos.has(key))distintos.set(key,a);
+        }
         m.exemplos.push({
           tipo: TIPOS_TENTATIVA[tipo] || tipo,
           profundidade:candidato.profundidade || 1,
           mensagem,
-          alteracoes: candidato.alteracoes.slice(0, 2).map((a) => {
+          alteracoes: [...distintos.values()].slice(0, 2).map((a) => {
             const c =
               escala.resultado.find((r) => r.colaborador.id === a.colaboradorId)
                 ?.colaborador || {};
@@ -143,6 +149,7 @@ export function criarRegistroBusca(escala) {
             };
           }),
         });
+      }
     },
     resultado() {
       return {
