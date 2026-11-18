@@ -333,8 +333,8 @@ test("12x36 não é deslocado automaticamente e mantém âncora", () => {
 });
 test("busca limitada e determinística, inclusive quando não há solução suficiente", () => {
   const s = gerar(config()),
-    a = buscar(s, { limiteTentativas: 2 }),
-    b = buscar(s, { limiteTentativas: 2 });
+    a = buscar(s, { limiteTentativas: 2,agora:()=>0 }),
+    b = buscar(s, { limiteTentativas: 2,agora:()=>0 });
   assert.deepEqual(a, b);
   assert.ok(a.tentativas <= 2);
   assert.ok(a.explicacoes.some((t) => t.includes("limite")));

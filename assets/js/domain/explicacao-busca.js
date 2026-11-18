@@ -17,7 +17,7 @@ import {
 } from "./diagnostico-equipe.js";
 
 export const TIPOS_TENTATIVA = {
-  redistribuicao_combinada: "Redistribuição combinada em duas operações",
+  redistribuicao_combinada: "Redistribuição encadeada de operações",
   rateio: "Ratear saldo semanal",
   intervalo: "Redistribuir intervalos",
   horario: "Alterar entrada e saída",
@@ -124,6 +124,7 @@ export function criarRegistroBusca(escala) {
       if (m.exemplos.length < 2)
         m.exemplos.push({
           tipo: TIPOS_TENTATIVA[tipo] || tipo,
+          profundidade:candidato.profundidade || 1,
           mensagem,
           alteracoes: candidato.alteracoes.slice(0, 2).map((a) => {
             const c =
@@ -339,7 +340,7 @@ export function explicarResultadoBusca(
           titulo:
             capacidade.status === "redistribuicao"
               ? ampliada
-                ? "A busca ampliada ainda não fechou a cobertura com segurança."
+                ? "A busca de redistribuição ainda não fechou a cobertura com segurança."
                 : "A capacidade agregada não demonstra falta de pessoal, mas a busca inicial ainda não fechou a cobertura."
               : TITULOS_DIAGNOSTICO[capacidade.status],
           provas: capacidade.provas.slice(0, 4).map((p) => p.mensagem),
@@ -347,7 +348,7 @@ export function explicarResultadoBusca(
           orientacao:
             capacidade.status === "capacidade_insuficiente"
               ? "Há limites de capacidade demonstrados nas condições cadastradas. Avalie reforço parcial/temporário, disponibilidade e dimensionamento da operação; a quantidade e o tipo de contratação dependem dessa revisão."
-              : `${capacidade.status === "redistribuicao" ? (ampliada ? `Foram avaliadas ${registro.tipos.find((t) => t.tipo === "redistribuicao_combinada")?.avaliadas || 0} combinações de duas operações dentro dos limites desta busca. Outros arranjos podem existir. ` : "Use Testar redistribuição ampliada para avaliar mudanças que precisam acontecer juntas. ") : ""}O insucesso desta busca não prova que contratar seja a única saída. Capacidade total, cobertura por horário e cumprimento da meta contratual são análises diferentes.`,
+              : `${capacidade.status === "redistribuicao" ? (ampliada ? `Foram avaliadas ${registro.tipos.find((t) => t.tipo === "redistribuicao_combinada")?.avaliadas || 0} sequências de operações dentro dos limites desta busca. Outros arranjos podem existir. ` : "Use Buscar ajustes de cobertura para testar mudanças encadeadas. ") : ""}O insucesso desta busca não prova que contratar seja a única saída. Capacidade total, cobertura por horário e cumprimento da meta contratual são análises diferentes.`,
         }
       : null,
   };

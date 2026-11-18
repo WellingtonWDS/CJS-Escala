@@ -13,6 +13,7 @@ module.exports = async ({browser,baseURL}) => {
   await page.reload();await page.waitForFunction(()=>document.documentElement.dataset.ready==='true');
   const saved=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('fintria-escala-dp-v2')));
   await page.locator('[data-etapa-link="sec-gerar"]').click();
+    await page.locator('#escala-atual-previa > summary').click();
   const inicial=await saved();
   let release, requests=0;
   const gate=new Promise(r=>release=r);

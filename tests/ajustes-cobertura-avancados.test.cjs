@@ -82,7 +82,7 @@ test('restrição manual em qualquer repetição fixa impede mudar aquele dia da
  segunda.ajusteManual=true;
  const p=buscar(s);
  assert(p.alteracoes.every(a=>a.depois.weekday!==1));
- const repetida=buscar(s,{limiteTentativas:15});
- assert.deepEqual(repetida,buscar(s,{limiteTentativas:15}));
+ const repetida=buscar(s,{limiteTentativas:15,agora:()=>0});
+ assert.deepEqual(repetida,buscar(s,{limiteTentativas:15,agora:()=>0}));
  assert(repetida.tentativas<=15);
 });

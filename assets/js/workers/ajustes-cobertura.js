@@ -3,7 +3,6 @@ self.onmessage = (event) => {
   try {
     self.postMessage({
       plano: buscarAjustesCobertura(event.data.config, {
-        ampliada:event.data.ampliada===true,
         onProgresso: (progresso) => self.postMessage({ progresso }),
       }),
     });

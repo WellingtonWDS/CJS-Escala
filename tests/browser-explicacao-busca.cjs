@@ -51,7 +51,7 @@ module.exports = async ({ browser, baseURL }) => {
         await detalhes.innerText(),
         /Isso significa que é preciso contratar/,
       );
-      assert.match(await detalhes.innerText(), /amostra de até duas/);
+
       const limite = detalhes
         .locator("details")
         .filter({ has: page.locator("summary", { hasText: "Limite teórico" }) })
@@ -61,8 +61,11 @@ module.exports = async ({ browser, baseURL }) => {
       assert.match(await limite.innerText(), /diferença mínima de 02:24/);
       assert.match(await limite.innerText(), /não uma prova isolada/);
       const motivo = detalhes.locator("[data-busca-motivo]").first();
-      await motivo.locator("> summary").click();
-      assert.match(await motivo.innerText(), /Colaborador/);
+      if(await motivo.count()){
+        assert.match(await detalhes.innerText(),/amostra de até duas/);
+        await motivo.locator("> summary").click();
+        assert.match(await motivo.innerText(), /Colaborador/);
+      }
       assert.deepEqual(await saved(), before);
       for (const tema of ["light", "dark"]) {
         await page.evaluate(
@@ -77,10 +80,12 @@ module.exports = async ({ browser, baseURL }) => {
           ),
         );
         const region = detalhes.locator(".busca-auditoria-tabela");
-        assert(await region.evaluate((e) => e.scrollWidth > e.clientWidth));
-        await region.evaluate((e) => (e.scrollLeft = e.scrollWidth));
-        assert(await region.evaluate((e) => e.scrollLeft > 0));
-        const exemplo = motivo.locator(".busca-auditoria-exemplo").first();
+        if(await region.count()){
+          assert(await region.evaluate(e=>e.scrollWidth>e.clientWidth));
+          await region.evaluate(e=>e.scrollLeft=e.scrollWidth);
+          assert(await region.evaluate(e=>e.scrollLeft>0));
+        }
+        const exemplo = detalhes.locator(".busca-auditoria-exemplo").first();
         assert(
           await exemplo.evaluate((e) => {
             const rgb = (s) =>

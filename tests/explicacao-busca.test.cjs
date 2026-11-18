@@ -115,8 +115,8 @@ test("contagens incluem todas as avaliações, mas exemplos e dados de cada tent
   assert(JSON.stringify(d).length < 6000);
 });
 test("limite atingido, descartes concretos e segurança do HTML são expostos sem aplicar a prévia", async () => {
-  const p = proposta(await cenario(false)),
-    plano = buscar(p, { limiteTentativas: 2 });
+  const p = await require("./helpers/cenario-redistribuicao.cjs")(),
+    plano = buscar(p, { limiteTentativas: 2,agora:()=>0 });
   assert.equal(plano.diagnosticoBusca.encerramento, "limite_tentativas");
   assert.equal(
     plano.diagnosticoBusca.tipos.reduce(

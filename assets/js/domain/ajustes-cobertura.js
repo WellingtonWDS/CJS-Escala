@@ -385,6 +385,10 @@ function* candidatos(config, escala, lacuna) {
         ![0, 1].includes(diaSerial(lacuna.data) - diaSerial(d.data))
       )
         continue;
+      // O dia anterior só pode atender à lacuna por uma janela noturna real.
+      // Não percorra combinações de intervalos diurnos que nunca alcançam a faixa.
+      if(d.data!==lacuna.data && !janelas(config,c,d).some(j=>
+        j.inicio<lacuna.fimMin+1440 && j.fim>lacuna.inicioMin+1440))continue;
       const alterar = (depois) => ({
         colaboradorId: c.id,
         data: d.data,
@@ -549,19 +553,33 @@ function seguro(config, antes, depois, alteracoes) {
 
 const chaveDiaBusca=d=>JSON.stringify([d.status,d.horas,d.entradaMin,d.saidaMin,d.intervaloInicioMin,d.intervaloFimMin,d.funcaoAlocada,d.alocacoesFuncao]);
 
-/** Explora duas operações atomicamente. A escala intermediária nunca é aplicada:
- * pode abrir uma lacuna, mas deve respeitar os limites individuais. O resultado
- * combinado passa novamente por todas as verificações contra a escala original. */
-function* redistribuicoesCombinadas(config,escala,rel,sementes) {
-  for(const s of sementes) {
-    const parcial=substituir(escala,s.candidato.alteracoes);
+// Identificador compacto do estado operacional, independente da ordem das trocas.
+function chaveEstadoBusca(config,alteracoes) {
+  const raw=JSON.stringify(alteracoes.map(a=>{
+    const c=config.colaboradores.find(c=>c.id===a.colaboradorId) || {};
+    const dia=d=>[d.status,d.horas,d.entradaMin,d.saidaMin,d.intervaloInicioMin,d.intervaloFimMin,alocacoesDoDia(c,d)];
+    return JSON.stringify(dia(a.antes))===JSON.stringify(dia(a.depois))?null:[a.colaboradorId,a.data,dia(a.depois)];
+  }).filter(Boolean).sort((a,b)=>String(a[0]).localeCompare(String(b[0])) || a[1].localeCompare(b[1])));
+  let a=2166136261,b=5381;
+  for(let i=0;i<raw.length;i++){a=Math.imul(a^raw.charCodeAt(i),16777619);b=Math.imul(b,33)^raw.charCodeAt(i);}
+  return `${raw.length}:${a>>>0}:${b>>>0}`;
+}
+
+/** Fronteira iterativa de sequências, sem teto fixo de profundidade. Limita
+ * memória e tempo, evita revisitar estados e nunca aplica estados parciais.
+ * O consumidor devolve em expandir/pontuacao se o estado é seguro para explorar. */
+function* redistribuicoesCombinadas(config,escala,rel,sementes,controle) {
+  const fronteira=sementes.map(s=>({...s,profundidade:1}));
+  const visitados=new Set([chaveEstadoBusca(config,[]),...sementes.map(s=>chaveEstadoBusca(config,s.candidato.alteracoes))]);
+  while(fronteira.length && !controle.esgotado()) {
+    const s=fronteira.shift(),parcial=substituir(escala,s.candidato.alteracoes);
     const cobertura=analisarCobertura(config,parcial.resultado);
     const lacunas=[...cobertura.lacunas].sort((a,b)=>
       Number(!coberturaNaoPiora(rel,{lacunas:[b],avisos:[]}))-Number(!coberturaNaoPiora(rel,{lacunas:[a],avisos:[]})) ||
       (b.fimMin-b.inicioMin)*b.faltantes-(a.fimMin-a.inicioMin)*a.faltantes || a.data.localeCompare(b.data));
     let geradas=0;
-    proximaSemente: for(const l of lacunas.slice(0,8)) for(const segunda of candidatos(config,parcial,l)) {
-      if(++geradas>160) break proximaSemente;
+    proximoEstado: for(const l of lacunas.slice(0,8)) for(const segunda of candidatos(config,parcial,l)) {
+      if(++geradas>160 || controle.esgotado())break proximoEstado;
       const recorrentes=expandirRecorrencia(config,parcial,segunda.alteracoes);
       if(!recorrentes)continue;
       const mapa=new Map(s.candidato.alteracoes.map(a=>[`${a.colaboradorId}:${a.data}`,a]));
@@ -570,7 +588,17 @@ function* redistribuicoesCombinadas(config,escala,rel,sementes) {
         mapa.set(key,{...a,antes:primeira?.antes || a.antes});
       }
       const alteracoes=[...mapa.values()].filter(a=>chaveDiaBusca(a.antes)!==chaveDiaBusca(a.depois));
-      if(alteracoes.length)yield {tipo:"redistribuicao_combinada",recorrentes:true,alteracoes};
+      const key=chaveEstadoBusca(config,alteracoes);
+      if(!alteracoes.length || visitados.has(key))continue;
+      if(visitados.size>=4096){controle.memoriaLimitada=true;break proximoEstado;}
+      visitados.add(key);
+      const candidato={tipo:"redistribuicao_combinada",recorrentes:true,alteracoes,profundidade:s.profundidade+1};
+      yield candidato;
+      if(candidato.expandir && !controle.esgotado()) {
+        fronteira.push({candidato,profundidade:candidato.profundidade,pontuacao:candidato.pontuacao});
+        fronteira.sort((a,b)=>a.pontuacao-b.pontuacao || a.profundidade-b.profundidade);
+        if(fronteira.length>12){controle.memoriaLimitada=true;fronteira.splice(12);}
+      }
     }
   }
 }
@@ -582,15 +610,18 @@ export function buscarAjustesCobertura(config, opcoes = {}) {
   const antes = resumo(rel),
     acoes = [],
     alteracoes = new Map();
-  const ampliada=opcoes.ampliada===true;
+  const ampliada=opcoes.ampliada!==false;
+  const agora=opcoes.agora || (()=>performance.now());
+  const inicioBusca=agora();
+  const limiteTempoMs=Math.min(30000,Math.max(1,Number(opcoes.limiteTempoMs)||30000));
+  const controle={memoriaLimitada:false,esgotado:()=>agora()-inicioBusca>=limiteTempoMs};
+  let profundidadeMaxima=0;
   const limiteTentativas = Math.min(
-    ampliada?2400:1200,
-    Math.max(1, Math.trunc(opcoes.limiteTentativas || (ampliada?2400:600))),
+    ampliada?12000:1200,
+    Math.max(1, Math.trunc(opcoes.limiteTentativas || (ampliada?12000:600))),
   );
-  const limiteAcoes = Math.min(
-    40,
-    Math.max(1, Math.trunc(opcoes.limiteAcoes || (ampliada?40:20))),
-  );
+  // Sem teto separado de operações: os recursos de busca limitam o trabalho.
+  const limiteAcoes = Math.min(limiteTentativas,Math.max(1,Math.trunc(opcoes.limiteAcoes || (ampliada?limiteTentativas:20))));
   const rejeicoes={semMelhoria:0,novaLacuna:0,regras:0,recorrencia:0};
   const registroBusca=criarRegistroBusca(original);
   let tentativas = 0;
@@ -599,19 +630,20 @@ export function buscarAjustesCobertura(config, opcoes = {}) {
       tentativas,
       limiteTentativas,
       ajustes: acoes.length,
+      profundidadeMaxima,tempoDecorridoMs:Math.round(agora()-inicioBusca),limiteTempoMs,
     });
   progresso();
   while (
     (rel.lacunas.length || deficitContratual(config,escala)>0) &&
     tentativas < limiteTentativas &&
-    acoes.length < limiteAcoes
+    acoes.length < limiteAcoes && !controle.esgotado()
   ) {
     let aceito = false;
     const vistos = new Set();
     const sementes=[];
     const prioritarias = [...rel.lacunas].sort((a, b) =>
       (b.fimMin - b.inicioMin) * b.faltantes - (a.fimMin - a.inicioMin) * a.faltantes ||
-      a.data.localeCompare(b.data) || b.inicioMin - a.inicioMin ||
+      (ampliada?b.data.localeCompare(a.data):a.data.localeCompare(b.data)) || b.inicioMin - a.inicioMin ||
       normalizarFuncao(a.funcao).localeCompare(normalizarFuncao(b.funcao)));
     function* propostas() {
       function* diretas() {
@@ -620,12 +652,13 @@ export function buscarAjustesCobertura(config, opcoes = {}) {
       }
       const tetoDiretas=Math.min(limiteTentativas,tentativas+Math.max(1,Math.min(80,Math.floor((limiteTentativas-tentativas)/3))));
       for(const candidata of diretas()) {
-        if(ampliada && tentativas>=tetoDiretas)break;
+        if(controle.esgotado() || (ampliada && tentativas>=tetoDiretas && sementes.length))break;
         yield candidata;
       }
-      if(ampliada)yield* redistribuicoesCombinadas(config,escala,rel,sementes);
+      if(ampliada)yield* redistribuicoesCombinadas(config,escala,rel,sementes,controle);
     }
     busca: for (const gerado of propostas()) {
+        if(controle.esgotado())break busca;
         const recorrentes = gerado.recorrentes ? gerado.alteracoes : expandirRecorrencia(config, escala, gerado.alteracoes);
         if (!recorrentes) {rejeicoes.recorrencia++;registroBusca.registrar(gerado,"recorrencia","A alteração não pode ser replicada em todas as ocorrências do padrão.",false);continue;}
         const candidato = { ...gerado, alteracoes: recorrentes };
@@ -644,6 +677,7 @@ export function buscarAjustesCobertura(config, opcoes = {}) {
         if (vistos.has(chaveCandidato)) continue;
         vistos.add(chaveCandidato);
         tentativas++;
+        profundidadeMaxima=Math.max(profundidadeMaxima,gerado.profundidade || 1);
         if (tentativas % 10 === 0) progresso();
         const novo = substituir(escala, candidato.alteracoes);
         const cobertura = analisarCobertura(config, novo.resultado);
@@ -659,6 +693,10 @@ export function buscarAjustesCobertura(config, opcoes = {}) {
           if(nova)motivo=`${nova.data}: descobriria ou agravaria a função ${nova.funcao}, das ${minToTime(nova.inicioMin)} às ${minToTime(nova.fimMin)} (${nova.faltantes} pessoa(s) faltando).`;
         }
         registroBusca.registrar(candidato,codigo,motivo);
+        if(ampliada && gerado.tipo==="redistribuicao_combinada" && !valido) {
+          gerado.expandir=!motivoInseguro(config,escala,novo,candidato.alteracoes);
+          gerado.pontuacao=minutosFaltantes(cobertura);
+        }
         if(ampliada && !valido && !["redistribuicao_combinada","funcao_periodo"].includes(candidato.tipo) &&
           candidato.alteracoes.some(a=>chaveDiaBusca(a.antes)!==chaveDiaBusca(a.depois))) {
           const grupo=[...new Set(candidato.alteracoes.map(a=>`${a.colaboradorId}:${config.modeloEscala==="fixa"?a.depois.weekday:a.data}`))].sort().join(",");
@@ -686,6 +724,7 @@ export function buscarAjustesCobertura(config, opcoes = {}) {
           }
           acoes.push({
             tipo: candidato.tipo,
+            profundidade:candidato.profundidade || 1,
             reducaoMinutos: minutosFaltantes(rel) - minutosFaltantes(cobertura),
           });
           escala = novo;
@@ -698,8 +737,9 @@ export function buscarAjustesCobertura(config, opcoes = {}) {
     if (!aceito) break;
   }
   progresso();
+  const duracaoBuscaMs=Math.round(agora()-inicioBusca),limiteTempoAtingido=controle.esgotado();
   const explicacoes = [];
-  if(ampliada)explicacoes.push("Busca ampliada: permite combinar até duas operações por tentativa, dentro do orçamento de avaliações. As contagens mostram o que foi efetivamente avaliado. Somente o resultado conjunto pode ser sugerido; nenhuma etapa intermediária é aplicada. Folgas fixas, dias protegidos, funcionamento e limites legais continuam obrigatórios.");
+  if(ampliada)explicacoes.push("Busca encadeada: combina sequências de operações, sem teto fixo de profundidade, dentro dos limites de tempo, memória e avaliações. As contagens mostram o que foi efetivamente avaliado. Somente o resultado conjunto pode ser sugerido; nenhuma etapa intermediária é aplicada. Folgas fixas, dias protegidos, funcionamento e limites legais continuam obrigatórios.");
   if(!acoes.length) explicacoes.push(!rel.lacunas.length && !deficitContratual(config,escala)
     ? "As faixas cadastradas já estão cobertas e não há saldo contratual a distribuir em semanas completas."
     : `${tentativas} alternativas foram avaliadas. Não foi encontrada melhoria que preservasse cobertura, descansos, restrições e carga semanal. Isso não comprova inviabilidade da escala.`);
@@ -710,7 +750,7 @@ export function buscarAjustesCobertura(config, opcoes = {}) {
     explicacoes.push(
       "Persistem horários descobertos. A busca é limitada e não comprova, isoladamente, necessidade de contratação. Revise disponibilidades, funções habilitadas e a demanda restante.",
     );
-  if (tentativas >= limiteTentativas || acoes.length >= limiteAcoes)
+  if (tentativas >= limiteTentativas || acoes.length >= limiteAcoes || limiteTempoAtingido)
     explicacoes.push(
       "O limite desta busca foi atingido. Após aplicar, é possível buscar novos ajustes.",
     );
@@ -746,11 +786,12 @@ export function buscarAjustesCobertura(config, opcoes = {}) {
         .map((i) => ({ ...i, nome: r.colaborador.nome })),
     );
   const encerramento=!rel.lacunas.length && !deficitContratual(config,escala)?"objetivos_atendidos"
-    :tentativas>=limiteTentativas?"limite_tentativas":acoes.length>=limiteAcoes?"limite_acoes"
+    :limiteTempoAtingido?"limite_tempo":tentativas>=limiteTentativas?"limite_tentativas":acoes.length>=limiteAcoes?"limite_acoes"
     :tentativas?"sem_melhoria":"sem_alternativas";
   const diagnosticoBusca=explicarResultadoBusca(config,escala,rel,registroBusca.resultado(),encerramento,{podeMudar,podeVirarFolga,ampliada});
   return {
     buscaAmpliada:ampliada,
+    buscaEncadeada:ampliada,limiteTempoMs,duracaoBuscaMs,profundidadeMaxima,memoriaLimitada:controle.memoriaLimitada,
     diagnosticoBusca,
     avisosValidacao,
     versaoRegras: VERSAO_REGRAS,

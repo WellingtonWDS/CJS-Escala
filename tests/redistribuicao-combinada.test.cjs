@@ -14,7 +14,7 @@ test("redistribuição coordenada fecha 09–17 quando nenhuma alteração isola
   for (const fixa of [false, true]) {
     const s = await cenario(fixa),
       antes = structuredClone(s);
-    const inicial = buscar(s),
+    const inicial = buscar(s,{ampliada:false}),
       ampliada = buscar(s, { ampliada: true });
     assert.equal(inicial.alteracoes.length, 0);
     assert.equal(inicial.depois.minutosFaltantes, 300);
@@ -98,7 +98,7 @@ test("mantém folgas fixas no sábado e indica busca ampliada sem afirmar que to
 });
 test("conclusão de capacidade passa a explicar o resultado da busca inicial e da ampliada", async () => {
   const s = await cenario();
-  const inicial = buscar(s),
+  const inicial = buscar(s,{ampliada:false}),
     ampliada = buscar(s, { ampliada: true, limiteTentativas: 2 });
   assert.equal(inicial.diagnosticoBusca.capacidade.status, "redistribuicao");
   assert.doesNotMatch(
@@ -107,11 +107,11 @@ test("conclusão de capacidade passa a explicar o resultado da busca inicial e d
   );
   assert.match(
     inicial.diagnosticoBusca.capacidade.orientacao,
-    /Testar redistribuição ampliada/,
+    /Buscar ajustes de cobertura/,
   );
   assert.match(
     ampliada.diagnosticoBusca.capacidade.titulo,
-    /ampliada ainda não fechou/,
+    /redistribuição ainda não fechou/,
   );
   assert.match(
     ampliada.diagnosticoBusca.capacidade.orientacao,
@@ -141,11 +141,11 @@ test("mês completo pode ser redistribuído sem alterar a origem, com orçamento
   });
   const antes = structuredClone(c),
     p = buscar(c.proposta.config, { ampliada: true });
-  assert.equal(p.limiteTentativas, 2400);
-  assert.equal(p.limiteAcoes, 40);
+  assert.equal(p.limiteTentativas, 12000);
+  assert.equal(p.limiteAcoes, p.limiteTentativas);
   assert.equal(p.depois.minutosFaltantes, 0);
   assert(p.antes.dias > 20);
-  assert(p.tentativas <= 2400);
+  assert(p.tentativas <= p.limiteTentativas);
   assert.deepEqual(c, antes);
   const nova = aplicar(c.proposta.config, p);
   assert.equal(nova.coberturaOperacional.lacunas.length, 0);

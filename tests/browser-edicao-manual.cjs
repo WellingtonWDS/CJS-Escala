@@ -38,6 +38,7 @@ module.exports = async function ({ browser, baseURL }) {
       () => document.documentElement.dataset.ready === "true",
     );
     await page.locator('[data-etapa-link="sec-gerar"]').click();
+    await page.locator('#escala-atual-previa > summary').click();
     await waitForDialogs(page);
     const saved = () =>
       page.evaluate(() =>
@@ -159,6 +160,7 @@ module.exports = async function ({ browser, baseURL }) {
       () => document.documentElement.dataset.ready === "true",
     );
     await page.locator('[data-etapa-link="sec-gerar"]').click();
+    await page.locator('#escala-atual-previa > summary').click();
     await waitForDialogs(page);
     await painel.locator("[data-manual-desfazer]").click();
     await waitForDialogs(page);
