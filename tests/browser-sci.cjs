@@ -28,8 +28,13 @@ module.exports = async function testarSci({ browser, baseURL }) {
     assert.equal(await page.locator("#sci-linhas tr").count(), 3);
     // CNPJ obrigatório e validado antes de confirmar.
     assert.equal(await page.locator("#sci-confirmar").isDisabled(), true);
-    await page.locator("#sci-cnpj").fill("11.222.333/0001-80");
-    await page.waitForFunction(() => /CNPJ inválido/.test(document.getElementById("sci-cnpj-erro").textContent));
+    // O preenchimento pode coincidir com a renderização final da prévia; repete até o campo refletir o valor.
+    for (let tentativa = 0; ; tentativa++) {
+      await page.locator("#sci-cnpj").fill("11.222.333/0001-80");
+      const ok = await page.waitForFunction(() => /CNPJ inválido/.test(document.getElementById("sci-cnpj-erro").textContent), null, { timeout: 3000 }).then(() => true, () => false);
+      if (ok) break;
+      if (tentativa === 2) throw Error("Validação do CNPJ não exibida.");
+    }
     assert.equal(await page.locator("#sci-confirmar").isDisabled(), true);
     await page.locator("#sci-cnpj").fill("11222333000181");
     await page.waitForFunction(() => document.getElementById("sci-cnpj-erro").textContent === "" &&

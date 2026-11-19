@@ -13,6 +13,7 @@ await cp(join(root, "login.html"), join(dist, "login.html"));
 await cp(join(root, "assets"), join(dist, "assets"), { recursive: true });
 await cp(join(root, "logos"), join(dist, "logos"), { recursive: true });
 await cp(join(root, "sobre"), join(dist, "sobre"), { recursive: true });
+await cp(join(root, "admin"), join(dist, "admin"), { recursive: true });
 await mkdir(join(dist, "assets/vendor"), { recursive: true });
 await cp(
   join(root, "node_modules/@e965/xlsx/xlsx.mjs"),

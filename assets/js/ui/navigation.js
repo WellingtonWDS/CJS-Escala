@@ -61,6 +61,15 @@ export function initNavigation({ session, document, window, app, workspace }) {
   document.getElementById("sidebar-role").textContent =
     { admin: "Admin", manager: "Gerente", operator: "Operador" }[role] ||
     "Operador";
+  if (role === "admin" && session.persistenceEnabled) {
+    // Painel de planos em página separada, exclusivo do Admin global (dados conferidos no servidor).
+    // Junto ao papel, sem aumentar a altura do menu.
+    const painel = document.createElement("a");
+    painel.href = "/admin/";
+    painel.className = "sidebar-admin-link";
+    painel.textContent = "Painel Admin";
+    document.getElementById("sidebar-role")?.append(" · ", painel);
+  }
   if (role === "admin") {
     const preview = document.createElement("button");
     preview.type = "button";

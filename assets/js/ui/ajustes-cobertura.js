@@ -220,7 +220,10 @@ export function createAjustesCoberturaUI({
         await informarErro(error.message);
       }
     }
-    campo("buscar")?.addEventListener("click",()=>iniciarBusca());
+    campo("buscar")?.addEventListener("click", async () => {
+      if (env.planGate && !(await env.planGate("ajustes"))) return;
+      iniciarBusca();
+    });
     campo("cancelar")?.addEventListener("click", () => {
       parar();
       campo("buscar").disabled = false;

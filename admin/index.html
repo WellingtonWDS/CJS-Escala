@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Painel Admin · Reescala</title>
+    <link rel="icon" type="image/png" href="/logos/Reescala_original_transparente.png" />
+    <meta name="theme-color" content="#0B2545" />
+    <script src="/assets/js/theme.js"></script>
+    <link rel="stylesheet" href="/assets/css/dialogs.css" />
+    <link rel="stylesheet" href="/admin/admin.css" />
+    <script type="module" src="/assets/js/admin-painel.js"></script>
+  </head>
+  <body data-estado="carregando">
+    <a class="pular" href="#conteudo">Pular para o conteúdo</a>
+    <header class="topo">
+      <div class="topo-linha">
+        <a class="marca" href="/" aria-label="Voltar ao Reescala">
+          <img src="/logos/Reescala_branco_transparente.png" alt="" width="36" height="31" />
+          <span>Reescala</span>
+        </a>
+        <span class="topo-titulo">Painel Admin</span>
+        <div class="topo-acoes">
+          <span class="topo-usuario" data-usuario></span>
+          <button type="button" class="tema" data-theme-toggle role="switch" aria-checked="false" aria-label="Tema escuro"><span data-theme-icon aria-hidden="true">☀</span></button>
+          <a class="botao botao-topo" href="/">Voltar ao sistema</a>
+        </div>
+      </div>
+    </header>
+
+    <main id="conteudo" class="largura">
+      <section class="estado" data-carregando aria-live="polite">
+        <div class="spinner" aria-hidden="true"></div>
+        <p>Conferindo seu acesso…</p>
+      </section>
+
+      <section class="estado restrito" data-restrito hidden>
+        <h1>Acesso restrito</h1>
+        <p>Este painel é exclusivo do Admin da plataforma. Se você precisa de mais empresas no seu plano, fale com a Fintria.</p>
+        <a class="botao botao-pri" href="/">Voltar ao sistema</a>
+      </section>
+
+      <section class="estado" data-erro hidden>
+        <h1>Não foi possível carregar o painel</h1>
+        <p data-erro-texto></p>
+        <button type="button" class="botao botao-pri" data-recarregar>Tentar novamente</button>
+      </section>
+
+      <div data-painel hidden>
+        <div class="cabecalho">
+          <div>
+            <p class="sobretitulo">Planos e uso</p>
+            <h1>Escritórios e limites de empresas</h1>
+            <p class="sub">Limite por CNPJ no ciclo mensal de cada escritório. Escritórios sem plano não têm limite.</p>
+          </div>
+          <p class="atualizado" data-atualizado></p>
+        </div>
+
+        <section class="indicadores" aria-label="Indicadores">
+          <article><span>Escritórios com plano</span><strong data-kpi="planos">–</strong><small data-kpi-sub="planos"></small></article>
+          <article><span>Empresas ativas</span><strong data-kpi="empresas">–</strong><small data-kpi-sub="empresas"></small></article>
+          <article><span>Vagas em uso</span><strong data-kpi="vagas">–</strong><small data-kpi-sub="vagas"></small></article>
+          <article data-alerta-kpi><span>Alertas</span><strong data-kpi="alertas">–</strong><small data-kpi-sub="alertas"></small></article>
+        </section>
+
+        <section class="cartao">
+          <div class="cartao-topo">
+            <h2>Escritórios</h2>
+            <div class="filtros">
+              <label class="busca"><span class="sr">Buscar escritório</span><input type="search" data-busca placeholder="Buscar escritório" autocomplete="off" /></label>
+              <label><span class="sr">Filtrar</span>
+                <select data-filtro>
+                  <option value="todos">Todos</option>
+                  <option value="alertas">Com alerta</option>
+                  <option value="plano">Com plano</option>
+                  <option value="livre">Sem limite</option>
+                </select>
+              </label>
+            </div>
+          </div>
+          <div class="tabela-rolagem">
+            <table class="tabela" data-escritorios>
+              <thead>
+                <tr><th scope="col">Escritório</th><th scope="col">Plano</th><th scope="col">Uso no ciclo</th><th scope="col">Colab./empresa</th><th scope="col">Renova em</th><th scope="col">Alertas</th><th scope="col"><span class="sr">Ações</span></th></tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <p class="vazio" data-vazio hidden>Nenhum escritório encontrado.</p>
+        </section>
+
+        <section class="cartao">
+          <div class="cartao-topo"><h2>Atividade recente</h2><p class="sub">Planos, vagas, trocas de quadro, arquivamentos e bloqueios.</p></div>
+          <ol class="linha-eventos" data-eventos></ol>
+        </section>
+      </div>
+    </main>
+
+    <dialog class="gaveta" data-gaveta aria-labelledby="gaveta-titulo">
+      <div class="gaveta-topo">
+        <div>
+          <p class="sobretitulo" data-gaveta-demo></p>
+          <h2 id="gaveta-titulo" data-gaveta-titulo>Escritório</h2>
+        </div>
+        <button type="button" class="fechar" data-fechar aria-label="Fechar">×</button>
+      </div>
+      <div class="gaveta-corpo" data-gaveta-corpo>
+        <section class="resumo-uso" data-resumo-uso></section>
+
+        <form class="formulario" data-form-plano novalidate>
+          <h3>Plano</h3>
+          <div class="grade">
+            <label>Modelo
+              <select data-modelo>
+                <option value="">Personalizado</option>
+                <option value="Inicial|5">Inicial · 5 empresas</option>
+                <option value="Profissional|15">Profissional · 15 empresas</option>
+                <option value="Escritório|40">Escritório · 40 empresas</option>
+                <option value="Plus|100">Plus · 100 empresas</option>
+              </select>
+            </label>
+            <label>Nome do plano<input name="name" maxlength="60" required /></label>
+            <label>Limite de empresas (CNPJ)<input name="companyLimit" type="number" min="1" max="10000" required /></label>
+            <label>Colaboradores por empresa<input name="employeeLimit" type="number" min="1" max="500" value="50" required /></label>
+            <label>Início do ciclo<input name="cycleAnchor" type="date" required /></label>
+            <label>Situação
+              <select name="status"><option value="ativo">Ativo</option><option value="suspenso">Suspenso (bloqueia o uso)</option></select>
+            </label>
+            <label class="largo">Observações internas<textarea name="notes" maxlength="500" rows="2" placeholder="Condição comercial, contato, vencimento…"></textarea></label>
+          </div>
+          <p class="mensagem" data-msg-plano role="status" aria-live="polite"></p>
+          <div class="acoes">
+            <button type="submit" class="botao botao-pri" data-salvar-plano>Salvar plano</button>
+            <button type="button" class="botao botao-perigo" data-remover-plano hidden>Remover plano (sem limite)</button>
+          </div>
+        </form>
+
+        <form class="formulario" data-form-cortesia novalidate>
+          <h3>Vaga extra neste ciclo</h3>
+          <p class="sub">Amplia o limite apenas até a renovação. Fica registrada no histórico.</p>
+          <div class="grade">
+            <label>Quantidade<input name="quantity" type="number" min="1" max="100" value="1" required /></label>
+            <label class="largo">Motivo<input name="reason" maxlength="300" required placeholder="Ex.: troca de quadro autorizada, cortesia comercial" /></label>
+          </div>
+          <p class="mensagem" data-msg-cortesia role="status" aria-live="polite"></p>
+          <div class="acoes"><button type="submit" class="botao botao-sec" data-conceder>Conceder vaga</button></div>
+        </form>
+
+        <section class="formulario">
+          <h3>Visibilidade</h3>
+          <label class="interruptor"><input type="checkbox" data-demo /> <span>Escritório de demonstração (visível somente para o Admin)</span></label>
+          <p class="mensagem" data-msg-demo role="status" aria-live="polite"></p>
+        </section>
+
+        <section>
+          <h3>Empresas</h3>
+          <div class="tabela-rolagem">
+            <table class="tabela compacta" data-empresas>
+              <thead><tr><th scope="col">Empresa</th><th scope="col">CNPJ</th><th scope="col">Situação</th><th scope="col">No ciclo</th><th scope="col">Último uso</th><th scope="col">Quadro</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section>
+          <h3>Histórico do escritório</h3>
+          <ol class="linha-eventos" data-eventos-escritorio></ol>
+        </section>
+      </div>
+    </dialog>
+  </body>
+</html>

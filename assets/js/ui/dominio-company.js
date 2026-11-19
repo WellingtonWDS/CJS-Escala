@@ -113,15 +113,18 @@ function chooseCompany({ document, workspace, quadro, service }) {
         );
         if (closed || request !== generation) return;
         match = result;
-        confirm.disabled = result.status !== "existing" && !result.canCreate;
+        confirm.disabled = (result.status !== "existing" && !result.canCreate) || !!result.company?.archived;
         confirm.textContent =
           result.status === "existing"
             ? "Usar empresa e importar"
             : result.status === "legacy"
               ? "Vincular CNPJ e importar"
               : "Cadastrar empresa e importar";
-        status.textContent =
-          result.status === "existing"
+        status.textContent = result.company?.archived
+          ? `Empresa arquivada: ${result.company.name}. Somente visualização; peça ao Gerente para reativá-la antes de importar.`
+          : result.limitReached
+            ? `Limite de empresas do plano atingido neste ciclo (${result.plan.used} de ${result.plan.capacity}). Arquive uma empresa que não está em uso (a vaga volta na renovação, em ${String(result.plan.renewsAt).split("-").reverse().join("/")}) ou fale com a Fintria.`
+          : result.status === "existing"
             ? `Empresa já cadastrada: ${result.company.name}. Será utilizada sem criar duplicidade.`
             : result.canCreate
               ? result.status === "legacy"

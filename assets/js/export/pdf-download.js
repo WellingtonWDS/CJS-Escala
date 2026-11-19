@@ -24,6 +24,7 @@ export function bindPdfEvents(state, env) {
     [])
     button.onclick = async () => {
       if (button.disabled) return;
+      if (env.planGate && !(await env.planGate("exportar"))) return;
       try {
         const rel = prepararRelatorio(state, {
           proposta: button.dataset.origem === "proposta",

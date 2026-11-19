@@ -98,7 +98,9 @@ export function createDevServer({
         !pathname.startsWith("/assets/") &&
         !pathname.startsWith("/logos/") &&
         pathname !== "/sobre" &&
-        !pathname.startsWith("/sobre/")
+        !pathname.startsWith("/sobre/") &&
+        pathname !== "/admin" &&
+        !pathname.startsWith("/admin/")
       ) {
         res.writeHead(404).end("Not found");
         return;

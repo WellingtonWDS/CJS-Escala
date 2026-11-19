@@ -2,6 +2,7 @@ import {
   createPersistenceService,
   PersistenceError,
 } from "./services/persistence.js";
+import { rosterNames } from "./plans.js";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -94,8 +95,20 @@ export function createPersistenceHandler({
           return json({ error: "Revisão inválida." }, 400);
         return json(await service.deleteDraft(identity, b));
       }
-      if (b.action === "saveDraft")
+      if (b.action === "saveDraft") {
+        // O plano é conferido no servidor com o quadro do próprio preenchimento enviado.
+        const names = rosterNames(Array.isArray(b.state.colaboradores) ? b.state.colaboradores.map((c) => c?.nome) : []);
+        if (!names) return json({ error: "Rascunho inválido." }, 400);
+        let use = null;
+        try {
+          use = await service.planRegisterUse(identity, { officeId: b.officeId, companyId: b.companyId, action: "salvar", names });
+        } catch (error) {
+          if (error.status !== 501) throw error;
+        }
+        if (use && !["liberado", "aviso"].includes(use.status))
+          return json({ error: use.message || "Uso não permitido pelo plano.", plan: use }, use.status === "confirmar_troca" ? 428 : 423);
         return json(await service.saveDraft(identity, b));
+      }
       return json(
         await service[b.action](
           identity,

@@ -85,7 +85,13 @@ if (session) {
     document.getElementById("storage-description").textContent =
       "Preencha e salve planejamentos por empresa";
     const { initRemoteWorkspace } = await import("./ui/remote-workspace.js");
-    await initRemoteWorkspace({ app, workspace, document, window });
+    let planControl = null;
+    await initRemoteWorkspace({ app, workspace, document, window, planGate: (acao) => (planControl ? planControl.exigir(acao) : true) });
+    const { initPlanControl } = await import("./ui/plan-gate.js");
+    planControl = initPlanControl({ document, window, workspace, state: app.state });
+    env.planGate = planControl.exigir;
+    env.empresaServidor = planControl.empresa;
+    await planControl.refresh();
   }
   if (session.user) {
     const { initNavigation } = await import("./ui/navigation.js");

@@ -7,6 +7,10 @@ Consultar este registro antes de orientar o operador. Distinguir código dispon�
 
 
 
+## Planos por escritório e painel Admin — 19/11/2026
+
+Migração **010_office_plans.sql** (após 001–009), API `/api/plans` (nova função Vercel `api/plans.js`) e página `/admin`. **Não foi executada na VPS.** Sem variável, webhook ou credencial nova. Até aplicar a 010, o app funciona sem limite e o painel informa a pendência. Nenhum escritório recebe plano automaticamente. [Comandos de ativação](planos-escritorio.md#ativação-no-banco-da-vps).
+
 ## Página pública /sobre — 18/11/2026
 
 Apresentação do sistema sem login em `/sobre` (pasta `sobre/` publicada pelo build), com contato por WhatsApp e acesso ao login. Guard libera somente `/sobre` e seus arquivos. Após o deploy, conferir `https://reescala.fintria.com.br/sobre` sem estar logado. Sem DNS, variável, SQL ou n8n.

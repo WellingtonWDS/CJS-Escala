@@ -84,3 +84,9 @@ test("gera PDF e Word válidos com as cláusulas e a tabela de horário", () => 
   assert.match(documento, /Testemunha 2 – Nome:/);
   assert.doesNotMatch(documento, /<script|&(?!amp;|lt;|gt;|quot;)/);
 });
+
+test("com empresa do servidor, razão social e CNPJ cadastrados prevalecem sobre o relatório", () => {
+  const { termos } = montar(estado(), { servidor: { nome: "COMERCIO OFICIAL LTDA", cnpj: "11444777000161" } });
+  assert.match(termos[0].partes, /^COMERCIO OFICIAL LTDA, inscrita no CNPJ sob o nº 11\.444\.777\/0001-61/);
+  assert.equal(termos[0].empresa.nome, "COMERCIO OFICIAL LTDA");
+});

@@ -180,7 +180,11 @@ export async function guard(request, env, now = Date.now()) {
         },
       },
     );
-  if (await readSession(request.headers.get("cookie"), env, now)) return null;
+  const session = await readSession(request.headers.get("cookie"), env, now);
+  // Painel Admin só existe para contas individuais; os dados são conferidos no banco (Admin global).
+  if (session && (url.pathname === "/admin" || url.pathname.startsWith("/admin/")) && session.kind !== "individual")
+    return new Response("Not found", { status: 404, headers: { "Cache-Control": "no-store" } });
+  if (session) return null;
   if (url.pathname.startsWith("/api/"))
     return new Response(
       JSON.stringify({ error: "Sessão expirada. Entre novamente." }),

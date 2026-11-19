@@ -442,3 +442,14 @@ body[data-app-view]:not([data-app-view="schedule"]) .current-workspace {
 body[data-app-view]:not([data-app-view="schedule"]) .workspace-fab { display:none; }
 @media (max-width:600px) { .workspace-fab { right:14px; bottom:14px; padding:14px 20px; } .current-workspace { max-height:75dvh; overflow:auto; } }
 @media print { .workspace-fab { display:none !important; } }
+
+/* Plano do escritório e empresa arquivada */
+.workspace-plan { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-top: 6px; font-size: 11px; color: #34586b; }
+.workspace-plan[data-alerta="true"] { color: #8a4b00; font-weight: 600; }
+.workspace-plan [data-plan-archive] { border: 1px solid currentColor; border-radius: 6px; padding: 2px 8px; background: transparent; cursor: pointer; }
+.readonly-banner { margin: 0 0 16px; padding: 12px 16px; border-radius: 12px; border: 1px solid #e6c27a; background: #fff7e6; color: #5c3b00; font-size: 14px; line-height: 1.45; }
+.readonly-banner strong { display: block; }
+html[data-somente-leitura="true"] main :is(input, select, textarea, button):not([data-etapa-link], [data-pendencia-etapa], [data-export-pdf], [data-export-termo], [data-leitura-ok]) { opacity: 0.6; cursor: not-allowed; }
+html[data-theme="dark"] .readonly-banner { background: #3a2a0c; border-color: #8a6a2a; color: #f6deb0; }
+html[data-theme="dark"] .workspace-plan { color: #b1bfd2; }
+html[data-theme="dark"] .workspace-plan[data-alerta="true"] { color: #f2c46d; }

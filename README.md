@@ -101,6 +101,12 @@ O fluxo principal já inclui cadastro manual e por planilhas, importação Domí
 
 Regras **`ec141-2026-11-11-13`**: gere novamente resultados anteriores; os cadastros permanecem. Sem migração SQL, nova RPC ou variável de ambiente.
 
+## Planos por escritório e painel Admin — 19/11/2026
+
+Limite de empresas (CNPJ) por escritório no ciclo mensal, limite de colaboradores por empresa (padrão 50), troca de quadro confirmada somente pelo Gerente como vaga extra, empresas arquivadas somente para visualização, CNPJ travado após o primeiro uso e DEMO visível apenas para o Admin. Escritórios sem plano (CJS e DEMO) seguem sem limite. No modo individual, gerar, buscar ajustes, salvar e exportar exigem empresa do servidor. Novo **Painel Admin** em `/admin`, exclusivo do Admin global, com planos, uso, alertas, vagas extras e histórico.
+
+**Ativação na VPS:** aplicar a migração **010_office_plans.sql** após 001–009. [Regras, painel e comandos](docs/planos-escritorio.md).
+
 ## Diagnóstico da empresa — 12/11/2026
 
 Nova opção **Diagnóstico** para Gerentes/Admins: entrevista de 34 perguntas em oito etapas, por empresa/unidade, com informações confirmadas, estimativas e pendências; horários operacionais, mínimos por função/faixa, condições obrigatórias/preferências e prioridades ordenadas. Salvar rascunho, concluir com conferência, revisar e consultar versões anteriores com autor/data. Proteção contra conflito e repetição de envio; mesma empresa pode ter análises diferentes. Copiar dados do preenchimento aberto exige confirmação e os marca como estimativa, sem alterar o gerador.

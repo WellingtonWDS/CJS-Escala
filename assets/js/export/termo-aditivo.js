@@ -52,14 +52,16 @@ function padraoSemanal(config, r) {
   return { dias: escolhida[0], variavel: contagem.size > 1 };
 }
 
-export function montarTermosAditivos(state, { empresa = "" } = {}) {
+export function montarTermosAditivos(state, { empresa = "", servidor = null } = {}) {
   if (!state.conversao || state.conversao.desatualizada)
     throw Error("Gere uma proposta 5×2 atualizada antes de preparar os termos aditivos.");
   const config = configDaEscala(structuredClone(state.conversao.proposta.config));
   if (!config.escalaGerada?.resultado?.length) throw Error("Gere a proposta antes de preparar os termos aditivos.");
+  // Com empresa do servidor, razão social e CNPJ cadastrados prevalecem sobre os do relatório importado.
   const e = config.empresaDominio || {};
-  const nomeEmpresa = e.nome || empresa || LINHA;
-  const cnpj = e.cnpj ? formatCnpj(e.cnpj) : LINHA;
+  const nomeEmpresa = servidor?.nome || e.nome || empresa || LINHA;
+  const cnpjBase = servidor?.nome ? servidor.cnpj : e.cnpj;
+  const cnpj = cnpjBase ? formatCnpj(cnpjBase) : LINHA;
   const termos = [];
   for (const r of config.escalaGerada.resultado) {
     const c = r.colaborador, padrao = padraoSemanal(config, r);

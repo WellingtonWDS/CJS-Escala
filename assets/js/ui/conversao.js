@@ -116,6 +116,7 @@ export function createConversaoUI({
         el("conversao-mensagem").textContent = "";
         atualizarOpcao42();
         if (!validarPreenchimento()) return;
+        if (env.planGate && !(await env.planGate("proposta"))) return;
         try {
           const opcoes = {
             modeloEscala: state.modeloEscala || "dinamica",

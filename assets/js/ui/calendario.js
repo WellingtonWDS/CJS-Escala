@@ -501,6 +501,7 @@ export function createCalendarioUI({
   function bindEvents() {
     const botao = document.getElementById("btn-gerar");
     botao.onclick = async () => {
+      if (env.planGate && !(await env.planGate("gerar"))) return;
       if (!state.colaboradores.length) return gerarEscala();
       try {
         await executarCalculoEscala({ state, env, botao, operacao: "gerar",

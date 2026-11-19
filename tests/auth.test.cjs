@@ -183,3 +183,18 @@ test("página de apresentação /sobre é pública e não abre o sistema nem a A
     assert.equal((await guard(new Request("https://example.com" + path), env)).status, 303, path);
   assert.equal((await guard(new Request("https://example.com/api/persistence"), env)).status, 401);
 });
+
+test("painel /admin exige sessão e só abre para conta individual", async () => {
+  const { guard, issueSession } = await load();
+  const env = { AUTH_SESSION_SECRET: "x".repeat(40), AUTH_MODE: "n8n" };
+  assert.equal((await guard(new Request("https://example.com/admin/"), env)).status, 303);
+  const now = Date.now();
+  const shared = { AUTH_SESSION_SECRET: "x".repeat(40), AUTH_MODE: "shared" };
+  const compartilhada = await issueSession(shared, now);
+  const req = (path, token) => new Request("https://example.com" + path, { headers: { cookie: "cjs_session=" + token } });
+  assert.equal((await guard(req("/admin/", compartilhada), shared, now)).status, 404);
+  assert.equal(await guard(req("/", compartilhada), shared, now), null);
+  const individual = await issueSession(env, now, { userId: "10000000-0000-0000-0000-000000000001", sessionId: "40000000-0000-0000-0000-000000000001", expiresAt: now + 3600000 });
+  assert.equal(await guard(req("/admin/", individual), env, now), null);
+  assert.equal(await guard(req("/admin/admin.css", individual), env, now), null);
+});

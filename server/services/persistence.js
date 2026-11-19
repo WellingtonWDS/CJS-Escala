@@ -76,7 +76,19 @@ export function createPersistenceService({
         let error; try { error = await res.clone().json(); } catch {}
         if (error?.code === 'PGRST202') throw new PersistenceError('Diagnóstico ainda não configurado no banco.');
       }
+      // Antes da migração 010 as funções de plano não existem: sem plano, sem limite.
+      if (/^(plan_|admin_plan|admin_office|company_set_archived)/.test(name) && res.status === 404) {
+        let error; try { error = await res.clone().json(); } catch {}
+        if (error?.code === 'PGRST202') throw new PersistenceError('Planos ainda não configurados no banco (migração 010).', 501);
+      }
+      // Mensagens de plano e arquivamento vêm das funções do próprio banco (texto fixo, sem dados do cliente).
+      let detail;
+      if ([402, 423].includes(res.status)) {
+        try { detail = (await res.clone().json())?.message; } catch {}
+      }
       const statuses = {
+        402: "Limite do plano atingido.",
+        423: "Empresa arquivada: somente visualização.",
         400: "Dados inválidos.",
         401: "Sessão expirada ou revogada.",
         403: "Acesso não permitido.",
@@ -84,7 +96,7 @@ export function createPersistenceService({
         409: "Conflito: reabra o rascunho atual antes de salvar.",
       };
       throw new PersistenceError(
-        statuses[res.status] || "Armazenamento indisponível.",
+        (typeof detail === "string" && detail.length <= 200 && detail) || statuses[res.status] || "Armazenamento indisponível.",
         statuses[res.status] ? res.status : 503,
       );
     }
@@ -96,6 +108,19 @@ export function createPersistenceService({
   }
   // Não há método público que aceite nome arbitrário de RPC, papel ou identidade no corpo.
   return {
+    planRegisterUse: (identity, { officeId, companyId, action, names, confirmSwap = false }) =>
+      call("plan_register_use", { p_office_id: officeId, p_company_id: companyId, p_action: action, p_names: names, p_confirm_swap: confirmSwap }, identity),
+    planStatus: (identity, officeId) => call("plan_status", { p_office_id: officeId }, identity),
+    companySetArchived: (identity, { officeId, companyId, archived }) =>
+      call("company_set_archived", { p_office_id: officeId, p_company_id: companyId, p_archived: archived }, identity),
+    adminPlansOverview: (identity) => call("admin_plans_overview", {}, identity),
+    adminPlanDetail: (identity, officeId) => call("admin_plan_detail", { p_office_id: officeId }, identity),
+    adminPlanSave: (identity, { officeId, revision, name, companyLimit, employeeLimit, cycleAnchor, status, notes }) =>
+      call("admin_plan_save", { p_office_id: officeId, p_revision: revision, p_name: name, p_company_limit: companyLimit, p_employee_limit: employeeLimit, p_cycle_anchor: cycleAnchor, p_status: status, p_notes: notes }, identity),
+    adminPlanRemove: (identity, { officeId, revision }) => call("admin_plan_remove", { p_office_id: officeId, p_revision: revision }, identity),
+    adminPlanCourtesy: (identity, { officeId, quantity, reason }) =>
+      call("admin_plan_courtesy", { p_office_id: officeId, p_quantity: quantity, p_reason: reason }, identity),
+    adminOfficeDemo: (identity, { officeId, demo }) => call("admin_office_demo", { p_office_id: officeId, p_demo: demo }, identity),
     diagnosticOptions: identity => call('diagnostic_options',{},identity),
     diagnosticList: (identity,{officeId,companyId}) => call('diagnostic_list',{p_office_id:officeId,p_company_id:companyId},identity),
     diagnosticGet: (identity,{officeId,companyId,id,revision=null}) => call('diagnostic_get',{p_office_id:officeId,p_company_id:companyId,p_id:id,p_revision:revision},identity),

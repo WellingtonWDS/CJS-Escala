@@ -369,3 +369,6 @@ body[data-app-view="offices"] #btn-tutorial {
     transition: none;
   }
 }
+.sidebar-role .sidebar-admin-link { color: #9fe3c9; font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+.sidebar-role .sidebar-admin-link:hover { color: #fff; }
+.sidebar-collapsed .sidebar-admin-link { display: none; }

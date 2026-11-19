@@ -12,6 +12,7 @@ export async function initRemoteWorkspace({
   document,
   window,
   service = createRemotePersistence(),
+  planGate = null,
 }) {
   const dialogs = getDialogs(document),
     button = document.getElementById("btn-remote-workspace"),
@@ -304,6 +305,7 @@ export async function initRemoteWorkspace({
       app.init({preserveSavedPeriod:true,resetView:true});
       dialog.close();
       await refreshCurrent();
+      window.dispatchEvent(new window.Event("cjs-plan-refresh"));
       current("status").textContent += " Sem espaço para a cópia local: este preenchimento está aberto nesta aba. O que já foi salvo permanece no servidor. Salve novas alterações antes de sair; se recarregar, selecione o preenchimento novamente pelo servidor.";
       painel(true);
 
@@ -328,6 +330,10 @@ export async function initRemoteWorkspace({
     )
       throw Error("O envio pendente não pertence à empresa aberta.");
     let body = previous;
+    if (planGate && !(await planGate("salvar"))) {
+      status("Salvamento não realizado: confira o aviso do plano.");
+      return;
+    }
     if (!body) {
       body = {
         ...c,
@@ -349,7 +355,7 @@ export async function initRemoteWorkspace({
     try {
       result = await service.saveDraft(body);
     } catch (error) {
-      if ([400, 403, 404, 409, 413].includes(error.status))
+      if ([400, 403, 404, 409, 413, 423, 428].includes(error.status))
         workspace.clearPending();
       if (error.status === 404) {
         unavailable = true;

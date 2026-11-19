@@ -96,13 +96,16 @@ export function createCompaniesHandler({
         }),
       );
     } catch (error) {
-      const status = [400, 401, 403, 409].includes(error.status)
+      const status = [400, 401, 402, 403, 409, 423].includes(error.status)
         ? error.status
         : 503;
       return json(
         {
           error:
-            status === 409
+            // Limite do plano, empresa arquivada e CNPJ travado: mensagens fixas do banco.
+            [402, 423].includes(status)
+              ? error.message
+              : status === 409
               ? "Cadastro alterado por outro usuário ou documento/nome já utilizado. Reabra a lista e confira antes de salvar."
               : status === 403
                 ? "Sem permissão para esta operação neste escritório ou empresa. Solicite acesso ao Admin ou gerente."
