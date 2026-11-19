@@ -89,7 +89,7 @@ module.exports=async({browser,baseURL})=>{
   await page.route('**/api/companies',r=>r.fulfill({json:options}));
   await page.evaluate(async()=>{const {initNavigation}=await import('/assets/js/ui/navigation.js');initNavigation({session:{user:{id:'owner',name:'Admin de teste',role:'admin'},persistenceEnabled:false},document,window});});
   assert(await page.locator('#btn-theme').evaluate(el=>el.nextElementSibling.id==='btn-sair'));
-  for(const view of ['companies','offices','users']) {
+  for(const view of ['users']) {
    await page.locator(`[data-app-view="${view}"]`).click();
    await page.waitForFunction(()=>!document.querySelector('.app-sidebar nav button:disabled'));
    if(view==='users'){await page.locator('[data-user-new]').click();}

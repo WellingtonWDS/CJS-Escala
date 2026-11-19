@@ -1,4 +1,4 @@
-export function initNavigation({ session, document, window, app, workspace }) {
+export function initNavigation({ session, document, window, app, workspace, remote = null }) {
   const sidebar = document.getElementById("app-sidebar");
   sidebar.hidden = false;
   document.body.classList.add("has-app-sidebar");
@@ -26,15 +26,14 @@ export function initNavigation({ session, document, window, app, workspace }) {
       text = document.createElement("span");
     icon.className = "sidebar-icon";
     const paths = {
+      home:
+        '<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M10 21v-5h4v5"/>',
       schedule:
         '<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M16 3v4M8 3v4M3 11h18M8 15h2M14 15h2"/>',
       workspace:
         '<path d="M3 7a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/>',
       diagnostics:
         '<path d="M9 4h6v3H9zM9 12h6M9 16h6"/><rect x="5" y="5" width="14" height="16" rx="2"/>',
-      companies:
-        '<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M10 21v-5h4v5"/>',
-      offices: '<path d="m12 3 10 5-10 5L2 8Zm-9 9 9 5 9-5M3 17l9 5 9-5"/>',
       users:
         '<circle cx="9" cy="7" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3M16 4a3 3 0 0 1 0 6M21 21v-3a6 6 0 0 0-3-5"/>',
     };
@@ -70,33 +69,13 @@ export function initNavigation({ session, document, window, app, workspace }) {
     painel.textContent = "Painel Admin";
     document.getElementById("sidebar-role")?.append(" · ", painel);
   }
-  if (role === "admin") {
-    const preview = document.createElement("button");
-    preview.type = "button";
-    preview.className = "sidebar-seasonal-preview";
-    preview.dataset.seasonalPreviewOpen = "";
-    preview.setAttribute("aria-label", "Prévia das festividades");
-    preview.setAttribute("aria-haspopup", "dialog");
-    preview.title = "Prévia das festividades";
-    preview.innerHTML = '<span class="sidebar-icon" aria-hidden="true">✦</span><span class="sidebar-label">Prévia das festividades</span>';
-    preview.addEventListener("click", async () => {
-      preview.disabled = true;
-      try {
-        const { openSeasonalPreview } = await import("./seasonal-preview.js");
-        openSeasonalPreview({ document, role, returnFocus: preview });
-      } catch {
-        const { getDialogs } = await import("./dialogs.js");
-        await getDialogs(document).alert("Não foi possível abrir a prévia. Tente recarregar a página.");
-      } finally { preview.disabled = false; }
-    });
-    accountActions.prepend(preview);
-  }
   const canManage = ["admin", "manager"].includes(role);
   const buttons = [...sidebar.querySelectorAll("[data-app-view]")];
+  // Tela inicial "Empresas" somente com empresas no servidor.
+  const hasHome = !!(session.persistenceEnabled && remote);
   buttons.forEach((button) => {
-    if (button.dataset.appView !== "schedule")
-      button.hidden =
-        button.dataset.appView === "offices" ? role !== "admin" : !canManage;
+    if (button.dataset.appView === "home") button.hidden = !hasHome;
+    else if (button.dataset.appView !== "schedule") button.hidden = !canManage;
   });
   document.getElementById("sidebar-companies").hidden =
     !session.persistenceEnabled;
@@ -106,16 +85,14 @@ export function initNavigation({ session, document, window, app, workspace }) {
       document.getElementById("btn-remote-workspace").click(),
     );
   let management,
-    companies,
-    offices,
+    home,
     diagnostics,
     generation = 0;
   async function show(view) {
     if (
       [
         "user-management",
-        "company-management",
-        "office-management",
+        "companies-home",
         "company-diagnostics",
       ].some(
         (id) =>
@@ -123,8 +100,8 @@ export function initNavigation({ session, document, window, app, workspace }) {
       )
     )
       return;
-    if (view !== "schedule" && !canManage) return;
-    if (view === "offices" && role !== "admin") return;
+    if (view === "home" && !hasHome) view = "schedule";
+    if (!["schedule", "home"].includes(view) && !canManage) return;
     if (
       document.body.dataset.appView === "diagnostics" &&
       view !== "diagnostics" &&
@@ -137,8 +114,7 @@ export function initNavigation({ session, document, window, app, workspace }) {
     document.getElementById("user-management").hidden = !["users"].includes(
       view,
     );
-    document.getElementById("company-management").hidden = view !== "companies";
-    document.getElementById("office-management").hidden = view !== "offices";
+    document.getElementById("companies-home").hidden = view !== "home";
     document.getElementById("company-diagnostics").hidden =
       view !== "diagnostics";
     document.body.dataset.appView = view;
@@ -147,6 +123,13 @@ export function initNavigation({ session, document, window, app, workspace }) {
         ? b.setAttribute("aria-current", "page")
         : b.removeAttribute("aria-current"),
     );
+    // Endereço da tela: Empresas (#empresas) ou a etapa atual da escala, para manter a tela ao recarregar.
+    if (view === "home" && window.location.hash !== "#empresas")
+      window.history.replaceState(null, "", "#empresas");
+    if (view === "schedule" && hasHome && !/^#sec-/.test(window.location.hash)) {
+      const etapa = document.querySelector('[data-etapa-link][aria-current="step"]')?.dataset.etapaLink || "sec-config";
+      window.history.replaceState(null, "", "#" + etapa);
+    }
     if (view === "schedule") return;
     buttons.forEach((button) => (button.disabled = true));
     try {
@@ -165,22 +148,12 @@ export function initNavigation({ session, document, window, app, workspace }) {
         await diagnostics.show();
         return;
       }
-      if (view === "offices") {
-        if (!offices) {
-          const { createOfficeRegistry } = await import("./office-registry.js");
-          offices = createOfficeRegistry({ document, window });
+      if (view === "home") {
+        if (!home) {
+          const { createCompaniesHome } = await import("./empresas-home.js");
+          home = createCompaniesHome({ document, window, session, workspace, remote, onOpened: () => show("schedule") });
         }
-        await offices.show();
-        return;
-      }
-      if (view === "companies") {
-        if (!companies) {
-          const { createCompanyRegistry } = await import(
-            "./company-registry.js"
-          );
-          companies = createCompanyRegistry({ document, window });
-        }
-        await companies.show();
+        await home.show();
         return;
       }
       if (!management) {
@@ -191,7 +164,7 @@ export function initNavigation({ session, document, window, app, workspace }) {
       await management.show(view);
     } catch {
       const target = document.getElementById(
-        view === "diagnostics" ? "company-diagnostics" : "user-management",
+        view === "diagnostics" ? "company-diagnostics" : view === "home" ? "companies-home" : "user-management",
       );
       target.textContent =
         "Não foi possível carregar esta seção. Recarregue a página.";
@@ -200,7 +173,15 @@ export function initNavigation({ session, document, window, app, workspace }) {
     }
   }
   buttons.forEach((button) =>
-    button.addEventListener("click", () => show(button.dataset.appView)),
+    button.addEventListener("click", () => {
+      show(button.dataset.appView);
+    }),
   );
+  window.addEventListener("hashchange", () => {
+    if (window.location.hash === "#empresas" && document.body.dataset.appView !== "home") show("home");
+    else if (/^#sec-/.test(window.location.hash) && document.body.dataset.appView === "home") show("schedule");
+  });
   if (window.location.hash === "#usuarios" && canManage) show("users");
+  else if (hasHome && ["", "#", "#empresas"].includes(window.location.hash)) show("home");
+  return { show };
 }

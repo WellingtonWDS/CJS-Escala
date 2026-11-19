@@ -183,7 +183,7 @@ export async function testCompanyIntegration({ env, sql, browserTest }) {
         page.waitForFunction(
           () => document.documentElement.dataset.ready === "true",
         );
-      await page.goto(origin);
+      await page.goto(origin + "/#sec-config");
       await ready();
       assert.equal(await page.locator("#btn-imprimir-pagina").count(), 0);
       await page.locator("#sidebar-toggle").click();
@@ -200,32 +200,28 @@ export async function testCompanyIntegration({ env, sql, browserTest }) {
       );
       await page.locator("#sidebar-toggle").click();
       await waitForDialogs(page);
-      await page.locator('[data-app-view="companies"]').click();
+      await page.locator('button[data-app-view="home"]').click();
       await waitForDialogs(page);
+      await page.locator("[data-home-new]").click();
       await page.locator("#company-create").waitFor({ state: "visible" });
-      await page.waitForFunction(
-        () =>
-          !document
-            .querySelector("#company-management")
-            .hasAttribute("aria-busy"),
-      );
       await page
         .locator('#company-create [name="name"]')
         .fill("Comércio navegador");
       await page
         .locator('#company-create [name="cnpj"]')
         .fill("04.252.011/0001-10");
-      await page.locator("#company-create button").click();
+      await page.locator("#company-create button[type=submit]").click();
       await waitForDialogs(page);
-      await page.waitForFunction(() =>
-        document
-          .querySelector("[data-company-status]")
-          .textContent.includes("Empresa cadastrada"),
+      await page.locator("[data-home-detail]").waitFor({ state: "visible" });
+      assert.equal(
+        await page.locator("[data-detail-name]").textContent(),
+        "Comércio navegador",
       );
-      await page.locator("[data-company-search]").fill("04252011");
+      await page.locator("[data-home-back]").click();
+      await page.locator("[data-home-search]").fill("04252011");
       assert.match(
-        await page.locator("[data-company-list]").textContent(),
-        /Comércio navegador — 04\.252\.011/,
+        await page.locator("[data-home-grid]").textContent(),
+        /Comércio navegador[\s\S]*04\.252\.011/,
       );
       await page.locator('[data-app-view="schedule"]').click();
       await waitForDialogs(page);

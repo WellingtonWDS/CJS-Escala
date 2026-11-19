@@ -16,6 +16,7 @@
 <link rel="stylesheet" href="./assets/css/dialogs.css">
 <link rel="stylesheet" href="./assets/css/motion.css">
 <link rel="stylesheet" href="./assets/css/workspace.css">
+<link rel="stylesheet" href="./assets/css/empresas.css">
 <link rel="stylesheet" href="./assets/css/diagnosticos.css">
 <link rel="stylesheet" href="./assets/css/avisos-escala.css">
 <link rel="stylesheet" href="./assets/css/diagnostico-empresa.css">
@@ -28,11 +29,10 @@
   <button id="sidebar-toggle" type="button" aria-expanded="true" aria-controls="sidebar-navigation" title="Recolher menu">☰ <span>Recolher menu</span></button>
   <a class="sidebar-brand" href="/" aria-label="Reescala — início" title="Reescala"><img src="/logos/Reescala_branco_transparente.png" alt="" width="40" height="35" style="width:40px;height:35px;max-width:40px;object-fit:contain;flex-shrink:0"><span>Reescala</span><span class="seasonal-detail" data-seasonal-ornament title="" aria-hidden="true" hidden></span></a>
   <p id="sidebar-user"></p><p id="sidebar-role" class="sidebar-role"></p>
-  <nav id="sidebar-navigation"><button type="button" data-app-view="schedule" aria-current="page">Gerar escala</button>
+  <nav id="sidebar-navigation"><button type="button" data-app-view="home" hidden>Empresas</button>
+  <button type="button" data-app-view="schedule" aria-current="page">Gerar escala</button>
   <button type="button" id="sidebar-companies">Empresa atual e Preenchimentos</button>
   <button type="button" data-app-view="diagnostics" hidden>Diagnóstico</button>
-  <button type="button" data-app-view="companies" hidden>Empresas — cadastrar e editar</button>
-  <button type="button" data-app-view="offices" hidden>Escritórios</button>
   <button type="button" data-app-view="users" hidden>Usuários</button></nav>
 </aside>
 
@@ -52,10 +52,9 @@
 <section id="current-workspace" class="current-workspace no-print" aria-label="Empresa atual e Preenchimentos" hidden></section>
 <dialog id="remote-workspace" class="remote-workspace no-print" aria-label="Empresa atual e Preenchimentos"></dialog>
 
+<section id="companies-home" class="companies-home no-print" hidden aria-label="Empresas"></section>
 <section id="user-management" class="user-management no-print" hidden aria-label="Gestão de usuários"></section>
-<section id="company-management" class="user-management no-print" hidden aria-label="Cadastro de empresas"></section>
 <section id="company-diagnostics" class="user-management company-diagnostics no-print" hidden aria-label="Diagnóstico da empresa"></section>
-<section id="office-management" class="user-management no-print" hidden aria-label="Cadastro de escritórios"></section>
 <div id="scheduler-view" class="w-full max-w-[1920px] mx-auto px-2 lg:px-4">
   <div id="etapas-marco" aria-hidden="true"></div>
   <nav id="etapas-nav" class="etapas-nav no-print" aria-label="Etapas de preenchimento">

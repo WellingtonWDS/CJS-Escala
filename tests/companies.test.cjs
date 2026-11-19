@@ -123,3 +123,40 @@ test("cadastro de empresa exige sessão, origem, CNPJ válido e corpo controlado
   assert.deepEqual(calls.at(-1).body, { p_name: "Escritório novo" });
   assert.equal(calls.at(-1).url, "https://rpc.example/rpc/create_office");
 });
+test("cartões da tela Empresas usam company_cards e, sem a migração 011, a lista simples", async () => {
+  const { createCompaniesHandler } = await import("../server/companies.js");
+  const { issueSession } = await import("../server/auth.js");
+  const now = Date.now(),
+    env = {
+      AUTH_MODE: "n8n",
+      AUTH_SESSION_SECRET: "test-cookie-key-with-enough-characters",
+      PERSISTENCE_RPC_URL: "https://rpc.example",
+      PERSISTENCE_JWT_SECRET: "test-rpc-key-with-enough-characters",
+    };
+  const token = await issueSession(env, now, {
+    userId: "10000000-0000-0000-0000-000000000001",
+    sessionId: "40000000-0000-0000-0000-000000000001",
+    expiresAt: now + 3600000,
+  });
+  let migrada = true;
+  const chamadas = [];
+  const handler = createCompaniesHandler({
+    env,
+    now: () => now,
+    fetchImpl: async (url) => {
+      const nome = url.split("/rpc/")[1];
+      chamadas.push(nome);
+      if (nome === "company_cards" && !migrada)
+        return new Response(JSON.stringify({ code: "PGRST202" }), { status: 404, headers: { "Content-Type": "application/json" } });
+      return Response.json({ offices: [], companies: [{ id: "c", drafts: 2 }] });
+    },
+  });
+  const get = () => handler(new Request("https://app.example/api/companies?view=cards", { headers: { cookie: "cjs_session=" + token } }));
+  let body = await (await get()).json();
+  assert.equal(body.companies[0].drafts, 2);
+  assert.equal(body.summaryUnavailable, undefined);
+  migrada = false;
+  body = await (await get()).json();
+  assert.equal(body.summaryUnavailable, true);
+  assert.deepEqual(chamadas, ["company_cards", "company_cards", "company_options"]);
+});

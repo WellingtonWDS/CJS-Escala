@@ -4,6 +4,7 @@
 import { createPlanService } from "./services/plans.js";
 import { getDialogs } from "./ui/dialogs.js";
 import { formatCnpj } from "./shared/empresas.js";
+import { createCompanyService } from "./services/companies.js";
 
 const $ = (s, r = document) => r.querySelector(s);
 const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -64,7 +65,7 @@ function eventosHtml(lista, { comEscritorio = false } = {}) {
   return lista.map((e) => `<li><time datetime="${esc(e.createdAt)}">${esc(dataHora(e.createdAt))}</time><div><strong>${esc(EVENTOS[e.kind] || e.kind)}</strong>${comEscritorio ? ` · ${esc(e.office)}` : ""}${e.company ? ` · ${esc(e.company)}` : ""}<div class="quem">${esc(descreverEvento(e))}${e.actor ? ` — ${esc(e.actor)}` : ""}</div></div></li>`).join("");
 }
 
-export async function iniciarPainel({ document: doc = document, service = createPlanService(), fetchImpl = fetch } = {}) {
+export async function iniciarPainel({ document: doc = document, service = createPlanService(), companies = createCompanyService(), fetchImpl = fetch } = {}) {
   const dialogs = getDialogs(doc);
   const mostrar = (estado) => {
     doc.body.dataset.estado = estado;
@@ -241,6 +242,39 @@ export async function iniciarPainel({ document: doc = document, service = create
   $("[data-busca]", doc).addEventListener("input", () => dados && renderLista());
   $("[data-filtro]", doc).addEventListener("change", () => dados && renderLista());
   $("[data-recarregar]", doc).addEventListener("click", carregar);
+  // Escritórios: criação exclusiva do Admin (conferida no banco).
+  const formEscritorio = $("[data-form-escritorio]", doc);
+  $("[data-novo-escritorio]", doc).addEventListener("click", () => {
+    formEscritorio.hidden = false;
+    msg("[data-msg-escritorio]", "");
+    formEscritorio.elements.name.focus();
+  });
+  $("[data-cancelar-escritorio]", doc).addEventListener("click", () => { formEscritorio.reset(); formEscritorio.hidden = true; });
+  formEscritorio.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const nome = formEscritorio.elements.name.value.trim();
+    if (!nome) return msg("[data-msg-escritorio]", "Informe o nome do escritório.", "erro");
+    $("[data-criar-escritorio]", doc).disabled = true;
+    try {
+      const r = await companies.createOffice(nome);
+      dados = await service.overview();
+      renderLista();
+      formEscritorio.reset();
+      msg("[data-msg-escritorio]", `${r.status === "existing" ? "Escritório já cadastrado" : "Escritório criado"}: ${r.office.name}. Sem plano, ele fica sem limite de empresas.`, "ok");
+    } catch (error) { msg("[data-msg-escritorio]", error.message, "erro"); }
+    finally { $("[data-criar-escritorio]", doc).disabled = false; }
+  });
+  // Prévia das festividades: só visual, não altera o calendário.
+  const previa = $("[data-seasonal-preview-open]", doc);
+  previa.addEventListener("click", async () => {
+    previa.disabled = true;
+    try {
+      const { openSeasonalPreview } = await import("./ui/seasonal-preview.js");
+      openSeasonalPreview({ document: doc, role: "admin", returnFocus: previa });
+    } catch {
+      await dialogs.alert("Não foi possível abrir a prévia. Tente recarregar a página.");
+    } finally { previa.disabled = false; }
+  });
   await carregar();
 }
 

@@ -31,6 +31,9 @@ module.exports = async ({ browser, baseURL, sql }) => {
     await page.waitForFunction(
       () => document.documentElement.dataset.ready === "true",
     );
+    // A tela inicial é Empresas; estes cenários usam a geração de escala diretamente.
+    await page.evaluate(() => (location.hash = "#sec-config"));
+    await page.waitForFunction(() => document.body.dataset.appView === "schedule");
     await page.locator("#btn-workspace-fab").click();
     return page;
   }

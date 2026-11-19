@@ -235,49 +235,34 @@ export async function testRegistryIntegration({ env, sql, browserTest }) {
         page.waitForFunction(
           () => document.documentElement.dataset.ready === "true",
         );
-      await page.goto(origin);
+      await page.goto(origin + "/#sec-config");
       await ready();
-      await page.locator('[data-app-view="offices"]').click();
-      await waitForDialogs(page);
-      await page.locator("#office-create").waitFor({ state: "visible" });
-      await page.waitForFunction(
-        () =>
-          !document
-            .querySelector("#office-management")
-            .hasAttribute("aria-busy"),
-      );
+      // Escritórios são criados no Painel Admin.
+      await page.goto(origin + "/admin/");
+      await page.locator("[data-painel]").waitFor({ state: "visible" });
+      await page.locator("[data-novo-escritorio]").click();
       await page
-        .locator("#office-create input")
+        .locator('[data-form-escritorio] [name="name"]')
         .fill("Escritório do navegador");
-      await page.locator("#office-create button").click();
-      await waitForDialogs(page);
+      await page.locator("[data-criar-escritorio]").click();
       await page
         .waitForFunction(() =>
           document
-            .querySelector("[data-office-status]")
+            .querySelector("[data-msg-escritorio]")
             .textContent.includes("Escritório criado"),
         )
         .catch(async (error) => {
           throw Error(
             error.message +
               " — " +
-              (await page.locator("[data-office-status]").textContent()) +
-              " — campo: " +
-              (await page.locator("#office-create input").inputValue()),
+              (await page.locator("[data-msg-escritorio]").textContent()),
           );
         });
-      await page.locator('[data-app-view="companies"]').click();
-      await waitForDialogs(page);
-      await page.waitForFunction(
-        () =>
-          !document
-            .querySelector("#company-management")
-            .hasAttribute("aria-busy"),
-      );
-      await page
-        .locator('#company-create [name="officeId"]')
-        .selectOption(office);
-      await page.locator("[data-company-list]").selectOption(company);
+      // Edição da empresa pelo cartão na tela Empresas.
+      await page.goto(origin + "/#empresas");
+      await ready();
+      await page.locator(`[data-company-card="${company}"]`).click();
+      await page.locator("[data-home-detail]").waitFor({ state: "visible" });
       await page
         .locator('#company-edit [name="name"]')
         .fill("Razão social revisada");

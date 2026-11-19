@@ -106,7 +106,7 @@ export function initPlanControl({
     const c = workspace.context();
     if (!c) {
       await dialogs.alert(
-        `Para ${ACOES[acao] || "continuar"}, selecione a empresa no servidor em “Empresa atual e Preenchimentos”. O preenchimento local fica apenas como cópia de segurança.`,
+        `Para ${ACOES[acao] || "continuar"}, selecione a empresa no servidor em “Empresas” (ou em “Empresa atual e Preenchimentos”). O preenchimento local fica apenas como cópia de segurança.`,
         { title: "Selecione a empresa" },
       );
       return false;

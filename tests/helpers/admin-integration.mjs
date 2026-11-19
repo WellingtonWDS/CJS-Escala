@@ -282,7 +282,7 @@ export async function testAdminIntegration({ env, sql, browserTest }) {
       const page = await context.newPage();
       const errors = [];
       page.on("pageerror", (e) => errors.push(e.message));
-      await page.goto(origin + "/");
+      await page.goto(origin + "/#sec-config");
       await page.waitForFunction(
         () => document.documentElement.dataset.ready === "true",
       );

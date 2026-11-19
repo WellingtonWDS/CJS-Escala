@@ -18,6 +18,10 @@ Carregamento imediato na geração atual/proposta, cálculo em Worker local, blo
 
 
 
+## Tela inicial Empresas — 19/11/2026
+
+Página inicial com cartões de empresas e resumo (RPC `company_cards`, migração **011**), detalhe com preenchimentos, edição e arquivamento; criação de escritórios e prévia sazonal movidas para `/admin`. Menu lateral sem Escritórios, Empresas — cadastrar e editar e Prévia das festividades. [Detalhes](tela-empresas.md).
+
 ## Planos por escritório e painel Admin — 19/11/2026
 
 Limite de empresas por CNPJ no ciclo mensal, limite de colaboradores, troca de quadro (hash de nomes; >50% novos com mais de 3 pessoas) confirmada só pelo Gerente como vaga extra, empresa arquivada somente leitura, CNPJ travado após o primeiro uso, DEMO visível só para o Admin. Conferência no banco (`plan_register_use`), na gravação do servidor e antes de gerar/proposta/ajustes/salvar/exportar no navegador. Painel `/admin` exclusivo do Admin global. Requer migração **010**, após 001–009; sem plano criado, nada muda (sem limite). [Detalhes](planos-escritorio.md). Validação local: migrações 001–010 em PostgreSQL 16 com 41 cenários SQL, testes unitários e suíte de navegador.

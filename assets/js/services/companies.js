@@ -1,6 +1,6 @@
 export function createCompanyService({ fetchImpl = fetch } = {}) {
-  async function call(body) {
-    const response = await fetchImpl("/api/companies", {
+  async function call(body, query = "") {
+    const response = await fetchImpl("/api/companies" + query, {
       method: body ? "POST" : "GET",
       credentials: "same-origin",
       cache: "no-store",
@@ -30,6 +30,7 @@ export function createCompanyService({ fetchImpl = fetch } = {}) {
     update: (fields) => call({ ...fields, action: "updateCompany" }),
     createOffice: (name) => call({ action: "createOffice", name }),
     options: () => call(),
+    cards: () => call(null, "?view=cards"),
     resolve: (officeId, name, cnpj, apply = false) =>
       call({ officeId, name, cnpj, apply }),
   };

@@ -19,13 +19,13 @@ module.exports = async ({ browser, baseURL }) => {
       calls = 0,
       release,
       fail = false;
-    await page.route("**/api/companies", async (route) => {
+    await page.route("**/api/companies*", async (route) => {
       if (route.request().method() === "GET") {
         await route.fulfill({
           json: {
             offices: [{ id: office, name: "Escritório", canCreate: true }],
             companies: [
-              { id: company, officeId: office, name, cnpj: "48956412000126" },
+              { id: company, officeId: office, name, cnpj: "48956412000126", canManage: true, canWrite: true, drafts: 0 },
             ],
           },
         });
@@ -49,14 +49,23 @@ module.exports = async ({ browser, baseURL }) => {
     await page.waitForFunction(
       () => document.documentElement.dataset.ready === "true",
     );
-    await page.evaluate(async () => {
-      const { createCompanyRegistry } = await import(
-        "/assets/js/ui/company-registry.js"
+    await page.evaluate(async ({ office, company }) => {
+      const { createCompaniesHome } = await import(
+        "/assets/js/ui/empresas-home.js"
       );
-      document.querySelector("#company-management").hidden = false;
-      window.__registry = createCompanyRegistry({ document, window });
-      await window.__registry.show();
-    });
+      document.querySelector("#companies-home").hidden = false;
+      document.querySelector("#scheduler-view").hidden = true;
+      window.__home = createCompaniesHome({
+        document,
+        window,
+        session: { user: { role: "manager" } },
+        workspace: { context: () => null },
+        remote: { open: async () => true },
+        persistence: { listDrafts: async () => [] },
+      });
+      await window.__home.show();
+      await window.__home.abrirEmpresa(company, office);
+    }, { office, company });
     assert.equal(await page.locator("[data-loading-overlay][open]").count(), 0);
     await page.locator('#company-edit [name="name"]').fill("Empresa alterada");
     await page.locator("#company-edit button").click();

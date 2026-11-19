@@ -7,6 +7,10 @@ Consultar este registro antes de orientar o operador. Distinguir código dispon�
 
 
 
+## Tela inicial Empresas — 19/11/2026
+
+Migração **011_company_cards.sql** (após 010). **Não foi executada na VPS.** Sem variável ou credencial nova. Antes dela, a tela Empresas funciona sem os números dos cartões. [Comandos](tela-empresas.md#ativação-no-banco-da-vps).
+
 ## Planos por escritório e painel Admin — 19/11/2026
 
 Migração **010_office_plans.sql** (após 001–009), API `/api/plans` (nova função Vercel `api/plans.js`) e página `/admin`. **Não foi executada na VPS.** Sem variável, webhook ou credencial nova. Até aplicar a 010, o app funciona sem limite e o painel informa a pendência. Nenhum escritório recebe plano automaticamente. [Comandos de ativação](planos-escritorio.md#ativação-no-banco-da-vps).

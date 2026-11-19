@@ -101,6 +101,12 @@ O fluxo principal já inclui cadastro manual e por planilhas, importação Domí
 
 Regras **`ec141-2026-11-11-13`**: gere novamente resultados anteriores; os cadastros permanecem. Sem migração SQL, nova RPC ou variável de ambiente.
 
+## Tela inicial Empresas e Painel Admin ampliado — 19/11/2026
+
+Com empresas no servidor, a página inicial passa a ser **Empresas**: cartões das empresas autorizadas com preenchimentos, colaboradores do mais recente, data e autor do último salvamento, selos (arquivada, aberta agora, escala gerada) e uso do plano para o Gerente. Busca por razão social/CNPJ e filtro por escritório. Sem cadastros, a tela oferece **Cadastrar nova empresa** (Gerente/Admin). Ao escolher uma empresa: lista de preenchimentos para abrir ou começar um novo (leva direto à geração de escalas), edição da razão social/CNPJ e arquivamento. Saíram do menu lateral **Escritórios**, **Empresas — cadastrar e editar** e **Prévia das festividades**: criar escritórios e a prévia sazonal ficam no **Painel Admin** (`/admin`).
+
+**Ativação na VPS:** aplicar a migração **011_company_cards.sql** após a 010 (resumo dos cartões). Sem ela, os cartões aparecem sem os números. [Detalhes](docs/tela-empresas.md).
+
 ## Planos por escritório e painel Admin — 19/11/2026
 
 Limite de empresas (CNPJ) por escritório no ciclo mensal, limite de colaboradores por empresa (padrão 50), troca de quadro confirmada somente pelo Gerente como vaga extra, empresas arquivadas somente para visualização, CNPJ travado após o primeiro uso e DEMO visível apenas para o Admin. Escritórios sem plano (CJS e DEMO) seguem sem limite. No modo individual, gerar, buscar ajustes, salvar e exportar exigem empresa do servidor. Novo **Painel Admin** em `/admin`, exclusivo do Admin global, com planos, uso, alertas, vagas extras e histórico.

@@ -243,7 +243,7 @@ export async function testDeleteIntegration({ env, sql, browserTest }) {
           identities[manager],
           create("Excluir aberto"),
         );
-      await page.goto(origin);
+      await page.goto(origin + "/#sec-config");
       await ready();
       await open();
       assert.equal(

@@ -429,7 +429,7 @@ export async function testUsersIntegration({ env, sql, browserTest }) {
               .querySelector("#user-management")
               .hasAttribute("aria-busy"),
         );
-      await page.goto(origin);
+      await page.goto(origin + "/#sec-config");
       await ready();
       await page.locator('[data-app-view="users"]').click();
       await page.locator("[data-users-list] .user-row").first().waitFor();
@@ -524,7 +524,7 @@ export async function testUsersIntegration({ env, sql, browserTest }) {
       await context.addCookies([
         { name: "cjs_session", value: manager.cookie.slice(12), url: origin },
       ]);
-      await page.goto(origin);
+      await page.goto(origin + "/#sec-config");
       await ready();
       await page.locator('[data-app-view="users"]').click();
       await page.locator(".user-row").first().waitFor();

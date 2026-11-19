@@ -29,8 +29,18 @@ export function createCompaniesHandler({
           expiresAt: session.exp,
         },
         service = createPersistenceService({ env, fetchImpl, now });
-      if (request.method === "GET")
+      if (request.method === "GET") {
+        // Tela inicial: cartões com resumo; sem a migração 011, volta à lista simples.
+        if (new URL(request.url).searchParams.get("view") === "cards") {
+          try {
+            return json(await service.companyCards(identity));
+          } catch (error) {
+            if (error.status !== 501) throw error;
+            return json({ ...(await service.companyOptions(identity)), summaryUnavailable: true });
+          }
+        }
         return json(await service.companyOptions(identity));
+      }
       if (request.method !== "POST")
         return json({ error: "Método não permitido." }, 405);
       if (request.headers.get("origin") !== new URL(request.url).origin)

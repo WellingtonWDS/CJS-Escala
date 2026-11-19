@@ -178,3 +178,15 @@ textarea { min-height: 60px; resize: vertical; }
   .gaveta[open] { animation: none; }
   .spinner { animation-duration: 3s; }
 }
+
+.cabecalho-acoes { display: grid; justify-items: end; gap: 8px; }
+.novo-escritorio { margin-bottom: 16px; }
+/* Prévia das festividades (diálogo compartilhado com o app) */
+.app-dialog { background: var(--superficie); color: var(--texto); border-color: var(--borda); }
+.app-dialog p { color: var(--texto-suave); }
+.app-dialog h2 { color: var(--texto); }
+.app-dialog button { min-height: 40px; padding: 8px 14px; border-radius: 9px; border: 1px solid var(--borda); background: var(--superficie); color: var(--texto); font: inherit; font-weight: 600; cursor: pointer; }
+.app-dialog label { display: grid; gap: 5px; font-size: 0.82rem; font-weight: 600; color: var(--texto-suave); }
+.app-dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
+html[data-theme="dark"] .app-dialog::backdrop { background: #020812b8; }
+@media (max-width: 600px) { .cabecalho-acoes { justify-items: start; } }

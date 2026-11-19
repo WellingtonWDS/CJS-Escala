@@ -9,6 +9,8 @@
     <meta name="theme-color" content="#0B2545" />
     <script src="/assets/js/theme.js"></script>
     <link rel="stylesheet" href="/assets/css/dialogs.css" />
+    <link rel="stylesheet" href="/assets/css/motion.css" />
+    <link rel="stylesheet" href="/assets/css/theme.css" />
     <link rel="stylesheet" href="/admin/admin.css" />
     <script type="module" src="/assets/js/admin-painel.js"></script>
   </head>
@@ -54,7 +56,10 @@
             <h1>Escritórios e limites de empresas</h1>
             <p class="sub">Limite por CNPJ no ciclo mensal de cada escritório. Escritórios sem plano não têm limite.</p>
           </div>
-          <p class="atualizado" data-atualizado></p>
+          <div class="cabecalho-acoes">
+            <button type="button" class="botao botao-sec" data-seasonal-preview-open aria-haspopup="dialog">✦ Prévia das festividades</button>
+            <p class="atualizado" data-atualizado></p>
+          </div>
         </div>
 
         <section class="indicadores" aria-label="Indicadores">
@@ -68,6 +73,7 @@
           <div class="cartao-topo">
             <h2>Escritórios</h2>
             <div class="filtros">
+              <button type="button" class="botao botao-pri" data-novo-escritorio>+ Novo escritório</button>
               <label class="busca"><span class="sr">Buscar escritório</span><input type="search" data-busca placeholder="Buscar escritório" autocomplete="off" /></label>
               <label><span class="sr">Filtrar</span>
                 <select data-filtro>
@@ -79,6 +85,13 @@
               </label>
             </div>
           </div>
+          <form class="formulario novo-escritorio" data-form-escritorio hidden novalidate>
+            <h3>Novo escritório</h3>
+            <p class="sub">Depois de criar, cadastre os usuários do escritório. As empresas são cadastradas pelo Gerente na tela Empresas.</p>
+            <div class="grade"><label class="largo">Nome do escritório<input name="name" maxlength="160" required autocomplete="off" /></label></div>
+            <p class="mensagem" data-msg-escritorio role="status" aria-live="polite"></p>
+            <div class="acoes"><button type="submit" class="botao botao-pri" data-criar-escritorio>Criar escritório</button><button type="button" class="botao botao-sec" data-cancelar-escritorio>Cancelar</button></div>
+          </form>
           <div class="tabela-rolagem">
             <table class="tabela" data-escritorios>
               <thead>

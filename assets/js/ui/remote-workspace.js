@@ -269,11 +269,11 @@ export async function initRemoteWorkspace({
   current("open").addEventListener("click", openChooser);
   field("office").addEventListener("change", () => run(companies));
   field("draft").addEventListener("change", preview);
-  field("open").addEventListener("click", () =>
-    run(async () => {
-      const s = selected();
+  /** Abre um preenchimento salvo (draftId) ou um novo da empresa. Usado pelo diálogo e pela tela Empresas. */
+  async function openSelection(s, { confirmar = "sempre" } = {}) {
       if (!s.companyId) throw Error("Selecione uma empresa.");
       if (
+        (confirmar === "sempre" || dirty || workspace.pending()) &&
         !(await dialogs.confirm(
           "Abrir este preenchimento? Alterações ainda não enviadas permanecerão apenas neste navegador. Para compartilhá-las, cancele e use Salvar preenchimento.",
           {
@@ -282,7 +282,7 @@ export async function initRemoteWorkspace({
           },
         ))
       )
-        return;
+        return false;
       let state,
         revision = null;
       if (s.draftId) {
@@ -300,7 +300,7 @@ export async function initRemoteWorkspace({
         }
       }
       const local = workspace.activate({ ...s, revision }, state, {allowVolatile:true,persistContextOnFailure:false});
-      if(local.cached) { window.location.reload(); return; }
+      if(local.cached) { window.location.reload(); return true; }
       // A reload would discard the only in-memory copy of the selected server snapshot.
       app.init({preserveSavedPeriod:true,resetView:true});
       dialog.close();
@@ -308,9 +308,9 @@ export async function initRemoteWorkspace({
       window.dispatchEvent(new window.Event("cjs-plan-refresh"));
       current("status").textContent += " Sem espaço para a cópia local: este preenchimento está aberto nesta aba. O que já foi salvo permanece no servidor. Salve novas alterações antes de sair; se recarregar, selecione o preenchimento novamente pelo servidor.";
       painel(true);
-
-    }),
-  );
+      return true;
+  }
+  field("open").addEventListener("click", () => run(() => openSelection(selected())));
   async function save(asNew, title) {
     const c = activeContext();
     if (!asNew && unavailable)
@@ -574,4 +574,8 @@ export async function initRemoteWorkspace({
     bar.removeAttribute("aria-busy");
     bar.dataset.loadingLabel = "Salvando o preenchimento da empresa";
   }
+  return {
+    open: (selection, options) => openSelection(selection, options),
+    isDirty: () => dirty || !!workspace.pending(),
+  };
 }

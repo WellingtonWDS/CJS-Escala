@@ -24,9 +24,9 @@ module.exports = async ({ browser, baseURL }) => {
           window,
         });
       }, role);
-      const open = page.locator("[data-seasonal-preview-open]");
+      // A prévia saiu do menu lateral: fica no Painel Admin.
+      assert.equal(await page.locator("[data-seasonal-preview-open]").count(), 0);
       if (role !== "admin") {
-        assert.equal(await open.count(), 0);
         assert.equal(
           await page.evaluate(async (role) => {
             const { openSeasonalPreview } = await import(
@@ -38,19 +38,15 @@ module.exports = async ({ browser, baseURL }) => {
         );
         continue;
       }
+      await page.route("**/api/auth*", (r) => r.fulfill({ json: { user: { name: "Pessoa de teste", role: "admin" } } }));
+      await page.route("**/api/plans*", (r) => r.fulfill({ json: { today: "2026-11-13", offices: [], events: [] } }));
       await page.setViewportSize({ width: 1440, height: 768 });
-      await page.waitForFunction(() => {
-        const s = document.getElementById("app-sidebar");
-        return (
-          s.scrollWidth <= s.clientWidth + 1 &&
-          s.scrollHeight <= s.clientHeight + 1
-        );
-      });
+      await page.goto(baseURL.replace(/\/$/, "") + "/admin/");
+      await page.locator("[data-painel]").waitFor({ state: "visible" });
+      const open = page.locator("[data-seasonal-preview-open]");
       const baseline = await page.evaluate(() => ({
-        data: localStorage.getItem("fintria-escala-dp-v2"),
         theme: document.documentElement.dataset.theme,
         savedTheme: localStorage.getItem("reescala-theme"),
-        real: document.querySelector("[data-seasonal-ornament]").innerHTML,
       }));
       await open.click();
       const dialog = page.locator("[data-seasonal-preview-dialog][open]");
@@ -164,10 +160,8 @@ module.exports = async ({ browser, baseURL }) => {
       assert(await open.evaluate((e) => document.activeElement === e));
       assert.deepEqual(
         await page.evaluate(() => ({
-          data: localStorage.getItem("fintria-escala-dp-v2"),
           theme: document.documentElement.dataset.theme,
           savedTheme: localStorage.getItem("reescala-theme"),
-          real: document.querySelector("[data-seasonal-ornament]").innerHTML,
         })),
         baseline,
       );
@@ -181,6 +175,6 @@ module.exports = async ({ browser, baseURL }) => {
     }
   }
   console.log(
-    "OK: prévia sazonal exclusiva do Admin, 20 temas/efeitos, amostras isoladas claro/escuro, mobile, replay, Escape/foco e nenhuma alteração do calendário/preenchimento.",
+    "OK: prévia sazonal no Painel Admin, fora do menu lateral, 20 temas/efeitos, amostras isoladas claro/escuro, mobile, replay, Escape/foco e nenhuma alteração do calendário/preenchimento.",
   );
 };
