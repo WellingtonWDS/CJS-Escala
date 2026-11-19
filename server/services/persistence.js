@@ -77,7 +77,7 @@ export function createPersistenceService({
         if (error?.code === 'PGRST202') throw new PersistenceError('Diagnóstico ainda não configurado no banco.');
       }
       // Antes da migração 010 as funções de plano não existem: sem plano, sem limite.
-      if (/^(plan_|admin_plan|admin_office|company_set_archived|company_cards)/.test(name) && res.status === 404) {
+      if (/^(plan_|admin_plan|admin_office|company_set_archived|company_cards|office_branding)/.test(name) && res.status === 404) {
         let error; try { error = await res.clone().json(); } catch {}
         if (error?.code === 'PGRST202') throw new PersistenceError('Planos ainda não configurados no banco (migração 010).', 501);
       }
@@ -156,6 +156,9 @@ export function createPersistenceService({
       call("create_office", { p_name: name }, identity),
     companyOptions: (identity) => call("company_options", {}, identity),
     companyCards: (identity) => call("company_cards", {}, identity),
+    officeBrandingGet: (identity, officeId) => call("office_branding_get", { p_office_id: officeId }, identity),
+    officeBrandingSave: (identity, b) =>
+      call("office_branding_save", { p_office_id: b.officeId, p_revision: b.revision, p_display_name: b.displayName, p_logo: b.logo, p_logo_width: b.logoWidth, p_logo_height: b.logoHeight, p_primary_color: b.primaryColor, p_secondary_color: b.secondaryColor }, identity),
     resolveCompany: (identity, { officeId, name, cnpj, apply = false }) =>
       call(
         "resolve_company",

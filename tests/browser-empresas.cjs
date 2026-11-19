@@ -161,6 +161,51 @@ module.exports = async ({ browser, baseURL }) => {
     await t.context.close();
   }
 
+  // 1b. Marca do escritório: orientações, validação da imagem, cores, prévia e gravação.
+  t = await iniciar(browser, baseURL, { cards: cheia });
+  try {
+    const { page, errors } = t, salvos = [];
+    await page.route("**/api/branding*", (r) => {
+      if (r.request().method() === "POST") { salvos.push(r.request().postDataJSON()); return r.fulfill({ json: { ...r.request().postDataJSON(), revision: 1, canEdit: true } }); }
+      return r.fulfill({ json: { officeId: office, officeName: "Contabilidade Alfa", displayName: null, logo: null, logoWidth: null, logoHeight: null, primaryColor: "#0f2844", secondaryColor: "#1f7a54", revision: 0, canEdit: true } });
+    });
+    await page.locator("[data-home-brand]").click();
+    const dlg = page.locator(".marca-dialog[open]");
+    await dlg.waitFor();
+    await page.waitForFunction(() => !/Carregando/.test(document.querySelector("[data-marca-status]").textContent));
+    assert.match(await dlg.locator(".marca-instrucoes").innerText(), /PNG com fundo transparente[\s\S]*até 2 MB[\s\S]*1200 × 400 px/);
+    await dlg.locator("[data-marca-arquivo]").setInputFiles({ name: "logo.svg", mimeType: "image/svg+xml", buffer: Buffer.from("<svg/>") });
+    await page.waitForFunction(() => /Formato não aceito/.test(document.querySelector("[data-marca-aviso]").textContent));
+    const png = await page.evaluate(() => {
+      const c = document.createElement("canvas"); c.width = 1800; c.height = 600;
+      const x = c.getContext("2d"); x.fillStyle = "#c4122f"; x.fillRect(0, 100, 500, 400); x.fillStyle = "#1d2b3a"; x.font = "bold 220px sans-serif"; x.fillText("ALFA", 560, 420);
+      return c.toDataURL("image/png").split(",")[1];
+    });
+    await dlg.locator("[data-marca-arquivo]").setInputFiles({ name: "logo.png", mimeType: "image/png", buffer: Buffer.from(png, "base64") });
+    await page.waitForFunction(() => /1200 × 400 px/.test(document.querySelector("[data-marca-aviso]").textContent));
+    assert.equal(await dlg.locator("[data-previa-logo] img").count(), 1);
+    await dlg.locator('[data-marca-hex="primaryColor"]').fill("#c4122f");
+    assert.equal(await dlg.locator(".marca-folha th").first().evaluate((el) => getComputedStyle(el).backgroundColor), "rgb(196, 18, 47)");
+    await dlg.locator('[data-marca-hex="secondaryColor"]').fill("#ffe600");
+    await dlg.locator("[data-marca-nome]").fill("Alfa Contabilidade");
+    assert.match(await dlg.locator("[data-previa-rodape]").innerText(), /Alfa Contabilidade • Elaborado no Reescala/);
+    for (const tema of ["light", "dark"]) {
+      await page.evaluate((tema) => (document.documentElement.dataset.theme = tema), tema);
+      const falhas = await contrast(page, ".marca-dialog .marca-campos"); assert.deepEqual(falhas, [], `contraste do diálogo ${tema}: ${JSON.stringify(falhas).slice(0, 600)}`);
+      if (process.env.EMPRESAS_SCREENSHOT) await page.screenshot({ path: `${process.env.EMPRESAS_SCREENSHOT}-marca-${tema}.png` });
+    }
+    await page.evaluate(() => (document.documentElement.dataset.theme = "light"));
+    await dlg.locator("[data-marca-salvar]").click();
+    await page.waitForFunction(() => /Marca salva/.test(document.querySelector("[data-marca-status]").textContent));
+    assert.equal(salvos.length, 1);
+    assert.deepEqual({ ...salvos[0], logo: salvos[0].logo.slice(0, 22) }, { officeId: office, revision: 0, displayName: "Alfa Contabilidade", logo: "data:image/png;base64,", logoWidth: 1200, logoHeight: 400, primaryColor: "#c4122f", secondaryColor: "#ffe600" });
+    await page.setViewportSize({ width: 390, height: 844 });
+    assert.equal(await dlg.evaluate((el) => el.scrollWidth <= el.clientWidth + 1), true, "diálogo sem rolagem lateral no celular");
+    assert.deepEqual(errors, []);
+  } finally {
+    await t.context.close();
+  }
+
   // 2. Sem empresas: opção de cadastrar a primeira; o cadastro abre a empresa.
   let lista = { offices: [{ id: office, name: "Contabilidade Alfa", canCreate: true, plan: { limited: false } }], companies: [] };
   t = await iniciar(browser, baseURL, { cards: () => lista });

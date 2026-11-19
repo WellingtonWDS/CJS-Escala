@@ -5,7 +5,7 @@ import {
   referenciasConferencia,
   agruparLacunas,
 } from "./resumo-empregador.js";
-const navy = [15, 40, 68];
+const NAVY_PADRAO = [15, 40, 68];
 const corSituacao = (s) =>
   s === "Horas OK"
     ? [17, 117, 76]
@@ -20,7 +20,7 @@ const niveis = {
   pendencia: "Conferir",
   info: "Informação",
 };
-export function renderPdfEmpregador({ doc, rel, pessoas, tabela }) {
+export function renderPdfEmpregador({ doc, rel, pessoas, tabela, cor: navy = NAVY_PADRAO, folga = [234, 242, 249] }) {
   let y = 49;
   const nova = () => {
     doc.addPage();
@@ -29,7 +29,7 @@ export function renderPdfEmpregador({ doc, rel, pessoas, tabela }) {
   const espaco = (h) => {
     if (y + h > 190) nova();
   };
-  function texto(s, size = 9, { titulo = false, cor = navy } = {}) {
+  function texto(s, size = 9, { titulo = false, cor = titulo ? navy : [40, 52, 66] } = {}) {
     doc.setFont("helvetica", titulo ? "bold" : "normal");
     doc.setFontSize(size);
     doc.setTextColor(...cor);
@@ -112,7 +112,7 @@ export function renderPdfEmpregador({ doc, rel, pessoas, tabela }) {
       },
       didParseCell(d) {
         if (d.section === "body" && String(d.row.raw[2]).startsWith("Folga")) {
-          d.cell.styles.fillColor = [234, 242, 249];
+          d.cell.styles.fillColor = folga;
           d.cell.styles.textColor = navy;
         }
       },

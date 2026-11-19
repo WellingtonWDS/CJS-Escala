@@ -93,6 +93,16 @@ if (session) {
     planControl = initPlanControl({ document, window, workspace, state: app.state });
     env.planGate = planControl.exigir;
     env.empresaServidor = planControl.empresa;
+    // Marca do escritório para os relatórios PDF (cache por escritório; renovado ao salvar).
+    const { createBrandingService } = await import("./services/branding.js");
+    const branding = createBrandingService(), marcas = new Map();
+    window.addEventListener("cjs-brand-changed", (e) => marcas.delete(e.detail?.officeId));
+    env.marcaEscritorio = async () => {
+      const c = workspace.context();
+      if (!c) return null;
+      if (!marcas.has(c.officeId)) marcas.set(c.officeId, branding.get(c.officeId).catch((error) => { marcas.delete(c.officeId); throw error; }));
+      return marcas.get(c.officeId);
+    };
     await planControl.refresh();
   }
   if (session.user) {

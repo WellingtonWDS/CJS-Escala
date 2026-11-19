@@ -18,6 +18,10 @@ Carregamento imediato na geração atual/proposta, cálculo em Worker local, blo
 
 
 
+## Marca do escritório — 19/11/2026
+
+Logomarca, cores e nome exibido por escritório (migração **012**, `/api/branding`), aplicados nos PDFs de escala com rodapé “Elaborado no Reescala”. [Detalhes](marca-escritorio.md).
+
 ## Tela inicial Empresas — 19/11/2026
 
 Página inicial com cartões de empresas e resumo (RPC `company_cards`, migração **011**), detalhe com preenchimentos, edição e arquivamento; criação de escritórios e prévia sazonal movidas para `/admin`. Menu lateral sem Escritórios, Empresas — cadastrar e editar e Prévia das festividades. [Detalhes](tela-empresas.md).

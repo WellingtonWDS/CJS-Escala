@@ -101,6 +101,10 @@ O fluxo principal já inclui cadastro manual e por planilhas, importação Domí
 
 Regras **`ec141-2026-11-11-13`**: gere novamente resultados anteriores; os cadastros permanecem. Sem migração SQL, nova RPC ou variável de ambiente.
 
+## Marca do escritório nos relatórios — 19/11/2026
+
+Gerente/Admin enviam a logomarca (PNG, JPG ou WebP, até 2 MB, ideal 1200 × 400 px) e escolhem as cores da marca em **Empresas → Marca do escritório**, com prévia ao vivo. Os relatórios PDF trazem a logomarca em destaque no topo e as cores nos títulos, tabelas e folgas, com contraste conferido; o rodapé indica que foram elaborados no Reescala. Requer a migração **012_office_branding.sql**. [Orientações e ativação](docs/marca-escritorio.md).
+
 ## Diagnóstico no cartão da empresa — 19/11/2026
 
 Menu lateral enxuto: Empresas, Gerar escala e Usuários. **Empresa atual e Preenchimentos** fica só no topo; com servidor, **Limpar dados salvos** não aparece. No cartão da empresa, **Dados da empresa** ficam em leitura (botão **Editar**) e, abaixo, o card **Diagnóstico** abre a entrevista já com a empresa definida. A página do diagnóstico foi redesenhada: seis etapas com progresso no menu lateral, respostas em botões, situação da informação compacta e observação recolhida. Sem migração; diagnósticos salvos continuam válidos. [Detalhes](docs/diagnostico-empresa.md).

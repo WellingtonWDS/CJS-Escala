@@ -39,7 +39,9 @@ export function bindPdfEvents(state, env) {
         initLoading(env.document).refresh();
         await new Promise((r) => env.setTimeout(r, 60));
         const libs = await import("/assets/vendor/pdf.js"),
-          logo = await carregarLogo();
+          logo = await carregarLogo(),
+          // Marca do escritório da empresa aberta (sem servidor ou sem marca: padrão Reescala).
+          marca = await Promise.resolve(env.marcaEscritorio?.()).catch(() => null);
         const prefix = `${nomeArquivo(rel.empresa).slice(0, 55)}-${nomeArquivo(rel.tipo)}-${rel.fixa ? `fixa-${rel.config.dataReferenciaFixa}` : `${rel.config.ano}-${String(rel.config.mes + 1).padStart(2, "0")}`}`;
         const lote = button.dataset.exportPdf === "colaboradores";
         let bytes;
@@ -49,7 +51,7 @@ export function bindPdfEvents(state, env) {
             const p = rel.pessoas[i];
             arquivos[
               `${prefix}-${nomeArquivo(p.nome)}-${nomeArquivo(p.id)}-${i + 1}.pdf`
-            ] = await criarPdf(rel, [p], { libs, logo });
+            ] = await criarPdf(rel, [p], { libs, logo, marca });
             await new Promise((r) => env.setTimeout(r, 0));
           }
           bytes = libs.zipSync(arquivos, { level: 0 });
@@ -57,6 +59,7 @@ export function bindPdfEvents(state, env) {
           bytes = await criarPdf(rel, rel.pessoas, {
             libs,
             logo,
+            marca,
             empregador: true,
           });
         const url = env.URL.createObjectURL(

@@ -7,6 +7,10 @@ Consultar este registro antes de orientar o operador. Distinguir código dispon�
 
 
 
+## Marca do escritório — 19/11/2026
+
+Migração **012_office_branding.sql** (após 011) e nova função Vercel `api/branding.js`. **Não foi executada na VPS.** [Comandos](marca-escritorio.md#ativação-no-banco-da-vps).
+
 ## Tela inicial Empresas — 19/11/2026
 
 Migração **011_company_cards.sql** (após 010). **Não foi executada na VPS.** Sem variável ou credencial nova. Antes dela, a tela Empresas funciona sem os números dos cartões. [Comandos](tela-empresas.md#ativação-no-banco-da-vps).

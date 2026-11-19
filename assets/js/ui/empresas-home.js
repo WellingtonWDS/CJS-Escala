@@ -45,7 +45,7 @@ export function createCompaniesHome({
   root.dataset.loadingLabel = "Carregando empresas";
   root.innerHTML = `<div data-home-list>
     <div class="home-topo"><div><p class="home-sobretitulo">Início</p><h2 tabindex="-1">Empresas</h2><p class="home-sub">Escolha uma empresa para abrir um preenchimento ou começar um novo.</p></div>
-      <button type="button" class="home-botao-pri" data-home-new hidden>+ Nova empresa</button></div>
+      <div class="home-topo-acoes"><button type="button" data-home-brand hidden>Marca do escritório</button><button type="button" class="home-botao-pri" data-home-new hidden>+ Nova empresa</button></div></div>
     <div class="home-planos" data-home-plans></div>
     <form id="company-create" class="home-form" hidden><h3>Nova empresa</h3>
       <div class="home-campos"><label>Escritório<select name="officeId" required></select></label><label>Razão social<input name="name" maxlength="160" required autocomplete="off"></label><label>CNPJ<input name="cnpj" maxlength="18" required placeholder="00.000.000/0000-00" autocomplete="off" inputmode="numeric"></label></div>
@@ -118,6 +118,7 @@ export function createCompaniesHome({
   function renderLista() {
     const criar = data.offices.filter((o) => o.canCreate);
     $("[data-home-new]").hidden = !criar.length;
+    $("[data-home-brand]").hidden = !criar.length;
     $("[data-home-plans]").innerHTML = planosHtml();
     const filtroEscritorio = $("[data-home-office]");
     $("[data-home-office-filter]").hidden = data.offices.length < 2;
@@ -163,6 +164,9 @@ export function createCompaniesHome({
   $("[data-home-create-cancel]").addEventListener("click", () => { create.reset(); create.hidden = true; });
   root.addEventListener("click", (e) => {
     if (e.target.closest("[data-home-new], [data-home-new-empty]")) abrirCadastro();
+    if (e.target.closest("[data-home-brand]"))
+      import("./marca-escritorio.js").then(({ openOfficeBranding }) =>
+        openOfficeBranding({ document, window, offices: data.offices.filter((o) => o.canCreate) }));
     const card = e.target.closest("[data-company-card]");
     if (card) mostrarEmpresa(card.dataset.companyCard, card.dataset.office);
   });
