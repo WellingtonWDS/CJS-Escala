@@ -23,6 +23,14 @@ async function iniciar(browser, baseURL, { role = "manager", cards, persistence 
   await page.route("**/api/persistence", (r) => r.fulfill({ json: r.request().postDataJSON().companyId === padaria
     ? [{ id: "50000000-0000-4000-8000-000000000001", title: "Escala de dezembro", revision: 3, updated_at: "2026-11-18T14:00:00Z" }] : [] }));
   await page.route("**/api/plans*", (r) => r.fulfill({ json: { company: { id: mercado, archived: true }, plan: plano } }));
+  const diagnostico = { id: "60000000-0000-4000-8000-000000000001", revision: 2, latestRevision: 2, status: "rascunho", updatedBy: "Gerente", updatedAt: "2026-11-18T10:00:00Z",
+    data: { schemaVersion: 1, answers: { q02: { value: "Loja Centro", certainty: "confirmada", note: "" } } }, history: [{ revision: 2, status: "rascunho", savedAt: "2026-11-18T10:00:00Z", savedBy: "Gerente" }] };
+  await page.route("**/api/diagnostics*", (r) => {
+    const action = new URL(r.request().url()).searchParams.get("action");
+    return r.fulfill({ json: action === "list"
+      ? [{ id: diagnostico.id, unit: "Loja Centro", status: "rascunho", revision: 2, updatedAt: "2026-11-18T10:00:00Z", updatedBy: "Gerente" }]
+      : diagnostico });
+  });
   await respondToDialogs(page, (d) => d.accept());
   await page.goto(baseURL);
   await page.waitForFunction(() => document.documentElement.dataset.ready === "true");
@@ -88,12 +96,31 @@ module.exports = async ({ browser, baseURL }) => {
     await page.locator("[data-open-draft]").first().waitFor();
     assert.match(await page.locator("[data-detail-cnpj]").innerText(), /CNPJ 11\.222\.333\/0001-81 · 2 preenchimentos · 12 colaboradores/);
     assert.match(await page.locator("[data-home-drafts]").innerText(), /Escala de dezembro[\s\S]*Revisão 3 · atualizado em 18\/11\/2026/);
+    // Diagnóstico fica no cartão da empresa e abre já com a empresa definida.
+    assert.equal(await page.locator('[data-app-view="diagnostics"], #sidebar-companies').count(), 0);
+    await page.locator("[data-open-diagnostic]").waitFor();
+    assert.match(await page.locator("[data-home-diagnostics]").innerText(), /Loja Centro[\s\S]*Rascunho · revisão 2 · 18\/11\/2026/);
+    await page.locator("[data-open-diagnostic]").click();
+    await page.waitForFunction(() => document.body.dataset.appView === "diagnostics");
+    await page.waitForFunction(() => document.querySelector("[data-diag-heading]")?.textContent === "Loja Centro");
+    assert.match(await page.locator("[data-diag-company]").innerText(), /Padaria Pão Bom · CNPJ 11\.222\.333\/0001-81/);
+    assert.equal(await page.locator('button[data-app-view="home"]').getAttribute("aria-current"), "page");
+    await page.locator("[data-diag-backto]").click();
+    await page.locator("[data-home-detail]").waitFor({ state: "visible" });
+    assert.equal(await page.locator("[data-detail-name]").innerText(), "Padaria Pão Bom");
+    await page.locator("[data-open-draft]").first().waitFor();
+    // Dados só em leitura até clicar em Editar.
+    assert.equal(await page.locator("#company-edit").isHidden(), true);
+    assert.match(await page.locator("[data-company-view]").innerText(), /Razão social\s*Padaria Pão Bom[\s\S]*11\.222\.333\/0001-81 · travado[\s\S]*Contabilidade Alfa/i);
+    await page.locator("[data-company-edit-open]").click();
     assert.equal(await page.locator('#company-edit [name="cnpj"]').evaluate((el) => el.readOnly), true);
     assert.match(await page.locator("[data-cnpj-note]").innerText(), /Somente o Admin/);
     await page.locator('#company-edit [name="name"]').fill("Padaria Pão Bom Ltda");
-    await page.locator("#company-edit button").click();
+    await page.locator("#company-edit button[type=submit]").click();
     await page.waitForFunction(() => /Empresa atualizada/.test(document.querySelector("[data-company-status]").textContent));
     assert.equal(posts.at(-1).action, "updateCompany");
+    assert.equal(await page.locator("#company-edit").isHidden(), true);
+    assert.match(await page.locator("[data-view-name]").innerText(), /Padaria Pão Bom Ltda/);
     if (process.env.EMPRESAS_SCREENSHOT) {
       for (const tema of ["light", "dark"]) {
         await page.evaluate((tema) => (document.documentElement.dataset.theme = tema), tema);

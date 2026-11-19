@@ -101,6 +101,10 @@ O fluxo principal já inclui cadastro manual e por planilhas, importação Domí
 
 Regras **`ec141-2026-11-11-13`**: gere novamente resultados anteriores; os cadastros permanecem. Sem migração SQL, nova RPC ou variável de ambiente.
 
+## Diagnóstico no cartão da empresa — 19/11/2026
+
+Menu lateral enxuto: Empresas, Gerar escala e Usuários. **Empresa atual e Preenchimentos** fica só no topo; com servidor, **Limpar dados salvos** não aparece. No cartão da empresa, **Dados da empresa** ficam em leitura (botão **Editar**) e, abaixo, o card **Diagnóstico** abre a entrevista já com a empresa definida. A página do diagnóstico foi redesenhada: seis etapas com progresso no menu lateral, respostas em botões, situação da informação compacta e observação recolhida. Sem migração; diagnósticos salvos continuam válidos. [Detalhes](docs/diagnostico-empresa.md).
+
 ## Tela inicial Empresas e Painel Admin ampliado — 19/11/2026
 
 Com empresas no servidor, a página inicial passa a ser **Empresas**: cartões das empresas autorizadas com preenchimentos, colaboradores do mais recente, data e autor do último salvamento, selos (arquivada, aberta agora, escala gerada) e uso do plano para o Gerente. Busca por razão social/CNPJ e filtro por escritório. Sem cadastros, a tela oferece **Cadastrar nova empresa** (Gerente/Admin). Ao escolher uma empresa: lista de preenchimentos para abrir ou começar um novo (leva direto à geração de escalas), edição da razão social/CNPJ e arquivamento. Saíram do menu lateral **Escritórios**, **Empresas — cadastrar e editar** e **Prévia das festividades**: criar escritórios e a prévia sazonal ficam no **Painel Admin** (`/admin`).

@@ -66,6 +66,8 @@ if (session) {
     };
     document.getElementById("btn-limpar-dados").textContent =
       "Limpar preenchimento local";
+    // Com servidor, os preenchimentos ficam salvos por empresa: o botão de limpeza local não é necessário.
+    document.getElementById("btn-limpar-dados").hidden = !!session.persistenceEnabled;
     env.individual = true;
     env.preserveSavedPeriod = Boolean(workspace.context());
   }

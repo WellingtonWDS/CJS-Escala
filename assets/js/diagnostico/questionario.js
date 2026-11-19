@@ -294,8 +294,22 @@ export const ETAPAS_DIAGNOSTICO = [
       ],
     ],
   ],
-].map(([titulo, qs]) => ({
-  titulo,
+].reduce((grupos, [titulo, qs]) => {
+  // Oito blocos de perguntas organizados em seis etapas (os IDs e o formato salvo não mudam).
+  const junta = { "Problemas atuais": "Equipe e escala atual", "Prioridades e validação": "Flexibilidade da proposta" };
+  const destino = junta[titulo] && grupos.find((g) => g[0] === junta[titulo]);
+  if (destino) destino[1] = [...destino[1], ...qs];
+  else grupos.push([titulo, qs]);
+  return grupos;
+}, []).map(([titulo, qs]) => ({
+  titulo: {
+    "Objetivo da readequação": "Objetivo e responsáveis",
+    "Funcionamento da empresa": "Funcionamento",
+    "Necessidade por horário": "Necessidade por horário",
+    "Equipe e escala atual": "Equipe e situação atual",
+    "Condições trabalhistas": "Condições trabalhistas",
+    "Flexibilidade da proposta": "Flexibilidade e prioridades",
+  }[titulo] || titulo,
   perguntas: qs.map(([id, titulo, tipo, opcoes, obrigatoria = false]) => ({
     id,
     titulo,

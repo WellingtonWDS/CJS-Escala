@@ -19,11 +19,9 @@ module.exports = async ({ browser, baseURL, tokens, companyId, savedId }) => {
       page.waitForFunction(
         () => document.documentElement.dataset.ready === "true",
       );
-    await page.goto(baseURL);
+    // O diagnóstico abre pelo cartão da empresa (tela Empresas).
+    await page.goto(baseURL + "/#empresas");
     await ready();
-    const menu = page.locator('[data-app-view="diagnostics"]');
-    assert(await menu.isVisible());
-    await menu.click();
     const root = page.locator("#company-diagnostics"),
       field = (s) => root.locator(`[data-diag-${s}]`);
     const idle = async () => {
@@ -37,12 +35,24 @@ module.exports = async ({ browser, baseURL, tokens, companyId, savedId }) => {
         .locator("[data-loading-overlay][open]")
         .waitFor({ state: "hidden" });
     };
-    await field("record")
-      .locator(`option[value="${savedId}"]`)
-      .waitFor({ state: "attached" });
-    await idle();
-    await field("record").selectOption(savedId);
-    await idle();
+    const abrirEmpresa = async () => {
+      if (!(await page.locator("[data-home-detail]").isVisible()))
+        await page.locator(`[data-company-card="${companyId}"]`).click();
+      await page.waitForFunction(() => !/Carregando/.test(document.querySelector("[data-home-diagnostics]")?.textContent || "Carregando"));
+    };
+    const abrirDiagnostico = async (diagId) => {
+      await abrirEmpresa();
+      if (diagId) await page.locator(`[data-open-diagnostic="${diagId}"]`).click();
+      else await page.locator("[data-diag-new-open]").click();
+      await page.waitForFunction(() => document.body.dataset.appView === "diagnostics");
+      await page.waitForFunction(() => !!document.querySelector("[data-diag-heading]"));
+      await idle();
+    };
+    const voltarParaEmpresas = async () => {
+      await page.goto(baseURL + "/#empresas");
+      await ready();
+    };
+    await abrirDiagnostico(savedId);
     assert.match(await field("meta").innerText(), /Concluído.*revisão 2/);
     await field("history").selectOption("1");
     await idle();
@@ -51,8 +61,9 @@ module.exports = async ({ browser, baseURL, tokens, companyId, savedId }) => {
     await field("current").click();
     await idle();
     assert.match(await field("meta").innerText(), /revisão 2 de 2/);
-    await field("new").click();
-    await idle();
+    await field("backto").click();
+    await page.locator("[data-home-detail]").waitFor({ state: "visible" });
+    await abrirDiagnostico(null);
     await root.locator("#diag-q01-0").check();
     await root.locator("#diag-q02").fill("Unidade via navegador");
     await root.locator("#diag-q04").fill("Responsável pela operação");
@@ -65,14 +76,11 @@ module.exports = async ({ browser, baseURL, tokens, companyId, savedId }) => {
       await field("status").innerText(),
       /Rascunho salvo no servidor/,
     );
-    const id = await field("record").inputValue();
+    const lista = await (await page.request.get(baseURL + "/api/diagnostics?" + new URLSearchParams({ action: "list", officeId: "20000000-0000-0000-0000-000000000001", companyId }))).json();
+    const id = lista.find((r) => r.unit === "Unidade via navegador")?.id;
     assert(id && id !== savedId);
-    await page.reload();
-    await ready();
-    await menu.click();
-    await idle();
-    await field("record").selectOption(id);
-    await idle();
+    await voltarParaEmpresas();
+    await abrirDiagnostico(id);
     assert.equal(
       await root.locator("#diag-q02").inputValue(),
       "Unidade via navegador",
@@ -126,10 +134,11 @@ module.exports = async ({ browser, baseURL, tokens, companyId, savedId }) => {
       await page.locator("body").getAttribute("data-app-view"),
       "diagnostics",
     );
-    await field("refresh").click();
+    await field("backto").click();
     await dialog.waitFor();
     await dialog.locator("[data-dialog-accept]").click();
-    await idle();
+    await page.locator("[data-home-detail]").waitFor({ state: "visible" });
+    await abrirDiagnostico(id);
     assert.equal(
       await root.locator("#diag-q02").inputValue(),
       "Unidade via navegador",
@@ -138,13 +147,12 @@ module.exports = async ({ browser, baseURL, tokens, companyId, savedId }) => {
     for (const [step, ids] of [
       [2, ["q10", "q11"]],
       [3, ["q15"]],
-      [5, ["q23", "q24", "q26"]],
-      [6, ["q27"]],
-      [7, ["q32", "q33"]],
+      [4, ["q23", "q24", "q26"]],
+      [5, ["q27", "q32", "q33"]],
     ]) {
       await root.locator(`[data-diag-step="${step}"]`).click();
       for (const q of ids)
-        await root.locator(`#diag-${q}-certainty`).selectOption("pendente");
+        await root.locator(`label:has(#diag-${q}-certainty-pendente)`).click();
     }
     const ranking = root.locator('[data-question="q32"]');
     assert(
@@ -158,7 +166,7 @@ module.exports = async ({ browser, baseURL, tokens, companyId, savedId }) => {
         .isDisabled(),
     );
     await ranking.locator("[data-confirm-order]").click();
-    await ranking.locator("[data-certainty]").selectOption("pendente");
+    await ranking.locator("label:has(#diag-q32-certainty-pendente)").click();
     await field("summary").click();
     assert.match(
       await root.locator("[data-diag-form]").innerText(),
@@ -252,12 +260,8 @@ module.exports = async ({ browser, baseURL, tokens, companyId, savedId }) => {
       },
       { companyId },
     );
-    await page.reload();
-    await ready();
-    await menu.click();
-    await idle();
-    await field("record").selectOption(id);
-    await idle();
+    await voltarParaEmpresas();
+    await abrirDiagnostico(id);
     const state = () =>
       page.evaluate(async () => {
         const { createWorkspace } = await import(
@@ -274,10 +278,7 @@ module.exports = async ({ browser, baseURL, tokens, companyId, savedId }) => {
     await dialog.locator("[data-dialog-accept]").click();
     await root.locator('[data-diag-step="2"]').click();
     assert.match(await root.locator("#diag-q10").inputValue(), /Atendente/);
-    assert.equal(
-      await root.locator("#diag-q10-certainty").inputValue(),
-      "estimativa",
-    );
+    assert(await root.locator("#diag-q10-certainty-estimativa").isChecked());
     assert.equal(await state(), source);
     await field("save").click();
     await idle();
@@ -289,8 +290,8 @@ module.exports = async ({ browser, baseURL, tokens, companyId, savedId }) => {
     await page.waitForFunction(
       () => document.body.dataset.appView === "schedule",
     );
-    await menu.click();
-    await idle();
+    await page.locator('button[data-app-view="home"]').click();
+    await abrirDiagnostico(id);
     assert.equal(await root.locator("#diag-q10").inputValue(), savedRoleText);
     assert.doesNotMatch(
       await field("dirty").innerText(),
@@ -304,33 +305,30 @@ module.exports = async ({ browser, baseURL, tokens, companyId, savedId }) => {
       ]);
       await c.route("https://**/*", (r) => r.abort());
       const p = await c.newPage();
-      await p.goto(baseURL);
+      await p.goto(baseURL + "/#empresas");
       await p.waitForFunction(
         () => document.documentElement.dataset.ready === "true",
       );
+      await p.locator("[data-home-grid], [data-home-empty]").first().waitFor();
+      await p.waitForFunction(() => document.querySelector("#companies-home").getAttribute("aria-busy") !== "true");
+      if (await p.locator(`[data-company-card="${companyId}"]`).count()) {
+        await p.locator(`[data-company-card="${companyId}"]`).click();
+        await p.locator("[data-home-detail]").waitFor({ state: "visible" });
+      }
       if (role === 1) {
-        assert(await p.locator('[data-app-view="diagnostics"]').isHidden());
+        assert(await p.locator("[data-detail-diagnostics]").isHidden());
         assert.equal(
           (await p.request.get(baseURL + "/api/diagnostics")).status(),
           403,
         );
       } else {
-        await p.locator('[data-app-view="diagnostics"]').click();
-        await p
-          .locator("#company-diagnostics [data-diag-office] option")
-          .first()
-          .waitFor({ state: "attached" });
-        assert.equal(
-          await p
-            .locator("#company-diagnostics [data-diag-office] option")
-            .count(),
-          2,
-        );
+        await p.locator("[data-detail-diagnostics]").waitFor({ state: "visible" });
+        await p.locator(`[data-open-diagnostic="${savedId}"]`).waitFor();
       }
     }
     assert.deepEqual(errors, []);
     console.log(
-      "OK: diagnóstico UI real/SQL — menu por perfil, etapas, rascunho parcial, consulta/revisões, conflito, pendências, conclusão, retry idempotente, prefill sem alterar escala, celular e contraste claro/escuro.",
+      "OK: diagnóstico UI real/SQL — aberto pelo cartão da empresa, perfil, etapas, rascunho parcial, consulta/revisões, conflito, pendências, conclusão, retry idempotente, prefill sem alterar escala, celular e contraste claro/escuro.",
     );
   } finally {
     for (const c of contexts) await c.close();

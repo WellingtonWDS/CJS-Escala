@@ -1,5 +1,8 @@
 # Diagnóstico da empresa
 
+> **Atualização de 19/11/2026:** o diagnóstico passou a ser aberto pelo cartão da empresa (tela **Empresas** → empresa → card **Diagnóstico**), já com a empresa definida; saiu do menu lateral e da escolha de escritório/empresa. As 34 perguntas (mesmos IDs e formato salvo) ficam em **seis etapas** — Objetivo e responsáveis, Funcionamento, Necessidade por horário, Equipe e situação atual, Condições trabalhistas, Flexibilidade e prioridades — com menu de etapas lateral mostrando o progresso, escolhas diretas em botões, situação da informação (Confirmada/Estimativa/Pendente) em seletor compacto e observação recolhida. Diagnósticos já salvos continuam válidos, sem migração.
+
+
 Entrega de **12/11/2026**. Acesso pelo menu **Diagnóstico**, no login individual, exclusivo de **Gerentes e Admins**. Operadores não têm acesso à tela nem às RPCs. Gerentes consultam os escritórios que administram; Admins podem consultar os escritórios ativos da plataforma.
 
 

@@ -266,7 +266,7 @@ export async function testRegistryIntegration({ env, sql, browserTest }) {
       await page
         .locator('#company-edit [name="name"]')
         .fill("Razão social revisada");
-      await page.locator("#company-edit button").click();
+      await page.locator("#company-edit button[type=submit]").click();
       await waitForDialogs(page);
       await page.waitForFunction(() =>
         document

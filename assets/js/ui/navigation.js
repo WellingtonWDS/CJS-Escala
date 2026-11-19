@@ -77,18 +77,12 @@ export function initNavigation({ session, document, window, app, workspace, remo
     if (button.dataset.appView === "home") button.hidden = !hasHome;
     else if (button.dataset.appView !== "schedule") button.hidden = !canManage;
   });
-  document.getElementById("sidebar-companies").hidden =
-    !session.persistenceEnabled;
-  document
-    .getElementById("sidebar-companies")
-    .addEventListener("click", () =>
-      document.getElementById("btn-remote-workspace").click(),
-    );
   let management,
+    diagnosticRequest = null,
     home,
     diagnostics,
     generation = 0;
-  async function show(view) {
+  async function show(view, homeOptions = {}) {
     if (
       [
         "user-management",
@@ -101,6 +95,8 @@ export function initNavigation({ session, document, window, app, workspace, remo
     )
       return;
     if (view === "home" && !hasHome) view = "schedule";
+    // O diagnóstico só abre a partir do cartão da empresa.
+    if (view === "diagnostics" && !diagnosticRequest) view = hasHome ? "home" : "schedule";
     if (!["schedule", "home"].includes(view) && !canManage) return;
     if (
       document.body.dataset.appView === "diagnostics" &&
@@ -119,7 +115,7 @@ export function initNavigation({ session, document, window, app, workspace, remo
       view !== "diagnostics";
     document.body.dataset.appView = view;
     buttons.forEach((b) =>
-      b.dataset.appView === view
+      b.dataset.appView === (view === "diagnostics" ? "home" : view)
         ? b.setAttribute("aria-current", "page")
         : b.removeAttribute("aria-current"),
     );
@@ -143,17 +139,23 @@ export function initNavigation({ session, document, window, app, workspace, remo
             window,
             app,
             workspace,
+            onBack: (ctx) => show("home", ctx ? { companyId: ctx.companyId, officeId: ctx.officeId } : {}),
           });
         }
-        await diagnostics.show();
+        const pedido = diagnosticRequest;
+        diagnosticRequest = null;
+        window.history.replaceState(null, "", "#diagnostico");
+        // A troca de tela termina antes de carregar, para o carregamento não bloquear a navegação.
+        window.setTimeout(() => diagnostics.open(pedido), 0);
         return;
       }
       if (view === "home") {
         if (!home) {
           const { createCompaniesHome } = await import("./empresas-home.js");
-          home = createCompaniesHome({ document, window, session, workspace, remote, onOpened: () => show("schedule") });
+          home = createCompaniesHome({ document, window, session, workspace, remote, onOpened: () => show("schedule"),
+            onDiagnostic: (ctx) => { diagnosticRequest = ctx; show("diagnostics"); } });
         }
-        await home.show();
+        await home.show(homeOptions);
         return;
       }
       if (!management) {
@@ -182,6 +184,6 @@ export function initNavigation({ session, document, window, app, workspace, remo
     else if (/^#sec-/.test(window.location.hash) && document.body.dataset.appView === "home") show("schedule");
   });
   if (window.location.hash === "#usuarios" && canManage) show("users");
-  else if (hasHome && ["", "#", "#empresas"].includes(window.location.hash)) show("home");
+  else if (hasHome && ["", "#", "#empresas", "#diagnostico"].includes(window.location.hash)) show("home");
   return { show };
 }

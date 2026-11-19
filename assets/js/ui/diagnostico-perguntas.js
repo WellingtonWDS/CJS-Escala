@@ -20,11 +20,12 @@ export function renderPergunta(q, a = {}) {
       `data-value maxlength="300" aria-labelledby="${id}-titulo"`,
     );
   else if (q.tipo === "textarea")
-    field = `<textarea id="${id}" rows="3" maxlength="4000" data-value aria-labelledby="${id}-titulo">${h(v || "")}</textarea>`;
+    field = `<textarea id="${id}" rows="2" maxlength="4000" data-value aria-labelledby="${id}-titulo">${h(v || "")}</textarea>`;
   else if (q.tipo === "select")
-    field = `<select id="${id}" data-value aria-labelledby="${id}-titulo"><option value="">Selecione</option>${q.opcoes.map((o) => `<option${selected(o, v)}>${h(o)}</option>`).join("")}</select>`;
+    // Poucas opções: escolha direta em botões, sem abrir lista.
+    field = `<div class="diag-pilulas" role="radiogroup" aria-labelledby="${id}-titulo">${q.opcoes.map((o, i) => `<label class="diag-pilula"><input id="${id}-${i}" type="radio" name="${id}" data-value value="${h(o)}"${checked(o === v)}><span>${h(o)}</span></label>`).join("")}</div>`;
   else if (q.tipo === "multi")
-    field = `<div class="diag-opcoes">${q.opcoes.map((o, i) => `<label><input id="${id}-${i}" type="checkbox" data-choice value="${h(o)}"${checked(v?.includes(o))}>${h(o)}</label>`).join("")}</div>`;
+    field = `<div class="diag-pilulas diag-multi" role="group" aria-labelledby="${id}-titulo">${q.opcoes.map((o, i) => `<label class="diag-pilula"><input id="${id}-${i}" type="checkbox" data-choice value="${h(o)}"${checked(v?.includes(o))}><span>${h(o)}</span></label>`).join("")}</div>`;
   else if (q.tipo === "ordem")
     field = `<p class="diag-ajuda">Use as setas para ordenar. A legislação e as condições obrigatórias sempre têm precedência.</p><ol class="diag-ordem">${(v?.length ? v : q.opcoes).map((o, i) => `<li><span>${i + 1}. ${h(o)}</span><button type="button" data-order="${i}" data-direction="-1" aria-label="Subir ${h(o)}"${i === 0 ? " disabled" : ""}>↑</button><button type="button" data-order="${i}" data-direction="1" aria-label="Descer ${h(o)}"${i === q.opcoes.length - 1 ? " disabled" : ""}>↓</button></li>`).join("")}</ol>${!v?.length ? '<button type="button" data-confirm-order>Confirmar esta ordem</button>' : ""}`;
   else if (q.tipo === "instrumento")
@@ -62,16 +63,10 @@ export function renderPergunta(q, a = {}) {
     field =
       `<p class="diag-ajuda">Horários iguais representam uma necessidade contínua de 24h. Intervalos e substituições serão analisados na elaboração da escala.</p>` +
       field;
-  return `<fieldset class="diag-pergunta" data-question="${q.id}" tabindex="-1"><legend id="${id}-titulo">${Number(q.id.slice(1))}. ${h(q.titulo)}${q.obrigatoria ? '<span class="diag-essencial">Essencial</span>' : ""}</legend>${field}<div class="diag-confianca"><label for="${id}-certainty">Situação da informação<select id="${id}-certainty" data-certainty>${Object.entries(
-    CERTEZAS,
-  )
-    .map(
-      ([k, n]) =>
-        `<option value="${k}"${selected(k, a.certainty || "confirmada")}>${n}</option>`,
-    )
-    .join(
-      "",
-    )}</select></label><span data-answer-state>${respondida(a) ? "Registrada" : "Ainda não respondida"}</span></div><details${detalhe ? " open" : ""}><summary>${detalhe ? "Detalhe a situação" : "Observações (opcional)"}</summary><textarea id="${id}-note" data-note rows="2" maxlength="4000" aria-label="Observações da pergunta ${Number(q.id.slice(1))}" placeholder="Informações complementares ou o que precisa ser confirmado">${h(a.note || "")}</textarea></details>${q.id === "q29" ? '<p class="diag-ajuda">Não registre diagnósticos de saúde ou detalhes pessoais. Informe apenas as restrições de disponibilidade necessárias.</p>' : ""}</fieldset>`;
+  const certeza = a.certainty || "confirmada";
+  return `<fieldset class="diag-pergunta" data-question="${q.id}" tabindex="-1"><legend id="${id}-titulo"><span class="diag-numero">${Number(q.id.slice(1))}</span><span class="diag-enunciado">${h(q.titulo)}</span>${q.obrigatoria ? '<span class="diag-essencial">Essencial</span>' : ""}<span class="diag-estado" data-answer-state data-ok="${respondida(a)}">${respondida(a) ? "Respondida" : "Sem resposta"}</span></legend>${field}<div class="diag-rodape-pergunta"><div class="diag-certeza" role="radiogroup" aria-label="Situação da informação da pergunta ${Number(q.id.slice(1))}">${Object.entries(CERTEZAS)
+    .map(([k, n]) => `<label class="diag-certeza-opcao" data-tipo="${k}"><input id="${id}-certainty-${k}" type="radio" name="${id}-certainty" data-certainty value="${k}"${checked(k === certeza)}><span>${k === "pendente" ? "Pendente" : n}</span></label>`)
+    .join("")}</div><details class="diag-obs"${detalhe || a.note ? " open" : ""}><summary>${detalhe ? "Detalhe a situação" : a.note ? "Observação" : "+ Observação"}</summary><textarea id="${id}-note" data-note rows="2" maxlength="4000" aria-label="Observações da pergunta ${Number(q.id.slice(1))}" placeholder="Informações complementares ou o que precisa ser confirmado">${h(a.note || "")}</textarea></details></div>${q.id === "q29" ? '<p class="diag-ajuda">Não registre diagnósticos de saúde ou detalhes pessoais. Informe apenas as restrições de disponibilidade necessárias.</p>' : ""}</fieldset>`;
 }
 export function textoResposta(q, a) {
   if (!a) return "Não respondida";

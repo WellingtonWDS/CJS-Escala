@@ -31,7 +31,12 @@ const pendentes = () => ({
       ]),
   ),
 });
-test("questionário tem 34 perguntas em oito etapas e pendências explícitas permitem conclusão", () => {
+test("questionário tem 34 perguntas em seis etapas e pendências explícitas permitem conclusão", async () => {
+  const { ETAPAS_DIAGNOSTICO } = await import("../assets/js/diagnostico/questionario.js");
+  assert.equal(ETAPAS_DIAGNOSTICO.length, 6);
+  // Reagrupar as etapas não muda os IDs nem a ordem das perguntas salvas.
+  assert.deepEqual(ETAPAS_DIAGNOSTICO.flatMap((e) => e.perguntas.map((q) => q.id)), perguntas.map((q) => q.id));
+  assert.equal(perguntas.map((q) => q.id).join(","), Array.from({ length: 34 }, (_, i) => "q" + String(i + 1).padStart(2, "0")).join(","));
   assert.equal(perguntas.length, 34);
   assert.equal(new Set(perguntas.map((q) => q.id)).size, 34);
   assert.throws(() => validar(body(), "concluido"), /Antes de concluir/);

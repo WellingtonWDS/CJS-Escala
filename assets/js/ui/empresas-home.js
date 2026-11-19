@@ -4,6 +4,7 @@
 import { createCompanyService } from "../services/companies.js";
 import { createRemotePersistence } from "../services/persistence.js";
 import { createPlanService } from "../services/plans.js";
+import { createDiagnosticsService } from "../services/diagnostics.js";
 import { getDialogs } from "./dialogs.js";
 import { validCnpj, formatCnpj, searchText, normalizeCnpj } from "../shared/empresas.js";
 
@@ -32,6 +33,8 @@ export function createCompaniesHome({
   workspace,
   remote,
   onOpened = () => {},
+  onDiagnostic = () => {},
+  diagnostics = createDiagnosticsService(),
   companies = createCompanyService(),
   persistence = createRemotePersistence(),
   plans = createPlanService(),
@@ -59,10 +62,15 @@ export function createCompaniesHome({
     <div class="home-detalhe-grade">
       <section class="home-cartao" aria-labelledby="home-drafts-title"><div class="home-cartao-topo"><h3 id="home-drafts-title">Preenchimentos</h3><button type="button" class="home-botao-pri" data-home-new-draft>Novo preenchimento</button></div>
         <p class="home-nota" data-drafts-note></p><ul class="home-preenchimentos" data-home-drafts></ul></section>
-      <section class="home-cartao" data-detail-manage hidden aria-labelledby="home-company-title"><h3 id="home-company-title">Dados da empresa</h3>
-        <form id="company-edit"><label>Razão social<input name="name" required maxlength="160"></label><label>CNPJ<input name="cnpj" required maxlength="18" inputmode="numeric"></label><p class="home-nota" data-cnpj-note></p><button type="submit">Salvar alterações da empresa</button></form>
-        <div class="home-arquivo"><p class="home-nota" data-archive-note></p><button type="button" data-home-archive></button></div>
+      <div class="home-coluna">
+      <section class="home-cartao" aria-labelledby="home-company-title"><div class="home-cartao-topo"><h3 id="home-company-title">Dados da empresa</h3><button type="button" data-company-edit-open hidden>Editar</button></div>
+        <dl class="home-dados" data-company-view><div><dt>Razão social</dt><dd data-view-name></dd></div><div><dt>CNPJ</dt><dd data-view-cnpj></dd></div><div><dt>Escritório</dt><dd data-view-office></dd></div></dl>
+        <form id="company-edit" hidden><label>Razão social<input name="name" required maxlength="160"></label><label>CNPJ<input name="cnpj" required maxlength="18" inputmode="numeric"></label><p class="home-nota" data-cnpj-note></p><div class="home-acoes"><button type="submit" class="home-botao-pri">Salvar alterações</button><button type="button" data-company-edit-cancel>Cancelar</button></div></form>
+        <div class="home-arquivo" data-detail-manage hidden><p class="home-nota" data-archive-note></p><button type="button" data-home-archive></button></div>
         <p data-company-status role="status" aria-live="polite"></p></section>
+      <section class="home-cartao" data-detail-diagnostics hidden aria-labelledby="home-diag-title"><div class="home-cartao-topo"><h3 id="home-diag-title">Diagnóstico</h3><button type="button" class="home-botao-pri" data-diag-new-open>Novo diagnóstico</button></div>
+        <p class="home-nota" data-diag-note>Entrevista sobre a operação para preparar a readequação. Não altera a escala.</p><ul class="home-preenchimentos" data-home-diagnostics></ul></section>
+      </div>
     </div>
   </div>`;
   const $ = (s) => root.querySelector(s);
@@ -187,8 +195,39 @@ export function createCompaniesHome({
     $("[data-company-status]").textContent = "";
     renderDetalhe();
     $("[data-detail-name]").focus({ preventScroll: true });
-    await carregarPreenchimentos();
+    await Promise.all([carregarPreenchimentos(), carregarDiagnosticos()]);
   }
+  function editar(abrir) {
+    edit.hidden = !abrir;
+    $("[data-company-view]").hidden = abrir;
+    $("[data-company-edit-open]").classList.toggle("home-oculto", abrir);
+    if (abrir) edit.elements.name.focus();
+  }
+  $("[data-company-edit-open]").addEventListener("click", () => editar(true));
+  $("[data-company-edit-cancel]").addEventListener("click", () => {
+    if (atual) { edit.elements.name.value = atual.name; edit.elements.cnpj.value = atual.cnpj ? formatCnpj(atual.cnpj) : ""; }
+    editar(false);
+  });
+  async function carregarDiagnosticos() {
+    const c = atual, alvo = $("[data-home-diagnostics]");
+    if ($("[data-detail-diagnostics]").hidden) return;
+    alvo.innerHTML = `<li class="home-nota">Carregando diagnósticos…</li>`;
+    try {
+      const rows = await diagnostics.list({ officeId: c.officeId, companyId: c.id });
+      if (atual !== c) return;
+      alvo.innerHTML = rows.length
+        ? rows.map((d) => `<li><div><strong>${esc(d.unit)}</strong><span>${d.status === "concluido" ? "Concluído" : "Rascunho"} · revisão ${esc(d.revision)} · ${esc(dataBr(d.updatedAt))}${d.updatedBy ? ` · ${esc(d.updatedBy)}` : ""}</span></div><button type="button" data-open-diagnostic="${esc(d.id)}">Abrir</button></li>`).join("")
+        : `<li class="home-nota">Nenhum diagnóstico registrado.</li>`;
+    } catch (error) {
+      if (atual === c) alvo.innerHTML = `<li class="home-nota">${esc(error.message || "Não foi possível carregar os diagnósticos.")}</li>`;
+    }
+  }
+  const abrirDiagnostico = (id) => onDiagnostic({ officeId: atual.officeId, companyId: atual.id, companyName: atual.name, cnpj: atual.cnpj, id });
+  $("[data-home-diagnostics]").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-open-diagnostic]");
+    if (b && atual) abrirDiagnostico(b.dataset.openDiagnostic);
+  });
+  $("[data-diag-new-open]").addEventListener("click", () => atual && abrirDiagnostico(null));
   function renderDetalhe() {
     const c = atual, r = resumoEmpresa(c);
     $("[data-detail-office]").textContent = c.officeName || data.offices.find((o) => o.id === c.officeId)?.name || "Empresa";
@@ -197,6 +236,13 @@ export function createCompaniesHome({
     $("[data-detail-badges]").innerHTML = c.archived ? `<span class="home-selo home-selo-neutro">Arquivada — somente visualização</span>` : "";
     const gerente = c.canManage ?? data.offices.find((o) => o.id === c.officeId)?.canCreate ?? false;
     $("[data-detail-manage]").hidden = !gerente;
+    $("[data-detail-diagnostics]").hidden = !gerente;
+    $("[data-diag-new-open]").hidden = !!c.archived;
+    $("[data-company-edit-open]").hidden = !gerente || !!c.archived;
+    $("[data-view-name]").textContent = c.name;
+    $("[data-view-cnpj]").textContent = `${c.cnpj ? formatCnpj(c.cnpj) : "Não informado"}${c.cnpjLocked && c.cnpj ? " · travado após o primeiro uso" : ""}`;
+    $("[data-view-office]").textContent = c.officeName || data.offices.find((o) => o.id === c.officeId)?.name || "—";
+    editar(false);
     edit.elements.name.value = c.name;
     edit.elements.cnpj.value = c.cnpj ? formatCnpj(c.cnpj) : "";
     const travado = c.cnpjLocked && c.cnpj && role !== "admin";
@@ -267,6 +313,7 @@ export function createCompaniesHome({
       Object.assign(atual, r.company);
       try { await carregar(); } catch {}
       if (atual === c) renderDetalhe();
+      editar(false);
       $("[data-company-status]").textContent = `Empresa atualizada: ${r.company.name} — ${formatCnpj(r.company.cnpj)}. Preenchimentos e permissões foram preservados.`;
     }, "Atualizando o cadastro da empresa").catch((error) => ($("[data-company-status]").textContent = error.message));
   });
@@ -292,14 +339,15 @@ export function createCompaniesHome({
   });
 
   return {
-    async show() {
-      // Entrar na tela sempre mostra a lista atualizada.
+    async show({ companyId = null, officeId = null } = {}) {
+      // Entrar na tela mostra a lista atualizada (ou a empresa pedida, ao voltar do diagnóstico).
       atual = null;
       detail.hidden = true;
       list.hidden = false;
       try {
         await run(carregar);
         status("");
+        if (companyId) await mostrarEmpresa(companyId, officeId);
       } catch (error) {
         status(error.status === 401 ? "A sessão expirou. Entre novamente." : error.message || "Não foi possível carregar as empresas.");
       }

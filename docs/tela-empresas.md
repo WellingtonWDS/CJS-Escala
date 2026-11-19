@@ -8,11 +8,13 @@ Com login individual e empresas no servidor, o Reescala abre em **Empresas** (`/
 2. **Nova empresa:** Gerente/Admin cadastra escritório, razão social e CNPJ (respeitando o limite do plano). Sem nenhuma empresa, a tela mostra a opção de cadastrar a primeira; o Operador vê a orientação para pedir acesso ao Gerente.
 3. **Empresa escolhida:** lista de preenchimentos (abrir/continuar) e **Novo preenchimento**; ambos levam à geração de escalas (etapa 1). Gerente/Admin editam razão social e CNPJ (CNPJ travado após o primeiro uso, salvo para o Admin) e arquivam/reativam a empresa. Empresa arquivada: somente consulta.
 
-Ao recarregar a página, a tela atual é mantida (Empresas ou a etapa da escala). O item **Empresa atual e Preenchimentos** do menu continua disponível como atalho.
+Na coluna da direita, **Dados da empresa** aparecem só para leitura; o botão **Editar** abre os campos. Abaixo, o card **Diagnóstico** (Gerente/Admin) lista os diagnósticos da empresa e permite abrir um ou começar um novo, já com a empresa definida.
+
+Ao recarregar a página, a tela atual é mantida (Empresas ou a etapa da escala). O atalho **Empresa atual e Preenchimentos** fica no topo da página. Com servidor, o botão **Limpar dados salvos** não aparece: os preenchimentos ficam salvos por empresa.
 
 ## Mudanças no menu
 
-- Saíram **Escritórios**, **Empresas — cadastrar e editar** e **Prévia das festividades**.
+- Saíram **Escritórios**, **Empresas — cadastrar e editar**, **Prévia das festividades**, **Empresa atual e Preenchimentos** (fica no topo) e **Diagnóstico** (no cartão da empresa).
 - Criar escritórios e a prévia sazonal ficam no **Painel Admin** (`/admin`), exclusivo do Admin global.
 
 ## Ativação no banco da VPS

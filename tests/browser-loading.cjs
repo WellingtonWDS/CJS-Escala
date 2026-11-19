@@ -67,8 +67,9 @@ module.exports = async ({ browser, baseURL }) => {
       await window.__home.abrirEmpresa(company, office);
     }, { office, company });
     assert.equal(await page.locator("[data-loading-overlay][open]").count(), 0);
+    await page.locator("[data-company-edit-open]").click();
     await page.locator('#company-edit [name="name"]').fill("Empresa alterada");
-    await page.locator("#company-edit button").click();
+    await page.locator("#company-edit button[type=submit]").click();
     const loading = page.locator("[data-loading-overlay][open]");
     await loading.waitFor({ state: "visible" });
     assert.match(await loading.locator("h2").textContent(), /cadastro/);
@@ -83,7 +84,7 @@ module.exports = async ({ browser, baseURL }) => {
     await page.keyboard.press("Escape");
     assert.equal(await loading.isVisible(), true);
     await page.evaluate(() =>
-      document.querySelector("#company-edit button").click(),
+      document.querySelector("#company-edit button[type=submit]").click(),
     );
     assert.equal(calls, 1);
     release();
@@ -93,10 +94,11 @@ module.exports = async ({ browser, baseURL }) => {
       /Empresa atualizada/,
     );
     fail = true;
+    await page.locator("[data-company-edit-open]").click();
     await page
       .locator('#company-edit [name="name"]')
       .fill("Preservar na falha");
-    await page.locator("#company-edit button").click();
+    await page.locator("#company-edit button[type=submit]").click();
     await loading.waitFor({ state: "visible" });
     release();
     await loading.waitFor({ state: "hidden" });

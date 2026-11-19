@@ -14,57 +14,62 @@ module.exports = async ({ browser, baseURL }) => {
       const root = document.getElementById('company-diagnostics');
       root.hidden = false;
       document.body.dataset.appView = 'diagnostics';
-      const companies = Array.from({ length: 15 }, (_, i) => ({ id: `company-${i}`, officeId: 'office-1', name: i ? `Empresa ${i} de comércio e distribuição com razão social extensa para conferência visual` : 'Empresa de exemplo', cnpj: '48956412000126' }));
-      await createCompanyDiagnostics({ document, window, service: {
-        options: async () => ({ offices: [{ id: 'office-1', name: 'Escritório de exemplo' }], companies }),
-        list: async () => [],
-      } }).show();
+      window.__salvos = [];
+      window.__voltou = null;
+      window.__diag = createCompanyDiagnostics({ document, window, onBack: (ctx) => (window.__voltou = ctx), service: {
+        save: async (body) => { window.__salvos.push(body); return { id: body.id, revision: 1, latestRevision: 1, status: body.status, data: body.data, updatedBy: 'Gerente', updatedAt: '2026-11-19T12:00:00Z', history: [{ revision: 1, status: body.status, savedAt: '2026-11-19T12:00:00Z', savedBy: 'Gerente' }] }; },
+      } });
+      await window.__diag.open({ officeId: 'office-1', companyId: 'company-1', companyName: 'Padaria Pão Bom de comércio e distribuição com razão social extensa', cnpj: '11222333000181', id: null });
     });
-    const root = page.locator('#company-diagnostics'), trigger = root.locator('[data-company-trigger]');
-    const geometry = () => root.evaluate(el => {
-      const office = el.querySelector('[data-diag-office]').getBoundingClientRect();
-      const company = el.querySelector('[data-company-trigger]').getBoundingClientRect();
-      return { width: office.width, height: office.height, rowHeight: el.querySelector('.diag-selecao').getBoundingClientRect().height, bottomGap: office.bottom - company.bottom };
-    });
+    const root = page.locator('#company-diagnostics');
+    // A empresa vem do cartão: sem escolha de escritório/empresa.
+    assert.equal(await root.locator('[data-diag-office], [data-company-trigger], [data-diag-record]').count(), 0);
+    assert.match(await root.locator('[data-diag-company]').innerText(), /Padaria Pão Bom[\s\S]*CNPJ 11\.222\.333\/0001-81/);
+    assert.equal(await root.locator('[data-diag-heading]').innerText(), 'Novo diagnóstico');
+    assert.equal(await root.locator('[data-diag-step]').count(), 7, 'seis etapas e conferência');
+    assert.match(await root.locator('[data-diag-step="0"]').innerText(), /Objetivo e responsáveis\s*0 de 4/);
+    // Escolhas diretas, situação em pílulas e cabeçalho com a unidade.
+    await root.locator('label:has(#diag-q01-0)').click();
+    assert.equal(await root.locator('#diag-q01-0').isChecked(), true);
+    await root.locator('#diag-q02').fill('Loja Centro');
+    assert.equal(await root.locator('[data-diag-heading]').innerText(), 'Loja Centro');
+    assert.match(await root.locator('[data-diag-step="0"]').innerText(), /2 de 4/);
+    await root.locator('label:has(#diag-q04-certainty-pendente)').click();
+    assert.match(await root.locator('[data-question="q04"] [data-answer-state]').innerText(), /Respondida/);
+    await root.locator('[data-diag-step="3"]').click();
+    await root.locator('label:has(#diag-q15-3)').click();
+    assert.equal(await root.locator('#diag-q15-certainty-pendente').isChecked(), true, '"Não sei" marca a informação como pendente');
+    await root.locator('[data-question="q17"] label:has-text("Sim")').click();
+    assert.equal(await root.locator('[data-question="q17"] details.diag-obs').evaluate(d => d.open), true, '"Sim" abre o detalhe');
     for (const dark of [false, true]) {
       await page.evaluate(dark => document.documentElement.dataset.theme = dark ? 'dark' : 'light', dark);
       for (const width of [1440, 768, 390]) {
         await page.setViewportSize({ width, height: 900 });
-        const rows = await root.locator('[data-diag-step]').evaluateAll(buttons => {
-          const groups = new Map();
-          for (const button of buttons) {
-            const top = Math.round(button.getBoundingClientRect().top);
-            groups.set(top, (groups.get(top) || 0) + 1);
-          }
-          return [...groups.values()];
-        });
-        assert.deepEqual(rows, width > 900 ? [4, 4] : [2, 2, 2, 2], 'Etapas distribuídas em linhas equilibradas');
-        await page.mouse.move(0, 0);
-        const before = await geometry();
-        await trigger.click();
-        const after = await geometry();
-        assert(Math.abs(after.width - before.width) < 1 && Math.abs(after.height - before.height) < 1, `Escritório estável ao abrir: ${JSON.stringify({ dark, width, before, after })}`);
-        assert(Math.abs(after.rowHeight - before.rowHeight) < 1, 'Abrir o menu não desloca as seções seguintes');
-        const selected = root.locator('[role="option"][aria-selected="true"]');
-        await selected.hover();
-        assert.deepEqual(await contrast(page, '#company-diagnostics .company-combobox-popup'), []);
-        const search = root.locator('[data-company-popup] input');
-        await search.fill('Empresa 1 de');
-        await search.press('ArrowDown');
-        await search.press('Enter');
-        await root.locator('[data-company-popup]').waitFor({ state: 'hidden' });
-        assert.match(await trigger.innerText(), /Empresa 1 de/);
-        assert(Math.abs((await geometry()).height - before.height) < 1, 'Razão social longa não estica o campo Escritório');
-        if (width > 650) assert(Math.abs((await geometry()).bottomGap) < 1, 'Campos alinhados pela base');
-        const current = root.locator('[data-diag-step][aria-current="step"]');
-        await current.hover();
-        assert.deepEqual(await contrast(page, '#company-diagnostics [data-diag-step][aria-current="step"]'), [], 'Etapa selecionada legível no hover');
+        await root.locator('[data-diag-step][aria-current="step"]').hover();
+        assert.deepEqual(await contrast(page, '#company-diagnostics'), [], `contraste ${dark ? 'escuro' : 'claro'} ${width}`);
         await root.locator('[data-diag-next]').hover();
         assert.deepEqual(await contrast(page, '#company-diagnostics [data-diag-next]'), [], 'Ação principal legível no hover');
         assert(await root.evaluate(el => el.scrollWidth <= el.clientWidth + 1), 'Diagnóstico sem overflow horizontal');
+        assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'Página sem rolagem lateral');
+        if (process.env.DIAG_SCREENSHOT) await page.screenshot({ path: `${process.env.DIAG_SCREENSHOT}-${dark ? 'escuro' : 'claro'}-${width}.png`, fullPage: width === 390 });
       }
     }
+    await page.evaluate(() => document.documentElement.dataset.theme = 'light');
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await root.locator('[data-diag-save]').click();
+    await page.waitForFunction(() => window.__salvos.length === 1);
+    const salvo = await page.evaluate(() => window.__salvos[0]);
+    assert.equal(salvo.officeId, 'office-1');
+    assert.equal(salvo.companyId, 'company-1');
+    assert.equal(salvo.data.answers.q02.value, 'Loja Centro');
+    assert.equal(salvo.data.answers.q15.certainty, 'pendente');
+    assert.match(await root.locator('[data-diag-dirty]').innerText(), /Salvo · revisão 1/);
+    await root.locator('[data-diag-step="6"]').click();
+    assert.match(await root.locator('[data-diag-form]').innerText(), /Conferência do diagnóstico/);
+    assert.equal(await root.locator('[data-diag-finish]').isVisible(), true);
+    await root.locator('[data-diag-backto]').click();
+    assert.equal(await page.evaluate(() => window.__voltou.companyId), 'company-1');
     assert.deepEqual(errors, []);
-    console.log('OK: diagnóstico — escritório estável, dropdown sobreposto, seleção/busca/teclado, nomes longos e contraste de hover nos temas claro/escuro em desktop/tablet/celular.');
+    console.log('OK: diagnóstico — empresa definida pelo cartão, seis etapas com progresso, escolhas em pílulas, situação da informação, cabeçalho com a unidade, gravação, conferência e contraste claro/escuro em desktop/tablet/celular.');
   } finally { await context.close(); }
 };

@@ -1,5 +1,4 @@
 import { createDiagnosticsService } from "../services/diagnostics.js";
-import { createCompanyCombobox } from "./company-combobox.js";
 import { getDialogs } from "./dialogs.js";
 import { escapeHtml as h } from "../shared/formatacao.js";
 import {
@@ -13,6 +12,7 @@ import {
   VERSAO_DIAGNOSTICO,
 } from "../diagnostico/questionario.js";
 import { renderPergunta, textoResposta } from "./diagnostico-perguntas.js";
+import { formatCnpj } from "../shared/empresas.js";
 import { normalizarJornada, minToTime } from "../domain/datas-horas.js";
 const vazio = () => ({ schemaVersion: VERSAO_DIAGNOSTICO, answers: {} });
 const data = (v) => (v ? new Date(v).toLocaleString("pt-BR") : "");
@@ -22,26 +22,27 @@ export function createCompanyDiagnostics({
   service = createDiagnosticsService(),
   workspace,
   app,
+  onBack = () => {},
 }) {
   const root = document.getElementById("company-diagnostics"),
     dialogs = getDialogs(document);
   root.dataset.loadingLabel = "Consultando ou salvando o diagnóstico";
-  root.innerHTML = `<header><h2>Diagnóstico da empresa</h2><p>Entenda a operação, registre as condições e prepare a análise de readequação. As respostas ficam vinculadas à empresa; não alteram automaticamente a escala.</p></header>
- <div class="diag-selecao"><label>Escritório<select data-diag-office></select></label>
- <div class="company-combobox" data-diag-company><span id="diag-company-label">Empresa</span><select hidden aria-hidden="true" tabindex="-1"></select><button type="button" data-company-trigger aria-labelledby="diag-company-label diag-company-value" id="diag-company-value" aria-haspopup="listbox" aria-expanded="false" aria-controls="diag-company-options">Selecione a empresa</button><div class="company-combobox-popup" data-company-popup hidden><label>Buscar empresa<input type="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="diag-company-options" autocomplete="off" placeholder="Razão social ou CNPJ"></label><div id="diag-company-options" role="listbox" aria-label="Empresas"></div><p role="status" aria-live="polite"></p></div></div></div>
- <div class="diag-registros"><label>Diagnósticos desta empresa<select data-diag-record><option value="">Novo diagnóstico</option></select></label><button type="button" data-diag-new>Novo diagnóstico</button><button type="button" data-diag-refresh>Atualizar lista</button></div>
- <p data-diag-status role="status" aria-live="polite" tabindex="-1"></p>
- <div data-diag-editor hidden><div class="diag-meta"><p data-diag-meta></p><label>Revisões salvas<select data-diag-history aria-label="Revisões salvas"></select></label><button type="button" data-diag-current hidden>Abrir versão atual</button><button type="button" data-diag-reopen hidden>Revisar diagnóstico</button><button type="button" data-diag-prefill hidden>Usar dados do preenchimento aberto</button></div>
- <p data-diag-progress aria-live="polite"></p><nav class="diag-etapas" aria-label="Etapas do diagnóstico"></nav>
- <form data-diag-form novalidate></form>
- <div class="diag-paginacao"><button type="button" data-diag-back>Voltar</button><button type="button" data-diag-next>Avançar</button><button type="button" data-diag-summary>Ver resumo</button></div>
- <div class="diag-salvar"><strong data-diag-dirty></strong><div><button type="button" data-diag-retry hidden>Repetir gravação pendente</button><button type="button" data-diag-save>Salvar rascunho</button><button type="button" data-diag-finish>Concluir diagnóstico</button></div></div></div>`;
+  const N = etapas.length; // índice da conferência
+  root.innerHTML = `<div class="diag-topo">
+   <button type="button" class="diag-voltar" data-diag-backto>← Empresa</button>
+   <div class="diag-titulo"><div><p class="diag-sobretitulo">Diagnóstico da empresa</p><h2 tabindex="-1" data-diag-heading>Novo diagnóstico</h2><p class="diag-empresa" data-diag-company></p></div>
+    <div class="diag-topo-acoes"><button type="button" data-diag-prefill hidden>Importar do preenchimento aberto</button><button type="button" data-diag-reopen hidden>Revisar diagnóstico</button><button type="button" data-diag-current hidden>Abrir versão atual</button><label class="diag-versoes">Versão<select data-diag-history aria-label="Revisões salvas"></select></label></div></div>
+   <p class="diag-meta" data-diag-meta></p></div>
+ <p data-diag-status class="diag-status" role="status" aria-live="polite" tabindex="-1"></p>
+ <div data-diag-editor hidden class="diag-corpo">
+  <nav class="diag-etapas" aria-label="Etapas do diagnóstico"></nav>
+  <div class="diag-conteudo"><div class="diag-progresso"><div class="diag-barra-progresso" aria-hidden="true"><i data-diag-bar></i></div><p data-diag-progress aria-live="polite"></p></div>
+   <form data-diag-form novalidate></form>
+   <div class="diag-salvar"><strong data-diag-dirty></strong><div class="diag-salvar-acoes"><button type="button" data-diag-back>← Voltar</button><button type="button" data-diag-next>Avançar →</button><button type="button" data-diag-retry hidden>Repetir gravação pendente</button><button type="button" data-diag-save>Salvar rascunho</button><button type="button" data-diag-finish>Concluir diagnóstico</button></div></div>
+  </div></div>`;
   const el = (s) => root.querySelector(`[data-diag-${s}]`),
-    office = el("office"),
-    company = root.querySelector("[data-diag-company] select"),
     form = el("form");
-  let options,
-    context = null,
+  let context = null,
     record = null,
     payload = vazio(),
     step = 0,
@@ -52,7 +53,6 @@ export function createCompanyDiagnostics({
 
   const readonly = () =>
     !editing || (!!record && record.revision !== record.latestRevision);
-  const scope = () => ({ officeId: office.value, companyId: company.value });
   async function canLeave({ discard = false } = {}) {
     if (!dirty && !pending) return true;
     const ok = await dialogs.confirm(
@@ -89,12 +89,14 @@ export function createCompanyDiagnostics({
   function atualizarProgresso() {
     const r = resumoDiagnostico(payload);
     el("progress").textContent =
-      `${step < 8 ? `Etapa ${step + 1} de 8 · ` : "Conferência · "}${r.respondidas} de ${r.total} perguntas registradas · ${r.pendencias.length} pendência(s) · ${r.estimativas.length} estimativa(s)`;
+      `${step < N ? `Etapa ${step + 1} de ${N} · ` : "Conferência · "}${r.respondidas} de ${r.total} respondidas · ${r.pendencias.length} pendência(s) · ${r.estimativas.length} estimativa(s)`;
+    el("bar").style.width = `${Math.round((r.respondidas / Math.max(r.total, 1)) * 100)}%`;
+    el("heading").textContent = payload.answers.q02?.value?.trim() || (record ? "Unidade não informada" : "Novo diagnóstico");
     el("dirty").textContent = dirty
       ? "Alterações não salvas"
       : record
-        ? `Salvo no servidor · revisão ${record.revision}`
-        : "Novo diagnóstico — ainda não salvo";
+        ? `Salvo · revisão ${record.revision}`
+        : "Ainda não salvo";
     el("finish").textContent = r.pendencias.length
       ? "Concluir com pendências"
       : "Concluir diagnóstico";
@@ -118,6 +120,18 @@ export function createCompanyDiagnostics({
       }
     );
   }
+  function atualizarEtapas() {
+    const pendencias = new Set(resumoDiagnostico(payload).pendencias.map((q) => q.id));
+    root.querySelector(".diag-etapas").innerHTML = etapas
+      .map((e, i) => {
+        const qs = e.perguntas.filter((q) => visivel(q, payload.answers));
+        const feitas = qs.filter((q) => respondida(payload.answers[q.id])).length;
+        const pend = qs.filter((q) => pendencias.has(q.id)).length;
+        const ok = feitas === qs.length && !pend;
+        return `<button type="button" data-diag-step="${i}" data-completa="${ok}"${step === i ? ' aria-current="step"' : ""}><span class="diag-etapa-num" aria-hidden="true">${ok ? "✓" : i + 1}</span><span class="diag-etapa-texto"><span>${h(e.titulo)}</span><small>${feitas} de ${qs.length}${pend ? ` · ${pend} pendente(s)` : ""}</small></span></button>`;
+      })
+      .join("") + `<button type="button" data-diag-step="${N}" data-diag-summary${step === N ? ' aria-current="step"' : ""}><span class="diag-etapa-num" aria-hidden="true">★</span><span class="diag-etapa-texto"><span>Conferência</span><small>Resumo e conclusão</small></span></button>`;
+  }
   function render(focusId) {
     el("editor").hidden = !context;
     if (!context) return;
@@ -126,7 +140,7 @@ export function createCompanyDiagnostics({
     el("retry").hidden = !pending;
     el("meta").textContent = record
       ? `${editing && record.status === "concluido" ? "Em revisão — " : ""}${record.status === "concluido" ? "Concluído" : "Rascunho"} · revisão ${record.revision} de ${record.latestRevision} · ${record.updatedBy} · ${data(record.updatedAt)}${ro ? " · consulta" : ""}`
-      : "As informações essenciais podem ser marcadas como pendentes quando ainda não forem conhecidas.";
+      : "Responda o que já souber. Informações essenciais ainda desconhecidas podem ser marcadas como pendentes.";
     el("history").replaceChildren(
       ...(record?.history || []).map(
         (r) =>
@@ -138,24 +152,22 @@ export function createCompanyDiagnostics({
     );
     el("history").value = record?.revision || "";
     el("history").disabled = !record;
+    el("history").closest("label").hidden = !record;
+    el("company").textContent = context ? `${context.companyName || ""}${context.cnpj ? ` · CNPJ ${formatCnpj(context.cnpj)}` : ""}` : "";
+    el("backto").textContent = `← ${context?.companyName || "Empresa"}`;
     el("current").hidden = !record || record.revision === record.latestRevision;
     el("reopen").hidden =
       !record || record.revision !== record.latestRevision || editing;
     el("save").hidden = ro;
-    el("finish").hidden = ro || step !== 8;
+    el("finish").hidden = ro || step !== N;
     const ctx = workspace?.context();
     el("prefill").hidden =
       ro ||
       !app ||
       ctx?.officeId !== context.officeId ||
       ctx?.companyId !== context.companyId;
-    root.querySelector(".diag-etapas").innerHTML = etapas
-      .map(
-        (e, i) =>
-          `<button type="button" data-diag-step="${i}"${step === i ? ' aria-current="step"' : ""}>${i + 1}. ${h(e.titulo)}</button>`,
-      )
-      .join("");
-    if (step < 8)
+    atualizarEtapas();
+    if (step < N)
       form.innerHTML = `<h3 tabindex="-1">${h(etapas[step].titulo)}</h3>${etapas[
         step
       ].perguntas
@@ -168,8 +180,8 @@ export function createCompanyDiagnostics({
     ))
       if (ro) campo.disabled = true;
     el("back").disabled = step === 0;
-    el("next").hidden = step === 8;
-    el("next").textContent = step === 7 ? "Conferir respostas" : "Avançar";
+    el("next").hidden = step === N;
+    el("next").textContent = step === N - 1 ? "Conferir respostas →" : "Avançar →";
     if (focusId)
       document.getElementById(focusId)?.focus({ preventScroll: true });
   }
@@ -195,7 +207,6 @@ export function createCompanyDiagnostics({
     dirty = false;
     editing = true;
     pending = null;
-    el("record").value = "";
     render();
   }
   async function run(task) {
@@ -212,7 +223,6 @@ export function createCompanyDiagnostics({
           : "";
     } catch (e) {
       el("status").textContent = e.message;
-      el("record").value = record?.id || "";
       el("history").value = record?.revision || "";
       if (pending) render();
     } finally {
@@ -220,20 +230,6 @@ export function createCompanyDiagnostics({
       root.inert = false;
       root.removeAttribute("aria-busy");
     }
-  }
-  async function list(selected = "") {
-    const rows = await service.list(context);
-    el("record").replaceChildren(
-      new window.Option("Novo diagnóstico", ""),
-      ...rows.map(
-        (r) =>
-          new window.Option(
-            `${r.unit} · ${r.status === "concluido" ? "Concluído" : "Rascunho"} · ${data(r.updatedAt)} · revisão ${r.revision}`,
-            r.id,
-          ),
-      ),
-    );
-    el("record").value = selected;
   }
   function useRecord(r) {
     if (r.data?.schemaVersion !== VERSAO_DIAGNOSTICO)
@@ -252,103 +248,8 @@ export function createCompanyDiagnostics({
     useRecord(
       await service.get({ ...context, id, ...(revision ? { revision } : {}) }),
     );
-    el("record").value = id;
-    el("status").textContent = "Diagnóstico carregado do servidor.";
+    el("status").textContent = "";
   }
-  async function mudarContexto() {
-    const next = scope(),
-      prev = context;
-    if (!next.officeId || !next.companyId) {
-      context = null;
-      reset();
-      el("status").textContent =
-        "Cadastre uma empresa para iniciar o diagnóstico.";
-      return;
-    }
-    if (!(await canLeave())) {
-      if (prev) {
-        office.value = prev.officeId;
-        picker.setRows(
-          options.companies.filter((c) => c.officeId === office.value),
-          prev.companyId,
-        );
-      }
-      return;
-    }
-    context = next;
-    el("record").replaceChildren(new window.Option("Novo diagnóstico", ""));
-    reset();
-    await list();
-    el("status").textContent =
-      "Selecione um diagnóstico salvo ou inicie um novo.";
-  }
-  const picker = createCompanyCombobox({
-    root: el("company"),
-    onChange: () => run(mudarContexto),
-  });
-  office.addEventListener("change", () =>
-    run(async () => {
-      picker.setRows(
-        options.companies.filter((c) => c.officeId === office.value),
-      );
-      await mudarContexto();
-    }),
-  );
-  el("record").addEventListener("change", () => {
-    const id = el("record").value;
-    run(async () => {
-      if (!(await canLeave())) {
-        el("record").value = record?.id || "";
-        return;
-      }
-      if (id) await loadRecord(id);
-      else reset();
-    });
-  });
-  el("new").onclick = () =>
-    run(async () => {
-      if (await canLeave()) {
-        reset();
-        el("status").textContent =
-          "Novo diagnóstico. Salve um rascunho para registrar as respostas.";
-      }
-    });
-  el("refresh").onclick = () =>
-    run(async () => {
-      if (await canLeave()) {
-        const id = record?.id,
-          prev = { ...context },
-          next = await service.options();
-        options = next;
-        office.replaceChildren(
-          ...options.offices.map((o) => new window.Option(o.name, o.id)),
-        );
-        if (options.offices.some((o) => o.id === prev.officeId))
-          office.value = prev.officeId;
-        picker.setRows(
-          options.companies.filter((c) => c.officeId === office.value),
-          options.companies.some((c) => c.id === prev.companyId)
-            ? prev.companyId
-            : "",
-        );
-        context = scope();
-        if (
-          context.companyId === prev.companyId &&
-          context.officeId === prev.officeId
-        ) {
-          await list(id);
-          if (id) await loadRecord(id);
-          else reset();
-        } else {
-          reset();
-          if (context.companyId) await list();
-          else {
-            context = null;
-            render();
-          }
-        }
-      }
-    });
   el("history").onchange = () => {
     const revision = Number(el("history").value);
     run(async () => {
@@ -477,18 +378,22 @@ export function createCompanyDiagnostics({
       (Array.isArray(a.value) && a.value.includes("Não sei"))
     ) {
       a.certainty = "pendente";
-      f.querySelector("[data-certainty]").value = "pendente";
+      const pendente = f.querySelector('[data-certainty][value="pendente"]');
+      if (pendente) pendente.checked = true;
     }
     payload.answers[q.id] = a;
     changed();
-    f.querySelector("[data-answer-state]").textContent = respondida(a)
-      ? "Registrada"
-      : "Ainda não respondida";
+    const estado = f.querySelector("[data-answer-state]");
+    estado.textContent = respondida(a) ? "Respondida" : "Sem resposta";
+    estado.dataset.ok = String(respondida(a));
+    atualizarEtapas();
     if (rerender) render(t.id);
   });
   el("back").onclick = () => ir(Math.max(0, step - 1));
-  el("next").onclick = () => ir(Math.min(8, step + 1));
-  el("summary").onclick = () => ir(8);
+  el("next").onclick = () => ir(Math.min(N, step + 1));
+  el("backto").onclick = async () => {
+    if (await canLeave({ discard: true })) onBack(context);
+  };
   async function save(status) {
     if (!context || readonly()) return;
     try {
@@ -500,7 +405,7 @@ export function createCompanyDiagnostics({
           ? etapas.findIndex((et) =>
               et.perguntas.some((q) => q.id === e.questionId),
             )
-          : 8,
+          : N,
       );
       form
         .querySelector(`[data-question="${e.questionId}"]`)
@@ -541,12 +446,6 @@ export function createCompanyDiagnostics({
       useRecord(result);
       el("status").textContent =
         `${status === "concluido" ? "Diagnóstico concluído" : "Rascunho salvo"} no servidor · revisão ${result.revision}.${result.latestRevision > result.revision ? " Existe uma revisão mais recente; abra a versão atual." : ""}`;
-      try {
-        await list(result.id);
-      } catch {
-        el("status").textContent +=
-          " Gravação confirmada; não foi possível atualizar a lista.";
-      }
     });
   }
   el("retry").onclick = () =>
@@ -556,11 +455,6 @@ export function createCompanyDiagnostics({
       useRecord(result);
       el("status").textContent =
         `Gravação confirmada no servidor · revisão ${result.revision}.`;
-      try {
-        await list(result.id);
-      } catch {
-        el("status").textContent += " Reabra a seção para atualizar a lista.";
-      }
     });
   el("save").onclick = () => save("rascunho");
   el("finish").onclick = () => save("concluido");
@@ -629,17 +523,16 @@ export function createCompanyDiagnostics({
   };
   return {
     canLeave,
-    show: () =>
+    /** Abre o diagnóstico da empresa escolhida: salvo (id) ou novo. */
+    open: (ctx) =>
       run(async () => {
-        if (options) return;
-        options = await service.options();
-        office.replaceChildren(
-          ...options.offices.map((o) => new window.Option(o.name, o.id)),
-        );
-        picker.setRows(
-          options.companies.filter((c) => c.officeId === office.value),
-        );
-        await mudarContexto();
+        if (!(await canLeave({ discard: true }))) return;
+        context = { officeId: ctx.officeId, companyId: ctx.companyId, companyName: ctx.companyName || "", cnpj: ctx.cnpj || "" };
+        reset();
+        if (ctx.id) await loadRecord(ctx.id);
+        else el("status").textContent = "";
+        root.querySelector("[data-diag-heading]").focus({ preventScroll: true });
       }),
+    context: () => context,
   };
 }
