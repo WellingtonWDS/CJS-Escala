@@ -54,7 +54,15 @@ export function createPasswordHandler({ env, fetchImpl = fetch, now = Date.now }
       }[res.status];
       throw new PasswordError(msg || "Serviço indisponível. Tente novamente em instantes.", msg ? res.status : 503);
     }
-    return res.json();
+    // Funções sem retorno (ex.: login_attempt) chegam como 204, sem corpo.
+    if (res.status === 204) return null;
+    const texto = await res.text();
+    if (!texto) return null;
+    try {
+      return JSON.parse(texto);
+    } catch {
+      throw new PasswordError("Serviço indisponível. Tente novamente em instantes.", 503);
+    }
   }
   /** Pede ao n8n o envio do e-mail. Falha não revela se a conta existe. */
   async function enviar(base, mensagem) {

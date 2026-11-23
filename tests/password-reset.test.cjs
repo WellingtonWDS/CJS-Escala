@@ -119,3 +119,13 @@ test("fluxo n8n de e-mails: webhook protegido e HTML seguro para os dois tipos",
     assert.equal(r.json.valid, false, JSON.stringify(ruim));
   }
 });
+
+test("limitador sem retorno (204 do PostgREST) não interrompe o pedido nem a redefinição", async () => {
+  const vazio = () => new Response(null, { status: 204 });
+  let t = await setup({ login_attempt: vazio, password_reset_request: { send: true, token: TOKEN, email: "g@x.test", name: "G" }, mail: () => new Response(null, { status: 202 }) });
+  const res = await t.post({ action: "request", email: "g@x.test" });
+  assert.equal(res.status, 200, await res.clone().text());
+  assert.deepEqual(t.chamadas.map((c) => c.nome), ["login_attempt", "password_reset_request", "mail"]);
+  t = await setup({ login_attempt: vazio, password_reset_complete: { email: "g@x.test", name: "G", sessionsRevoked: 0 } });
+  assert.equal((await t.post({ action: "reset", token: TOKEN, password: "NovaSenha2026" })).status, 200);
+});
