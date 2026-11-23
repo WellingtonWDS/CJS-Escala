@@ -80,3 +80,17 @@ Os testes de integração criam apenas PostgreSQL/PostgREST locais descartáveis
 A camada de rotas é compartilhada pelos adaptadores Vercel e Node.js. Na futura VPS, executar `npm run build` e `npm start` com `APP_ORIGIN` HTTPS e segredo configurados. Por padrão, o serviço escuta somente em `127.0.0.1`; se colocado em container, definir `HOST=0.0.0.0` apenas dentro de rede privada acessível pelo Caddy. O proxy publica HTTPS; PostgREST/PostgreSQL não precisam de portas públicas. Configurar supervisão, limites e backups na implantação, conforme o plano. Não trocar DNS antes de homologar o destino.
 
 As versões de regras de cálculo e do formato do rascunho continuam separadas. Estados salvos são rascunhos, não escalas aprovadas. Permanecem os limites de 1 MiB por estado e 100 itens por listagem, sem armazenamento dos arquivos XLS originais, contas de clientes, painel de provisionamento, aprovação/publicação ou atualização automática de dados remotos.
+
+## 6. E-mails (esqueci minha senha)
+
+Importar [cjs-mail.template.json](cjs-mail.template.json) como **novo fluxo**, ao lado do fluxo de login. Ele vem desativado, sem credenciais e sem salvar execuções (o e-mail traz um link de acesso).
+
+Nós do fluxo:
+
+1. **E-mails Reescala** (Webhook `POST auth/cjs-mail`): usar a **mesma credencial Header Auth** do login (`X-CJS-Service-Key`). Com o Caddy atual, a URL pública fica `https://api.fintria.com.br/auth/cjs-mail`.
+2. **Montar e-mail** (Code): valida o pedido (tipos `password_reset` e `password_changed`, e-mail do destinatário e links apenas de `https://reescala.fintria.com.br`) e monta o assunto, o **HTML** (layout em tabelas com estilos inline, compatível com Gmail/Outlook/celular, botão, link alternativo e aviso de segurança) e a versão em texto. Se o domínio mudar, ajuste `ORIGEM_PERMITIDA` no início do código.
+3. **Pedido válido** (IF): pedido fora do padrão recebe 400 e nada é enviado.
+4. **Enviar e-mail** (Send Email, formato HTML + texto): escolher a credencial **SMTP** e ajustar o remetente (`Reescala <nao-responda@fintria.com.br>` no modelo). Use um domínio com SPF/DKIM configurados para não cair no spam. Se preferir Gmail/Google Workspace, troque este nó pelo nó Gmail mantendo `to`, `subject` e `html`.
+5. **Confirmar envio**: responde 202 ao backend.
+
+Depois de ativar, configure `N8N_MAIL_URL` na Vercel e faça um teste pelo próprio login (**Esqueci minha senha**) com uma conta sua.

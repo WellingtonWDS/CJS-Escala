@@ -151,3 +151,24 @@ button:hover {
     transition: none;
   }
 }
+
+/* Esqueci minha senha / redefinição */
+.login-link { margin: 14px 0 0; text-align: center; font-size: 14px; }
+.login-link a { color: #147b56; font-weight: 700; text-underline-offset: 3px; }
+.login-ajuda { margin: 6px 0 0; }
+.login-info { min-height: 24px; margin-bottom: 0; color: #0e2746; }
+.login-info[data-tipo="erro"] { color: #b91c1c; }
+.login-info[data-tipo="ok"] { color: #147b56; }
+.senha-campo { position: relative; }
+.senha-campo input { padding-right: 84px; }
+.senha-campo button.senha-ver { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: auto; margin: 0; padding: 6px 10px; background: transparent; color: #147b56; font-size: 13px; }
+.senha-regras { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 4px; font-size: 13px; color: #64748b; }
+.senha-regras li::before { content: "○ "; }
+.senha-regras li[data-ok="true"] { color: #147b56; }
+.senha-regras li[data-ok="true"]::before { content: "✓ "; }
+.login-sucesso { text-align: center; }
+.login-sucesso a.login-botao { display: block; margin-top: 20px; padding: 12px; border-radius: 8px; background: #0e2746; color: #fff; font-weight: 700; text-decoration: none; }
+html[data-theme="dark"] .login-link a, html[data-theme="dark"] .login-info[data-tipo="ok"], html[data-theme="dark"] .senha-regras li[data-ok="true"], html[data-theme="dark"] .senha-campo button.senha-ver { color: #86e2bd; }
+html[data-theme="dark"] .login-info { color: #e8eef7; }
+html[data-theme="dark"] .login-info[data-tipo="erro"] { color: #ffb4ab; }
+html[data-theme="dark"] .senha-regras { color: #b1bfd2; }

@@ -16,8 +16,10 @@ const configuration = fetch("/api/auth?config=1", { cache: "no-store" })
     mode = data.mode;
     if (mode === "n8n") {
       document.getElementById("login-email").hidden = false;
+      document.getElementById("login-forgot-row").hidden = false;
       form.email.required = true;
-      form.email.focus();
+      if (location.hash === "#esqueci") mostrarEsqueci(true);
+      else form.email.focus();
     }
   })
   .catch((error) => {
@@ -53,4 +55,66 @@ form.addEventListener("submit", async (event) => {
     button.disabled = false;
     form.removeAttribute("aria-busy");
   }
+});
+
+// Esqueci minha senha: pedido do link (resposta sempre igual, exista ou não a conta).
+const forgot = document.getElementById("forgot-form"),
+  forgotMessage = document.getElementById("forgot-message"),
+  titulo = document.getElementById("login-title");
+function mostrarEsqueci(ativo) {
+  forgot.hidden = !ativo;
+  form.hidden = ativo;
+  titulo.textContent = ativo ? "Recuperar acesso" : "Acesse o sistema";
+  if (ativo) {
+    forgot.email.value ||= form.email.value;
+    forgotMessage.textContent = "";
+    forgotMessage.removeAttribute("data-tipo");
+    forgot.email.focus();
+  } else form.email.focus();
+}
+document.getElementById("login-forgot").addEventListener("click", (e) => {
+  e.preventDefault();
+  history.replaceState(null, "", "#esqueci");
+  mostrarEsqueci(true);
+});
+document.getElementById("forgot-back").addEventListener("click", (e) => {
+  e.preventDefault();
+  history.replaceState(null, "", location.pathname + location.search);
+  mostrarEsqueci(false);
+});
+forgot.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const button = forgot.querySelector("button[type=submit]");
+  if (button.disabled) return;
+  const email = forgot.email.value.trim();
+  if (!/^\S+@\S+\.\S+$/.test(email)) {
+    forgotMessage.dataset.tipo = "erro";
+    forgotMessage.textContent = "Informe um e-mail válido.";
+    return;
+  }
+  button.disabled = true;
+  forgot.setAttribute("aria-busy", "true");
+  forgotMessage.removeAttribute("data-tipo");
+  forgotMessage.textContent = "Enviando…";
+  try {
+    const response = await fetch("/api/password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "request", email }),
+      cache: "no-store",
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Não foi possível enviar agora. Tente novamente.");
+    forgotMessage.dataset.tipo = "ok";
+    forgotMessage.textContent = data.message + " Confira também a caixa de spam.";
+  } catch (error) {
+    forgotMessage.dataset.tipo = "erro";
+    forgotMessage.textContent = error.message || "Não foi possível conectar. Tente novamente.";
+  } finally {
+    button.disabled = false;
+    forgot.removeAttribute("aria-busy");
+  }
+});
+window.addEventListener("hashchange", () => {
+  if (mode === "n8n") mostrarEsqueci(location.hash === "#esqueci");
 });

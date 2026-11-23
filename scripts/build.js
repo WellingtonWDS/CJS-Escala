@@ -10,6 +10,7 @@ await rm(dist, { recursive: true, force: true });
 await mkdir(dist, { recursive: true });
 await cp(join(root, "index.html"), join(dist, "index.html"));
 await cp(join(root, "login.html"), join(dist, "login.html"));
+await cp(join(root, "redefinir-senha.html"), join(dist, "redefinir-senha.html"));
 await cp(join(root, "assets"), join(dist, "assets"), { recursive: true });
 await cp(join(root, "logos"), join(dist, "logos"), { recursive: true });
 await cp(join(root, "sobre"), join(dist, "sobre"), { recursive: true });

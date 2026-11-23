@@ -101,6 +101,10 @@ O fluxo principal já inclui cadastro manual e por planilhas, importação Domí
 
 Regras **`ec141-2026-11-11-13`**: gere novamente resultados anteriores; os cadastros permanecem. Sem migração SQL, nova RPC ou variável de ambiente.
 
+## Esqueci minha senha — 23/11/2026
+
+O login ganhou **Esqueci minha senha**: link de uso único (30 min) enviado por e-mail via n8n, página para criar a nova senha (8 a 72 caracteres, letras e números), encerramento das sessões abertas e e-mail de confirmação. Resposta neutra (não revela contas) e limites de tentativas. Requer a migração **013_password_reset.sql**, o fluxo [cjs-mail.template.json](integrations/n8n/cjs-mail.template.json) no n8n e a variável `N8N_MAIL_URL`. [Detalhes](docs/recuperacao-senha.md).
+
 ## Marca do escritório nos relatórios — 19/11/2026
 
 Gerente/Admin enviam a logomarca (PNG, JPG ou WebP, até 2 MB, ideal 1200 × 400 px) e escolhem as cores da marca em **Empresas → Marca do escritório**, com prévia ao vivo. Os relatórios PDF trazem a logomarca em destaque no topo e as cores nos títulos, tabelas e folgas, com contraste conferido; o rodapé indica que foram elaborados no Reescala. Requer a migração **012_office_branding.sql**. [Orientações e ativação](docs/marca-escritorio.md).

@@ -18,6 +18,10 @@ Carregamento imediato na geração atual/proposta, cálculo em Worker local, blo
 
 
 
+## Esqueci minha senha — 23/11/2026
+
+Recuperação de senha self-service (migração **013**, `/api/password`, `redefinir-senha.html`, fluxo n8n de e-mails em HTML). [Detalhes](recuperacao-senha.md).
+
 ## Marca do escritório — 19/11/2026
 
 Logomarca, cores e nome exibido por escritório (migração **012**, `/api/branding`), aplicados nos PDFs de escala com rodapé “Elaborado no Reescala”. [Detalhes](marca-escritorio.md).

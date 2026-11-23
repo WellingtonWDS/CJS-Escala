@@ -1,0 +1,186 @@
+{
+  "name": "Reescala — E-mails (esqueci minha senha e avisos)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "auth/cjs-mail",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "650563b0-5666-4960-9b91-44d2104d98ec",
+      "name": "E-mails Reescala",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Reescala — monta o e-mail (HTML + texto) a partir do pedido do backend.\n// Ajuste ORIGEM_PERMITIDA se o domínio público mudar.\nconst ORIGEM_PERMITIDA = \"https://reescala.fintria.com.br\";\nconst LOGO = ORIGEM_PERMITIDA + \"/logos/Reescala_original_transparente.png\";\nconst COR = { navy: \"#0B2545\", verde: \"#1F7A54\", texto: \"#1E2B3A\", suave: \"#5B6B7C\", fundo: \"#F3F6F8\", borda: \"#DCE5EC\", alerta: \"#FFF4DD\", alertaTexto: \"#7A4B00\" };\nconst body = $json.body ?? {};\nconst esc = (v) => String(v ?? \"\").replace(/[&<>\"']/g, (c) => ({ \"&\": \"&amp;\", \"<\": \"&lt;\", \">\": \"&gt;\", '\"': \"&quot;\", \"'\": \"&#39;\" })[c]);\nconst linkOk = (u) => typeof u === \"string\" && u.length <= 400 && (u === ORIGEM_PERMITIDA || u.startsWith(ORIGEM_PERMITIDA + \"/\"));\nconst emailOk = (e) => typeof e === \"string\" && e.length <= 254 && /^[^\\s@<>\"']+@[^\\s@<>\"']+\\.[^\\s@<>\"']+$/.test(e);\nconst tipos = [\"password_reset\", \"password_changed\"];\nif (!tipos.includes(body.type) || !emailOk(body.to) || !linkOk(body.loginUrl) || (body.type === \"password_reset\" && !linkOk(body.resetUrl)))\n  return [{ json: { valid: false } }];\nconst nome = String(body.name || \"\").trim().split(/\\s+/)[0].slice(0, 60) || \"olá\";\nconst quando = (iso) => {\n  const d = new Date(iso);\n  return Number.isNaN(+d) ? \"\" : d.toLocaleString(\"pt-BR\", { timeZone: \"America/Sao_Paulo\", day: \"2-digit\", month: \"2-digit\", year: \"numeric\", hour: \"2-digit\", minute: \"2-digit\" });\n};\nfunction botao(href, rotulo) {\n  return `<table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"margin:28px 0 8px\"><tr><td align=\"center\" bgcolor=\"${COR.verde}\" style=\"border-radius:10px\">\n<a href=\"${esc(href)}\" target=\"_blank\" rel=\"noopener\" style=\"display:inline-block;padding:14px 28px;font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:bold;line-height:20px;color:#FFFFFF;text-decoration:none;border-radius:10px\">${esc(rotulo)}</a></td></tr></table>`;\n}\nfunction caixa(html, fundo = COR.fundo, cor = COR.suave) {\n  return `<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"margin:20px 0 0\"><tr><td style=\"padding:14px 16px;background:${fundo};border-radius:10px;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:20px;color:${cor}\">${html}</td></tr></table>`;\n}\nfunction layout({ preheader, titulo, corpo }) {\n  return `<!DOCTYPE html>\n<html lang=\"pt-BR\" xmlns=\"http://www.w3.org/1999/xhtml\">\n<head>\n<meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><meta name=\"x-apple-disable-message-reformatting\">\n<meta name=\"color-scheme\" content=\"light\"><meta name=\"supported-color-schemes\" content=\"light\">\n<title>${esc(titulo)}</title>\n<style>@media (max-width:620px){.card{width:100%!important}.pad{padding:24px 20px!important}h1{font-size:22px!important}}</style>\n</head>\n<body style=\"margin:0;padding:0;background:${COR.fundo};-webkit-text-size-adjust:100%\">\n<div style=\"display:none;max-height:0;overflow:hidden;opacity:0;color:transparent\">${esc(preheader)}</div>\n<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"background:${COR.fundo}\">\n<tr><td align=\"center\" style=\"padding:32px 12px\">\n  <table role=\"presentation\" class=\"card\" width=\"560\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"width:560px;max-width:560px;background:#FFFFFF;border:1px solid ${COR.borda};border-radius:16px;overflow:hidden\">\n    <tr><td style=\"height:6px;background:${COR.navy};font-size:0;line-height:0\">&nbsp;</td></tr>\n    <tr><td class=\"pad\" style=\"padding:28px 36px 0\">\n      <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\"><tr>\n        <td style=\"padding-right:10px\"><img src=\"${LOGO}\" width=\"44\" height=\"38\" alt=\"\" style=\"display:block;border:0;width:44px;height:38px\"></td>\n        <td style=\"font-family:Arial,Helvetica,sans-serif;font-size:20px;font-weight:bold;color:${COR.navy}\">Reescala<div style=\"font-size:12px;font-weight:normal;color:${COR.suave}\">Jornadas em equilíbrio</div></td>\n      </tr></table>\n    </td></tr>\n    <tr><td class=\"pad\" style=\"padding:24px 36px 32px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:24px;color:${COR.texto}\">\n      <h1 style=\"margin:0 0 16px;font-size:24px;line-height:30px;color:${COR.navy}\">${esc(titulo)}</h1>\n      ${corpo}\n    </td></tr>\n    <tr><td style=\"padding:18px 36px;border-top:1px solid ${COR.borda};background:#FAFBFC;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:18px;color:${COR.suave}\">\n      Mensagem automática do Reescala, enviada para ${esc(body.to)}. Não responda este e-mail.<br>\n      Reescala · desenvolvido pela <a href=\"https://fintria.com.br\" target=\"_blank\" rel=\"noopener\" style=\"color:${COR.verde};text-decoration:underline\">Fintria</a>\n    </td></tr>\n  </table>\n</td></tr>\n</table>\n</body>\n</html>`;\n}\nlet subject, html, text;\nif (body.type === \"password_reset\") {\n  const minutos = Math.min(60, Math.max(5, Number(body.expiresMinutes) || 30));\n  subject = \"Redefinição de senha do Reescala\";\n  html = layout({\n    preheader: `Use o link para criar uma nova senha. Ele vale por ${minutos} minutos.`,\n    titulo: \"Crie uma nova senha\",\n    corpo: `<p style=\"margin:0 0 12px\">Olá, ${esc(nome)}.</p>\n<p style=\"margin:0\">Recebemos um pedido para redefinir a senha da sua conta no Reescala. Clique no botão abaixo para criar uma nova senha.</p>\n${botao(body.resetUrl, \"Criar nova senha\")}\n<p style=\"margin:0;font-size:13px;color:${COR.suave}\">O link vale por <strong>${minutos} minutos</strong> e pode ser usado uma única vez.</p>\n${caixa(`Se o botão não funcionar, copie e cole este endereço no navegador:<br><a href=\"${esc(body.resetUrl)}\" target=\"_blank\" rel=\"noopener\" style=\"color:${COR.verde};word-break:break-all\">${esc(body.resetUrl)}</a>`)}\n${caixa(`<strong>Não pediu a troca?</strong> Ignore este e-mail: sua senha atual continua valendo e ninguém terá acesso sem este link.`, COR.alerta, COR.alertaTexto)}`,\n  });\n  text = `Olá, ${nome}.\\n\\nRecebemos um pedido para redefinir a senha da sua conta no Reescala.\\nCrie uma nova senha pelo link abaixo (vale por ${minutos} minutos e pode ser usado uma única vez):\\n\\n${body.resetUrl}\\n\\nSe você não pediu a troca, ignore este e-mail: sua senha atual continua valendo.\\n\\nReescala — mensagem automática, não responda.`;\n} else {\n  const momento = quando(body.changedAt);\n  subject = \"Sua senha do Reescala foi alterada\";\n  html = layout({\n    preheader: \"Confirmação de alteração de senha.\",\n    titulo: \"Senha alterada\",\n    corpo: `<p style=\"margin:0 0 12px\">Olá, ${esc(nome)}.</p>\n<p style=\"margin:0\">A senha da sua conta no Reescala foi alterada${momento ? ` em <strong>${esc(momento)}</strong> (horário de Brasília)` : \"\"}. Por segurança, as sessões abertas com a senha anterior foram encerradas.</p>\n${botao(body.loginUrl, \"Entrar no Reescala\")}\n${caixa(`<strong>Não foi você?</strong> Peça agora um novo link em <a href=\"${esc(linkOk(body.forgotUrl) ? body.forgotUrl : body.loginUrl)}\" target=\"_blank\" rel=\"noopener\" style=\"color:${COR.alertaTexto}\">Esqueci minha senha</a> e avise o gerente do seu escritório.`, COR.alerta, COR.alertaTexto)}`,\n  });\n  text = `Olá, ${nome}.\\n\\nA senha da sua conta no Reescala foi alterada${momento ? ` em ${momento} (horário de Brasília)` : \"\"}. As sessões abertas com a senha anterior foram encerradas.\\n\\nEntrar: ${body.loginUrl}\\n\\nNão foi você? Peça um novo link em \"Esqueci minha senha\" (${linkOk(body.forgotUrl) ? body.forgotUrl : body.loginUrl}) e avise o gerente do seu escritório.\\n\\nReescala — mensagem automática, não responda.`;\n}\nreturn [{ json: { valid: true, to: body.to, subject, html, text, type: body.type } }];\n"
+      },
+      "id": "4517b0fa-789b-4b06-b717-aeda0884f4e0",
+      "name": "Montar e-mail",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4ca6b333-dc23-4054-9b64-ae9db09ae325",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "e50934aa-b10f-4a5d-b319-82d01e59965e",
+      "name": "Pedido válido",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "Reescala <nao-responda@fintria.com.br>",
+        "toEmail": "={{ $json.to }}",
+        "subject": "={{ $json.subject }}",
+        "emailFormat": "both",
+        "text": "={{ $json.text }}",
+        "html": "={{ $json.html }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "7f39c920-cf28-493d-9326-8e928879f049",
+      "name": "Enviar e-mail",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        720,
+        -100
+      ],
+      "notes": "Escolha a credencial SMTP e ajuste o remetente (domínio com SPF/DKIM configurados)."
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: true } }}",
+        "options": {
+          "responseCode": 202
+        }
+      },
+      "id": "6cd3377f-8c9c-41c8-b5db-888b318652cc",
+      "name": "Confirmar envio",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        960,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: false, message: \"Pedido de e-mail inválido.\" } }}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "id": "582d2615-bc41-4690-a6c7-5679706fc0b0",
+      "name": "Pedido inválido",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        720,
+        120
+      ]
+    }
+  ],
+  "connections": {
+    "E-mails Reescala": {
+      "main": [
+        [
+          {
+            "node": "Montar e-mail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar e-mail": {
+      "main": [
+        [
+          {
+            "node": "Pedido válido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pedido válido": {
+      "main": [
+        [
+          {
+            "node": "Enviar e-mail",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Pedido inválido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar e-mail": {
+      "main": [
+        [
+          {
+            "node": "Confirmar envio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataSuccessExecution": "none",
+    "saveDataErrorExecution": "none",
+    "saveManualExecutions": false,
+    "saveExecutionProgress": false,
+    "executionTimeout": 30
+  }
+}

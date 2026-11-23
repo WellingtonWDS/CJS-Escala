@@ -7,6 +7,10 @@ Consultar este registro antes de orientar o operador. Distinguir código dispon�
 
 
 
+## Esqueci minha senha — 23/11/2026
+
+Migração **013_password_reset.sql** (após 012), função Vercel `api/password.js`, variável nova **`N8N_MAIL_URL`** e fluxo n8n `integrations/n8n/cjs-mail.template.json` (credencial SMTP). **Nada disso foi aplicado na VPS/n8n/Vercel.** [Passo a passo](recuperacao-senha.md#ativação).
+
 ## Marca do escritório — 19/11/2026
 
 Migração **012_office_branding.sql** (após 011) e nova função Vercel `api/branding.js`. **Não foi executada na VPS.** [Comandos](marca-escritorio.md#ativação-no-banco-da-vps).

@@ -131,6 +131,9 @@ export function publicPath(path) {
   if (path === "/sobre" || path.startsWith("/sobre/")) return true;
   return [
     "/login.html",
+    "/redefinir-senha.html",
+    "/assets/js/redefinir-senha.js",
+    "/api/password",
     "/logos/Reescala_original_transparente.png",
     "/logos/Reescala_branco_transparente.png",
     "/logos/Reescala_preto_fundo_branco.png",
