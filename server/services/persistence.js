@@ -167,7 +167,7 @@ export function createPersistenceService({
       ),
     managementOptions: (identity) => call("manage_options", {}, identity),
     inviteUser: (identity, { name, email, officeId, role, companyIds }) =>
-      call("manage_invite_user", { p_name: name.trim(), p_email: email.trim().toLowerCase(), p_office_id: officeId, p_role: role, p_company_ids: companyIds }, identity),
+      call("manage_invite_user", { p_name: name.trim(), p_email: email.trim().toLowerCase(), p_office_id: role === "admin" ? null : officeId, p_role: role, p_company_ids: role === "admin" ? [] : companyIds }, identity),
     sendAccessLink: (identity, { userId, officeId }) => call("manage_send_access_link", { p_user_id: userId, p_office_id: officeId }, identity),
     pendingInvites: (identity) => call("manage_pending_invites", {}, identity),
     createUser: (

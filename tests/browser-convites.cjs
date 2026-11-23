@@ -92,6 +92,24 @@ module.exports = async ({ browser, baseURL }) => {
     await page.evaluate(() => (document.documentElement.dataset.theme = "light"));
     await page.locator("[data-access-link]").click();
     await page.waitForFunction(() => /Link de redefinição enviado para antigo@alfa\.test/.test(document.querySelector("[data-management-status]").textContent));
+    // Admin global: convite sem escritório nem empresas.
+    options.platformAdmin = true;
+    await page.locator("[data-users-refresh]").click();
+    await page.waitForFunction(() => !document.querySelector("#user-management").hasAttribute("aria-busy"));
+    await page.locator("[data-user-new]").click();
+    await page.locator('#manage-create [name="role"]').selectOption("admin");
+    assert.equal(await page.locator("[data-create-office]").isHidden(), true);
+    assert.equal(await page.locator("[data-create-companies-box]").isHidden(), true);
+    assert.match(await page.locator("[data-create-role-help]").innerText(), /Não precisa de vínculo com escritório/);
+    await page.locator('#manage-create [name="name"]').fill("Admin Novo");
+    await page.locator('#manage-create [name="email"]').fill("admin@fintria.test");
+    await page.locator("#manage-create button[type=submit]").click();
+    await page.waitForFunction(() => /Convite enviado para admin@fintria\.test/.test(document.querySelector("[data-management-status]").textContent));
+    assert.deepEqual(posts.at(-1), { action: "inviteUser", name: "Admin Novo", email: "admin@fintria.test", role: "admin", officeId: null, companyIds: [] });
+    await page.locator("[data-user-new]").click();
+    assert.equal(await page.locator("[data-create-office]").isVisible(), true, "Operador volta a pedir escritório");
+    await page.keyboard.press("Escape");
+    options.platformAdmin = false;
     // Sem envio de e-mail configurado, o convite fica indisponível.
     options.invitesEnabled = false;
     await page.locator("[data-users-refresh]").click();

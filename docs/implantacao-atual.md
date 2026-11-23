@@ -7,6 +7,10 @@ Consultar este registro antes de orientar o operador. Distinguir código dispon�
 
 
 
+## Convite de Admin sem escritório — 23/11/2026
+
+Migração **015_admin_invites.sql** (após 014). [Detalhes](convites.md#convite-de-admin).
+
 ## Convite de usuários — 23/11/2026
 
 Migração **014_user_invites.sql** (após 013) e atualização do código do nó **Montar e-mail** no n8n. Sem variável nova. [Passo a passo](convites.md#ativação).

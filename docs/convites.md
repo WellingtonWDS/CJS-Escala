@@ -9,6 +9,16 @@ O Gerente (ou o Admin) cadastra a pessoa informando **nome, e-mail, perfil e emp
 3. A pessoa abre o link, vê **Bem-vindo ao Reescala**, cria a senha (8 a 72 caracteres, com letras e números) e entra com o e-mail e a senha escolhida.
 4. Na lista de usuários, quem ainda não aceitou aparece com o selo **Convite pendente** (ou **Convite expirado**).
 
+## Convite de Admin
+
+Admin global não tem vínculo com escritório (acessa todos pelo próprio perfil). Ao escolher o perfil **Admin** no convite, os campos de escritório e empresas somem; só outro Admin pode convidar, reenviar o convite ou enviar link de redefinição para um Admin. Requer a migração **015_admin_invites.sql**:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/WellingtonWDS/CJS-Escala/main/database/migrations/015_admin_invites.sql -o /tmp/015_admin_invites.sql
+docker cp /tmp/015_admin_invites.sql postgres_apps:/tmp/015_admin_invites.sql
+docker exec postgres_apps psql -U postgres -d cjs_escala -v ON_ERROR_STOP=1 -f /tmp/015_admin_invites.sql
+```
+
 ## Ações do Gerente na edição do usuário
 
 - **Reenviar convite** (quem nunca entrou): gera um novo link de 7 dias e cancela o anterior.

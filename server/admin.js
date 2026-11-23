@@ -59,7 +59,8 @@ export function createAdminHandler({ env, fetchImpl = fetch, now = Date.now }) {
       const mailer = createMailer({ env, fetchImpl });
       // Link de acesso enviado pelo Gerente a quem já está cadastrado (convite ou redefinição).
       if (body?.action === "sendAccessLink") {
-        if (!uuid(body.userId) || !uuid(body.officeId)) return json({ error: "Selecione o usuário." }, 400);
+        // Admin global não tem escritório: officeId nulo (o banco confere que só Admin envia).
+        if (!uuid(body.userId) || !(uuid(body.officeId) || body.officeId === null)) return json({ error: "Selecione o usuário." }, 400);
         if (!mailer.configured()) return json({ error: "Envio de e-mails não configurado. Configure N8N_MAIL_URL na hospedagem." }, 503);
         const r = await service.sendAccessLink(identity, body);
         const enviado = await mailer.send(mensagemDeAcesso(r, origemPublica(env, request)));
@@ -69,7 +70,8 @@ export function createAdminHandler({ env, fetchImpl = fetch, now = Date.now }) {
       if (
         !(
           uuid(body?.officeId) ||
-          (body?.action === "updateUser" && body.officeId === null)
+          (body?.action === "updateUser" && body.officeId === null) ||
+          (body?.action === "inviteUser" && body.role === "admin" && body.officeId === null)
         ) ||
         !Array.isArray(body.companyIds) ||
         !body.companyIds.every(uuid)

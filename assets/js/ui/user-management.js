@@ -12,7 +12,7 @@ export function createUserManagement({ document, window }) {
   <div class="users-filters"><label>Pesquisar usuários<input data-users-search type="search" placeholder="Nome, e-mail ou escritório"></label><label>Escritório<select data-users-office><option value="">Todos os escritórios</option></select></label><button type="button" data-users-refresh>Atualizar lista</button></div>
   <p data-management-status role="status" aria-live="polite"></p><p data-users-count></p><div class="users-list" data-users-list></div>
   <dialog class="app-dialog user-editor user-editor-dialog no-print" data-user-editor aria-labelledby="user-editor-title"><div class="user-editor-topo"><h3 id="user-editor-title" data-editor-title></h3><button type="button" class="user-editor-fechar" data-user-cancel aria-label="Fechar">×</button></div>
-  <form id="manage-create" hidden><label>Nome completo<input name="name" required maxlength="160" autocomplete="off"></label><label>E-mail de acesso<input name="email" type="email" required maxlength="254" autocomplete="off"></label><p class="user-invite-help" data-invite-help>A pessoa recebe um convite neste e-mail e cria a própria senha. O link vale por 7 dias.</p><label>Escritório<select name="officeId" required></select></label><label>Perfil<select name="role"></select></label><p data-create-role-help></p><fieldset><legend>Empresas autorizadas</legend><label>Buscar empresas<input data-create-company-search type="search" placeholder="Razão social ou CNPJ"></label><div class="companies-acoes" data-create-bulk><button type="button" data-select-all="create">Selecionar todas</button><button type="button" data-select-none="create">Limpar seleção</button><span data-create-count aria-live="polite"></span></div><div class="management-companies" data-create-companies></div></fieldset><div class="users-form-actions"><button type="submit">Enviar convite</button><button type="button" data-user-cancel>Cancelar</button></div></form>
+  <form id="manage-create" hidden><label>Nome completo<input name="name" required maxlength="160" autocomplete="off"></label><label>E-mail de acesso<input name="email" type="email" required maxlength="254" autocomplete="off"></label><p class="user-invite-help" data-invite-help>A pessoa recebe um convite neste e-mail e cria a própria senha. O link vale por 7 dias.</p><label>Perfil<select name="role"></select></label><p data-create-role-help></p><label data-create-office>Escritório<select name="officeId" required></select></label><fieldset data-create-companies-box><legend>Empresas autorizadas</legend><label>Buscar empresas<input data-create-company-search type="search" placeholder="Razão social ou CNPJ"></label><div class="companies-acoes" data-create-bulk><button type="button" data-select-all="create">Selecionar todas</button><button type="button" data-select-none="create">Limpar seleção</button><span data-create-count aria-live="polite"></span></div><div class="management-companies" data-create-companies></div></fieldset><div class="users-form-actions"><button type="submit">Enviar convite</button><button type="button" data-user-cancel>Cancelar</button></div></form>
   <form id="manage-edit" hidden><p data-edit-office></p><label>Nome completo<input name="name" required maxlength="160" autocomplete="off"></label><label>E-mail de acesso<input name="email" type="email" required maxlength="254" autocomplete="off"></label><p data-identity-help></p><label>Perfil<select name="role"></select></label><label class="user-toggle"><input type="checkbox" role="switch" name="active"><span>Acesso ativo neste escritório</span></label><label class="user-toggle" data-account-toggle><input type="checkbox" role="switch" name="accountActive"><span>Conta ativa em todo o sistema</span></label><p data-edit-role-help></p><fieldset><legend>Empresas autorizadas</legend><label>Buscar empresas<input data-edit-company-search type="search" placeholder="Razão social ou CNPJ"></label><div class="companies-acoes" data-edit-bulk><button type="button" data-select-all="edit">Selecionar todas</button><button type="button" data-select-none="edit">Limpar seleção</button><span data-edit-count aria-live="polite"></span></div><div class="management-companies" data-edit-companies></div></fieldset><div class="user-access-link" data-access-box><p data-access-help></p><button type="button" data-access-link></button></div><p>A inativação no escritório preserva os preenchimentos e os vínculos de outros escritórios. Inativar a conta inteira revoga suas sessões.</p><div class="users-form-actions"><button type="submit">Salvar alterações</button><button type="button" data-user-cancel>Cancelar</button></div></form></dialog>`;
   const create = root.querySelector("#manage-create"),
     edit = root.querySelector("#manage-edit"),
@@ -113,9 +113,18 @@ export function createUserManagement({ document, window }) {
   function roleHelp(prefix) {
     const form = prefix === "create" ? create : edit,
       role = form.elements.role.value;
+    if (prefix === "create") {
+      // Admin global não tem escritório: esconde escritório e empresas.
+      const admin = role === "admin";
+      field("create-office").hidden = admin;
+      field("create-companies-box").hidden = admin;
+      form.elements.officeId.disabled = admin;
+    }
     field(`${prefix}-role-help`).textContent =
       role === "admin"
-        ? "Admin acessa todos os escritórios e funcionalidades."
+        ? prefix === "create"
+          ? "Admin acessa todos os escritórios e funcionalidades. Não precisa de vínculo com escritório nem de empresas."
+          : "Admin acessa todos os escritórios e funcionalidades."
         : role === "manager"
           ? "Gerente acessa todas as empresas deste escritório e gerencia seus usuários."
           : role === "viewer"
@@ -301,7 +310,7 @@ export function createUserManagement({ document, window }) {
     );
     roleHelp("edit");
     const convite = conviteDe(user), acesso = field("access-link");
-    const podeEnviar = options.invitesEnabled && user.canEdit && !!user.email && user.id !== options.currentUserId && user.membershipActive && user.accountActive && !!user.officeId;
+    const podeEnviar = options.invitesEnabled && user.canEdit && !!user.email && user.id !== options.currentUserId && user.accountActive && (user.officeId ? user.membershipActive : user.role === "admin" && options.platformAdmin);
     field("access-box").hidden = !podeEnviar;
     acesso.textContent = convite ? "Reenviar convite" : "Enviar link para redefinir a senha";
     field("access-help").textContent = convite
@@ -388,9 +397,10 @@ export function createUserManagement({ document, window }) {
     event.preventDefault();
     run(async () => {
       const fields = Object.fromEntries(new FormData(create));
+      if (fields.role === "admin") fields.officeId = null;
       if (!options.invitesEnabled)
         throw Error("O envio de e-mails não está configurado. Fale com o administrador da plataforma.");
-      const companyIds = selectedIds("create");
+      const companyIds = fields.role === "admin" ? [] : selectedIds("create");
       if (fields.role === "operator" && !companyIds.length)
         throw Error("Selecione ao menos uma empresa para o operador.");
       const result = await call({

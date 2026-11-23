@@ -72,3 +72,14 @@ test("lista de usuários traz convites pendentes; sem a migração 014, lista va
   body = await (await t.get()).json();
   assert.deepEqual(body.pendingInvites, []);
 });
+
+test("Admin global é convidado sem escritório nem empresas", async () => {
+  const t = await setup({ manage_invite_user: { ...resposta, mail: { ...resposta.mail, officeName: null } } });
+  const res = await t.post({ action: "inviteUser", name: "Novo Admin", email: "admin2@x.test", officeId: null, role: "admin", companyIds: [company] });
+  assert.equal(res.status, 201);
+  assert.deepEqual(t.chamadas[0].body, { p_name: "Novo Admin", p_email: "admin2@x.test", p_office_id: null, p_role: "admin", p_company_ids: [] });
+  assert.equal(t.chamadas[1].body.officeName, "");
+  assert.equal((await t.post({ action: "inviteUser", name: "Op", email: "op@x.test", officeId: null, role: "operator", companyIds: [] })).status, 400, "demais perfis exigem escritório");
+  const r = await t.post({ action: "sendAccessLink", userId: "10000000-0000-0000-0000-000000000099", officeId: null });
+  assert.notEqual(r.status, 400, "reenvio para Admin sem escritório é aceito pela API");
+});
