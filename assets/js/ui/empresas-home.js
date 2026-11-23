@@ -343,7 +343,7 @@ export function createCompaniesHome({
   });
 
   return {
-    async show({ companyId = null, officeId = null } = {}) {
+    async show({ companyId = null, officeId = null, novaEmpresa = false } = {}) {
       // Entrar na tela mostra a lista atualizada (ou a empresa pedida, ao voltar do diagnóstico).
       atual = null;
       detail.hidden = true;
@@ -352,6 +352,8 @@ export function createCompaniesHome({
         await run(carregar);
         status("");
         if (companyId) await mostrarEmpresa(companyId, officeId);
+        // Vindo de "Gerar escala" sem empresas: já abre o cadastro da primeira.
+        else if (novaEmpresa && !data.companies.length && data.offices.some((o) => o.canCreate)) abrirCadastro();
       } catch (error) {
         status(error.status === 401 ? "A sessão expirou. Entre novamente." : error.message || "Não foi possível carregar as empresas.");
       }

@@ -18,6 +18,10 @@ Carregamento imediato na geração atual/proposta, cálculo em Worker local, blo
 
 
 
+## Minha conta: nome e e-mail — 23/11/2026
+
+Edição do próprio nome e troca de e-mail confirmada pelo link enviado ao endereço novo (migração **019**); Gerar escala bloqueado sem empresas cadastradas. [Detalhes](minha-conta.md).
+
 ## Convite de usuários — 23/11/2026
 
 Cadastro por convite (migração **014**), reenvio e redefinição pelo Gerente, e-mail de convite no fluxo n8n. [Detalhes](convites.md).

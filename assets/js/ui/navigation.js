@@ -56,21 +56,28 @@ export function initNavigation({ session, document, window, app, workspace, remo
   accountActions.append(document.getElementById("btn-theme"), logout);
   sidebar.append(accountActions);
   const role = session.user.role || "operator";
-  // Nome do usuário abre "Minha conta" (alterar senha) no login individual.
+  // Nome do usuário abre "Minha conta" (nome, e-mail e senha) no login individual.
   const nomeUsuario = document.getElementById("sidebar-user");
   if (session.user.id && session.persistenceEnabled) {
     const conta = document.createElement("button");
     conta.type = "button";
     conta.className = "sidebar-conta";
     conta.dataset.minhaConta = "";
-    conta.title = "Minha conta: alterar senha";
+    conta.title = "Minha conta: nome, e-mail e senha";
     conta.setAttribute("aria-haspopup", "dialog");
     conta.innerHTML = '<span class="sidebar-conta-nome"></span><span class="sidebar-conta-icone" aria-hidden="true">⚙</span>';
     conta.querySelector(".sidebar-conta-nome").textContent = session.user.name;
     conta.setAttribute("aria-label", `Minha conta — ${session.user.name}`);
     conta.addEventListener("click", async () => {
       const { openMinhaConta } = await import("./minha-conta.js");
-      openMinhaConta({ document, window, user: session.user, returnFocus: conta });
+      openMinhaConta({
+        document, window, user: session.user, returnFocus: conta,
+        onNameChange: (nome) => {
+          session.user.name = nome;
+          conta.querySelector(".sidebar-conta-nome").textContent = nome;
+          conta.setAttribute("aria-label", `Minha conta — ${nome}`);
+        },
+      });
     });
     nomeUsuario.replaceChildren(conta);
   } else nomeUsuario.textContent = session.user.name;
@@ -94,6 +101,35 @@ export function initNavigation({ session, document, window, app, workspace, remo
     if (button.dataset.appView === "home") button.hidden = !hasHome;
     else if (button.dataset.appView !== "schedule") button.hidden = !canManage;
   });
+  // "Gerar escala" exige ao menos uma empresa cadastrada (lista em cache, renovada ao mudar empresas).
+  let empresas = null;
+  window.addEventListener("cjs-company-changed", () => (empresas = null));
+  async function semEmpresas() {
+    if (!hasHome || workspace?.context?.()) return null;
+    try {
+      if (!empresas) {
+        const { createCompanyService } = await import("../services/companies.js");
+        empresas = createCompanyService({ fetchImpl: window.fetch.bind(window) }).options();
+      }
+      const r = await empresas;
+      return (r?.companies || []).length ? null : r;
+    } catch {
+      // Sem resposta do servidor não bloqueia: a tela de escala segue com as próprias checagens.
+      empresas = null;
+      return null;
+    }
+  }
+  async function avisarSemEmpresas(r) {
+    const podeCriar = (r.offices || []).some((o) => o.canCreate);
+    const texto = podeCriar
+      ? "Ainda não há empresas cadastradas. Cadastre a primeira empresa para gerar escalas."
+      : role === "admin"
+        ? "Ainda não há escritórios nem empresas. Cadastre um escritório no Painel Admin e, depois, a primeira empresa."
+        : "Ainda não há empresas liberadas para você. Peça ao gerente do escritório para cadastrar a empresa ou liberar o seu acesso.";
+    const { getDialogs } = await import("./dialogs.js");
+    await getDialogs(document).alert(texto, { title: "Cadastre uma empresa primeiro", confirmText: podeCriar ? "Cadastrar empresa" : "Entendi" });
+    return podeCriar;
+  }
   let management,
     diagnosticRequest = null,
     home,
@@ -112,6 +148,14 @@ export function initNavigation({ session, document, window, app, workspace, remo
     )
       return;
     if (view === "home" && !hasHome) view = "schedule";
+    if (view === "schedule" && hasHome) {
+      const vazio = await semEmpresas();
+      if (vazio) {
+        const podeCriar = await avisarSemEmpresas(vazio);
+        view = "home";
+        homeOptions = { novaEmpresa: podeCriar };
+      }
+    }
     // O diagnóstico só abre a partir do cartão da empresa.
     if (view === "diagnostics" && !diagnosticRequest) view = hasHome ? "home" : "schedule";
     if (!["schedule", "home"].includes(view) && !canManage) return;
@@ -202,5 +246,7 @@ export function initNavigation({ session, document, window, app, workspace, remo
   });
   if (window.location.hash === "#usuarios" && canManage) show("users");
   else if (hasHome && ["", "#", "#empresas", "#diagnostico"].includes(window.location.hash)) show("home");
+  // Recarregar numa etapa da escala também confere se há empresa cadastrada.
+  else if (hasHome && /^#sec-/.test(window.location.hash)) show("schedule");
   return { show };
 }

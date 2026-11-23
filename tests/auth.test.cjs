@@ -202,7 +202,7 @@ test("painel /admin exige sessão e só abre para conta individual", async () =>
 test("recuperação de senha é pública: página do link e API, sem abrir o sistema", async () => {
   const { guard } = await load();
   const env = { AUTH_SESSION_SECRET: "x".repeat(40) };
-  for (const path of ["/redefinir-senha.html", "/assets/js/redefinir-senha.js", "/api/password", "/assets/css/login.css"])
+  for (const path of ["/redefinir-senha.html", "/assets/js/redefinir-senha.js", "/api/password", "/api/account", "/confirmar-email.html", "/assets/js/confirmar-email.js", "/assets/css/login.css"])
     assert.equal(await guard(new Request("https://example.com" + path), env), null, path);
   assert.equal((await guard(new Request("https://example.com/api/persistence"), env)).status, 401);
 });

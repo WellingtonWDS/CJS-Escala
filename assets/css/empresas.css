@@ -248,8 +248,21 @@ html[data-theme="dark"] .user-editor-dialog .users-form-actions { border-color: 
 @media (max-width: 600px) { .user-editor-dialog .users-form-actions { margin: 0 -16px -18px; padding: 12px 16px 16px; } }
 
 /* Minha conta (alterar senha) */
-.minha-conta { width: min(460px, calc(100% - 24px)); }
+.minha-conta { width: min(480px, calc(100% - 24px)); overflow: auto; padding: 22px 26px !important; }
+@media (max-width: 480px) { .minha-conta { padding: 18px 16px !important; } }
 .minha-conta form { display: grid; gap: 6px; }
+.minha-conta .conta-secao { padding: 12px 0; border-top: 1px solid #dbe3ea; }
+.minha-conta .conta-secao:first-of-type { border-top: 0; padding-top: 0; }
+.minha-conta .conta-linha { display: flex; gap: 8px; align-items: center; }
+.minha-conta .conta-linha input { flex: 1; min-width: 0; }
+.minha-conta .conta-linha button { flex-shrink: 0; }
+.minha-conta .conta-linha-fim { justify-content: flex-end; margin-top: 8px; }
+.minha-conta .conta-email-atual { margin: 0; font-size: 14px; overflow-wrap: anywhere; }
+.minha-conta .conta-pendente { margin: 4px 0 0; padding: 8px 10px; border-radius: 8px; background: #fff7e6; color: #7a4a00; font-size: 13px; overflow-wrap: anywhere; }
+.minha-conta button.conta-abrir { justify-self: start; margin-top: 6px; }
+html[data-theme="dark"] .minha-conta .conta-secao { border-color: #33465c; }
+html[data-theme="dark"] .minha-conta .conta-pendente { background: #3a2c10; color: #ffd98a; }
+@media (max-width: 480px) { .minha-conta .conta-linha:not(.conta-linha-fim) { flex-direction: column; align-items: stretch; } }
 .minha-conta .conta-topo { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
 .minha-conta .conta-topo h2 { margin: 0; font-size: 1.2rem; }
 .minha-conta .conta-sobretitulo { margin: 0; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #167455; }
@@ -277,3 +290,10 @@ html[data-theme="dark"] .minha-conta .conta-senha button { background: transpare
 
 /* Aviso de salvamento só na tela Gerar escala */
 body[data-app-view]:not([data-app-view="schedule"]) [data-footer-storage] { display: none; }
+/* Minha conta: botões das seções de nome e e-mail. */
+.minha-conta .conta-secao button[type="submit"]:not([data-dialog-accept]) { min-height: 42px; padding: 8px 16px; background: #167455; border: 1px solid #167455; color: #fff; border-radius: 8px; font-weight: 700; }
+.minha-conta .conta-secao button[type="submit"]:not([data-dialog-accept]):hover:not(:disabled) { background: #105c43; }
+.minha-conta button.conta-abrir, .minha-conta [data-email-cancelar] { min-height: 40px; padding: 8px 16px; background: #fff; color: #172d43; border: 1px solid #b9c9d6; border-radius: 8px; font-weight: 600; }
+.minha-conta button.conta-abrir:hover, .minha-conta [data-email-cancelar]:hover { background: #eef3f7; }
+html[data-theme="dark"] .minha-conta button.conta-abrir, html[data-theme="dark"] .minha-conta [data-email-cancelar] { background: #1e2d40 !important; color: #e8eef7 !important; border-color: #7d93ae !important; }
+html[data-theme="dark"] .minha-conta .conta-secao button[type="submit"]:not([data-dialog-accept]) { background: #167455 !important; border-color: #3fae86 !important; color: #fff !important; }

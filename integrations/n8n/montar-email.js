@@ -7,8 +7,8 @@ const body = $json.body ?? {};
 const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const linkOk = (u) => typeof u === "string" && u.length <= 400 && (u === ORIGEM_PERMITIDA || u.startsWith(ORIGEM_PERMITIDA + "/"));
 const emailOk = (e) => typeof e === "string" && e.length <= 254 && /^[^\s@<>"']+@[^\s@<>"']+\.[^\s@<>"']+$/.test(e);
-const tipos = ["password_reset", "password_changed", "invite", "plan_notice"];
-if (!tipos.includes(body.type) || !emailOk(body.to) || !linkOk(body.loginUrl) || (body.type === "password_reset" && !linkOk(body.resetUrl)) || (body.type === "invite" && !linkOk(body.inviteUrl)) || (body.type === "plan_notice" && (!linkOk(body.appUrl) || !["plano_80", "plano_100", "troca", "ciclo"].includes(body.kind))))
+const tipos = ["password_reset", "password_changed", "invite", "plan_notice", "email_change", "email_changed"];
+if (!tipos.includes(body.type) || !emailOk(body.to) || !linkOk(body.loginUrl) || (body.type === "password_reset" && !linkOk(body.resetUrl)) || (body.type === "invite" && !linkOk(body.inviteUrl)) || (body.type === "email_change" && !linkOk(body.confirmUrl)) || (body.type === "email_changed" && !emailOk(body.newEmail)) || (body.type === "plan_notice" && (!linkOk(body.appUrl) || !["plano_80", "plano_100", "troca", "ciclo"].includes(body.kind))))
   return [{ json: { valid: false } }];
 const nome = String(body.name || "").trim().split(/\s+/)[0].slice(0, 60) || "olá";
 const quando = (iso) => {
@@ -147,6 +147,31 @@ ${botao(body.appUrl, "Abrir o Reescala")}
 <p style="margin:0;font-size:12px;color:${COR.suave}">Você recebe este aviso por ser Gerente do escritório no Reescala.</p>`,
   });
   text = `Olá, ${nome}.\n\n${textos.texto}\n\nAbrir o Reescala: ${body.appUrl}\n\nVocê recebe este aviso por ser Gerente do escritório no Reescala.\nReescala — mensagem automática, não responda.`;
+} else if (body.type === "email_change") {
+  const prazo = validade(body.expiresMinutes);
+  subject = "Confirme seu novo e-mail no Reescala";
+  html = layout({
+    preheader: `Confirme este endereço para usá-lo no Reescala. O link vale por ${prazo}.`,
+    titulo: "Confirme seu novo e-mail",
+    corpo: `<p style="margin:0 0 12px">Olá, ${esc(nome)}.</p>
+<p style="margin:0">Recebemos um pedido para que <strong>${esc(body.to)}</strong> passe a ser o e-mail de acesso da sua conta no Reescala. Para concluir, confirme pelo botão abaixo.</p>
+${botao(body.confirmUrl, "Confirmar novo e-mail")}
+<p style="margin:0;font-size:13px;color:${COR.suave}">O link vale por <strong>${prazo}</strong> e pode ser usado uma única vez. Até a confirmação, o e-mail atual${emailOk(body.currentEmail) ? ` (${esc(body.currentEmail)})` : ""} continua valendo para entrar.</p>
+${caixa(`Se o botão não funcionar, copie e cole este endereço no navegador:<br><a href="${esc(body.confirmUrl)}" target="_blank" rel="noopener" style="color:${COR.verde};word-break:break-all">${esc(body.confirmUrl)}</a>`)}
+${caixa(`<strong>Não pediu esta troca?</strong> Basta ignorar este e-mail: nada muda na conta sem a confirmação.`, COR.alerta, COR.alertaTexto)}`,
+  });
+  text = `Olá, ${nome}.\n\nRecebemos um pedido para que ${body.to} passe a ser o e-mail de acesso da sua conta no Reescala.\nConfirme pelo link abaixo (vale por ${prazo} e pode ser usado uma única vez):\n\n${body.confirmUrl}\n\nAté a confirmação, o e-mail atual continua valendo. Não pediu esta troca? Ignore este e-mail.\n\nReescala — mensagem automática, não responda.`;
+} else if (body.type === "email_changed") {
+  const momento = quando(body.changedAt);
+  subject = "O e-mail da sua conta no Reescala foi alterado";
+  html = layout({
+    preheader: "Aviso de troca do e-mail de acesso.",
+    titulo: "E-mail de acesso alterado",
+    corpo: `<p style="margin:0 0 12px">Olá, ${esc(nome)}.</p>
+<p style="margin:0">O e-mail de acesso da sua conta no Reescala foi alterado${momento ? ` em <strong>${esc(momento)}</strong> (horário de Brasília)` : ""} para <strong>${esc(body.newEmail)}</strong>. A partir de agora, este endereço (${esc(body.to)}) não serve mais para entrar.</p>
+${caixa(`<strong>Não foi você?</strong> Fale imediatamente com o gerente do seu escritório para recuperar o acesso.`, COR.alerta, COR.alertaTexto)}`,
+  });
+  text = `Olá, ${nome}.\n\nO e-mail de acesso da sua conta no Reescala foi alterado${momento ? ` em ${momento} (horário de Brasília)` : ""} para ${body.newEmail}. Este endereço (${body.to}) não serve mais para entrar.\n\nNão foi você? Fale imediatamente com o gerente do seu escritório.\n\nReescala — mensagem automática, não responda.`;
 } else {
   const momento = quando(body.changedAt);
   subject = "Sua senha do Reescala foi alterada";

@@ -7,6 +7,10 @@ Consultar este registro antes de orientar o operador. Distinguir código dispon�
 
 
 
+## Minha conta: nome e e-mail — 23/11/2026
+
+Migração **019_account_profile.sql** (após 018), função Vercel `api/account.js`, página `confirmar-email.html` e código atualizado do nó **Montar e-mail** (tipos `email_change` e `email_changed`). Gerar escala bloqueado sem empresas (sem migração). [Passo a passo](minha-conta.md#ativação).
+
 ## Avisos ao Gerente — 23/11/2026
 
 Migração **018_plan_notices.sql** (após 017), função Vercel `api/notices.js`, código atualizado do nó **Montar e-mail** e novo fluxo n8n de agendamento diário. [Passo a passo](avisos-gerente.md#ativação).

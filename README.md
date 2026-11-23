@@ -101,6 +101,10 @@ O fluxo principal já inclui cadastro manual e por planilhas, importação Domí
 
 Regras **`ec141-2026-11-11-13`**: gere novamente resultados anteriores; os cadastros permanecem. Sem migração SQL, nova RPC ou variável de ambiente.
 
+## Minha conta: nome e e-mail — 23/11/2026
+
+Em **Minha conta**, a pessoa edita o próprio nome e troca o e-mail de acesso confirmando pelo link enviado ao endereço novo (24 h; o endereço antigo é avisado). Migração **019_account_profile.sql**. **Gerar escala** fica bloqueado enquanto não houver empresa cadastrada: o Gerente é levado ao cadastro da primeira empresa; o Operador é orientado a pedir ao gerente. [Detalhes](docs/minha-conta.md).
+
 ## Avisos automáticos ao Gerente — 23/11/2026
 
 E-mails ao Gerente quando o plano chega a 80% e a 100%, quando um Operador tenta uma troca de quadro e quando o ciclo renova. Fila no banco (migração **018_plan_notices.sql**), envio imediato e diário (fluxo n8n `cjs-avisos-diarios`). O aviso “Salve seus preenchimentos por empresa…” do rodapé aparece só em Gerar escala. [Detalhes](docs/avisos-gerente.md).

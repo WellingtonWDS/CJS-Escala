@@ -92,7 +92,7 @@ export function createDevServer({
         return;
       }
       if (
-        !["/", "/index.html", "/login.html", "/redefinir-senha.html", "/admin.html"].includes(
+        !["/", "/index.html", "/login.html", "/redefinir-senha.html", "/confirmar-email.html", "/admin.html"].includes(
           pathname,
         ) &&
         !pathname.startsWith("/assets/") &&
