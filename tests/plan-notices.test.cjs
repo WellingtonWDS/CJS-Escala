@@ -88,3 +88,10 @@ test("fluxos n8n: e-mails dos quatro avisos e agendamento diário protegido", as
   assert.equal(http.parameters.genericAuthType, "httpHeaderAuth");
   assert.equal(diario.settings.timezone, "America/Sao_Paulo");
 });
+
+test("código do nó Montar e-mail em arquivo próprio é idêntico ao do fluxo", async () => {
+  const { readFile } = require("node:fs/promises");
+  const wf = JSON.parse(await readFile(new URL("../integrations/n8n/cjs-mail.template.json", `file://${__filename}`), "utf8"));
+  const arquivo = await readFile(new URL("../integrations/n8n/montar-email.js", `file://${__filename}`), "utf8");
+  assert.equal(arquivo.trimEnd(), wf.nodes.find((n) => n.name === "Montar e-mail").parameters.jsCode.trimEnd());
+});

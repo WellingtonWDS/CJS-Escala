@@ -27,7 +27,7 @@ docker cp /tmp/018_plan_notices.sql postgres_apps:/tmp/018_plan_notices.sql
 docker exec postgres_apps psql -U postgres -d cjs_escala -v ON_ERROR_STOP=1 -f /tmp/018_plan_notices.sql
 ```
 
-2. n8n — e-mails: no fluxo de e-mails, substituir o código do nó **Montar e-mail** pelo do modelo atualizado ([cjs-mail.template.json](../integrations/n8n/cjs-mail.template.json)), que passa a montar o tipo `plan_notice`.
+2. n8n — e-mails: no fluxo de e-mails, substituir todo o código do nó **Montar e-mail** pelo conteúdo de [integrations/n8n/montar-email.js](../integrations/n8n/montar-email.js) (versão bruta: https://raw.githubusercontent.com/WellingtonWDS/CJS-Escala/main/integrations/n8n/montar-email.js), que passa a montar o tipo `plan_notice`.
 
 3. n8n — agendamento: importar [cjs-avisos-diarios.template.json](../integrations/n8n/cjs-avisos-diarios.template.json). No nó **Enviar avisos pendentes**, usar a mesma credencial Header Auth (`X-CJS-Service-Key`) dos outros fluxos e ativar. Ele chama `POST https://reescala.fintria.com.br/api/notices` todo dia às 8h (horário de Brasília).
 
