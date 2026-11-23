@@ -212,3 +212,37 @@ html[data-theme="dark"] .user-invite-badge { background: #3b2f1b; color: #ffdaa0
 html[data-theme="dark"] .user-invite-badge[data-expired="true"] { background: #43201d; color: #ffb4ab !important; }
 html[data-theme="dark"] .user-invite-help { background: #143b30; color: #9ae8c6; }
 html[data-theme="dark"] .user-access-link { background: #1e2d40; border-color: #3b4e66; }
+
+/* Editor de usuário em modal */
+.user-editor-dialog { width: min(760px, calc(100% - 24px)); max-height: calc(100dvh - 32px); padding: 0; overflow: auto; }
+.user-editor-dialog::backdrop { background: #0b254599; backdrop-filter: blur(2px); }
+.user-editor-dialog .user-editor-topo { position: sticky; top: 0; z-index: 2; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 18px 24px 14px; background: inherit; border-bottom: 1px solid #e3eaf0; }
+.user-editor-dialog .user-editor-topo h3 { margin: 0; font-size: 1.15rem; font-weight: 700; }
+.user-editor-dialog button.user-editor-fechar { width: 38px; min-width: 38px; height: 38px; min-height: 38px; padding: 0; border-radius: 10px; font-size: 22px; line-height: 1; }
+.user-editor-dialog form { padding: 18px 24px 24px; }
+.user-editor-dialog .users-form-actions { position: sticky; bottom: 0; padding-top: 12px; background: inherit; }
+.companies-acoes { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 0 8px; }
+.companies-acoes[hidden] { display: none; }
+.companies-acoes button { min-height: 34px; padding: 4px 12px; font-size: 13px; }
+.companies-acoes span { margin-left: auto; font-size: 12px; color: #536879; }
+html[data-theme="dark"] .user-editor-dialog .user-editor-topo { border-color: #3b4e66; }
+html[data-theme="dark"] .companies-acoes span { color: #b1bfd2; }
+@media (max-width: 600px) {
+  .user-editor-dialog .user-editor-topo { padding: 14px 16px 12px; }
+  .user-editor-dialog form { padding: 14px 16px 18px; }
+  .companies-acoes span { margin-left: 0; width: 100%; }
+}
+.user-editor-dialog .companies-acoes button, .user-editor-dialog .user-access-link button { background: #fff; color: #172d43; border: 1px solid #b9c9d6; border-radius: 8px; font-weight: 600; cursor: pointer; }
+.user-editor-dialog .companies-acoes button:hover, .user-editor-dialog .user-access-link button:hover { background: #eef3f7; }
+.user-editor-dialog .user-access-link button { min-height: 38px; padding: 6px 14px; }
+html[data-theme="dark"] .user-editor-dialog .companies-acoes button, html[data-theme="dark"] .user-editor-dialog .user-access-link button { background: #1e2d40 !important; color: #e8eef7 !important; border-color: #7d93ae !important; }
+.user-editor-dialog .users-form-actions button[type="submit"] { background: #167455; border-color: #167455; color: #fff; }
+.user-editor-dialog .users-form-actions button[type="submit"]:hover:not(:disabled) { background: #105c43; }
+.user-editor-dialog.user-editor { padding: 0 !important; background: #fafcfd; }
+.user-editor-dialog .user-editor-topo, .user-editor-dialog .users-form-actions { background: #fafcfd; }
+.user-editor-dialog .users-form-actions { margin: 0 -24px -24px; padding: 12px 24px 18px; border-top: 1px solid #e3eaf0; }
+.user-editor-dialog .management-companies label { display: flex !important; flex-direction: row !important; align-items: center; gap: 10px; text-align: left; }
+.user-editor-dialog .management-companies input[type="checkbox"] { width: 18px; height: 18px; min-height: 0; flex: none; margin: 0; }
+html[data-theme="dark"] .user-editor-dialog.user-editor, html[data-theme="dark"] .user-editor-dialog .user-editor-topo, html[data-theme="dark"] .user-editor-dialog .users-form-actions { background: #162130 !important; }
+html[data-theme="dark"] .user-editor-dialog .users-form-actions { border-color: #3b4e66; }
+@media (max-width: 600px) { .user-editor-dialog .users-form-actions { margin: 0 -16px -18px; padding: 12px 16px 16px; } }

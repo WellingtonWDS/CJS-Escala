@@ -11,9 +11,9 @@ export function createUserManagement({ document, window }) {
   root.innerHTML = `<div class="users-heading"><div><h2>Usuários</h2><p>Consulte os cadastros e gerencie os acessos conforme suas permissões.</p></div><button type="button" data-user-new disabled>Novo usuário</button></div>
   <div class="users-filters"><label>Pesquisar usuários<input data-users-search type="search" placeholder="Nome, e-mail ou escritório"></label><label>Escritório<select data-users-office><option value="">Todos os escritórios</option></select></label><button type="button" data-users-refresh>Atualizar lista</button></div>
   <p data-management-status role="status" aria-live="polite"></p><p data-users-count></p><div class="users-list" data-users-list></div>
-  <section class="user-editor" data-user-editor hidden><h3 data-editor-title></h3>
-  <form id="manage-create" hidden><label>Nome completo<input name="name" required maxlength="160" autocomplete="off"></label><label>E-mail de acesso<input name="email" type="email" required maxlength="254" autocomplete="off"></label><p class="user-invite-help" data-invite-help>A pessoa recebe um convite neste e-mail e cria a própria senha. O link vale por 7 dias.</p><label>Escritório<select name="officeId" required></select></label><label>Perfil<select name="role"></select></label><p data-create-role-help></p><fieldset><legend>Empresas autorizadas</legend><label>Buscar empresas<input data-create-company-search type="search" placeholder="Razão social ou CNPJ"></label><div class="management-companies" data-create-companies></div></fieldset><div class="users-form-actions"><button type="submit">Enviar convite</button><button type="button" data-user-cancel>Cancelar</button></div></form>
-  <form id="manage-edit" hidden><p data-edit-office></p><label>Nome completo<input name="name" required maxlength="160" autocomplete="off"></label><label>E-mail de acesso<input name="email" type="email" required maxlength="254" autocomplete="off"></label><p data-identity-help></p><label>Perfil<select name="role"></select></label><label class="user-toggle"><input type="checkbox" role="switch" name="active"><span>Acesso ativo neste escritório</span></label><label class="user-toggle" data-account-toggle><input type="checkbox" role="switch" name="accountActive"><span>Conta ativa em todo o sistema</span></label><p data-edit-role-help></p><fieldset><legend>Empresas autorizadas</legend><label>Buscar empresas<input data-edit-company-search type="search" placeholder="Razão social ou CNPJ"></label><div class="management-companies" data-edit-companies></div></fieldset><div class="user-access-link" data-access-box><p data-access-help></p><button type="button" data-access-link></button></div><p>A inativação no escritório preserva os preenchimentos e os vínculos de outros escritórios. Inativar a conta inteira revoga suas sessões.</p><div class="users-form-actions"><button type="submit">Salvar alterações</button><button type="button" data-user-cancel>Cancelar</button></div></form></section>`;
+  <dialog class="app-dialog user-editor user-editor-dialog no-print" data-user-editor aria-labelledby="user-editor-title"><div class="user-editor-topo"><h3 id="user-editor-title" data-editor-title></h3><button type="button" class="user-editor-fechar" data-user-cancel aria-label="Fechar">×</button></div>
+  <form id="manage-create" hidden><label>Nome completo<input name="name" required maxlength="160" autocomplete="off"></label><label>E-mail de acesso<input name="email" type="email" required maxlength="254" autocomplete="off"></label><p class="user-invite-help" data-invite-help>A pessoa recebe um convite neste e-mail e cria a própria senha. O link vale por 7 dias.</p><label>Escritório<select name="officeId" required></select></label><label>Perfil<select name="role"></select></label><p data-create-role-help></p><fieldset><legend>Empresas autorizadas</legend><label>Buscar empresas<input data-create-company-search type="search" placeholder="Razão social ou CNPJ"></label><div class="companies-acoes" data-create-bulk><button type="button" data-select-all="create">Selecionar todas</button><button type="button" data-select-none="create">Limpar seleção</button><span data-create-count aria-live="polite"></span></div><div class="management-companies" data-create-companies></div></fieldset><div class="users-form-actions"><button type="submit">Enviar convite</button><button type="button" data-user-cancel>Cancelar</button></div></form>
+  <form id="manage-edit" hidden><p data-edit-office></p><label>Nome completo<input name="name" required maxlength="160" autocomplete="off"></label><label>E-mail de acesso<input name="email" type="email" required maxlength="254" autocomplete="off"></label><p data-identity-help></p><label>Perfil<select name="role"></select></label><label class="user-toggle"><input type="checkbox" role="switch" name="active"><span>Acesso ativo neste escritório</span></label><label class="user-toggle" data-account-toggle><input type="checkbox" role="switch" name="accountActive"><span>Conta ativa em todo o sistema</span></label><p data-edit-role-help></p><fieldset><legend>Empresas autorizadas</legend><label>Buscar empresas<input data-edit-company-search type="search" placeholder="Razão social ou CNPJ"></label><div class="companies-acoes" data-edit-bulk><button type="button" data-select-all="edit">Selecionar todas</button><button type="button" data-select-none="edit">Limpar seleção</button><span data-edit-count aria-live="polite"></span></div><div class="management-companies" data-edit-companies></div></fieldset><div class="user-access-link" data-access-box><p data-access-help></p><button type="button" data-access-link></button></div><p>A inativação no escritório preserva os preenchimentos e os vínculos de outros escritórios. Inativar a conta inteira revoga suas sessões.</p><div class="users-form-actions"><button type="submit">Salvar alterações</button><button type="button" data-user-cancel>Cancelar</button></div></form></dialog>`;
   const create = root.querySelector("#manage-create"),
     edit = root.querySelector("#manage-edit"),
     status = root.querySelector("[data-management-status]"),
@@ -68,8 +68,12 @@ export function createUserManagement({ document, window }) {
       root.removeAttribute("aria-busy");
     }
   }
+  // Editor em modal (novo usuário e edição).
+  const editor = field("user-editor");
+  const abrirEditor = () => { if (!editor.open) editor.showModal(); };
+  editor.addEventListener("cancel", (event) => { event.preventDefault(); if (!busy) closeEditor(); });
   function closeEditor() {
-    field("user-editor").hidden = true;
+    if (editor.open) editor.close();
     create.hidden = true;
     edit.hidden = true;
     editing = null;
@@ -93,6 +97,14 @@ export function createUserManagement({ document, window }) {
     }
     if (!container.children.length)
       container.textContent = "Não há empresas cadastradas neste escritório.";
+    // Seleção em lote só quando o perfil escolhe empresas (Gerente/Admin já têm todas).
+    field(`${prefix}-bulk`).hidden = all || !container.querySelector("input");
+    contar(prefix);
+  }
+  function contar(prefix) {
+    const todas = field(`${prefix}-companies`).querySelectorAll("input"),
+      marcadas = field(`${prefix}-companies`).querySelectorAll("input:checked");
+    field(`${prefix}-count`).textContent = todas.length ? `${marcadas.length} de ${todas.length} selecionada(s)` : "";
   }
   const selectedIds = (prefix) =>
     [...field(`${prefix}-companies`).querySelectorAll("input:checked")].map(
@@ -259,7 +271,7 @@ export function createUserManagement({ document, window }) {
     editing = user;
     create.hidden = true;
     edit.hidden = false;
-    field("user-editor").hidden = false;
+    abrirEditor();
     field("editor-title").textContent = `Editar ${user.name}`;
     field("edit-office").textContent = officeName(user.officeId);
     edit.elements.name.value = user.name;
@@ -296,17 +308,13 @@ export function createUserManagement({ document, window }) {
       ? `${user.name} ainda não criou a senha${convite.expired ? " e o convite expirou" : ""}. Um novo convite cancela o anterior.`
       : `Envia a ${user.email || "este usuário"} um link (válido por 24 horas) para criar uma nova senha. Você não vê nem define a senha.`;
     edit.elements.name.focus();
-    field("user-editor").scrollIntoView({
-      block: "nearest",
-      behavior: "smooth",
-    });
   }
   field("user-new").addEventListener("click", () => {
     if (!options) return;
     closeEditor();
     create.reset();
     create.hidden = false;
-    field("user-editor").hidden = false;
+    abrirEditor();
     field("editor-title").textContent = "Novo usuário";
     field("invite-help").textContent = options.invitesEnabled
       ? "A pessoa recebe um convite neste e-mail e cria a própria senha. O link vale por 7 dias."
@@ -320,10 +328,6 @@ export function createUserManagement({ document, window }) {
     checks("create", create.elements.officeId.value);
     roleHelp("create");
     create.elements.name.focus();
-    field("user-editor").scrollIntoView({
-      block: "nearest",
-      behavior: "smooth",
-    });
   });
   root
     .querySelectorAll("[data-user-cancel]")
@@ -337,6 +341,17 @@ export function createUserManagement({ document, window }) {
     }),
   );
   for (const prefix of ["create", "edit"]) {
+    // Selecionar todas considera a busca: marca apenas as empresas visíveis.
+    const marcar = (valor) => {
+      for (const label of field(`${prefix}-companies`).querySelectorAll("label")) {
+        const input = label.querySelector("input");
+        if (!label.hidden && !input.disabled) input.checked = valor;
+      }
+      contar(prefix);
+    };
+    root.querySelector(`[data-select-all="${prefix}"]`).addEventListener("click", () => marcar(true));
+    root.querySelector(`[data-select-none="${prefix}"]`).addEventListener("click", () => marcar(false));
+    field(`${prefix}-companies`).addEventListener("change", () => contar(prefix));
     field(`${prefix}-company-search`).addEventListener("input", (event) =>
       field(`${prefix}-companies`)
         .querySelectorAll("label")

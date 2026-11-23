@@ -13,7 +13,7 @@ module.exports = async ({ browser, baseURL }) => {
     const options = {
       platformAdmin: false, currentUserId: "u-gerente", invitesEnabled: true,
       offices: [{ id: office, name: "Contabilidade Alfa", active: true, canCreate: true }],
-      companies: [{ id: company, officeId: office, name: "Padaria Pão Bom", cnpj: "11222333000181" }],
+      companies: [{ id: company, officeId: office, name: "Padaria Pão Bom", cnpj: "11222333000181" }, { id: "30000000-0000-0000-0000-000000000002", officeId: office, name: "Mercado Bairro", cnpj: "11444777000161" }, { id: "30000000-0000-0000-0000-000000000003", officeId: office, name: "Loja Centro", cnpj: "04252011000110" }],
       users: [
         { id: "u-gerente", officeId: office, name: "Gerente Alfa", email: "gerente@alfa.test", role: "manager", active: true, membershipActive: true, accountActive: true, canEdit: false, canEditIdentity: true, companyIds: [], revision: 1 },
         { id: "u-novo", officeId: office, name: "Operador Novo", email: "novo@alfa.test", role: "operator", active: true, membershipActive: true, accountActive: true, canEdit: true, canEditIdentity: true, companyIds: [company], revision: 1 },
@@ -47,10 +47,33 @@ module.exports = async ({ browser, baseURL }) => {
     assert.equal(await page.locator("#manage-create button[type=submit]").innerText(), "Enviar convite");
     await page.locator('#manage-create [name="name"]').fill("Ana Nova");
     await page.locator('#manage-create [name="email"]').fill("ana@alfa.test");
+    // Cadastro em modal, com seleção de todas as empresas.
+    assert.equal(await page.locator("dialog[data-user-editor]").evaluate((d) => d.open), true);
+    assert.equal(await page.locator("dialog[data-user-editor]").evaluate((d) => d.matches(":modal")), true);
+    await page.locator('#manage-create [name="role"]').selectOption("operator");
+    assert.match(await page.locator("[data-create-count]").innerText(), /0 de 3 selecionada/);
+    await page.locator('[data-select-all="create"]').click();
+    assert.equal(await page.locator("[data-create-companies] input:checked").count(), 3);
+    assert.match(await page.locator("[data-create-count]").innerText(), /3 de 3/);
+    await page.locator('[data-select-none="create"]').click();
+    await page.locator("[data-create-company-search]").fill("Padaria");
+    await page.locator('[data-select-all="create"]').click();
+    assert.equal(await page.locator("[data-create-companies] input:checked").count(), 1, "considera só as empresas da busca");
+    await page.locator("[data-create-company-search]").fill("");
+    await page.locator('#manage-create [name="role"]').selectOption("manager");
+    assert.equal(await page.locator("[data-create-bulk]").isHidden(), true, "Gerente já acessa todas as empresas");
+    await page.locator('#manage-create [name="role"]').selectOption("operator");
+    if (process.env.CONVITE_SCREENSHOT) await page.screenshot({ path: process.env.CONVITE_SCREENSHOT });
+    await page.keyboard.press("Escape");
+    await page.locator("dialog[data-user-editor]").waitFor({ state: "hidden" });
+    await page.locator("[data-user-new]").click();
+    await page.locator('#manage-create [name="name"]').fill("Ana Nova");
+    await page.locator('#manage-create [name="email"]').fill("ana@alfa.test");
     await page.locator('#manage-create [name="role"]').selectOption("operator");
     await page.locator(`[data-create-companies] input[value="${company}"]`).check();
     await page.locator("#manage-create button[type=submit]").click();
     await page.waitForFunction(() => /Convite enviado para ana@alfa\.test/.test(document.querySelector("[data-management-status]").textContent));
+    assert.equal(await page.locator("dialog[data-user-editor]").evaluate((d) => d.open), false, "modal fecha ao enviar");
     assert.deepEqual(posts[0], { action: "inviteUser", name: "Ana Nova", email: "ana@alfa.test", officeId: office, role: "operator", companyIds: [company] });
     // Reenvio do convite e redefinição pelo Gerente.
     await page.locator('[data-user-id="u-novo"] [data-user-edit]').click();
@@ -63,7 +86,8 @@ module.exports = async ({ browser, baseURL }) => {
     assert.match(await page.locator("[data-access-help]").innerText(), /24 horas[\s\S]*não vê nem define a senha/);
     for (const tema of ["light", "dark"]) {
       await page.evaluate((t) => (document.documentElement.dataset.theme = t), tema);
-      assert.deepEqual(await contrast(page, "#user-management"), [], `contraste ${tema}`);
+      const falhas = await contrast(page, "#user-management");
+      assert.deepEqual(falhas, [], `contraste ${tema}: ${JSON.stringify(falhas).slice(0, 500)}`);
     }
     await page.evaluate(() => (document.documentElement.dataset.theme = "light"));
     await page.locator("[data-access-link]").click();

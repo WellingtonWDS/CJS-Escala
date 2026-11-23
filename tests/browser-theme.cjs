@@ -95,6 +95,8 @@ module.exports=async({browser,baseURL})=>{
    if(view==='users'){await page.locator('[data-user-new]').click();}
    assert(await page.locator('footer a').isVisible());
    failures.push(...await contrast(page)); lightSurfaces.push(...await contrast.lightSurfaces(page));
+   // O cadastro abre em modal; fechar antes de voltar ao menu.
+   if(view==='users'){await page.keyboard.press('Escape');await page.locator('dialog[data-user-editor]').waitFor({state:'hidden'});}
   }
   await page.locator('[data-app-view="schedule"]').click();
   await page.evaluate(async()=>{
