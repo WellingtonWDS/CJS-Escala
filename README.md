@@ -101,6 +101,10 @@ O fluxo principal já inclui cadastro manual e por planilhas, importação Domí
 
 Regras **`ec141-2026-11-11-13`**: gere novamente resultados anteriores; os cadastros permanecem. Sem migração SQL, nova RPC ou variável de ambiente.
 
+## Alterar minha senha — 23/11/2026
+
+O nome do usuário no menu lateral abre **Minha conta → Alterar senha** (senha atual + nova). Outras sessões são encerradas e chega o e-mail de confirmação. Requer a migração **016_change_password.sql**. [Detalhes](docs/recuperacao-senha.md#alterar-minha-senha-logado).
+
 ## Convite de usuários por e-mail — 23/11/2026
 
 O Gerente cadastra só nome, e-mail, perfil e empresas; a pessoa recebe um convite e cria a própria senha (link de 7 dias). Selo **Convite pendente** na lista, **Reenviar convite** e **Enviar link para redefinir a senha** (24 h) na edição do usuário. Requer a migração **014_user_invites.sql** e o código atualizado do nó **Montar e-mail** no n8n. [Detalhes](docs/convites.md).

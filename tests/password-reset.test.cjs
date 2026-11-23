@@ -148,3 +148,35 @@ test("convite: página reconhece o convite e não manda e-mail de troca de senha
   assert.equal((await (await t.post({ action: "reset", token: TOKEN, password: "MinhaSenha2026" })).json()).kind, "invite");
   assert.equal(t.chamadas.filter((c) => c.nome === "mail").length, 0);
 });
+
+test("alterar minha senha: exige sessão e senha atual, encerra outras sessões e avisa por e-mail", async () => {
+  const { issueSession } = await import("../server/auth.js");
+  const segredo = { AUTH_SESSION_SECRET: "change-password-cookie-secret-long-xx" };
+  const now = Date.now();
+  const cookie = "cjs_session=" + await issueSession({ ...env, ...segredo }, now, { userId: "10000000-0000-0000-0000-000000000081", sessionId: "40000000-0000-0000-0000-000000000081", expiresAt: now + 3600000 });
+  let resposta = { ok: true, email: "p@x.test", name: "Pessoa", sessionsRevoked: 1 };
+  const t = await setup({ env: segredo, change_own_password: () => (typeof resposta === "function" ? resposta() : Response.json(resposta)) });
+  const trocar = (body, extra = { cookie }) => t.post({ action: "change", ...body }, extra);
+  assert.equal((await trocar({ current: "SenhaAtual1", password: "NovaSenha2026" }, {})).status, 401, "sem sessão");
+  assert.equal((await trocar({ current: "", password: "NovaSenha2026" })).status, 400);
+  assert.equal((await trocar({ current: "SenhaAtual1", password: "fraca" })).status, 400);
+  assert.equal((await trocar({ current: "NovaSenha2026", password: "NovaSenha2026" })).status, 400);
+  assert.equal(t.chamadas.length, 0);
+  let res = await trocar({ current: "SenhaAtual1", password: "NovaSenha2026" });
+  assert.deepEqual(await res.json(), { ok: true, sessionsRevoked: 1 });
+  const rpc = t.chamadas.find((c) => c.nome === "change_own_password");
+  assert.deepEqual(rpc.body, { p_current: "SenhaAtual1", p_new: "NovaSenha2026" });
+  const claims = JSON.parse(Buffer.from(rpc.headers.Authorization.split(".")[1], "base64url"));
+  assert.equal(claims.sid, "40000000-0000-0000-0000-000000000081", "usa a sessão do cookie");
+  const mail = t.chamadas.find((c) => c.nome === "mail").body;
+  assert.equal(mail.type, "password_changed");
+  assert(!JSON.stringify(mail).includes("SenhaAtual1") && !JSON.stringify(mail).includes("NovaSenha2026"), "senhas nunca vão para o n8n");
+  resposta = { ok: false, reason: "senha_atual", remaining: 3 };
+  res = await trocar({ current: "Errada123", password: "NovaSenha2026" });
+  assert.equal(res.status, 422);
+  assert.match((await res.json()).error, /Restam 3 tentativa/);
+  resposta = () => new Response(JSON.stringify({ message: "Muitas tentativas com a senha atual incorreta. Aguarde 15 minutos." }), { status: 429, headers: { "Content-Type": "application/json" } });
+  res = await trocar({ current: "SenhaAtual1", password: "NovaSenha2026" });
+  assert.equal(res.status, 429);
+  assert.match((await res.json()).error, /15 minutos/);
+});

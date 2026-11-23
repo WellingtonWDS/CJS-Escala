@@ -372,3 +372,8 @@ body[data-app-view="offices"] #btn-tutorial {
 .sidebar-role .sidebar-admin-link { color: #9fe3c9; font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
 .sidebar-role .sidebar-admin-link:hover { color: #fff; }
 .sidebar-collapsed .sidebar-admin-link { display: none; }
+/* Nome do usuário abre "Minha conta" */
+#sidebar-user .sidebar-conta { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; padding: 0; margin: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+#sidebar-user .sidebar-conta-nome { overflow-wrap: anywhere; text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px; }
+#sidebar-user .sidebar-conta:hover .sidebar-conta-nome, #sidebar-user .sidebar-conta:focus-visible .sidebar-conta-nome { text-decoration-color: currentColor; }
+#sidebar-user .sidebar-conta-icone { font-size: 0.85em; opacity: 0.75; }

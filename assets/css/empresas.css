@@ -246,3 +246,30 @@ html[data-theme="dark"] .user-editor-dialog .companies-acoes button, html[data-t
 html[data-theme="dark"] .user-editor-dialog.user-editor, html[data-theme="dark"] .user-editor-dialog .user-editor-topo, html[data-theme="dark"] .user-editor-dialog .users-form-actions { background: #162130 !important; }
 html[data-theme="dark"] .user-editor-dialog .users-form-actions { border-color: #3b4e66; }
 @media (max-width: 600px) { .user-editor-dialog .users-form-actions { margin: 0 -16px -18px; padding: 12px 16px 16px; } }
+
+/* Minha conta (alterar senha) */
+.minha-conta { width: min(460px, calc(100% - 24px)); }
+.minha-conta form { display: grid; gap: 6px; }
+.minha-conta .conta-topo { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
+.minha-conta .conta-topo h2 { margin: 0; font-size: 1.2rem; }
+.minha-conta .conta-sobretitulo { margin: 0; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #167455; }
+.minha-conta .conta-papel { margin: 2px 0 0; font-size: 13px; color: #536879; }
+.minha-conta button.conta-fechar { width: 38px; min-width: 38px; height: 38px; padding: 0; border-radius: 10px; font-size: 22px; line-height: 1; }
+.minha-conta h3 { margin: 4px 0 4px; font-size: 15px; }
+.minha-conta label { margin-top: 8px; font-size: 13px; font-weight: 600; }
+.minha-conta .conta-senha { position: relative; }
+.minha-conta .conta-senha input { width: 100%; padding-right: 86px; }
+.minha-conta .conta-senha button { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); min-height: 30px; padding: 2px 10px; font-size: 12px; border: 0; background: transparent; color: #167455; font-weight: 700; }
+.minha-conta .conta-regras { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 2px; font-size: 12px; color: #536879; }
+.minha-conta .conta-regras li::before { content: "○ "; }
+.minha-conta .conta-regras li[data-ok="true"] { color: #167455; }
+.minha-conta .conta-regras li[data-ok="true"]::before { content: "✓ "; }
+.minha-conta .conta-nota { margin: 10px 0 0; font-size: 12px; color: #536879; }
+.minha-conta .conta-msg { margin: 6px 0 0; min-height: 1.2em; font-size: 13px; }
+.minha-conta .conta-msg[data-tipo="erro"] { color: #b42318; }
+.minha-conta .conta-msg[data-tipo="ok"] { color: #167455; font-weight: 600; }
+html[data-theme="dark"] .minha-conta .conta-sobretitulo, html[data-theme="dark"] .minha-conta .conta-regras li[data-ok="true"], html[data-theme="dark"] .minha-conta .conta-msg[data-tipo="ok"] { color: #86e2bd; }
+html[data-theme="dark"] .minha-conta .conta-papel, html[data-theme="dark"] .minha-conta .conta-regras, html[data-theme="dark"] .minha-conta .conta-nota { color: #b1bfd2; }
+html[data-theme="dark"] .minha-conta .conta-msg[data-tipo="erro"] { color: #ffb4ab; }
+html[data-theme="dark"] .minha-conta .conta-senha button { background: transparent !important; border: 0 !important; color: #86e2bd !important; }
+.minha-conta h3 { font-weight: 700; }

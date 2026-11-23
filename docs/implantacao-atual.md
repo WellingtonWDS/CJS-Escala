@@ -7,6 +7,10 @@ Consultar este registro antes de orientar o operador. Distinguir código dispon�
 
 
 
+## Alterar minha senha — 23/11/2026
+
+Migração **016_change_password.sql** (após 015). [Comandos](recuperacao-senha.md#alterar-minha-senha-logado).
+
 ## Convite de Admin sem escritório — 23/11/2026
 
 Migração **015_admin_invites.sql** (após 014). [Detalhes](convites.md#convite-de-admin).

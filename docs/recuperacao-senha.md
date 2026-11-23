@@ -36,3 +36,17 @@ Sem `N8N_MAIL_URL`, o pedido responde “Recuperação de senha indisponível no
 ## Validação
 
 `database/tests/password-reset.sql` (16 cenários), `tests/password-reset.test.cjs` (API e fluxo n8n, incluindo o HTML dos e-mails) e `tests/browser-senha.cjs` (telas).
+
+## Alterar minha senha (logado)
+
+No menu lateral, o **nome do usuário** (com o ícone ⚙) abre **Minha conta → Alterar senha**: senha atual, nova senha (8 a 72 caracteres, com letras e números) e confirmação. A senha atual é conferida no banco (bcrypt); após 5 erros, novas tentativas ficam bloqueadas por 15 minutos. Ao trocar, as sessões em outros aparelhos são encerradas (a atual continua), links de redefinição abertos são cancelados e o usuário recebe o e-mail **“Sua senha foi alterada”** pelo mesmo fluxo do n8n.
+
+Ativação: migração **016_change_password.sql** (após 015). Sem variável nem mudança no n8n.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/WellingtonWDS/CJS-Escala/main/database/migrations/016_change_password.sql -o /tmp/016_change_password.sql
+docker cp /tmp/016_change_password.sql postgres_apps:/tmp/016_change_password.sql
+docker exec postgres_apps psql -U postgres -d cjs_escala -v ON_ERROR_STOP=1 -f /tmp/016_change_password.sql
+```
+
+Validação: `database/tests/change-password.sql` (9 cenários), `tests/password-reset.test.cjs` e `tests/browser-minha-conta.cjs`.

@@ -56,7 +56,24 @@ export function initNavigation({ session, document, window, app, workspace, remo
   accountActions.append(document.getElementById("btn-theme"), logout);
   sidebar.append(accountActions);
   const role = session.user.role || "operator";
-  document.getElementById("sidebar-user").textContent = session.user.name;
+  // Nome do usuário abre "Minha conta" (alterar senha) no login individual.
+  const nomeUsuario = document.getElementById("sidebar-user");
+  if (session.user.id && session.persistenceEnabled) {
+    const conta = document.createElement("button");
+    conta.type = "button";
+    conta.className = "sidebar-conta";
+    conta.dataset.minhaConta = "";
+    conta.title = "Minha conta: alterar senha";
+    conta.setAttribute("aria-haspopup", "dialog");
+    conta.innerHTML = '<span class="sidebar-conta-nome"></span><span class="sidebar-conta-icone" aria-hidden="true">⚙</span>';
+    conta.querySelector(".sidebar-conta-nome").textContent = session.user.name;
+    conta.setAttribute("aria-label", `Minha conta — ${session.user.name}`);
+    conta.addEventListener("click", async () => {
+      const { openMinhaConta } = await import("./minha-conta.js");
+      openMinhaConta({ document, window, user: session.user, returnFocus: conta });
+    });
+    nomeUsuario.replaceChildren(conta);
+  } else nomeUsuario.textContent = session.user.name;
   document.getElementById("sidebar-role").textContent =
     { admin: "Admin", manager: "Gerente", operator: "Operador" }[role] ||
     "Operador";

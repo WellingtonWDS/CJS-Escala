@@ -172,6 +172,12 @@ module.exports = async ({ browser, baseURL }) => {
         await detail.evaluate((e) => e.classList.contains("is-celebrating")),
       );
       await mobile.clock.fastForward(300);
+      // A transição do balão roda no relógio real do navegador: aguarda o estilo assentar.
+      await mobile.waitForFunction(
+        () => getComputedStyle(document.querySelector("[data-seasonal-ornament]"), "::after").visibility === "visible",
+        null,
+        { polling: 50, timeout: 3000 },
+      ).catch(() => {});
       assert.equal(
         await detail.evaluate((e) => getComputedStyle(e, "::after").visibility),
         "visible",

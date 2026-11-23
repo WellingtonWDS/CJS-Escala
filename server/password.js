@@ -5,6 +5,8 @@
  * reset:   troca a senha (bcrypt no banco), revoga sessões e avisa por e-mail. */
 import { signJwt } from "./jwt.js";
 import { createMailer } from "./mail.js";
+import { readSession } from "./auth.js";
+import { createPersistenceService } from "./services/persistence.js";
 
 export const RESPOSTA_PEDIDO = "Se o e-mail estiver cadastrado e com acesso ativo, enviaremos em instantes um link para criar uma nova senha. O link vale por 30 minutos.";
 const TOKEN = /^[a-f0-9]{64}$/;
@@ -80,6 +82,27 @@ export function createPasswordHandler({ env, fetchImpl = fetch, now = Date.now }
       if (raw.length > 2048) return json({ error: "Requisição muito grande." }, 413);
       let body;
       try { body = JSON.parse(raw); } catch { return json({ error: "Requisição inválida." }, 400); }
+      // Alterar minha senha: exige a sessão individual e a senha atual.
+      if (body?.action === "change") {
+        const session = await readSession(request.headers.get("cookie"), env, now());
+        if (session?.kind !== "individual") return json({ error: "Entre com sua conta para alterar a senha." }, 401);
+        if (typeof body.current !== "string" || !body.current || body.current.length > 256) return json({ error: "Informe a senha atual." }, 400);
+        if (!senhaValida(body.password)) return json({ error: "A nova senha precisa ter de 8 a 72 caracteres, com letras e números." }, 400);
+        if (body.password === body.current) return json({ error: "A nova senha precisa ser diferente da atual." }, 400);
+        const service = createPersistenceService({ env, fetchImpl, now });
+        let r;
+        try {
+          r = await service.changeOwnPassword({ userId: session.userId, sessionId: session.sessionId, expiresAt: session.exp }, body);
+        } catch (error) {
+          const msg = { 400: error.message, 401: "Sessão expirada. Entre novamente.", 429: error.message, 501: "Alteração de senha ainda não configurada no banco (migração 016)." }[error.status];
+          return json({ error: msg || "Serviço indisponível. Tente novamente em instantes." }, msg ? error.status : 503);
+        }
+        if (!r?.ok)
+          return json({ error: r?.remaining > 0 ? `Senha atual incorreta. Restam ${r.remaining} tentativa(s) antes de um bloqueio de 15 minutos.` : "Senha atual incorreta. Novas tentativas ficam bloqueadas por 15 minutos." }, 422);
+        const origem = (env.APP_ORIGIN || url.origin).replace(/\/$/, "");
+        await mailer.send({ type: "password_changed", to: r.email, name: r.name, changedAt: new Date(now()).toISOString(), loginUrl: `${origem}/login.html`, forgotUrl: `${origem}/login.html#esqueci` });
+        return json({ ok: true, sessionsRevoked: r.sessionsRevoked || 0 });
+      }
       const cfg = configuracao();
       const origem = (env.APP_ORIGIN || url.origin).replace(/\/$/, "");
 
