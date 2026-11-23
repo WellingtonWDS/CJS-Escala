@@ -39,6 +39,14 @@ module.exports = async ({ browser, baseURL }) => {
     await page.locator('[data-app-view="users"]').click();
     await page.locator('[data-user-id="u-novo"]').waitFor();
     assert.match(await page.locator('[data-user-id="u-novo"]').innerText(), /Convite pendente/);
+    // Gerente: um único escritório, sem filtro nem campo de escritório no cadastro.
+    assert.equal(await page.locator("[data-users-office-box]").isHidden(), true);
+    assert.equal(await page.locator("[data-users-search]").getAttribute("placeholder"), "Nome ou e-mail");
+    await page.locator("[data-user-new]").click();
+    assert.equal(await page.locator("[data-create-office]").isHidden(), true);
+    assert.equal(await page.locator('#manage-create [name="officeId"]').inputValue(), office, "escritório do Gerente segue no envio");
+    await page.keyboard.press("Escape");
+    await page.locator("dialog[data-user-editor]").waitFor({ state: "hidden" });
     assert.doesNotMatch(await page.locator('[data-user-id="u-antigo"]').innerText(), /Convite/);
     // Novo usuário: sem senha, convite por e-mail.
     await page.locator("[data-user-new]").click();
@@ -107,7 +115,9 @@ module.exports = async ({ browser, baseURL }) => {
     await page.waitForFunction(() => /Convite enviado para admin@fintria\.test/.test(document.querySelector("[data-management-status]").textContent));
     assert.deepEqual(posts.at(-1), { action: "inviteUser", name: "Admin Novo", email: "admin@fintria.test", role: "admin", officeId: null, companyIds: [] });
     await page.locator("[data-user-new]").click();
-    assert.equal(await page.locator("[data-create-office]").isVisible(), true, "Operador volta a pedir escritório");
+    // Operador volta a usar o escritório (único disponível, preenchido automaticamente).
+    assert.equal(await page.locator('#manage-create [name="officeId"]').isDisabled(), false);
+    assert.equal(await page.locator('#manage-create [name="officeId"]').inputValue(), office);
     await page.keyboard.press("Escape");
     options.platformAdmin = false;
     // Admin muda escritório e perfil: Admin sem escritório vira Operador de um escritório.
@@ -123,6 +133,7 @@ module.exports = async ({ browser, baseURL }) => {
     });
     await page.locator("[data-users-refresh]").click();
     await page.waitForFunction(() => !document.querySelector("#user-management").hasAttribute("aria-busy"));
+    assert.equal(await page.locator("[data-users-office-box]").isVisible(), true, "Admin filtra por escritório");
     await page.locator('[data-user-id="u-admin2"] [data-user-edit]').click();
     assert.equal(await page.locator("[data-edit-office-box]").isVisible(), true);
     assert.equal(await page.locator("#manage-edit [name=role]").isDisabled(), false, "perfil de Admin sem escritório pode mudar");

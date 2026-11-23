@@ -273,3 +273,4 @@ html[data-theme="dark"] .minha-conta .conta-papel, html[data-theme="dark"] .minh
 html[data-theme="dark"] .minha-conta .conta-msg[data-tipo="erro"] { color: #ffb4ab; }
 html[data-theme="dark"] .minha-conta .conta-senha button { background: transparent !important; border: 0 !important; color: #86e2bd !important; }
 .minha-conta h3 { font-weight: 700; }
+.users-filters label[hidden] { display: none !important; }

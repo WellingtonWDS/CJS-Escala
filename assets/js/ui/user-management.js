@@ -9,7 +9,7 @@ export function createUserManagement({ document, window }) {
     dialogs = getDialogs(document);
   root.dataset.loadingLabel = "Atualizando usuários e permissões";
   root.innerHTML = `<div class="users-heading"><div><h2>Usuários</h2><p>Consulte os cadastros e gerencie os acessos conforme suas permissões.</p></div><button type="button" data-user-new disabled>Novo usuário</button></div>
-  <div class="users-filters"><label>Pesquisar usuários<input data-users-search type="search" placeholder="Nome, e-mail ou escritório"></label><label>Escritório<select data-users-office><option value="">Todos os escritórios</option></select></label><button type="button" data-users-refresh>Atualizar lista</button></div>
+  <div class="users-filters"><label>Pesquisar usuários<input data-users-search type="search" placeholder="Nome, e-mail ou escritório"></label><label data-users-office-box>Escritório<select data-users-office><option value="">Todos os escritórios</option></select></label><button type="button" data-users-refresh>Atualizar lista</button></div>
   <p data-management-status role="status" aria-live="polite"></p><p data-users-count></p><div class="users-list" data-users-list></div>
   <dialog class="app-dialog user-editor user-editor-dialog no-print" data-user-editor aria-labelledby="user-editor-title"><div class="user-editor-topo"><h3 id="user-editor-title" data-editor-title></h3><button type="button" class="user-editor-fechar" data-user-cancel aria-label="Fechar">×</button></div>
   <form id="manage-create" hidden><label>Nome completo<input name="name" required maxlength="160" autocomplete="off"></label><label>E-mail de acesso<input name="email" type="email" required maxlength="254" autocomplete="off"></label><p class="user-invite-help" data-invite-help>A pessoa recebe um convite neste e-mail e cria a própria senha. O link vale por 7 dias.</p><label>Perfil<select name="role"></select></label><p data-create-role-help></p><label data-create-office>Escritório<select name="officeId" required></select></label><fieldset data-create-companies-box><legend>Empresas autorizadas</legend><label>Buscar empresas<input data-create-company-search type="search" placeholder="Razão social ou CNPJ"></label><div class="companies-acoes" data-create-bulk><button type="button" data-select-all="create">Selecionar todas</button><button type="button" data-select-none="create">Limpar seleção</button><span data-create-count aria-live="polite"></span></div><div class="management-companies" data-create-companies></div></fieldset><div class="users-form-actions"><button type="submit">Enviar convite</button><button type="button" data-user-cancel>Cancelar</button></div></form>
@@ -115,8 +115,9 @@ export function createUserManagement({ document, window }) {
       role = form.elements.role.value;
     if (prefix === "create") {
       // Admin global não tem escritório: esconde escritório e empresas.
+      // Com um único escritório possível (Gerente), o campo também fica oculto.
       const admin = role === "admin";
-      field("create-office").hidden = admin;
+      field("create-office").hidden = admin || create.elements.officeId.options.length <= 1;
       field("create-companies-box").hidden = admin;
       form.elements.officeId.disabled = admin;
     }
@@ -183,6 +184,11 @@ export function createUserManagement({ document, window }) {
       ? previous
       : "";
     field("user-new").disabled = !options.offices.some((o) => o.active);
+    // Gerente trabalha em um único escritório: sem filtro nem escolha de escritório.
+    const umEscritorio = !options.platformAdmin && options.offices.filter((o) => o.active).length <= 1;
+    field("users-office-box").hidden = umEscritorio;
+    if (umEscritorio) filter.value = "";
+    field("users-search").placeholder = umEscritorio ? "Nome ou e-mail" : "Nome, e-mail ou escritório";
     render();
     status.textContent = message;
   }
