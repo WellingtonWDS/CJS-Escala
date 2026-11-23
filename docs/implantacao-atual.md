@@ -7,6 +7,10 @@ Consultar este registro antes de orientar o operador. Distinguir código dispon�
 
 
 
+## Mudar escritório do usuário — 23/11/2026
+
+Migração **017_move_user.sql** (após 016). [Detalhes](convites.md#mudar-o-escritório-de-um-usuário-admin).
+
 ## Alterar minha senha — 23/11/2026
 
 Migração **016_change_password.sql** (após 015). [Comandos](recuperacao-senha.md#alterar-minha-senha-logado).

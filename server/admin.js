@@ -57,6 +57,13 @@ export function createAdminHandler({ env, fetchImpl = fetch, now = Date.now }) {
           value,
         );
       const mailer = createMailer({ env, fetchImpl });
+      // Admin muda o escritório (ou promove/rebaixa de Admin global) de um usuário.
+      if (body?.action === "moveUser") {
+        if (!uuid(body.userId) || !Number.isSafeInteger(body.revision) || body.revision < 1 || !["admin", "manager", "operator"].includes(body.role)
+          || !(body.role === "admin" || uuid(body.toOfficeId)) || !Array.isArray(body.companyIds) || !body.companyIds.every(uuid) || body.companyIds.length > 1000)
+          return json({ error: "Escolha o escritório, o perfil e as empresas." }, 400);
+        return json(await service.moveUser(identity, body));
+      }
       // Link de acesso enviado pelo Gerente a quem já está cadastrado (convite ou redefinição).
       if (body?.action === "sendAccessLink") {
         // Admin global não tem escritório: officeId nulo (o banco confere que só Admin envia).
@@ -154,7 +161,7 @@ export function createAdminHandler({ env, fetchImpl = fetch, now = Date.now }) {
               : status === 404
                 ? "Usuário não encontrado."
                 : status === 400
-                  ? "Confira os dados. Não é permitido inativar ou alterar o próprio perfil; mantenha ao menos um Admin ativo."
+                  ? "Confira os dados. Operador e Gerente precisam de um escritório; não é permitido alterar o próprio perfil; mantenha ao menos um Admin ativo."
                   : status === 403
                     ? "Seu perfil não permite esta operação neste escritório."
                     : status === 401

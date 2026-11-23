@@ -110,6 +110,46 @@ module.exports = async ({ browser, baseURL }) => {
     assert.equal(await page.locator("[data-create-office]").isVisible(), true, "Operador volta a pedir escritório");
     await page.keyboard.press("Escape");
     options.platformAdmin = false;
+    // Admin muda escritório e perfil: Admin sem escritório vira Operador de um escritório.
+    options.platformAdmin = true;
+    options.offices.push({ id: "20000000-0000-0000-0000-000000000002", name: "Contabilidade Beta", active: true, canCreate: true });
+    options.companies.push({ id: "30000000-0000-0000-0000-000000000009", officeId: "20000000-0000-0000-0000-000000000002", name: "Oficina Beta", cnpj: "11444777000161" });
+    options.users.push({ id: "u-admin2", officeId: null, name: "Admin Dois", email: "admin2@alfa.test", role: "admin", active: true, membershipActive: false, accountActive: true, canEdit: true, canEditIdentity: true, companyIds: [], revision: 4 });
+    await page.route("**/api/admin", (r) => {
+      if (r.request().method() === "GET") return r.fulfill({ json: options });
+      const body = r.request().postDataJSON();
+      posts.push(body);
+      return r.fulfill({ json: body.action === "moveUser" ? { ok: true, revision: 5, officeId: body.toOfficeId } : { ok: true, revision: 6 } });
+    });
+    await page.locator("[data-users-refresh]").click();
+    await page.waitForFunction(() => !document.querySelector("#user-management").hasAttribute("aria-busy"));
+    await page.locator('[data-user-id="u-admin2"] [data-user-edit]').click();
+    assert.equal(await page.locator("[data-edit-office-box]").isVisible(), true);
+    assert.equal(await page.locator("#manage-edit [name=role]").isDisabled(), false, "perfil de Admin sem escritório pode mudar");
+    assert.equal(await page.locator("[data-edit-office-select] option:checked").innerText(), "Sem escritório (Admin global)");
+    await page.locator("#manage-edit [name=role]").selectOption("operator");
+    await page.locator("#manage-edit button[type=submit]").click();
+    await page.waitForFunction(() => /Escolha o escritório do usuário/.test(document.querySelector("[data-management-status]").textContent));
+    await page.locator("[data-edit-office-select]").selectOption("20000000-0000-0000-0000-000000000002");
+    assert.equal(await page.locator("[data-edit-companies] input").count(), 1, "empresas do novo escritório");
+    await page.locator('[data-select-all="edit"]').click();
+    await page.locator("#manage-edit button[type=submit]").click();
+    await page.waitForFunction(() => /Admin Dois agora pertence a Contabilidade Beta como Operador/.test(document.querySelector("[data-management-status]").textContent));
+    assert.deepEqual(posts.at(-1), { action: "moveUser", userId: "u-admin2", revision: 4, toOfficeId: "20000000-0000-0000-0000-000000000002", role: "operator", companyIds: ["30000000-0000-0000-0000-000000000009"] });
+    // Operador de A passa para B (sem mudar o perfil).
+    await page.locator('[data-user-id="u-antigo"] [data-user-edit]').click();
+    await page.locator("[data-edit-office-select]").selectOption("20000000-0000-0000-0000-000000000002");
+    await page.locator('[data-select-all="edit"]').click();
+    await page.locator("#manage-edit button[type=submit]").click();
+    await page.waitForFunction(() => /Operador Antigo agora pertence a Contabilidade Beta/.test(document.querySelector("[data-management-status]").textContent));
+    assert.equal(posts.at(-1).action, "moveUser");
+    // Sem mudança de escritório: edição normal.
+    await page.locator('[data-user-id="u-novo"] [data-user-edit]').click();
+    await page.locator('#manage-edit [name="name"]').fill("Operador Renomeado");
+    await page.locator("#manage-edit button[type=submit]").click();
+    await page.waitForFunction(() => /Usuário e acessos atualizados/.test(document.querySelector("[data-management-status]").textContent));
+    assert.equal(posts.at(-1).action, "updateUser");
+    options.platformAdmin = false;
     // Sem envio de e-mail configurado, o convite fica indisponível.
     options.invitesEnabled = false;
     await page.locator("[data-users-refresh]").click();

@@ -83,3 +83,14 @@ test("Admin global é convidado sem escritório nem empresas", async () => {
   const r = await t.post({ action: "sendAccessLink", userId: "10000000-0000-0000-0000-000000000099", officeId: null });
   assert.notEqual(r.status, 400, "reenvio para Admin sem escritório é aceito pela API");
 });
+
+test("Admin muda o escritório do usuário (moveUser) com validação", async () => {
+  const t = await setup({ manage_move_user: { ok: true, revision: 5, officeId: office } });
+  const base = { action: "moveUser", userId: "10000000-0000-0000-0000-000000000004", revision: 4, toOfficeId: office, role: "operator", companyIds: [company] };
+  assert.deepEqual(await (await t.post(base)).json(), { ok: true, revision: 5, officeId: office });
+  assert.deepEqual(t.chamadas[0], { nome: "manage_move_user", body: { p_user_id: base.userId, p_revision: 4, p_to_office_id: office, p_role: "operator", p_company_ids: [company] } });
+  for (const ruim of [{ toOfficeId: null }, { role: "viewer" }, { revision: 0 }, { companyIds: ["x"] }])
+    assert.equal((await t.post({ ...base, ...ruim })).status, 400, JSON.stringify(ruim));
+  assert.equal((await t.post({ ...base, role: "admin", toOfficeId: null, companyIds: [] })).status, 200, "Admin sem escritório");
+  assert.deepEqual(t.chamadas.at(-1).body, { p_user_id: base.userId, p_revision: 4, p_to_office_id: null, p_role: "admin", p_company_ids: [] });
+});

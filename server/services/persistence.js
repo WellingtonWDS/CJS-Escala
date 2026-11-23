@@ -77,7 +77,7 @@ export function createPersistenceService({
         if (error?.code === 'PGRST202') throw new PersistenceError('Diagnóstico ainda não configurado no banco.');
       }
       // Antes da migração 010 as funções de plano não existem: sem plano, sem limite.
-      if (/^(plan_|admin_plan|admin_office|company_set_archived|company_cards|office_branding|change_own_password|manage_invite_user|manage_send_access_link|manage_pending_invites)/.test(name) && res.status === 404) {
+      if (/^(plan_|admin_plan|admin_office|company_set_archived|company_cards|office_branding|change_own_password|manage_move_user|manage_invite_user|manage_send_access_link|manage_pending_invites)/.test(name) && res.status === 404) {
         let error; try { error = await res.clone().json(); } catch {}
         if (error?.code === 'PGRST202') throw new PersistenceError('Planos ainda não configurados no banco (migração 010).', 501);
       }
@@ -171,6 +171,8 @@ export function createPersistenceService({
       call("manage_invite_user", { p_name: name.trim(), p_email: email.trim().toLowerCase(), p_office_id: role === "admin" ? null : officeId, p_role: role, p_company_ids: role === "admin" ? [] : companyIds }, identity),
     sendAccessLink: (identity, { userId, officeId }) => call("manage_send_access_link", { p_user_id: userId, p_office_id: officeId }, identity),
     pendingInvites: (identity) => call("manage_pending_invites", {}, identity),
+    moveUser: (identity, { userId, revision, toOfficeId, role, companyIds }) =>
+      call("manage_move_user", { p_user_id: userId, p_revision: revision, p_to_office_id: role === "admin" ? null : toOfficeId, p_role: role, p_company_ids: role === "admin" ? [] : companyIds }, identity),
     changeOwnPassword: (identity, { current, password }) => call("change_own_password", { p_current: current, p_new: password }, identity),
     createUser: (
       identity,

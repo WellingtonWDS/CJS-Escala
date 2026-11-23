@@ -13,7 +13,7 @@ export function createUserManagement({ document, window }) {
   <p data-management-status role="status" aria-live="polite"></p><p data-users-count></p><div class="users-list" data-users-list></div>
   <dialog class="app-dialog user-editor user-editor-dialog no-print" data-user-editor aria-labelledby="user-editor-title"><div class="user-editor-topo"><h3 id="user-editor-title" data-editor-title></h3><button type="button" class="user-editor-fechar" data-user-cancel aria-label="Fechar">×</button></div>
   <form id="manage-create" hidden><label>Nome completo<input name="name" required maxlength="160" autocomplete="off"></label><label>E-mail de acesso<input name="email" type="email" required maxlength="254" autocomplete="off"></label><p class="user-invite-help" data-invite-help>A pessoa recebe um convite neste e-mail e cria a própria senha. O link vale por 7 dias.</p><label>Perfil<select name="role"></select></label><p data-create-role-help></p><label data-create-office>Escritório<select name="officeId" required></select></label><fieldset data-create-companies-box><legend>Empresas autorizadas</legend><label>Buscar empresas<input data-create-company-search type="search" placeholder="Razão social ou CNPJ"></label><div class="companies-acoes" data-create-bulk><button type="button" data-select-all="create">Selecionar todas</button><button type="button" data-select-none="create">Limpar seleção</button><span data-create-count aria-live="polite"></span></div><div class="management-companies" data-create-companies></div></fieldset><div class="users-form-actions"><button type="submit">Enviar convite</button><button type="button" data-user-cancel>Cancelar</button></div></form>
-  <form id="manage-edit" hidden><p data-edit-office></p><label>Nome completo<input name="name" required maxlength="160" autocomplete="off"></label><label>E-mail de acesso<input name="email" type="email" required maxlength="254" autocomplete="off"></label><p data-identity-help></p><label>Perfil<select name="role"></select></label><label class="user-toggle"><input type="checkbox" role="switch" name="active"><span>Acesso ativo neste escritório</span></label><label class="user-toggle" data-account-toggle><input type="checkbox" role="switch" name="accountActive"><span>Conta ativa em todo o sistema</span></label><p data-edit-role-help></p><fieldset><legend>Empresas autorizadas</legend><label>Buscar empresas<input data-edit-company-search type="search" placeholder="Razão social ou CNPJ"></label><div class="companies-acoes" data-edit-bulk><button type="button" data-select-all="edit">Selecionar todas</button><button type="button" data-select-none="edit">Limpar seleção</button><span data-edit-count aria-live="polite"></span></div><div class="management-companies" data-edit-companies></div></fieldset><div class="user-access-link" data-access-box><p data-access-help></p><button type="button" data-access-link></button></div><p>A inativação no escritório preserva os preenchimentos e os vínculos de outros escritórios. Inativar a conta inteira revoga suas sessões.</p><div class="users-form-actions"><button type="submit">Salvar alterações</button><button type="button" data-user-cancel>Cancelar</button></div></form></dialog>`;
+  <form id="manage-edit" hidden><p data-edit-office></p><label>Nome completo<input name="name" required maxlength="160" autocomplete="off"></label><label>E-mail de acesso<input name="email" type="email" required maxlength="254" autocomplete="off"></label><p data-identity-help></p><label>Perfil<select name="role"></select></label><label data-edit-office-box hidden>Escritório<select name="officeId" data-edit-office-select></select><small data-edit-office-help></small></label><label class="user-toggle"><input type="checkbox" role="switch" name="active"><span>Acesso ativo neste escritório</span></label><label class="user-toggle" data-account-toggle><input type="checkbox" role="switch" name="accountActive"><span>Conta ativa em todo o sistema</span></label><p data-edit-role-help></p><fieldset><legend>Empresas autorizadas</legend><label>Buscar empresas<input data-edit-company-search type="search" placeholder="Razão social ou CNPJ"></label><div class="companies-acoes" data-edit-bulk><button type="button" data-select-all="edit">Selecionar todas</button><button type="button" data-select-none="edit">Limpar seleção</button><span data-edit-count aria-live="polite"></span></div><div class="management-companies" data-edit-companies></div></fieldset><div class="user-access-link" data-access-box><p data-access-help></p><button type="button" data-access-link></button></div><p>A inativação no escritório preserva os preenchimentos e os vínculos de outros escritórios. Inativar a conta inteira revoga suas sessões.</p><div class="users-form-actions"><button type="submit">Salvar alterações</button><button type="button" data-user-cancel>Cancelar</button></div></form></dialog>`;
   const create = root.querySelector("#manage-create"),
     edit = root.querySelector("#manage-edit"),
     status = root.querySelector("[data-management-status]"),
@@ -141,6 +141,19 @@ export function createUserManagement({ document, window }) {
         : []),
     );
     select.value = selected;
+  }
+  // Escritório escolhido na edição (Admin pode mudar); demais perfis usam o vínculo atual.
+  const officeEditado = () => (options?.platformAdmin && !field("edit-office-box").hidden ? edit.elements.officeId.value || null : editing?.officeId || null);
+  function opcoesEscritorio(role) {
+    const sel = edit.elements.officeId, atual = sel.value;
+    sel.replaceChildren(
+      ...(role === "admin" ? [new Option("Sem escritório (Admin global)", "")] : [new Option("Selecione o escritório", "")]),
+      ...options.offices.filter((o) => o.active).map((o) => new Option(o.name, o.id)),
+    );
+    sel.value = [...sel.options].some((o) => o.value === atual) ? atual : role === "admin" ? "" : editing?.officeId || "";
+    field("edit-office-help").textContent = role === "admin"
+      ? "Admin acessa todos os escritórios; não precisa de vínculo."
+      : "Ao mudar de escritório, as empresas autorizadas passam a ser as do novo escritório.";
   }
   // Convite ainda não aceito (a pessoa nunca criou a senha).
   const conviteDe = (user) => (options?.pendingInvites || []).find((i) => i.userId === user.id) || null;
@@ -293,8 +306,16 @@ export function createUserManagement({ document, window }) {
         ? "Identidade externa sem e-mail disponível para edição. A senha não será alterada."
         : "Nome e e-mail atualizam o cadastro de acesso. A senha permanece a mesma.";
     roles(edit.elements.role, user.role);
+    // Admin pode mudar escritório e perfil (inclusive de quem não tem escritório).
+    const podeMover = options.platformAdmin && user.id !== options.currentUserId && user.role !== "viewer";
+    field("edit-office-box").hidden = !podeMover;
+    if (podeMover) {
+      edit.elements.officeId.value = user.officeId || "";
+      opcoesEscritorio(user.role);
+      edit.elements.officeId.value = user.officeId || "";
+    }
     edit.elements.role.disabled =
-      user.id === options.currentUserId || !user.officeId;
+      user.id === options.currentUserId || (!user.officeId && !podeMover);
     edit.elements.active.checked = user.membershipActive;
     edit.elements.active.disabled = user.id === options.currentUserId;
     edit.elements.active.closest("label").hidden =
@@ -373,18 +394,26 @@ export function createUserManagement({ document, window }) {
     );
     const form = prefix === "create" ? create : edit;
     form.elements.role.addEventListener("change", () => {
+      if (prefix === "edit" && !field("edit-office-box").hidden) opcoesEscritorio(form.elements.role.value);
+      const destino = prefix === "create" ? form.elements.officeId.value : officeEditado();
       checks(
         prefix,
-        prefix === "create" ? form.elements.officeId.value : editing.officeId,
-        editing?.companyIds || [],
+        destino,
+        prefix === "edit" && destino === editing?.officeId ? editing?.companyIds || [] : [],
         ["admin", "manager"].includes(form.elements.role.value),
       );
       if (prefix === "edit")
         edit.elements.active.closest("label").hidden =
-          form.elements.role.value === "admin" || !editing.officeId;
+          form.elements.role.value === "admin" || !destino;
       roleHelp(prefix);
     });
   }
+  edit.elements.officeId.addEventListener("change", () => {
+    if (!editing) return;
+    const destino = officeEditado();
+    checks("edit", destino, destino === editing.officeId ? editing.companyIds : [], ["admin", "manager"].includes(edit.elements.role.value));
+    edit.elements.active.closest("label").hidden = edit.elements.role.value === "admin" || !destino;
+  });
   create.elements.officeId.addEventListener("change", () => {
     checks(
       "create",
@@ -441,6 +470,29 @@ export function createUserManagement({ document, window }) {
           status.textContent = "Alteração cancelada.";
           return;
         }
+      const destino = officeEditado();
+      const virouAdmin = body.role === "admin" && editing.role !== "admin";
+      const deixouAdmin = editing.role === "admin" && body.role !== "admin";
+      const mudouEscritorio = destino !== (editing.officeId || null) && !(body.role === "admin" && !destino && !editing.officeId);
+      if (options.platformAdmin && (mudouEscritorio || virouAdmin || deixouAdmin)) {
+        if (body.role !== "admin" && !destino) throw Error("Escolha o escritório do usuário: Operador e Gerente precisam de um escritório.");
+        if (body.role === "operator" && !body.companyIds.length) throw Error("Selecione ao menos uma empresa para o operador.");
+        if (!(await dialogs.confirm(
+          body.role === "admin"
+            ? `Tornar ${editing.name} Admin global? Os vínculos com escritórios deixam de ser necessários e são removidos.`
+            : `Mover ${editing.name} para ${officeName(destino)} como ${roleName[body.role]}? As empresas autorizadas de outros escritórios deixam de valer.`,
+          { title: "Alterar escritório ou perfil", confirmText: "Confirmar" },
+        ))) {
+          status.textContent = "Alteração cancelada.";
+          return;
+        }
+        const movido = await call({ action: "moveUser", userId: editing.id, revision: editing.revision, toOfficeId: destino, role: body.role, companyIds: body.companyIds });
+        // Nome, e-mail e situação da conta seguem pela edição normal, já na nova revisão.
+        if (body.name.trim() !== editing.name || (body.email ?? null) !== (editing.email ?? null) || body.accountActive !== editing.accountActive)
+          await call({ ...body, officeId: movido.officeId, revision: movido.revision, active: true });
+        await saved(body.role === "admin" ? `${editing.name} agora é Admin global.` : `${editing.name} agora pertence a ${officeName(destino)} como ${roleName[body.role]}.`);
+        return;
+      }
       await call(body);
       await saved(
         "Usuário e acessos atualizados. As permissões já valem nas próximas consultas ao servidor.",

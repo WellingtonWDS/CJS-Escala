@@ -45,3 +45,19 @@ Sem a migração 014, o envio do convite responde que os convites ainda não est
 ## Validação
 
 `database/tests/invites.sql` (18 cenários), `tests/invites-api.test.cjs`, `tests/password-reset.test.cjs` (e-mail de convite no n8n) e `tests/browser-convites.cjs`.
+
+## Mudar o escritório de um usuário (Admin)
+
+Na edição do usuário, o Admin vê o campo **Escritório**:
+
+- **Mover para outro escritório:** escolha o escritório e as empresas autorizadas do destino. O vínculo anterior e suas empresas são removidos (a mudança fica no histórico).
+- **Admin → Operador/Gerente:** escolha o escritório (obrigatório). Evita contas sem vínculo e sem acesso.
+- **Operador/Gerente → Admin:** os vínculos deixam de ser necessários e são removidos; o Admin acessa todos os escritórios.
+
+Não é possível alterar o próprio perfil ou escritório, e sempre deve restar um Admin ativo. Requer a migração **017_move_user.sql**:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/WellingtonWDS/CJS-Escala/main/database/migrations/017_move_user.sql -o /tmp/017_move_user.sql
+docker cp /tmp/017_move_user.sql postgres_apps:/tmp/017_move_user.sql
+docker exec postgres_apps psql -U postgres -d cjs_escala -v ON_ERROR_STOP=1 -f /tmp/017_move_user.sql
+```
