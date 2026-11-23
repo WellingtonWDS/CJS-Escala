@@ -12,8 +12,8 @@ export function createUserManagement({ document, window }) {
   <div class="users-filters"><label>Pesquisar usuários<input data-users-search type="search" placeholder="Nome, e-mail ou escritório"></label><label>Escritório<select data-users-office><option value="">Todos os escritórios</option></select></label><button type="button" data-users-refresh>Atualizar lista</button></div>
   <p data-management-status role="status" aria-live="polite"></p><p data-users-count></p><div class="users-list" data-users-list></div>
   <section class="user-editor" data-user-editor hidden><h3 data-editor-title></h3>
-  <form id="manage-create" hidden><label>Nome completo<input name="name" required maxlength="160" autocomplete="off"></label><label>E-mail de acesso<input name="email" type="email" required maxlength="254" autocomplete="off"></label><label>Senha inicial<input name="password" type="password" required minlength="6" maxlength="72" autocomplete="new-password"><small>Mínimo de 6 caracteres. Compartilhe por um canal privado.</small></label><label>Confirmar senha<input name="confirmation" type="password" required minlength="6" maxlength="72" autocomplete="new-password"></label><label>Escritório<select name="officeId" required></select></label><label>Perfil<select name="role"></select></label><p data-create-role-help></p><fieldset><legend>Empresas autorizadas</legend><label>Buscar empresas<input data-create-company-search type="search" placeholder="Razão social ou CNPJ"></label><div class="management-companies" data-create-companies></div></fieldset><div class="users-form-actions"><button type="submit">Criar usuário</button><button type="button" data-user-cancel>Cancelar</button></div></form>
-  <form id="manage-edit" hidden><p data-edit-office></p><label>Nome completo<input name="name" required maxlength="160" autocomplete="off"></label><label>E-mail de acesso<input name="email" type="email" required maxlength="254" autocomplete="off"></label><p data-identity-help></p><label>Perfil<select name="role"></select></label><label class="user-toggle"><input type="checkbox" role="switch" name="active"><span>Acesso ativo neste escritório</span></label><label class="user-toggle" data-account-toggle><input type="checkbox" role="switch" name="accountActive"><span>Conta ativa em todo o sistema</span></label><p data-edit-role-help></p><fieldset><legend>Empresas autorizadas</legend><label>Buscar empresas<input data-edit-company-search type="search" placeholder="Razão social ou CNPJ"></label><div class="management-companies" data-edit-companies></div></fieldset><p>A inativação no escritório preserva os preenchimentos e os vínculos de outros escritórios. Inativar a conta inteira revoga suas sessões.</p><div class="users-form-actions"><button type="submit">Salvar alterações</button><button type="button" data-user-cancel>Cancelar</button></div></form></section>`;
+  <form id="manage-create" hidden><label>Nome completo<input name="name" required maxlength="160" autocomplete="off"></label><label>E-mail de acesso<input name="email" type="email" required maxlength="254" autocomplete="off"></label><p class="user-invite-help" data-invite-help>A pessoa recebe um convite neste e-mail e cria a própria senha. O link vale por 7 dias.</p><label>Escritório<select name="officeId" required></select></label><label>Perfil<select name="role"></select></label><p data-create-role-help></p><fieldset><legend>Empresas autorizadas</legend><label>Buscar empresas<input data-create-company-search type="search" placeholder="Razão social ou CNPJ"></label><div class="management-companies" data-create-companies></div></fieldset><div class="users-form-actions"><button type="submit">Enviar convite</button><button type="button" data-user-cancel>Cancelar</button></div></form>
+  <form id="manage-edit" hidden><p data-edit-office></p><label>Nome completo<input name="name" required maxlength="160" autocomplete="off"></label><label>E-mail de acesso<input name="email" type="email" required maxlength="254" autocomplete="off"></label><p data-identity-help></p><label>Perfil<select name="role"></select></label><label class="user-toggle"><input type="checkbox" role="switch" name="active"><span>Acesso ativo neste escritório</span></label><label class="user-toggle" data-account-toggle><input type="checkbox" role="switch" name="accountActive"><span>Conta ativa em todo o sistema</span></label><p data-edit-role-help></p><fieldset><legend>Empresas autorizadas</legend><label>Buscar empresas<input data-edit-company-search type="search" placeholder="Razão social ou CNPJ"></label><div class="management-companies" data-edit-companies></div></fieldset><div class="user-access-link" data-access-box><p data-access-help></p><button type="button" data-access-link></button></div><p>A inativação no escritório preserva os preenchimentos e os vínculos de outros escritórios. Inativar a conta inteira revoga suas sessões.</p><div class="users-form-actions"><button type="submit">Salvar alterações</button><button type="button" data-user-cancel>Cancelar</button></div></form></section>`;
   const create = root.querySelector("#manage-create"),
     edit = root.querySelector("#manage-edit"),
     status = root.querySelector("[data-management-status]"),
@@ -73,8 +73,6 @@ export function createUserManagement({ document, window }) {
     create.hidden = true;
     edit.hidden = true;
     editing = null;
-    create.elements.password.value = "";
-    create.elements.confirmation.value = "";
   }
   function checks(prefix, officeId, selected = [], all = false) {
     const container = field(`${prefix}-companies`);
@@ -123,6 +121,8 @@ export function createUserManagement({ document, window }) {
     );
     select.value = selected;
   }
+  // Convite ainda não aceito (a pessoa nunca criou a senha).
+  const conviteDe = (user) => (options?.pendingInvites || []).find((i) => i.userId === user.id) || null;
   function payload(row) {
     return {
       action: "updateUser",
@@ -189,6 +189,14 @@ export function createUserManagement({ document, window }) {
       email.textContent = user.email || "E-mail não disponível";
       officeLabel.textContent = `${officeName(user.officeId)} · ${roleName[user.role]}`;
       info.append(name, email, officeLabel);
+      const convite = conviteDe(user);
+      if (convite) {
+        const selo = document.createElement("span");
+        selo.className = "user-invite-badge";
+        selo.dataset.expired = String(convite.expired);
+        selo.textContent = convite.expired ? "Convite expirado" : "Convite pendente";
+        info.append(selo);
+      }
       const actions = document.createElement("div");
       actions.className = "user-row-actions";
       const label = document.createElement("label"),
@@ -280,6 +288,13 @@ export function createUserManagement({ document, window }) {
       ["admin", "manager"].includes(user.role),
     );
     roleHelp("edit");
+    const convite = conviteDe(user), acesso = field("access-link");
+    const podeEnviar = options.invitesEnabled && user.canEdit && !!user.email && user.id !== options.currentUserId && user.membershipActive && user.accountActive && !!user.officeId;
+    field("access-box").hidden = !podeEnviar;
+    acesso.textContent = convite ? "Reenviar convite" : "Enviar link para redefinir a senha";
+    field("access-help").textContent = convite
+      ? `${user.name} ainda não criou a senha${convite.expired ? " e o convite expirou" : ""}. Um novo convite cancela o anterior.`
+      : `Envia a ${user.email || "este usuário"} um link (válido por 24 horas) para criar uma nova senha. Você não vê nem define a senha.`;
     edit.elements.name.focus();
     field("user-editor").scrollIntoView({
       block: "nearest",
@@ -293,6 +308,9 @@ export function createUserManagement({ document, window }) {
     create.hidden = false;
     field("user-editor").hidden = false;
     field("editor-title").textContent = "Novo usuário";
+    field("invite-help").textContent = options.invitesEnabled
+      ? "A pessoa recebe um convite neste e-mail e cria a própria senha. O link vale por 7 dias."
+      : "O envio de e-mails não está configurado: não é possível convidar agora. Fale com o administrador da plataforma.";
     create.elements.officeId.replaceChildren(
       ...options.offices
         .filter((o) => o.active)
@@ -354,21 +372,21 @@ export function createUserManagement({ document, window }) {
   create.addEventListener("submit", (event) => {
     event.preventDefault();
     run(async () => {
-      const { confirmation, ...fields } = Object.fromEntries(
-        new FormData(create),
-      );
-      if (fields.password !== confirmation)
-        throw Error("As senhas não conferem.");
+      const fields = Object.fromEntries(new FormData(create));
+      if (!options.invitesEnabled)
+        throw Error("O envio de e-mails não está configurado. Fale com o administrador da plataforma.");
       const companyIds = selectedIds("create");
       if (fields.role === "operator" && !companyIds.length)
         throw Error("Selecione ao menos uma empresa para o operador.");
       const result = await call({
-        action: "createUser",
+        action: "inviteUser",
         ...fields,
         companyIds,
       });
       await saved(
-        `Usuário ${result.user.name} criado. Já pode entrar com o e-mail e a senha cadastrados.`,
+        result.emailSent
+          ? `Convite enviado para ${fields.email.trim()}. ${result.user.name} cria a própria senha pelo link (válido por 7 dias).`
+          : `Usuário ${result.user.name} cadastrado, mas o convite não pôde ser enviado agora. Abra o usuário e use Reenviar convite.`,
       );
     });
   });
@@ -404,6 +422,23 @@ export function createUserManagement({ document, window }) {
       );
     });
   });
+  field("access-link").addEventListener("click", () =>
+    run(async () => {
+      if (!editing) return;
+      const convite = conviteDe(editing);
+      if (!(await dialogs.confirm(
+        convite
+          ? `Reenviar o convite para ${editing.email}? O link anterior deixa de valer.`
+          : `Enviar para ${editing.email} um link para criar uma nova senha? A senha atual continua valendo até a troca.`,
+        { title: convite ? "Reenviar convite" : "Redefinir senha", confirmText: convite ? "Reenviar convite" : "Enviar link" },
+      ))) {
+        status.textContent = "Envio cancelado.";
+        return;
+      }
+      const r = await call({ action: "sendAccessLink", userId: editing.id, officeId: editing.officeId, companyIds: [] });
+      await saved(r.kind === "invite" ? `Convite reenviado para ${editing.email}.` : `Link de redefinição enviado para ${editing.email} (válido por 24 horas).`);
+    }),
+  );
   return {
     show: () =>
       run(async () => {

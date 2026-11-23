@@ -101,6 +101,10 @@ O fluxo principal já inclui cadastro manual e por planilhas, importação Domí
 
 Regras **`ec141-2026-11-11-13`**: gere novamente resultados anteriores; os cadastros permanecem. Sem migração SQL, nova RPC ou variável de ambiente.
 
+## Convite de usuários por e-mail — 23/11/2026
+
+O Gerente cadastra só nome, e-mail, perfil e empresas; a pessoa recebe um convite e cria a própria senha (link de 7 dias). Selo **Convite pendente** na lista, **Reenviar convite** e **Enviar link para redefinir a senha** (24 h) na edição do usuário. Requer a migração **014_user_invites.sql** e o código atualizado do nó **Montar e-mail** no n8n. [Detalhes](docs/convites.md).
+
 ## Esqueci minha senha — 23/11/2026
 
 O login ganhou **Esqueci minha senha**: link de uso único (30 min) enviado por e-mail via n8n, página para criar a nova senha (8 a 72 caracteres, letras e números), encerramento das sessões abertas e e-mail de confirmação. Resposta neutra (não revela contas) e limites de tentativas. Requer a migração **013_password_reset.sql**, o fluxo [cjs-mail.template.json](integrations/n8n/cjs-mail.template.json) no n8n e a variável `N8N_MAIL_URL`. [Detalhes](docs/recuperacao-senha.md).

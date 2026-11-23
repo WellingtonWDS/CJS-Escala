@@ -18,6 +18,10 @@ Carregamento imediato na geração atual/proposta, cálculo em Worker local, blo
 
 
 
+## Convite de usuários — 23/11/2026
+
+Cadastro por convite (migração **014**), reenvio e redefinição pelo Gerente, e-mail de convite no fluxo n8n. [Detalhes](convites.md).
+
 ## Esqueci minha senha — 23/11/2026
 
 Recuperação de senha self-service (migração **013**, `/api/password`, `redefinir-senha.html`, fluxo n8n de e-mails em HTML). [Detalhes](recuperacao-senha.md).

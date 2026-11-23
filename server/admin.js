@@ -1,5 +1,6 @@
 import { readSession } from "./auth.js";
 import { createPersistenceService } from "./services/persistence.js";
+import { createMailer, origemPublica, mensagemDeAcesso } from "./mail.js";
 export function createAdminHandler({ env, fetchImpl = fetch, now = Date.now }) {
   const json = (body, status = 200) =>
     new Response(JSON.stringify(body), {
@@ -24,8 +25,17 @@ export function createAdminHandler({ env, fetchImpl = fetch, now = Date.now }) {
         expiresAt: session.exp,
       };
       const service = createPersistenceService({ env, fetchImpl, now });
-      if (request.method === "GET")
-        return json(await service.managementOptions(identity));
+      if (request.method === "GET") {
+        const options = await service.managementOptions(identity);
+        // Convites ainda não aceitos (antes da migração 014: nenhum).
+        let pendingInvites = [];
+        try {
+          pendingInvites = await service.pendingInvites(identity);
+        } catch (error) {
+          if (error.status !== 501) throw error;
+        }
+        return json({ ...options, pendingInvites, invitesEnabled: createMailer({ env, fetchImpl }).configured() });
+      }
       if (request.method !== "POST")
         return json({ error: "Método não permitido." }, 405);
       if (request.headers.get("origin") !== new URL(request.url).origin)
@@ -46,6 +56,16 @@ export function createAdminHandler({ env, fetchImpl = fetch, now = Date.now }) {
         /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(
           value,
         );
+      const mailer = createMailer({ env, fetchImpl });
+      // Link de acesso enviado pelo Gerente a quem já está cadastrado (convite ou redefinição).
+      if (body?.action === "sendAccessLink") {
+        if (!uuid(body.userId) || !uuid(body.officeId)) return json({ error: "Selecione o usuário." }, 400);
+        if (!mailer.configured()) return json({ error: "Envio de e-mails não configurado. Configure N8N_MAIL_URL na hospedagem." }, 503);
+        const r = await service.sendAccessLink(identity, body);
+        const enviado = await mailer.send(mensagemDeAcesso(r, origemPublica(env, request)));
+        if (!enviado) return json({ error: "O link foi gerado, mas o e-mail não pôde ser enviado agora. Tente novamente em instantes." }, 502);
+        return json({ ok: true, kind: r.kind, emailSent: true });
+      }
       if (
         !(
           uuid(body?.officeId) ||
@@ -82,6 +102,19 @@ export function createAdminHandler({ env, fetchImpl = fetch, now = Date.now }) {
           return json({ error: "Selecione um operador." }, 400);
         return json(await service.updateUserAccess(identity, body));
       }
+      if (body.action === "inviteUser") {
+        if (
+          typeof body.name !== "string" || !body.name.trim() || body.name.length > 160 ||
+          typeof body.email !== "string" || body.email.length > 254 || !/^\S+@\S+\.\S+$/.test(body.email.trim()) ||
+          !["admin", "manager", "operator"].includes(body.role)
+        )
+          return json({ error: "Confira nome, e-mail e perfil." }, 400);
+        if (!mailer.configured()) return json({ error: "Envio de e-mails não configurado. Configure N8N_MAIL_URL na hospedagem." }, 503);
+        const r = await service.inviteUser(identity, body);
+        const emailSent = await mailer.send(mensagemDeAcesso(r.mail, origemPublica(env, request)));
+        // O link nunca volta ao navegador do Gerente.
+        return json({ ok: true, user: r.user, emailSent }, 201);
+      }
       if (body.action !== "createUser")
         return json({ error: "Operação inválida." }, 400);
       if (
@@ -108,7 +141,7 @@ export function createAdminHandler({ env, fetchImpl = fetch, now = Date.now }) {
         201,
       );
     } catch (error) {
-      const status = [400, 401, 403, 404, 409, 429].includes(error.status)
+      const status = [400, 401, 403, 404, 409, 429, 501].includes(error.status)
         ? error.status
         : 503;
       return json(
@@ -124,6 +157,10 @@ export function createAdminHandler({ env, fetchImpl = fetch, now = Date.now }) {
                     ? "Seu perfil não permite esta operação neste escritório."
                     : status === 401
                       ? "Sessão expirada ou revogada."
+                      : status === 429
+                        ? "Muitos envios em pouco tempo. Aguarde e tente novamente."
+                        : status === 501
+                          ? "Convites ainda não configurados no banco (migração 014)."
                       : "Gestão de usuários indisponível. Confira a migração do banco e tente novamente.",
         },
         status,

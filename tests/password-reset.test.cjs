@@ -69,9 +69,9 @@ test("entrada, origem, modo e configuração são conferidos antes do banco", as
 
 test("redefinição: troca, aviso por e-mail e link expirado", async () => {
   let t = await setup({ password_reset_check: { valid: true, expiresAt: "2026-11-23T12:30:00Z" }, password_reset_complete: { email: "g@x.test", name: "G", sessionsRevoked: 2 } });
-  assert.deepEqual(await (await t.post({ action: "check", token: TOKEN })).json(), { valid: true, expiresAt: "2026-11-23T12:30:00Z" });
+  assert.deepEqual(await (await t.post({ action: "check", token: TOKEN })).json(), { valid: true, expiresAt: "2026-11-23T12:30:00Z", kind: "reset", officeName: "" });
   const res = await t.post({ action: "reset", token: TOKEN, password: "NovaSenha2026" });
-  assert.deepEqual(await res.json(), { ok: true, sessionsRevoked: 2 });
+  assert.deepEqual(await res.json(), { ok: true, sessionsRevoked: 2, kind: "reset" });
   const complete = t.chamadas.find((c) => c.nome === "password_reset_complete");
   assert.deepEqual(complete.body, { p_token: TOKEN, p_password: "NovaSenha2026" });
   const mail = t.chamadas.find((c) => c.nome === "mail");
@@ -94,8 +94,9 @@ test("fluxo n8n de e-mails: webhook protegido e HTML seguro para os dois tipos",
   const webhook = wf.nodes.find((n) => n.type === "n8n-nodes-base.webhook");
   assert.equal(webhook.parameters.authentication, "headerAuth");
   assert.equal(webhook.parameters.path, "auth/cjs-mail");
-  const envio = wf.nodes.find((n) => n.type === "n8n-nodes-base.emailSend");
-  assert.equal(envio.parameters.emailFormat, "both");
+  const envio = wf.nodes.find((n) => n.type === "n8n-nodes-base.gmail");
+  assert.equal(envio.parameters.emailType, "html");
+  assert.equal(envio.parameters.message, "={{ $json.html }}");
   assert.equal(envio.parameters.options.appendAttribution, false);
   assert(!JSON.stringify(wf).includes("$env"));
   const code = wf.nodes.find((n) => n.name === "Montar e-mail").parameters.jsCode;
@@ -109,6 +110,17 @@ test("fluxo n8n de e-mails: webhook protegido e HTML seguro para os dois tipos",
   assert(reset.json.html.includes("Olá, &lt;b&gt;Ana&lt;/b&gt;."), "nome escapado");
   assert(!reset.json.html.includes("<b>Ana"));
   assert.match(reset.json.html, /30 minutos/);
+  const [peloGerente] = await rodar({ ...base, type: "password_reset", resetUrl: `https://reescala.fintria.com.br/redefinir-senha.html#token=${TOKEN}`, expiresMinutes: 1440, requestedBy: "Gerente <A>" });
+  assert.match(peloGerente.json.html, /Gerente &lt;A&gt;, gerente do seu escritório/);
+  assert.match(peloGerente.json.html, /<strong>1 dia<\/strong>/);
+  const [convite] = await rodar({ ...base, type: "invite", inviteUrl: `https://reescala.fintria.com.br/redefinir-senha.html#token=${TOKEN}`, expiresMinutes: 10080, officeName: "Escritório A", invitedBy: "Gerente A" });
+  assert.equal(convite.json.subject, "Convite para acessar o Reescala — Escritório A");
+  assert.match(convite.json.html, /<strong>Gerente A<\/strong> convidou você/);
+  assert.match(convite.json.html, /Criar minha senha/);
+  assert.match(convite.json.html, /<strong>7 dias<\/strong>/);
+  assert.match(convite.json.text, /redefinir-senha\.html#token=c{0}a{0}/);
+  const [semLink] = await rodar({ ...base, type: "invite", inviteUrl: "https://evil.example/x" });
+  assert.equal(semLink.json.valid, false);
   assert.match(reset.json.text, /redefinir-senha\.html#token=a{64}/);
   const [mudou] = await rodar({ ...base, type: "password_changed", changedAt: "2026-11-23T15:04:00Z", forgotUrl: "https://reescala.fintria.com.br/login.html#esqueci" });
   assert.equal(mudou.json.subject, "Sua senha do Reescala foi alterada");
@@ -128,4 +140,11 @@ test("limitador sem retorno (204 do PostgREST) não interrompe o pedido nem a re
   assert.deepEqual(t.chamadas.map((c) => c.nome), ["login_attempt", "password_reset_request", "mail"]);
   t = await setup({ login_attempt: vazio, password_reset_complete: { email: "g@x.test", name: "G", sessionsRevoked: 0 } });
   assert.equal((await t.post({ action: "reset", token: TOKEN, password: "NovaSenha2026" })).status, 200);
+});
+
+test("convite: página reconhece o convite e não manda e-mail de troca de senha", async () => {
+  const t = await setup({ password_reset_check: { valid: true, kind: "invite", officeName: "Escritório A" }, password_reset_complete: { email: "n@x.test", name: "N", sessionsRevoked: 0, kind: "invite" } });
+  assert.deepEqual(await (await t.post({ action: "check", token: TOKEN })).json(), { valid: true, kind: "invite", officeName: "Escritório A" });
+  assert.equal((await (await t.post({ action: "reset", token: TOKEN, password: "MinhaSenha2026" })).json()).kind, "invite");
+  assert.equal(t.chamadas.filter((c) => c.nome === "mail").length, 0);
 });

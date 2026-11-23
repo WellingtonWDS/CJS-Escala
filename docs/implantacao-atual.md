@@ -7,6 +7,10 @@ Consultar este registro antes de orientar o operador. Distinguir código dispon�
 
 
 
+## Convite de usuários — 23/11/2026
+
+Migração **014_user_invites.sql** (após 013) e atualização do código do nó **Montar e-mail** no n8n. Sem variável nova. [Passo a passo](convites.md#ativação).
+
 ## Esqueci minha senha — 23/11/2026
 
 Migração **013_password_reset.sql** (após 012), função Vercel `api/password.js`, variável nova **`N8N_MAIL_URL`** e fluxo n8n `integrations/n8n/cjs-mail.template.json` (credencial SMTP). **Nada disso foi aplicado na VPS/n8n/Vercel.** [Passo a passo](recuperacao-senha.md#ativação).

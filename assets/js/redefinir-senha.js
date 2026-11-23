@@ -3,6 +3,7 @@
 const $ = (id) => document.getElementById(id);
 const status = $("reset-status"), form = $("reset-form"), mensagem = $("reset-message");
 const token = new URLSearchParams(location.hash.slice(1)).get("token") || "";
+let convite = false;
 history.replaceState(null, "", location.pathname);
 export const regras = (v) => ({ tamanho: v.length >= 8 && new TextEncoder().encode(v).length <= 72, letra: /\p{L}/u.test(v), numero: /\d/.test(v) });
 const post = async (body) => {
@@ -43,7 +44,9 @@ form.addEventListener("submit", async (e) => {
     await post({ action: "reset", token, password: senha });
     form.hidden = true;
     status.hidden = true;
-    $("reset-title").textContent = "Senha alterada";
+    $("reset-title").textContent = convite ? "Senha criada" : "Senha alterada";
+    if (convite) $("reset-done").querySelector("p").textContent = "Pronto! Sua conta está ativa. Entre com seu e-mail e a senha que você acabou de criar.";
+    $("reset-done").querySelector("a").textContent = convite ? "Entrar no Reescala" : "Entrar com a nova senha";
     $("reset-done").hidden = false;
   } catch (error) {
     if (error.status === 410) invalido(error.message);
@@ -59,7 +62,14 @@ else
     .then((r) => {
       if (!r.valid) return invalido("Este link é inválido, já foi usado ou expirou. Peça um novo.");
       status.removeAttribute("data-tipo");
-      status.textContent = "Escolha uma senha nova para entrar no Reescala.";
+      convite = r.kind === "invite";
+      if (convite) {
+        document.title = "Criar sua senha · Reescala";
+        $("reset-title").textContent = "Bem-vindo ao Reescala";
+        status.textContent = `Crie sua senha para acessar o Reescala${r.officeName ? ` no escritório ${r.officeName}` : ""}.`;
+        document.querySelector('label[for="nova-senha"]').textContent = "Sua senha";
+        form.querySelector("button[type=submit]").textContent = "Criar minha senha";
+      } else status.textContent = "Escolha uma senha nova para entrar no Reescala.";
       form.hidden = false;
       atualizarRegras();
       $("nova-senha").focus();

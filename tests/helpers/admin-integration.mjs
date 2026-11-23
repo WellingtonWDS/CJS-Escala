@@ -23,6 +23,9 @@ export async function testAdminIntegration({ env, sql, browserTest }) {
     N8N_JWT_SECRET: "test-identity-key-with-enough-characters",
     N8N_JWT_ISSUER: "identity",
     N8N_JWT_AUDIENCE: "login",
+    // Convites: o envio para um endereço local inexistente falha e o cadastro continua.
+    N8N_MAIL_URL: "http://127.0.0.1:9/mail",
+    PERSISTENCE_ALLOW_LOCAL_HTTP: "true",
   };
   const normal = await issueSession(settings, Date.now(), {
     userId,
@@ -296,8 +299,6 @@ export async function testAdminIntegration({ env, sql, browserTest }) {
       await page
         .locator('#manage-create [name="email"]')
         .fill("browser-provision@example.test");
-      await page.locator('#manage-create [name="password"]').fill("123456");
-      await page.locator('#manage-create [name="confirmation"]').fill("123456");
       await page
         .locator('#manage-create [name="officeId"]')
         .selectOption(office);
@@ -308,7 +309,7 @@ export async function testAdminIntegration({ env, sql, browserTest }) {
       await page.waitForFunction(() =>
         document
           .querySelector("[data-management-status]")
-          .textContent.includes("criado."),
+          .textContent.includes("cadastrado"),
       );
       const browserId = sql(
         "SELECT u.id FROM cjs_private.users u JOIN public.users i ON i.user_id::text=u.identity_subject WHERE i.email='browser-provision@example.test';",

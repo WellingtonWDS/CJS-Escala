@@ -4,6 +4,7 @@
  * check:   informa se o link ainda vale (para a página de redefinição).
  * reset:   troca a senha (bcrypt no banco), revoga sessões e avisa por e-mail. */
 import { signJwt } from "./jwt.js";
+import { createMailer } from "./mail.js";
 
 export const RESPOSTA_PEDIDO = "Se o e-mail estiver cadastrado e com acesso ativo, enviaremos em instantes um link para criar uma nova senha. O link vale por 30 minutos.";
 const TOKEN = /^[a-f0-9]{64}$/;
@@ -64,22 +65,9 @@ export function createPasswordHandler({ env, fetchImpl = fetch, now = Date.now }
       throw new PasswordError("Serviço indisponível. Tente novamente em instantes.", 503);
     }
   }
-  /** Pede ao n8n o envio do e-mail. Falha não revela se a conta existe. */
-  async function enviar(base, mensagem) {
-    try {
-      const res = await fetchImpl(base, {
-        method: "POST", redirect: "error", signal: AbortSignal.timeout(10000),
-        headers: { "Content-Type": "application/json", "X-CJS-Service-Key": env.N8N_SERVICE_SECRET },
-        body: JSON.stringify({ app: "Reescala", ...mensagem }),
-      });
-      if (!res.ok) throw Error(String(res.status));
-      return true;
-    } catch {
-      // Sem dados pessoais no log: só o tipo da mensagem.
-      console.error("CJS_MAIL_FAILURE", { type: mensagem.type });
-      return false;
-    }
-  }
+  // Falha no envio não revela se a conta existe (a resposta ao navegador é a mesma).
+  const mailer = createMailer({ env, fetchImpl });
+  const enviar = (_base, mensagem) => mailer.send(mensagem);
 
   return async (request) => {
     try {
@@ -113,19 +101,20 @@ export function createPasswordHandler({ env, fetchImpl = fetch, now = Date.now }
       if (body?.action === "check") {
         if (!TOKEN.test(body.token || "")) return json({ valid: false });
         const r = await rpc(cfg.rpc, "password_reset_check", { p_token: body.token });
-        return json({ valid: r?.valid === true, expiresAt: r?.valid ? r.expiresAt : null });
+        return json({ valid: r?.valid === true, expiresAt: r?.valid ? r.expiresAt : null, kind: r?.valid && r.kind === "invite" ? "invite" : "reset", officeName: r?.valid && r.kind === "invite" ? r.officeName || "" : "" });
       }
       if (body?.action === "reset") {
         if (!TOKEN.test(body.token || "")) return json({ error: "Este link é inválido, já foi usado ou expirou. Peça um novo." }, 410);
         if (!senhaValida(body.password)) return json({ error: "A senha precisa ter de 8 a 72 caracteres, com letras e números." }, 400);
         await rpc(cfg.rpc, "login_attempt", { p_bucket: await sha256("reset-token:" + body.token) });
         const r = await rpc(cfg.rpc, "password_reset_complete", { p_token: body.token, p_password: body.password });
-        await enviar(cfg.mail, {
+        // No convite a pessoa acabou de criar a senha: não há troca a confirmar.
+        if (r.kind !== "invite") await enviar(cfg.mail, {
           type: "password_changed", to: r.email, name: r.name,
           changedAt: new Date(now()).toISOString(), loginUrl: `${origem}/login.html`,
           forgotUrl: `${origem}/login.html#esqueci`,
         });
-        return json({ ok: true, sessionsRevoked: r.sessionsRevoked || 0 });
+        return json({ ok: true, sessionsRevoked: r.sessionsRevoked || 0, kind: r.kind === "invite" ? "invite" : "reset" });
       }
       return json({ error: "Operação inválida." }, 400);
     } catch (error) {
