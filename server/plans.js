@@ -1,5 +1,6 @@
 import { readSession } from "./auth.js";
 import { createPersistenceService } from "./services/persistence.js";
+import { tentarAvisos } from "./notices.js";
 const uuid = (v) =>
   typeof v === "string" &&
   /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(v);
@@ -45,7 +46,11 @@ export function createPlansHandler({ env, fetchImpl = fetch, now = Date.now }) {
         if (!uuid(body.companyId) || !PLAN_ACTIONS.includes(body.use) || !names || (body.confirmSwap !== undefined && typeof body.confirmSwap !== "boolean"))
           return json({ error: "Uso inválido." }, 400);
         try {
-          return json(await service.planRegisterUse(identity, { officeId: body.officeId, companyId: body.companyId, action: body.use, names, confirmSwap: body.confirmSwap === true }));
+          const r = await service.planRegisterUse(identity, { officeId: body.officeId, companyId: body.companyId, action: body.use, names, confirmSwap: body.confirmSwap === true });
+          // Troca detectada ou plano perto do limite: avisa o Gerente na hora.
+          if (["confirmar_troca", "aviso"].includes(r?.status) || r?.swapConfirmed)
+            await tentarAvisos({ env, fetchImpl, now, origem: (env.APP_ORIGIN || new URL(request.url).origin).replace(/\/$/, "") });
+          return json(r);
         } catch (error) {
           if (error.status === 501) return json({ status: "liberado", plan: { limited: false }, pending: true });
           throw error;

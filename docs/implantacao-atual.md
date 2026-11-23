@@ -7,6 +7,10 @@ Consultar este registro antes de orientar o operador. Distinguir código dispon�
 
 
 
+## Avisos ao Gerente — 23/11/2026
+
+Migração **018_plan_notices.sql** (após 017), função Vercel `api/notices.js`, código atualizado do nó **Montar e-mail** e novo fluxo n8n de agendamento diário. [Passo a passo](avisos-gerente.md#ativação).
+
 ## Mudar escritório do usuário — 23/11/2026
 
 Migração **017_move_user.sql** (após 016). [Detalhes](convites.md#mudar-o-escritório-de-um-usuário-admin).

@@ -69,6 +69,7 @@ module.exports = async ({ browser, baseURL }) => {
     assert.equal(await page.evaluate(() => location.hash), "#empresas");
     assert.equal(await page.locator('[data-app-view="companies"], [data-app-view="offices"], [data-seasonal-preview-open]').count(), 0);
     assert.equal(await page.locator('button[data-app-view="home"]').getAttribute("aria-current"), "page");
+    assert.equal(await page.locator("[data-footer-storage]").isHidden(), true, "aviso de salvamento só em Gerar escala");
     assert.equal(await page.locator("[data-company-card]").count(), 3);
     const card = page.locator(`[data-company-card="${padaria}"]`);
     assert.match(await card.innerText(), /Padaria Pão Bom[\s\S]*Escala gerada[\s\S]*11\.222\.333\/0001-81 · Contabilidade Alfa[\s\S]*Preenchimentos\s*2[\s\S]*Colaboradores\s*12[\s\S]*18\/11\/2026[\s\S]*Operador A/);
@@ -133,6 +134,7 @@ module.exports = async ({ browser, baseURL }) => {
     await page.waitForFunction(() => document.body.dataset.appView === "schedule");
     assert.deepEqual(await page.evaluate(() => window.__aberturas), [{ officeId: office, companyId: padaria, draftId: "50000000-0000-4000-8000-000000000001", o: { confirmar: "seAlterado" } }]);
     assert.equal(await page.locator("#scheduler-view").isVisible(), true);
+    assert.equal(await page.locator("[data-footer-storage]").isVisible(), true, "aviso de salvamento em Gerar escala");
     assert.match(await page.evaluate(() => location.hash), /^#sec-/);
     // Voltar pelo menu reabre a lista; novo preenchimento de outra empresa.
     await page.locator('button[data-app-view="home"]').click();

@@ -274,3 +274,6 @@ html[data-theme="dark"] .minha-conta .conta-msg[data-tipo="erro"] { color: #ffb4
 html[data-theme="dark"] .minha-conta .conta-senha button { background: transparent !important; border: 0 !important; color: #86e2bd !important; }
 .minha-conta h3 { font-weight: 700; }
 .users-filters label[hidden] { display: none !important; }
+
+/* Aviso de salvamento só na tela Gerar escala */
+body[data-app-view]:not([data-app-view="schedule"]) [data-footer-storage] { display: none; }

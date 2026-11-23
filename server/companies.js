@@ -1,5 +1,6 @@
 import { readSession } from "./auth.js";
 import { createPersistenceService } from "./services/persistence.js";
+import { tentarAvisos } from "./notices.js";
 import { validCnpj, normalizeCnpj } from "../assets/js/shared/empresas.js";
 export function createCompaniesHandler({
   env,
@@ -98,13 +99,15 @@ export function createCompaniesHandler({
       }
       if (body.action !== undefined)
         return json({ error: "Operação inválida." }, 400);
-      return json(
-        await service.resolveCompany(identity, {
-          ...body,
-          name: body.name.trim(),
-          cnpj: normalizeCnpj(body.cnpj),
-        }),
-      );
+      const resolvida = await service.resolveCompany(identity, {
+        ...body,
+        name: body.name.trim(),
+        cnpj: normalizeCnpj(body.cnpj),
+      });
+      // Nova empresa pode levar o plano a 80%/100%: avisa o Gerente.
+      if (resolvida?.status === "created")
+        await tentarAvisos({ env, fetchImpl, now, origem: (env.APP_ORIGIN || new URL(request.url).origin).replace(/\/$/, "") });
+      return json(resolvida);
     } catch (error) {
       const status = [400, 401, 402, 403, 409, 423].includes(error.status)
         ? error.status

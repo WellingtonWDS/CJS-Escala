@@ -101,6 +101,10 @@ O fluxo principal já inclui cadastro manual e por planilhas, importação Domí
 
 Regras **`ec141-2026-11-11-13`**: gere novamente resultados anteriores; os cadastros permanecem. Sem migração SQL, nova RPC ou variável de ambiente.
 
+## Avisos automáticos ao Gerente — 23/11/2026
+
+E-mails ao Gerente quando o plano chega a 80% e a 100%, quando um Operador tenta uma troca de quadro e quando o ciclo renova. Fila no banco (migração **018_plan_notices.sql**), envio imediato e diário (fluxo n8n `cjs-avisos-diarios`). O aviso “Salve seus preenchimentos por empresa…” do rodapé aparece só em Gerar escala. [Detalhes](docs/avisos-gerente.md).
+
 ## Alterar minha senha — 23/11/2026
 
 O nome do usuário no menu lateral abre **Minha conta → Alterar senha** (senha atual + nova). Outras sessões são encerradas e chega o e-mail de confirmação. Requer a migração **016_change_password.sql**. [Detalhes](docs/recuperacao-senha.md#alterar-minha-senha-logado).

@@ -134,6 +134,7 @@ export function publicPath(path) {
     "/redefinir-senha.html",
     "/assets/js/redefinir-senha.js",
     "/api/password",
+    "/api/notices",
     "/logos/Reescala_original_transparente.png",
     "/logos/Reescala_branco_transparente.png",
     "/logos/Reescala_preto_fundo_branco.png",

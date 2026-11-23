@@ -6,6 +6,7 @@ import { createCompaniesHandler } from "./companies.js";
 import { createPlansHandler } from "./plans.js";
 import { createBrandingHandler } from "./branding.js";
 import { createPasswordHandler } from "./password.js";
+import { createNoticesHandler } from "./notices.js";
 export function createRoutes({ env, fetchImpl = fetch, now = Date.now }) {
   const diagnostics = createDiagnosticsHandler({ env, fetchImpl, now });
   const admin = createAdminHandler({ env, fetchImpl, now });
@@ -13,6 +14,7 @@ export function createRoutes({ env, fetchImpl = fetch, now = Date.now }) {
   const plans = createPlansHandler({ env, fetchImpl, now });
   const branding = createBrandingHandler({ env, fetchImpl, now });
   const password = createPasswordHandler({ env, fetchImpl, now });
+  const notices = createNoticesHandler({ env, fetchImpl, now });
   const persistence = createPersistenceHandler({
     env,
     fetchImpl,
@@ -36,6 +38,7 @@ export function createRoutes({ env, fetchImpl = fetch, now = Date.now }) {
     if (path === "/api/plans") return plans(request);
     if (path === "/api/branding") return branding(request);
     if (path === "/api/password") return password(request);
+    if (path === "/api/notices") return notices(request);
     return null;
   };
 }
