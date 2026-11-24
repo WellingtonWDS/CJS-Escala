@@ -52,6 +52,9 @@ function upstream(token, records = []) {
       return Response.json({ success: true, token });
     if (url.endsWith("/login_attempt"))
       return new Response(null, { status: 204 });
+    // Banco sem a migração 021: o login segue pelo n8n.
+    if (url.endsWith("/login_lookup"))
+      return Response.json({ code: "PGRST202", message: "not found" }, { status: 404 });
     if (url.endsWith("/open_session"))
       return Response.json({
         userId,
@@ -253,4 +256,34 @@ test("modo n8n mal configurado falha fechado e não usa a senha compartilhada", 
     now,
   );
   assert.deepEqual(await config.json(), { mode: "n8n" });
+});
+
+test("login direto (migração 021): confere a senha no backend, sem n8n e sem expor o hash", async () => {
+  const bcrypt = require("bcryptjs");
+  const hash = bcrypt.hashSync("correct-pass", 4);
+  const provider = "70000000-0000-4000-8000-000000000001";
+  const records = [];
+  const fetchImpl = async (url, opts) => {
+    records.push({ url, opts });
+    if (url === env.N8N_LOGIN_URL) throw Error("n8n não deve ser chamado");
+    if (url.endsWith("/login_lookup"))
+      return Response.json(JSON.parse(opts.body).p_email === "user@example.test" ? { found: true, userId: provider, hash } : { found: false });
+    return upstream("unused", [])(url, opts);
+  };
+  const ok = await auth(request({ email: " USER@example.test ", password: "correct-pass" }), env, now, { fetchImpl });
+  assert.equal(ok.status, 200);
+  const corpo = await ok.clone().text();
+  assert.ok(!corpo.includes(hash) && !corpo.includes("$2"), "hash não volta ao navegador");
+  assert.ok(ok.headers.get("set-cookie"));
+  const open = records.find((r) => r.url.endsWith("/open_session"));
+  const claims = JSON.parse(Buffer.from(open.opts.headers.Authorization.split(".")[1], "base64url"));
+  assert.equal(claims.role, "cjs_identity_gateway");
+  assert.equal(claims.sub, provider);
+  const expira = new Date(JSON.parse(open.opts.body).p_expires_at).getTime();
+  assert.ok(expira > now && expira <= now + 43200000);
+  for (const [email, password] of [["user@example.test", "wrong-pass1"], ["ninguem@example.test", "correct-pass"]]) {
+    const r = await auth(request({ email, password }), env, now, { fetchImpl });
+    assert.equal(r.status, 401);
+    assert.match((await r.json()).error, /E-mail ou senha inválidos/);
+  }
 });

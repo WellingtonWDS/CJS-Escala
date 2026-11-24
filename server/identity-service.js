@@ -1,4 +1,7 @@
+import bcrypt from "bcryptjs";
 import { signJwt, verifyIdentityJwt } from "./jwt.js";
+// Hash de referência para gastar o mesmo tempo quando o e-mail não existe.
+const HASH_FICTICIO = "$2a$12$CwTycUXWue0Thq9StjUM0uJ8.mXHM0bU7Tq7dBMmV9mNt0c3qFyVu";
 export class IdentityError extends Error {
   constructor(message, status = 503) {
     super(message);
@@ -80,6 +83,11 @@ export function createIdentityService(
       throw new IdentityError("Serviço de sessão indisponível.");
     }
     if (!response.ok) {
+      if (response.status === 404) {
+        let erro;
+        try { erro = await response.clone().json(); } catch {}
+        if (erro?.code === "PGRST202") throw Object.assign(new IdentityError("Serviço de sessão indisponível."), { ausente: true });
+      }
       const messages = {
         401: "Sessão expirada ou revogada.",
         403: "Usuário sem acesso ao sistema.",
@@ -125,6 +133,10 @@ export function createIdentityService(
         (v) => v.toString(16).padStart(2, "0"),
       ).join("");
       await rpc("login_attempt", gateway("login"), { p_bucket: hash });
+      // Login direto (migração 021): o banco entrega o hash só ao backend e a senha é
+      // conferida aqui, fora da VPS. Sem a migração, segue o fluxo do n8n.
+      const direto = await loginDireto(email, password);
+      if (direto) return direto;
       let r;
       try {
         r = await fetchImpl(loginUrl, {
@@ -166,8 +178,28 @@ export function createIdentityService(
           401,
         );
       }
-      const result = await rpc("open_session", gateway(verified.subject), {
-        p_expires_at: new Date(verified.expiresAt).toISOString(),
+      return abrirSessao(verified.subject, verified.expiresAt);
+    },
+    getIdentity: (s) => rpc("get_identity", actor(s)),
+    revoke: (s) => rpc("revoke_session", actor(s)),
+  };
+  async function loginDireto(email, password) {
+    let r;
+    try {
+      r = await rpc("login_lookup", gateway("login"), { p_email: email });
+    } catch (error) {
+      // Função ausente (migração 021 não aplicada): usa o n8n.
+      if (error.status === 404 || error.ausente) return null;
+      throw error;
+    }
+    const encontrado = r?.found === true && typeof r.hash === "string" && /^[0-9a-f-]{36}$/i.test(r.userId || "");
+    const valido = await bcrypt.compare(password, encontrado ? r.hash : HASH_FICTICIO);
+    if (!encontrado || !valido) throw new IdentityError("E-mail ou senha inválidos.", 401);
+    return abrirSessao(r.userId, now() + 43200000);
+  }
+  async function abrirSessao(subject, expiresAt) {
+      const result = await rpc("open_session", gateway(subject), {
+        p_expires_at: new Date(expiresAt).toISOString(),
       });
       const uuid = (v) =>
         typeof v === "string" &&
@@ -183,8 +215,5 @@ export function createIdentityService(
       )
         throw new IdentityError("Resposta de sessão inválida.");
       return result;
-    },
-    getIdentity: (s) => rpc("get_identity", actor(s)),
-    revoke: (s) => rpc("revoke_session", actor(s)),
-  };
+  }
 }

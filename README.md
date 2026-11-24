@@ -101,6 +101,15 @@ O fluxo principal já inclui cadastro manual e por planilhas, importação Domí
 
 Regras **`ec141-2026-11-11-13`**: gere novamente resultados anteriores; os cadastros permanecem. Sem migração SQL, nova RPC ou variável de ambiente.
 
+## Desempenho — 24/11/2026
+
+Ganhos medidos:
+- Lista de empresas e telas de gestão partem dos escritórios do usuário e usam um resumo dos rascunhos: de ~335 ms para ~1 ms por usuário com 3.200 empresas (migração **020_performance_listas.sql**).
+- Login confere a senha no backend, sem n8n e sem bcrypt na VPS, com limite distribuído por segundo (migração **021_login_direto.sql**).
+- Front-end empacotado e minificado, com cache longo: de 119 para 20 requisições na abertura.
+
+[Detalhes](docs/desempenho.md).
+
 ## Portaria MTE nº 2.041/2026 e Decreto nº 13.173/2026 — 24/11/2026
 
 Adequação às novas regras de repouso, domingos, 12×36, turnos ininterruptos, férias e salário-hora:

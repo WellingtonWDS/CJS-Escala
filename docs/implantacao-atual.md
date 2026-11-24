@@ -7,6 +7,10 @@ Consultar este registro antes de orientar o operador. Distinguir código dispon�
 
 
 
+## Desempenho — 24/11/2026
+
+Migrações **020_performance_listas.sql** e **021_login_direto.sql** (nessa ordem, após 019). Nova dependência `bcryptjs` (instalada pelo build do Vercel) e cabeçalhos de cache no `vercel.json`. Depois da 021, o fluxo n8n de login pode ser desativado. [Detalhes](desempenho.md).
+
 ## Portaria MTE 2.041/2026 e Decreto 13.173/2026 — 24/11/2026
 
 Regras `ec141-2026-11-24-17`: os resultados gerados antes ficam desatualizados e devem ser gerados de novo; os cadastros permanecem. Sem migração SQL, RPC, variável ou mudança no n8n. Instaladores DEMO regenerados só com o novo campo padrão. [Detalhes](portaria-2041.md).

@@ -18,6 +18,10 @@ Carregamento imediato na geração atual/proposta, cálculo em Worker local, blo
 
 
 
+## Desempenho — 24/11/2026
+
+Lista de empresas e telas de gestão por escritório do usuário (020), login direto pelo backend (021), front-end empacotado com cache longo. [Detalhes](desempenho.md).
+
 ## Portaria MTE 2.041/2026 — 24/11/2026
 
 Descanso de 35h/59h com repouso, rodízio dos domingos (comércio, empregadas e preferencial), média mensal da 12×36 e dos turnos ininterruptos, início de férias e divisor do salário-hora no termo aditivo, nas escalas dinâmica e fixa. [Detalhes](portaria-2041.md).

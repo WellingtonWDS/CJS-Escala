@@ -1,7 +1,8 @@
 import { build } from "esbuild";
 import { buildTheme } from "./build-theme.mjs";
 import { execFileSync } from "node:child_process";
-import { cp, mkdir, rm } from "node:fs/promises";
+import { cp, mkdir, rm, readFile, writeFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 const root = fileURLToPath(new URL("../", import.meta.url));
@@ -59,3 +60,40 @@ await build({
   minify: true,
   legalComments: "eof",
 });
+
+// Produção: a tela principal carrega um pacote minificado (com divisão de código) em vez
+// de ~100 módulos separados, e os estilos em um único arquivo. Os nomes têm hash para
+// permitir cache longo (vercel.json). Os módulos originais continuam publicados: workers,
+// páginas auxiliares e testes os importam diretamente. O pacote fica em assets/js/app/
+// para que os caminhos relativos (../workers/, ../../vendor/) continuem válidos.
+const pacote = await build({
+  entryPoints: [join(root, "assets/js/main.js")],
+  outdir: join(dist, "assets/js/app"),
+  bundle: true,
+  splitting: true,
+  format: "esm",
+  minify: true,
+  target: "es2022",
+  entryNames: "[name]-[hash]",
+  chunkNames: "[name]-[hash]",
+  external: ["/assets/vendor/*", "../../vendor/*", "../vendor/*"],
+  metafile: true,
+  legalComments: "none",
+});
+const principal = Object.entries(pacote.metafile.outputs).find(([, o]) => o.entryPoint === "assets/js/main.js")?.[0];
+if (!principal) throw new Error("Pacote principal não gerado.");
+let html = await readFile(join(dist, "index.html"), "utf8");
+const origem = '<script type="module" src="./assets/js/main.js"></script>';
+if (!html.includes(origem)) throw new Error("Entrada main.js não encontrada no index.html.");
+html = html.replace(origem, `<script type="module" src="/${principal.replace(/^dist\//, "")}"></script>`);
+// Estilos da página principal (mesma ordem) em um só arquivo.
+const links = [...html.matchAll(/<link rel="stylesheet" href="(\.?\/assets\/css\/[^"?]+)(?:\?[^"]*)?">\n?/g)];
+if (links.length) {
+  const css = (await Promise.all(links.map((m) => readFile(join(dist, m[1].replace(/^\.?\//, "")), "utf8")))).join("\n");
+  const nome = `app-${createHash("sha256").update(css).digest("hex").slice(0, 10)}.css`;
+  await writeFile(join(dist, "assets/css", nome), css);
+  html = html.replace(links[0][0], `<link rel="stylesheet" href="/assets/css/${nome}">\n`);
+  for (const m of links.slice(1)) html = html.replace(m[0], "");
+}
+await writeFile(join(dist, "index.html"), html);
+console.log(`Pacote principal: ${principal}`);
