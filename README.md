@@ -107,6 +107,8 @@ Ganhos medidos:
 - Lista de empresas e telas de gestão partem dos escritórios do usuário e usam um resumo dos rascunhos: de ~335 ms para ~1 ms por usuário com 3.200 empresas (migração **020_performance_listas.sql**).
 - Login confere a senha no backend, sem n8n e sem bcrypt na VPS, com limite distribuído por segundo (migração **021_login_direto.sql**).
 - Front-end empacotado e minificado, com cache longo: de 119 para 20 requisições na abertura.
+- Base de nomes carregada só quando usada e fontes servidas pelo próprio site, sem Google Fonts.
+- Histórico limitado às 15 versões mais recentes de cada preenchimento (migração **022_retencao_versoes.sql**).
 
 [Detalhes](docs/desempenho.md).
 

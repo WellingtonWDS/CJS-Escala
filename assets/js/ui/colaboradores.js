@@ -1,7 +1,7 @@
 import { bindAjudas } from "./ajuda-campo.js";
 import { camposHabilitacoes, bindHabilitacoes } from "./habilitacoes.js";
 import { camposRestricoes, bindRestricoes } from "./restricoes.js";
-import { preencherSexoPorNome } from "../domain/sexo-por-nome.js";
+import { preencherSexoPorNome, carregarBaseNomes, baseNomesCarregada } from "../domain/sexo-por-nome.js";
 import { mostrarColaboradores } from "./lista-colaboradores.js";
 import { prepararImportacao } from "../import/colaboradores.js";
 import { camposEnquadramento } from "./enquadramento-ec141.js";
@@ -180,8 +180,19 @@ export function createColaboradoresUI({
               c.sexoOrigem = "usuario";
               delete c.sexoInferencia;
             }
-            if (c.quadroDominio && e.target.dataset.field === "nome")
-              preencherSexoPorNome(c);
+            if (c.quadroDominio && e.target.dataset.field === "nome") {
+              if (baseNomesCarregada()) preencherSexoPorNome(c);
+              else
+                carregarBaseNomes()
+                  .then(() => {
+                    if (preencherSexoPorNome(c)) {
+                      invalidarEscala();
+                      renderColaboradores();
+                      saveState();
+                    }
+                  })
+                  .catch(() => {});
+            }
             const sexo = list.querySelector(
               `[data-id="${c.id}"][data-field="sexo"]`,
             );
@@ -313,7 +324,8 @@ export function createColaboradoresUI({
 
   return { renderColaboradores, bindEvents };
   function bindEvents() {
-    document.getElementById("btn-sugerir-sexos").onclick = () => {
+    document.getElementById("btn-sugerir-sexos").onclick = async () => {
+      await carregarBaseNomes();
       let preenchidos = 0;
       for (const c of state.colaboradores)
         if (c.quadroDominio && preencherSexoPorNome(c)) preenchidos++;

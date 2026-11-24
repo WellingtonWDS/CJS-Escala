@@ -58,6 +58,12 @@ module.exports = async function testarSexoNomes({ browser, baseURL }) {
       page.evaluate(() =>
         JSON.parse(localStorage.getItem("fintria-escala-dp-v2")),
       );
+    // A base de nomes é carregada sob demanda: aguarda o resultado gravado.
+    const esperar = (pred, arg) =>
+      page.waitForFunction(
+        ([fonte, a]) => new Function("s", "a", `return (${fonte})(s, a)`)(JSON.parse(localStorage.getItem("fintria-escala-dp-v2")), a),
+        [pred.toString(), arg],
+      );
     const original = await saved();
     await page.locator("#importacao-dominio > summary").click();
     await page.locator("#dominio-arquivo").setInputFiles({
@@ -160,6 +166,7 @@ module.exports = async function testarSexoNomes({ browser, baseURL }) {
       () => document.documentElement.dataset.ready === "true",
     );
     await page.locator("#btn-sugerir-sexos").click();
+    await esperar((s) => s.colaboradores[2].sexo === "feminino");
     assert.equal((await saved()).colaboradores[2].sexo, "feminino");
     assert.equal((await saved()).colaboradores[0].sexo, "masculino");
     assert.match(
@@ -178,6 +185,7 @@ module.exports = async function testarSexoNomes({ browser, baseURL }) {
       () => document.documentElement.dataset.ready === "true",
     );
     await page.locator("#btn-sugerir-sexos").click();
+    await esperar((s) => /2022/.test(s.colaboradores[3].sexoInferencia?.versao || ""));
     assert.match(
       (await saved()).colaboradores[3].sexoInferencia.versao,
       /2022/,
@@ -186,12 +194,13 @@ module.exports = async function testarSexoNomes({ browser, baseURL }) {
     const segundoNome = page.locator('#colab-list [data-field="nome"]').nth(1);
     await segundoNome.fill("Adair Souza");
     await segundoNome.dispatchEvent("change");
-    assert.equal((await saved()).colaboradores[1].sexo, "nao_informado");
+    await esperar((s) => s.colaboradores[1].sexo === "nao_informado");
     await page
       .locator('#colab-list [data-field="sexo"]')
       .nth(2)
       .selectOption("nao_informado");
     await page.locator("#btn-sugerir-sexos").click();
+    await page.waitForTimeout(150);
     assert.equal((await saved()).colaboradores[2].sexo, "nao_informado");
     await irParaEtapa(page, "#btn-gerar");
     await clicarCalculo(page, "#btn-gerar");

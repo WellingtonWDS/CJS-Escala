@@ -31,8 +31,18 @@ Resultado com 3.200 empresas e 4.800 rascunhos, comparando antes e depois em 100
 - Abertura medida localmente: de 119 para 20 requisições, de 1.154 para 790 KB sem compressão, e de 833 para 335 ms até a tela pronta.
 - `vercel.json`: cache imutável de 1 ano para os arquivos com hash; 1 dia, com revalidação em segundo plano, para bibliotecas (`assets/vendor`) e logos.
 
+## Retenção do histórico — migração 022_retencao_versoes.sql
+
+- A cada salvamento, o banco guarda uma cópia completa do preenchimento (até 1 MB) em `draft_versions`. Agora ficam só as **15 versões mais recentes** de cada preenchimento; as mais antigas são apagadas no próprio salvamento. Na aplicação da migração, o excedente que já existia é apagado de uma vez.
+- `idempotency` (proteção contra envio duplicado) ganhou a coluna `created_at`. Os registros existentes recebem a data do salvamento correspondente, e os com mais de 30 dias são apagados, em lotes de até 200 a cada salvamento.
+- A auditoria (`audit`: quem salvou, criou ou excluiu, e quando) continua completa.
+
+## Front-end — carregamento sob demanda e fontes próprias
+
+- A base de nomes do IBGE (~190 KB) só é baixada ao importar um quadro ou ao usar a sugestão de sexo. O JavaScript da abertura caiu de 547 para 374 KB sem compressão.
+- As fontes Inter e Space Grotesk passaram a ser servidas pelo próprio site, em versão variável (um arquivo por família para todos os pesos, licença OFL, pacotes `@fontsource-variable`), em vez do Google Fonts. A abertura não faz mais nenhuma requisição externa, e a fonte principal é pré-carregada. Cache de 30 dias.
+
 ## Próximos passos sugeridos
 
 - **Região das funções do Vercel:** configurada em `arn1` (Estocolmo), a mais próxima da VPS em Helsinki (`regions` no `vercel.json`). Cada ação faz de 1 a 3 chamadas do Vercel à VPS, que agora ficam a poucos milissegundos.
 - **Admin geral com milhares de empresas:** paginar a lista de cartões, se os 128 ms incomodarem.
-- **Base de nomes (194 KB):** carregar só ao editar colaboradores ou importar, em vez de na abertura.

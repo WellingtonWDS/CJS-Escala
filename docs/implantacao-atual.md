@@ -7,6 +7,10 @@ Consultar este registro antes de orientar o operador. Distinguir código dispon�
 
 
 
+## Retenção do histórico e front-end — 24/11/2026
+
+Migração **022_retencao_versoes.sql** (após 021): mantém 15 versões por preenchimento e apaga a idempotência com mais de 30 dias. Front-end: base de nomes sob demanda e fontes servidas pelo próprio site. Sem variável nova nem mudança no n8n. [Detalhes](desempenho.md).
+
 ## Desempenho — 24/11/2026
 
 Migrações **020_performance_listas.sql** e **021_login_direto.sql** (nessa ordem, após 019). Nova dependência `bcryptjs` (instalada pelo build do Vercel) e cabeçalhos de cache no `vercel.json`. Depois da 021, o fluxo n8n de login pode ser desativado. [Detalhes](desempenho.md).

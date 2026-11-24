@@ -3,8 +3,10 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs/promises");
 let inferir, preencher, base, analisar, preparar, ler, X, defaults, csv, domain;
 before(async () => {
-  ({ inferirSexoPorNome: inferir, preencherSexoPorNome: preencher } =
+  let carregar;
+  ({ inferirSexoPorNome: inferir, preencherSexoPorNome: preencher, carregarBaseNomes: carregar } =
     await import("../assets/js/domain/sexo-por-nome.js"));
+  await carregar();
   ({ NOMES_IBGE: base } = await import("../assets/js/data/nomes-ibge.js"));
   ({ analisarQuadroDominio: analisar, prepararDominio: preparar } =
     await import("../assets/js/import/dominio.js"));

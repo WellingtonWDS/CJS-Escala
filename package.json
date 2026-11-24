@@ -17,6 +17,8 @@
     "node": ">=22"
   },
   "devDependencies": {
+    "@fontsource-variable/inter": "5.2.8",
+    "@fontsource-variable/space-grotesk": "5.2.10",
     "esbuild": "0.28.2",
     "playwright": "1.62.1",
     "postcss": "8.5.32",

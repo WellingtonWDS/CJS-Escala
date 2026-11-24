@@ -18,6 +18,13 @@ await cp(join(root, "logos"), join(dist, "logos"), { recursive: true });
 await cp(join(root, "sobre"), join(dist, "sobre"), { recursive: true });
 await cp(join(root, "admin"), join(dist, "admin"), { recursive: true });
 await mkdir(join(dist, "assets/vendor"), { recursive: true });
+// Fontes Inter e Space Grotesk servidas pelo próprio site (assets/css/fontes.css).
+await mkdir(join(dist, "assets/fonts"), { recursive: true });
+for (const [pacote, nome] of [["inter", "inter"], ["space-grotesk", "space-grotesk"]]) {
+  for (const sub of ["latin", "latin-ext"])
+    await cp(join(root, `node_modules/@fontsource-variable/${pacote}/files/${nome}-${sub}-wght-normal.woff2`), join(dist, `assets/fonts/${nome}-${sub}-wght-normal.woff2`));
+  await cp(join(root, `node_modules/@fontsource-variable/${pacote}/LICENSE`), join(dist, `assets/fonts/LICENSE-${nome}.txt`));
+}
 await cp(
   join(root, "node_modules/@e965/xlsx/xlsx.mjs"),
   join(dist, "assets/vendor/xlsx.mjs"),

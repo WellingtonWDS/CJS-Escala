@@ -1,8 +1,15 @@
-import {
-  NOMES_IBGE,
-  FONTE_NOMES,
-  VERSAO_BASE_NOMES,
-} from "../data/nomes-ibge.js";
+// A base do IBGE (~190 KB) só é baixada quando necessária: importação de quadro
+// ou sugestão de sexo pelo nome. Antes do carregamento, nada é inferido nem apagado.
+let baseNomes = null, carregando = null;
+export function carregarBaseNomes() {
+  if (baseNomes) return Promise.resolve(baseNomes);
+  carregando ??= import("../data/nomes-ibge.js").then((m) => (baseNomes = m)).catch((error) => {
+    carregando = null;
+    throw error;
+  });
+  return carregando;
+}
+export const baseNomesCarregada = () => baseNomes !== null;
 export const PREDOMINANCIA_MINIMA = 0.99;
 export const AMOSTRA_MINIMA = 1000;
 const normalizar = (value) =>
@@ -28,11 +35,12 @@ function consultar(prenome, base) {
     amostra: total,
     frequenciaFeminina: feminino,
     frequenciaMasculina: masculino,
-    fonte: FONTE_NOMES,
-    versao: `${VERSAO_BASE_NOMES}-99-v2`,
+    fonte: baseNomes?.FONTE_NOMES,
+    versao: `${baseNomes?.VERSAO_BASE_NOMES}-99-v2`,
   };
 }
-export function inferirSexoPorNome(nome, base = NOMES_IBGE) {
+export function inferirSexoPorNome(nome, base = baseNomes?.NOMES_IBGE) {
+  if (!base) return null;
   const palavras = normalizar(nome).split(/\s+/),
     primeiros = palavras[0].split("-");
   const resultados = primeiros.map((p) => consultar(p, base));
@@ -49,6 +57,7 @@ export function inferirSexoPorNome(nome, base = NOMES_IBGE) {
 }
 export function preencherSexoPorNome(c) {
   if (
+    !baseNomes ||
     c.sexoOrigem === "usuario" ||
     (["feminino", "masculino"].includes(c.sexo) && !c.sexoInferencia)
   )

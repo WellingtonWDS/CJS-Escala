@@ -4,6 +4,7 @@ import {
   MAX_DOMINIO_BYTES,
 } from "../import/arquivo-dominio.js";
 import { analisarQuadroDominio, prepararDominio } from "../import/dominio.js";
+import { carregarBaseNomes } from "../domain/sexo-por-nome.js";
 import { escapeHtml as esc } from "../shared/formatacao.js";
 import { validCnpj, formatCnpj } from "../shared/empresas.js";
 import { analisarHorarioSCI, MAX_SCI_BYTES } from "../import/sci.js";
@@ -117,7 +118,8 @@ export function createImportarDominioUI({
         el("arquivo").dataset.loadingLabel = origem.lendo;
         el("arquivo").setAttribute("aria-busy", "true");
         try {
-          const lido = await origem.ler(file);
+          // A base de nomes é baixada junto com a leitura, para a sugestão de sexo.
+          const [lido] = await Promise.all([origem.ler(file), carregarBaseNomes()]);
           if (atual !== token) return;
           quadro = lido;
           previa();
