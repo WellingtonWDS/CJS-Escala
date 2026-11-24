@@ -40,6 +40,9 @@ const { chromium } = require("playwright");
         : route.abort(),
     );
     const page = await context.newPage();
+    // Relógio controlado: a verificação ao voltar para a janela só consulta o servidor
+    // se a última tiver mais de 1 minuto.
+    await page.clock.install();
     await page.goto(base);
     await page.waitForURL("**/login.html?**");
     assert.equal(await page.locator("#password").count(), 1);
@@ -67,14 +70,14 @@ const { chromium } = require("playwright");
       303,
     );
     await page.locator("#password").fill("incorrect");
-    await page.locator("button[type=submit]").click();
+    await page.locator("#login-form button[type=submit]").click();
     await page.waitForFunction(() =>
       document
         .querySelector("#login-message")
         .textContent.includes("incorreta"),
     );
     await page.locator("#password").fill("test-password");
-    await page.locator("button[type=submit]").click();
+    await page.locator("#login-form button[type=submit]").click();
     await page.waitForURL(base + "/");
     await page.locator("#btn-sair").waitFor({ state: "visible" });
     await page.evaluate(() =>
@@ -114,6 +117,7 @@ const { chromium } = require("playwright");
     // Indisponibilidade não é expiração; mantém o cookie e bloqueia a interface.
     const temporary = route => route.fulfill({status:503,contentType:"application/json",body:'{"error":"Indisponível"}'});
     await page.route("**/api/auth", temporary);
+    await page.clock.fastForward(61_000);
     await page.evaluate(() => window.dispatchEvent(new Event("focus")));
     const interruption = page.getByRole("dialog", {name:"Verificação de acesso temporariamente indisponível"});
     await interruption.waitFor();
@@ -134,6 +138,7 @@ const { chromium } = require("playwright");
     now += SESSION_MS - 1000;
     assert.equal((await context.request.get(base + "/api/auth")).status(), 200);
     now += 1000;
+    await page.clock.fastForward(61_000);
     await page.evaluate(() => window.dispatchEvent(new Event("focus")));
     await page.waitForURL("**/login.html?expired=1**");
     assert.equal(
@@ -149,15 +154,43 @@ const { chromium } = require("playwright");
       "preserved",
     );
     await page.locator("#password").fill("test-password");
-    await page.locator("button[type=submit]").click();
+    await page.locator("#login-form button[type=submit]").click();
     await page.waitForURL(base + "/");
+    await page.locator("#btn-sair").waitFor({ state: "visible" });
+    // Verificação de sessão econômica: aba visível consulta no máximo a cada 5 min,
+    // aba escondida não consulta, e o retorno à janela só consulta após 1 min.
+    const verificacoes = [];
+    const contar = (r) => { if (r.method() === "GET" && new URL(r.url()).pathname === "/api/auth") verificacoes.push(r.url()); };
+    page.on("request", contar);
+    await page.clock.fastForward(4 * 60_000);
+    await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+    assert.equal(verificacoes.length, 0, "sem consulta antes de 5 min, nem no foco logo após uma consulta");
+    await page.clock.fastForward(61_000);
+    await page.waitForTimeout(100);
+    assert.equal(verificacoes.length, 1, "uma consulta depois de 5 min");
+    await page.evaluate(() => Object.defineProperty(document, "hidden", { configurable: true, get: () => true }));
+    await page.clock.fastForward(20 * 60_000);
+    await page.evaluate(() => document.dispatchEvent(new Event("visibilitychange")));
+    await page.waitForTimeout(100);
+    assert.equal(verificacoes.length, 1, "aba escondida não consulta");
+    await page.evaluate(() => delete document.hidden);
+    await page.evaluate(() => document.dispatchEvent(new Event("visibilitychange")));
+    await page.waitForTimeout(100);
+    assert.equal(verificacoes.length, 2, "ao voltar para a aba, consulta uma vez");
+    page.off("request", contar);
+    // Sair em uma aba encerra as outras abertas, sem esperar a próxima verificação.
+    const outra = await context.newPage();
+    await outra.goto(base);
+    await outra.waitForFunction(() => document.documentElement.dataset.ready === "true");
     await page.locator("#btn-sair").click();
     await page.waitForURL("**/login.html?**");
+    await outra.waitForURL("**/login.html?**");
+    assert.ok(!new URL(outra.url()).searchParams.has("expired"), "saída, não expiração");
+    await outra.close();
     assert.ok(!(await context.cookies()).some((c) => c.name === "cjs_session"));
     // Timer blocks an open tab without requiring another request or interaction.
-    await page.clock.install();
     await page.locator("#password").fill("test-password");
-    await page.locator("button[type=submit]").click();
+    await page.locator("#login-form button[type=submit]").click();
     await page.waitForURL(base + "/");
     await page.locator("#btn-sair").waitFor({ state: "visible" });
     await page.clock.fastForward(SESSION_MS + 1);

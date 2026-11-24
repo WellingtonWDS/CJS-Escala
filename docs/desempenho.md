@@ -42,6 +42,19 @@ Resultado com 3.200 empresas e 4.800 rascunhos, comparando antes e depois em 100
 - A base de nomes do IBGE (~190 KB) só é baixada ao importar um quadro ou ao usar a sugestão de sexo. O JavaScript da abertura caiu de 547 para 374 KB sem compressão.
 - As fontes Inter e Space Grotesk passaram a ser servidas pelo próprio site, em versão variável (um arquivo por família para todos os pesos, licença OFL, pacotes `@fontsource-variable`), em vez do Google Fonts. A abertura não faz mais nenhuma requisição externa, e a fonte principal é pré-carregada. Cache de 30 dias.
 
+## Verificação de sessão — 24/11/2026
+
+Cada aba consultava `/api/auth` a cada 60 s, mesmo escondida, e também a cada foco. Isso gerava cerca de 83% das chamadas de funções do Vercel, cada uma com uma consulta ao banco (`get_identity`). Agora:
+
+- aba visível: no máximo uma consulta a cada 5 min;
+- ao voltar para a janela ou aba: consulta só se a última tiver mais de 1 min;
+- aba escondida: não consulta; o fim da sessão continua sendo aplicado pelo temporizador local;
+- sair em uma aba encerra as outras na hora (`BroadcastChannel`), sem consultar o servidor;
+- abertura da página e retorno pelo botão voltar continuam consultando sempre;
+- falha de rede ou erro do serviço mostra o aviso de indisponibilidade, sem encerrar a sessão, e tenta de novo no próximo intervalo ou foco.
+
+As chamadas de dados continuam validadas pelo banco a cada requisição. Uma revogação feita pelo servidor (por exemplo, troca de senha em outro aparelho) aparece na próxima ação, ou em até 5 min com a tela parada.
+
 ## Próximos passos sugeridos
 
 - **Região das funções do Vercel:** configurada em `arn1` (Estocolmo), a mais próxima da VPS em Helsinki (`regions` no `vercel.json`). Cada ação faz de 1 a 3 chamadas do Vercel à VPS, que agora ficam a poucos milissegundos.

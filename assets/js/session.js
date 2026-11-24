@@ -46,9 +46,13 @@ export async function requireSession() {
         encodeURIComponent(location.pathname + location.search + location.hash),
     );
   };
+  // Última verificação concluída. Aba escondida não consulta o servidor: a expiração
+  // local continua pelo temporizador, e as chamadas de dados são validadas no banco.
+  let ultima = 0;
   async function check() {
     if (checking) return;
     checking = true;
+    ultima = Date.now();
     try {
       const response = await fetch("/api/auth", { cache: "no-store" });
       if (response.status === 401) {
@@ -57,6 +61,7 @@ export async function requireSession() {
       }
       if (!response.ok) {
         unavailable();
+        ultima = 0;
         return false;
       }
       const session = await response.json();
@@ -77,6 +82,8 @@ export async function requireSession() {
       return session;
     } catch {
       unavailable();
+      // Falha temporária: a próxima ocasião (foco ou intervalo) tenta de novo.
+      ultima = 0;
       return false;
     } finally {
       checking = false;
@@ -92,14 +99,21 @@ export async function requireSession() {
       }
     }
   });
-  window.addEventListener("focus", check);
-  document.addEventListener("visibilitychange", () => {
-    if (!document.hidden) check();
-  });
-  // Detect logout in another tab even while this tab stays open.
-  setInterval(check, 60000);
+  const RETORNO = 60_000, INTERVALO = 5 * 60_000;
+  const seAntiga = (ms) => {
+    if (!document.hidden && Date.now() - ultima >= ms) check();
+  };
+  // Ao voltar para a janela ou aba: verifica se a última consulta tem mais de 1 min.
+  window.addEventListener("focus", () => seAntiga(RETORNO));
+  document.addEventListener("visibilitychange", () => seAntiga(RETORNO));
+  // Com a aba visível: no máximo uma consulta a cada 5 min.
+  setInterval(() => seAntiga(INTERVALO), 30_000);
+  // Saída em outra aba encerra esta na hora, sem consultar o servidor.
+  const canal = typeof BroadcastChannel === "function" ? new BroadcastChannel("reescala-sessao") : null;
+  if (canal) canal.onmessage = (event) => { if (event.data === "logout") expire(false); };
   const initialSession = (await check()) || await recovered;
   document.getElementById("btn-sair")?.addEventListener("click", async () => {
+    canal?.postMessage("logout");
     try {
       const response = await fetch("/api/auth", {
         method: "POST",
