@@ -18,6 +18,7 @@ import { configDoPerfil } from "./perfil-dominio.js";
 import { faixaInicioIntervalo } from "./politica-intervalo.js";
 import { pausaMinimaPlanejada, funcionamentoDoDia } from "./janelas-planejamento.js";
 import { trabalhoDentroDoFuncionamento } from "./funcionamento-empresa.js";
+import { descansoMinimo, repousoDoDia, sequenciasDomingo, regrasDomingo } from "./descanso.js";
 import { bloqueioNaData, janelaPermitida } from "./restricoes.js";
 import { isoDate, diasNoMes, timeToMin, minToTime, dateFromKey, getMonday } from "./datas-horas.js";
 
@@ -337,13 +338,35 @@ export function otimizarCobertura(config, escala, ctx) {
     return lista;
   }
 
-  // Conferências rápidas: interjornada e sete dias seguidos.
+  // Conferências rápidas: descanso entre jornadas (11h + 24h por repouso intercalado,
+  // Portaria MTE 2.041/2026, art. 4º, § 2º) e sete dias seguidos.
   function interjornadaOk(p, i) {
     const seq = p.atual, n = seq.length;
-    const ok = (a, b, dist) => !trabalha(a) || !trabalha(b) || dist * DIA + b.entradaMin - a.saidaMin >= 660;
-    const ant = i > 0 ? seq[i - 1] : fixa ? seq[n - 1] : p.contexto.at(-1);
-    const prox = i < n - 1 ? seq[i + 1] : fixa ? seq[0] : null;
-    return (!ant || ok(ant, seq[i], 1)) && (!prox || ok(seq[i], prox, 1));
+    const lista = fixa ? [...seq, ...seq, ...seq] : [...p.contexto, ...seq];
+    const c = fixa ? n + i : p.contexto.length + i;
+    const busca = (k, passo) => {
+      for (let j = k + passo, limite = 0; j >= 0 && j < lista.length && limite < 14; j += passo, limite++)
+        if (trabalha(lista[j])) return j;
+      return -1;
+    };
+    const ok = (a, b) => {
+      if (a < 0 || b < 0) return true;
+      let repousos = 0;
+      for (let j = a + 1; j < b; j++) if (repousoDoDia(lista[j])) repousos++;
+      const minimo = config.tipoEscala === "12x36" ? 660 : descansoMinimo(config, repousos);
+      return (b - a) * DIA + lista[b].entradaMin - lista[a].saidaMin >= minimo;
+    };
+    if (trabalha(lista[c])) return ok(busca(c, -1), c) && ok(c, busca(c, 1));
+    return ok(busca(c, -1), busca(c, 1));
+  }
+  // Repouso dominical: a troca de folgas não pode piorar o rodízio dos domingos.
+  const faltasDomingo = (p, dias) =>
+    fixa
+      ? dias.some((d) => d.weekday === 0 && trabalha(d)) ? regrasDomingo(config, p.c).length : 0
+      : sequenciasDomingo(config, p.c, [...p.contexto, ...dias]).length;
+  function domingoOk(p) {
+    p.domingoBase ??= faltasDomingo(p, p.original);
+    return faltasDomingo(p, p.atual) <= p.domingoBase;
   }
   function consecutivosOk(p) {
     if (fixa) return p.atual.some((d) => !trabalha(d));
@@ -473,7 +496,7 @@ export function otimizarCobertura(config, escala, ctx) {
     const desfazer = mov.map(([p, i]) => [p, i, p.atual[i]]);
     for (const [p, i, novo] of mov) trocar(p, i, novo);
     let valido = mov.every(([p, i]) => interjornadaOk(p, i));
-    if (valido && mov.length > 1 && mov[0][0] === mov[1][0]) valido = consecutivosOk(mov[0][0]);
+    if (valido && mov.length > 1 && mov[0][0] === mov[1][0]) valido = consecutivosOk(mov[0][0]) && domingoOk(mov[0][0]);
     avaliadas++;
     const delta = custo() - antes;
     if (!valido || (delta > 0 && sorteio() >= Math.exp(-delta / T))) {

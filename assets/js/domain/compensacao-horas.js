@@ -114,6 +114,23 @@ export function apurarCompensacaoHoras(state, c, dias) {
         suficiente ? "pendencia" : "erro",
         `Compensação de horas: ${computadas.toFixed(2)}h computadas em ${quantidade} dias; média semanal ${media.toFixed(2)}h / referência ${limite}h. ${suficiente ? "Média atingida; a autorização e a quitação efetiva da compensação dependem da conferência da cláusula." : "Média acima do limite: o excedente não foi compensado no período informado."}`,
       ),
+      ...(mesCalendario(inicio, fim)
+        ? []
+        : [
+            issue(
+              "COMPENSACAO_MES",
+              "pendencia",
+              `O período de apuração (${br(inicio)} a ${br(fim)}) não coincide com um mês-calendário. A Portaria MTE nº 2.041/2026, art. 3º, afere o limite médio semanal e mensal no mês-calendário; confira se a cláusula admite outro período (por exemplo, banco de horas) e apure também cada mês.`,
+            ),
+          ]),
     ],
   };
+}
+
+const br = (data) => data.split("-").reverse().join("/");
+/** Período do dia 1º ao último dia do mesmo mês. */
+export function mesCalendario(inicio, fim) {
+  const [a, m, d] = inicio.split("-").map(Number);
+  const ultimo = new Date(a, m, 0).getDate();
+  return d === 1 && fim === `${inicio.slice(0, 8)}${String(ultimo).padStart(2, "0")}`;
 }

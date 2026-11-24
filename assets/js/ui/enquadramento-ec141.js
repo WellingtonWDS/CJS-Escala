@@ -18,7 +18,7 @@ export function camposEnquadramento(c) {
       )
       .join("")}</select></label>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">${input("salarioAnterior", "Remuneração anterior (R$)")}${input("salarioAtual", "Remuneração atual (R$)")}${input("pisoAnterior", "Piso anterior (R$; zero se inexistente)")}${input("pisoAtual", "Piso atual (R$; zero se inexistente)")}</div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3" ${e.tipo === "art8" ? "" : "hidden"}>${check("diplomaSuperior", "Diploma de nível superior")}${check("empregadoPublico", "Empregado público (impede a exceção do art. 8º)")}${input("remuneracao", "Remuneração para o art. 8º (R$)")}${input("tetoRgps", "Teto RGPS aplicável ao período (R$)")}${check("jornadaMantida", "Jornada mantida por liberalidade ou previsão coletiva")}</div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3" ${e.tipo === "art8" ? "" : "hidden"}>${check("diplomaSuperior", "Diploma de nível superior")}${check("empregadoPublico", "Empregado público (impede a exceção do art. 8º)")}${input("remuneracao", "Remuneração para o art. 8º (R$; se variável, média dos últimos 12 meses)")}${input("tetoRgps", "Teto RGPS aplicável ao período (R$)")}${check("jornadaMantida", "Controle de jornada mantido por liberalidade ou previsão coletiva")}</div>
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3" ${e.tipo === "contrato_publico" ? "" : "hidden"}>${check("contratoVigente", "Contrato vigente na publicação de 16/10/2026")}${check("maoDeObraDireta", "Execução com emprego direto de mão de obra")}${input("dataAditamento", "Data do aditamento (vazio: prazo máximo legal)", "date")}</div>
   </details>`;
 }

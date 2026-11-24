@@ -264,6 +264,10 @@ test("sonda H: repouso da primeira jornada usa contexto sem duplicar ocorrência
   e.state.modoRegime = "simulacao";
   e.state.regimeJornada = "atual44";
   const r = e.domain.gerarDadosEscala().resultado[0];
+  // A geração atrasa a entrada para garantir o descanso; desfaz para testar a validação com contexto.
+  assert.ok(r.dias[0].ajusteDescansoMin > 0);
+  delete r.dias[0].ajusteDescansoMin;
+  e.domain.atualizarHorarioEfetivo(r.dias[0]);
   const issues = e.domain.validarLegal(
     e.c,
     r.dias,

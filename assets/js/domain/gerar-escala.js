@@ -22,6 +22,7 @@ import {
   VERSAO_REGRAS,
 } from "./ec141.js";
 import { createPlanejadorFolgas } from "./folgas-semana.js";
+import { domingoDevido, conferirDescansos, descansoMinimo, repousoDoDia } from "./descanso.js";
 import { createDomain } from "./index.js";
 import {
   configDoPerfil,
@@ -83,9 +84,12 @@ export function createGerador(state, jornada, feriados, validacao) {
     const planoConversao =
       state.planoFolgasConversao?.[state.colaboradores[idx]?.id];
     if (Array.isArray(planoConversao))
-      return planoConversao
-        .filter((d) => operacionais.includes(d))
-        .slice(0, quantidadeFolgasOperacionais);
+      return comDomingo(
+        planoConversao
+          .filter((d) => operacionais.includes(d))
+          .slice(0, quantidadeFolgasOperacionais),
+        date, idx, operacionais, quantidadeFolgasOperacionais,
+      );
     if (quantidadeFolgasOperacionais === 0) return [];
 
     const permitidos = (state.folgaDiasPermitidos || []).filter((d) =>
@@ -126,7 +130,61 @@ export function createGerador(state, jornada, feriados, validacao) {
         folgas[primeira] = ultimaAnterior;
       }
     }
-    return folgas;
+    return state.folgaTipo === "fixa" ? folgas : comDomingo(folgas, date, idx, operacionais, quantidadeFolgasOperacionais);
+  }
+
+  /** Rodízio do repouso dominical (Lei 10.101/2000, art. 6º; CLT, art. 386; Portaria
+   * MTE 2.041/2026, art. 5º): na semana devida, a última folga passa para o domingo.
+   * A primeira folga é preservada para não criar sete dias seguidos de trabalho. */
+  function comDomingo(folgas, date, idx, operacionais, quantidade) {
+    if (escalaFixa(state) || quantidade !== 2 || folgas.length !== 2 || !operacionais.includes(0) || folgas.includes(0))
+      return folgas;
+    const colab = state.colaboradores[idx] || {};
+    const permitido = (state.folgaDiasPermitidos || []).length === 0 || state.folgaDiasPermitidos.includes(0);
+    // No comércio a coincidência é obrigatória e prevalece sobre a lista de dias permitidos.
+    if (!permitido && !state.atividadeComercio) return folgas;
+    if (!domingoDevido(state, colab, getMonday(date), idx)) return folgas;
+    const ordem = (dia) => (dia + 6) % 7;
+    const ultima = ordem(folgas[0]) > ordem(folgas[1]) ? 0 : 1;
+    const nova = folgas.slice();
+    nova[ultima] = 0;
+    return nova;
+  }
+
+  /** Descanso mínimo entre jornadas com repouso intercalado (24h + 11h; Portaria MTE
+   * 2.041/2026, art. 4º, § 2º). Atrasa a entrada do dia seguinte ao repouso, sem
+   * alterar a carga; na escala fixa, o mesmo ajuste vale para todas as semanas. */
+  function garantirDescansos(periodo) {
+    if (state.tipoEscala === "12x36") return;
+    const ordenados = periodo.slice().sort((a, b) => a.data.localeCompare(b.data));
+    const ajustavel = (d) => d.status === "T" && !d.reposicaoSabado && !d.restricao;
+    const aplicar = (d, minutos) => {
+      const novo = Math.ceil(minutos / 5) * 5;
+      if (novo <= 0 || novo > 360) return false;
+      if (state.aplicarProposta5x2 && d.jornadaAplicada) {
+        let fecha = timeToMin(d.jornadaAplicada.saida);
+        if (fecha <= timeToMin(d.jornadaAplicada.entrada)) fecha += 1440;
+        if (d.saidaMin + novo - (d.ajusteDescansoMin || 0) > fecha) return false;
+      }
+      d.ajusteDescansoMin = novo;
+      atualizarHorarioEfetivo(d);
+      return true;
+    };
+    if (escalaFixa(state)) {
+      const porDia = new Map();
+      for (const f of conferirDescansos(state, ordenados))
+        if (ajustavel(f.dia)) porDia.set(f.dia.weekday, Math.max(porDia.get(f.dia.weekday) || 0, f.minimo - f.real));
+      for (const [weekday, minutos] of porDia) {
+        const alvo = ordenados.filter((d) => d.weekday === weekday && ajustavel(d));
+        // Todas as semanas recebem o mesmo horário para manter o padrão recorrente.
+        if (alvo.every((d) => d.saidaMin + Math.ceil(minutos / 5) * 5 - d.entradaMin <= 1440)) alvo.forEach((d) => aplicar(d, minutos));
+      }
+      return;
+    }
+    for (let guarda = 0; guarda < ordenados.length; guarda++) {
+      const falha = conferirDescansos(state, ordenados).find((f) => ajustavel(f.dia) && !f.dia.ajusteDescansoMin);
+      if (!falha || !aplicar(falha.dia, falha.minimo - falha.real)) break;
+    }
   }
 
   function escolherFolgasSemana(date, idx) {
@@ -291,6 +349,7 @@ export function createGerador(state, jornada, feriados, validacao) {
         );
     if (planejamento5x2(state))
       for (const d of periodo) ajustarIntervaloDaProposta(d);
+    garantirDescansos(periodo);
     ajustarSabadoCompensado(colab, periodo);
     return periodo;
   }
@@ -343,20 +402,19 @@ export function createGerador(state, jornada, feriados, validacao) {
               Number.isFinite(d.entradaMin) &&
               Number.isFinite(d.saidaMin),
           );
-          const anterior = Math.max(
-            -Infinity,
-            ...trabalhos
-              .filter((d) => d.data < sabado.data)
-              .map((d) => minutoData(d.data) + d.saidaMin),
-          );
-          const proximo = Math.min(
-            Infinity,
-            ...trabalhos
-              .filter((d) => d.data > sabado.data)
-              .map((d) => minutoData(d.data) + d.entradaMin),
-          );
-          const inicio = Math.max(j.entrada, anterior + 660 - base),
-            fim = Math.min(j.saida, proximo - 660 - base);
+          // Descanso mínimo conta os repousos de 24h intercalados (Portaria 2.041, art. 4º, § 2º).
+          const repousosEntre = (a, b) =>
+            dias.filter((d) => d !== sabado && d.data > a && d.data < b && repousoDoDia(d)).length;
+          const antes = trabalhos.filter((d) => d.data < sabado.data).sort((a, b) => b.data.localeCompare(a.data))[0];
+          const depois = trabalhos.filter((d) => d.data > sabado.data).sort((a, b) => a.data.localeCompare(b.data))[0];
+          const anterior = antes
+            ? minutoData(antes.data) + antes.saidaMin + descansoMinimo(state, repousosEntre(antes.data, sabado.data))
+            : -Infinity;
+          const proximo = depois
+            ? minutoData(depois.data) + depois.entradaMin - descansoMinimo(state, repousosEntre(sabado.data, depois.data))
+            : Infinity;
+          const inicio = Math.max(j.entrada, anterior - base),
+            fim = Math.min(j.saida, proximo - base);
           const capacidade = (fim - inicio - j.intervalo) / 60;
           const ordem = dias
               .slice()
@@ -421,7 +479,7 @@ export function createGerador(state, jornada, feriados, validacao) {
         ? state.jornada
         : obterJornadaDoDia(d.weekday));
     let pausa = Math.max(0, intervaloMin(j) || 0);
-    d.entradaMin = timeToMin(d.turno === "B" && !state.aplicarProposta5x2 ? state.entradaTurnoB : j.entrada);
+    d.entradaMin = timeToMin(d.turno === "B" && !state.aplicarProposta5x2 ? state.entradaTurnoB : j.entrada) + (d.ajusteDescansoMin || 0);
     delete d.intervaloReduzido;
     if (state.aplicarProposta5x2 && d.jornadaAplicada && pausa > 60 && d.horas > 0) {
       // Funcionamento rígido: reduz a pausa (mínimo 1h) em vez de estender a saída.

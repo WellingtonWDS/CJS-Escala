@@ -43,7 +43,11 @@ test("termo do contrato de 44h: redução para 42h, horário 8h24, folgas, salá
   assert.match(clausula(ana, "Remuneração").texto, /art\. 2º/);
   assert.match(clausula(ana, "Distribuição diária da jornada").texto, /até 8h24 diárias observa o seguinte fundamento: _{10,}/);
   assert.ok(clausula(ana, "Segunda etapa da redução"));
-  assert.deepEqual(ana.clausulas.map((c) => c.numero), [1, 2, 3, 4, 5, 6, 7, 8]);
+  // Decreto 13.173/2026, art. 5º: divisor 210 na fase de 42h e 200 a partir de 16/12/2027.
+  assert.match(clausula(ana, "Salário-hora").texto, /divisor 210 \(duzentos e dez\)/);
+  assert.match(clausula(ana, "Salário-hora").texto, /A partir de 16\/12\/2027.*divisor 200 \(duzentos\)/);
+  assert.match(clausula(ana, "Salário-hora").texto, /não constitui reajuste/);
+  assert.deepEqual(ana.clausulas.map((c) => c.numero), [1, 2, 3, 4, 5, 6, 7, 8, 9]);
 });
 
 test("contrato de até 40h mantém a carga (art. 4º), sem cláusula de distribuição nem segunda etapa", () => {
@@ -79,7 +83,7 @@ test("gera PDF e Word válidos com as cláusulas e a tabela de horário", () => 
   assert.deepEqual(Object.keys(partes).sort(), ["[Content_Types].xml", "_rels/.rels", "word/document.xml"]);
   const documento = new TextDecoder().decode(partes["word/document.xml"]);
   assert.match(documento, /TERMO ADITIVO AO CONTRATO INDIVIDUAL DE TRABALHO/);
-  assert.match(documento, /CLÁUSULA 6ª – DISTRIBUIÇÃO DIÁRIA DA JORNADA/);
+  assert.match(documento, /CLÁUSULA 7ª – DISTRIBUIÇÃO DIÁRIA DA JORNADA/);
   assert.match(documento, /<w:tbl>.*Segunda a sexta-feira.*12:00 às 13:36/);
   assert.match(documento, /Testemunha 2 – Nome:/);
   assert.doesNotMatch(documento, /<script|&(?!amp;|lt;|gt;|quot;)/);

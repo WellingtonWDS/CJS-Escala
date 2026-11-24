@@ -314,7 +314,7 @@ test("Restaurante: CSV preserva data da saída após meia-noite", () => {
   assert.match(csv, /Data da saída/);
   assert.match(csv, /2028-02-07;T;17:00;02:00;.*;2028-02-08/);
 });
-test("Supermercado: virar do turno B dominical para A na segunda mantém alerta de descanso curto", () => {
+test("Supermercado: virar do turno B dominical para A na segunda atrasa a entrada para garantir o descanso", () => {
   const e = negocio({
     ano: 2026,
     mes: 9,
@@ -325,7 +325,10 @@ test("Supermercado: virar do turno B dominical para A na segunda mantém alerta 
     turnosRevezamento: true,
   });
   const dados = e.domain.gerarDadosEscala();
-  assert.ok(dados.validacoes[0].issues.some((i) => i.tipo === "INTERJORNADA"));
+  assert.ok(!dados.validacoes[0].issues.some((i) => i.tipo === "INTERJORNADA"));
+  const ajustados = dados.resultado[0].dias.filter((d) => d.ajusteDescansoMin > 0);
+  assert.ok(ajustados.length > 0, "a entrada após a troca de turno é atrasada");
+  assert.ok(ajustados.every((d) => d.horas > 0), "a carga do dia é preservada");
 });
 const perfis = [
   {

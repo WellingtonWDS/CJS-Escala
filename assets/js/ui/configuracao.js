@@ -105,6 +105,7 @@ export function createConfiguracaoUI({
       "act-limite": "limiteDiario",
       "act-mensal": "repousoMensal",
       "act-12x36": "regime12x36",
+      "act-turnos-ininterruptos": "turnosIninterruptos",
       "act-intervalo-computado": "intervaloComputado",
       "act-credito-noturno": "creditoNoturnoUmaHora",
       "act-horas": "compensacaoHoras",

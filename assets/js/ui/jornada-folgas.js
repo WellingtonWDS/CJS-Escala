@@ -155,6 +155,12 @@ export function createJornadaFolgasUI({
   }
 
   function renderFolgasSection() {
+    const comercio = document.getElementById("tg-comercio");
+    if (comercio) {
+      comercio.checked = state.atividadeComercio === true;
+      document.getElementById("tg-domingos-autorizados").checked = state.domingosPermitidos === true;
+      document.getElementById("domingos-autorizados-wrap").hidden = !comercio.checked;
+    }
     const tipo = document.getElementById("folga-tipo");
     const fixa = state.modeloEscala === "fixa";
     tipo.querySelector('option[value="rotativa"]').disabled = fixa;
@@ -227,6 +233,26 @@ export function createJornadaFolgasUI({
       renderJornadaSection();
       saveState();
     };
+
+    const comercio = document.getElementById("tg-comercio");
+    const autorizados = document.getElementById("tg-domingos-autorizados");
+    const renderDomingos = () => {
+      comercio.checked = state.atividadeComercio === true;
+      autorizados.checked = state.domingosPermitidos === true;
+      document.getElementById("domingos-autorizados-wrap").hidden = !comercio.checked;
+    };
+    comercio.onchange = (e) => {
+      state.atividadeComercio = e.target.checked;
+      renderDomingos();
+      invalidarEscala();
+      saveState();
+    };
+    autorizados.onchange = (e) => {
+      state.domingosPermitidos = e.target.checked;
+      invalidarEscala();
+      saveState();
+    };
+    renderDomingos();
 
     document.getElementById("tg-turnos").onchange = (e) => {
       state.turnosRevezamento = e.target.checked;

@@ -101,6 +101,18 @@ O fluxo principal já inclui cadastro manual e por planilhas, importação Domí
 
 Regras **`ec141-2026-11-11-13`**: gere novamente resultados anteriores; os cadastros permanecem. Sem migração SQL, nova RPC ou variável de ambiente.
 
+## Portaria MTE nº 2.041/2026 e Decreto nº 13.173/2026 — 24/11/2026
+
+Adequação às novas regras de repouso, domingos, 12×36, turnos ininterruptos, férias e salário-hora:
+- descanso de 11h somado às 24h de cada repouso (35h/59h), com ajuste automático da entrada;
+- rodízio dominical no comércio (3 semanas), para empregadas (2) e preferencial nas demais (4), substituindo a regra revogada de 7 semanas;
+- média do mês-calendário na 12×36 e nos turnos ininterruptos (6h salvo ACT/CCT);
+- início de férias antes de repouso;
+- compensação no mês-calendário;
+- cláusula do divisor 210/200 no termo aditivo.
+
+Vale na escala dinâmica e na fixa. Regras **`ec141-2026-11-24-17`**: gere novamente os resultados anteriores. Sem migração SQL. [Detalhes](docs/portaria-2041.md).
+
 ## Minha conta: nome e e-mail — 23/11/2026
 
 Em **Minha conta**, a pessoa edita o próprio nome e troca o e-mail de acesso confirmando pelo link enviado ao endereço novo (24 h; o endereço antigo é avisado). Migração **019_account_profile.sql**. **Gerar escala** fica bloqueado enquanto não houver empresa cadastrada: o Gerente é levado ao cadastro da primeira empresa; o Operador é orientado a pedir ao gerente. [Detalhes](docs/minha-conta.md).

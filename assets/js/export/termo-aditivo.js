@@ -101,6 +101,10 @@ export function montarTermosAditivos(state, { empresa = "", servidor = null } = 
       ? "O EMPREGADO terá 2 (dois) dias de repouso semanal remunerado, sendo um deles preferencialmente aos domingos, conforme a escala informada previamente."
       : `O EMPREGADO terá 2 (dois) dias de repouso semanal remunerado, sendo um deles preferencialmente aos domingos, fixados em: ${listaDias(folgas)}.`);
     add("Remuneração", `${reduz ? "A redução da duração do trabalho e o incremento do repouso semanal remunerado não implicam" : "O incremento do repouso semanal remunerado não implica"} redução salarial nominal, proporcional ou de qualquer outra espécie, inclusive em relação ao piso salarial, nos termos do art. 2º da Emenda Constitucional nº 141. O salário mensal do EMPREGADO permanece em R$ ____________ (__________________________________________).`);
+    // Decreto nº 13.173/2026, art. 5º; Portaria MTE nº 2.041/2026, art. 10.
+    const horasNormais = Math.min(contratoMin / 60, limite);
+    const divisor = Math.round(horasNormais * 5 * 100) / 100;
+    add("Salário-hora", `Para o cálculo do salário-hora e das parcelas calculadas por hora, aplica-se o divisor ${numero(divisor)} (${extenso(divisor)}), correspondente à duração normal de ${horas(Math.round(horasNormais * 60))} semanais, nos termos do art. 5º do Decreto nº 13.173, de 19 de novembro de 2026, e do art. 10 da Portaria MTE nº 2.041, de 19 de novembro de 2026, prevalecendo o divisor mais favorável previsto em lei, convenção ou acordo coletivo, contrato ou regulamento da empresa.${!fase40 && contratoMin > 40 * 60 ? " A partir de 16/12/2027, com a duração normal de 40 horas semanais, aplica-se o divisor 200 (duzentos)." : ""} A aplicação do divisor decorre da adequação à nova duração do trabalho e não constitui reajuste, aumento ou revisão do salário mensal contratual, que permanece em seu valor nominal.`);
     if (maiorDia > 480) {
       const i = config.instrumentoColetivo || {};
       const act = trabalho.find((d) => instrumentoValido(config, d.data, "compensacaoDiaria"));
@@ -118,4 +122,21 @@ export function montarTermosAditivos(state, { empresa = "", servidor = null } = 
   }
   if (!termos.length) throw Error("Não há semanas completas na proposta para montar os termos aditivos.");
   return { termos, aviso: AVISO_TERMO, titulo: "TERMO ADITIVO AO CONTRATO INDIVIDUAL DE TRABALHO" };
+}
+
+const numero = (v) => String(v).replace(".", ",");
+const UNIDADES = ["", "um", "dois", "três", "quatro", "cinco", "seis", "sete", "oito", "nove", "dez", "onze", "doze", "treze", "quatorze", "quinze", "dezesseis", "dezessete", "dezoito", "dezenove"];
+const DEZENAS = ["", "", "vinte", "trinta", "quarenta", "cinquenta", "sessenta", "setenta", "oitenta", "noventa"];
+const CENTENAS = ["", "cento", "duzentos", "trezentos", "quatrocentos", "quinhentos", "seiscentos", "setecentos", "oitocentos", "novecentos"];
+/** Número por extenso (inteiros até 999; decimais lidos como "vírgula"). */
+export function extenso(v) {
+  const inteiro = (n) => {
+    if (n === 0) return "zero";
+    if (n === 100) return "cem";
+    const c = Math.floor(n / 100), r = n % 100;
+    const resto = r < 20 ? UNIDADES[r] : [DEZENAS[Math.floor(r / 10)], UNIDADES[r % 10]].filter(Boolean).join(" e ");
+    return [CENTENAS[c], resto].filter(Boolean).join(" e ");
+  };
+  const [a, b] = String(v).split(".");
+  return b ? `${inteiro(Number(a))} vírgula ${inteiro(Number(b))}` : inteiro(Number(a));
 }

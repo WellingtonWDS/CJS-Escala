@@ -45,6 +45,7 @@ export function createDefaultState(now = new Date()) {
       apuracaoInicio: "",
       apuracaoFim: "",
       limiteSemanalCompensado: 44,
+      turnosIninterruptos: false,
     },
     instrumentoCompensacao: "nenhuma",
     feriados: [],

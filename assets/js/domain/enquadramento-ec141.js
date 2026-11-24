@@ -88,7 +88,7 @@ export function validarEnquadramento(state, c, dias) {
           issue(
             "ART8_ENQUADRAMENTO",
             "pendencia",
-            "Exceção de duração/controle aplicada aos dados declarados do art. 8º. Confira diploma, remuneração, teto RGPS do período e ausência de previsão coletiva ou liberalidade que mantenha a jornada. O repouso continua protegido.",
+            "Exceção de duração/controle aplicada aos dados declarados do art. 8º. Confira diploma, remuneração (se variável, média dos últimos 12 meses ou do período contratual, se inferior), teto RGPS do período e ausência de controle de jornada por liberalidade ou previsão coletiva, que atrai integralmente as regras de duração. Os dois repousos semanais continuam assegurados (Portaria MTE nº 2.041/2026, art. 9º).",
           ),
         );
     }

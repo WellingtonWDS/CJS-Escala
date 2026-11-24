@@ -7,6 +7,10 @@ Consultar este registro antes de orientar o operador. Distinguir código dispon�
 
 
 
+## Portaria MTE 2.041/2026 e Decreto 13.173/2026 — 24/11/2026
+
+Regras `ec141-2026-11-24-17`: os resultados gerados antes ficam desatualizados e devem ser gerados de novo; os cadastros permanecem. Sem migração SQL, RPC, variável ou mudança no n8n. Instaladores DEMO regenerados só com o novo campo padrão. [Detalhes](portaria-2041.md).
+
 ## Minha conta: nome e e-mail — 23/11/2026
 
 Migração **019_account_profile.sql** (após 018), função Vercel `api/account.js`, página `confirmar-email.html` e código atualizado do nó **Montar e-mail** (tipos `email_change` e `email_changed`). Gerar escala bloqueado sem empresas (sem migração). [Passo a passo](minha-conta.md#ativação).

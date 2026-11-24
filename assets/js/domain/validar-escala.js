@@ -21,6 +21,16 @@ import {
 import { limiteHorasDia } from "./distribuicao-horas.js";
 import { apurarSemana } from "./resumo-semanal.js";
 import {
+  conferirDescansos,
+  descricaoDescanso,
+  sequenciasDomingo,
+  regrasDomingo,
+  turnosIninterruptos,
+  diasDoMes,
+  PORTARIA,
+  DECRETO,
+} from "./descanso.js";
+import {
   diasNoMes,
   isoDate,
   dateFromKey,
@@ -190,44 +200,34 @@ export function createValidacao(state, jornada, feriados) {
   }
 
   function validarInterjornada(dias) {
-    const out = [];
-    const trabalhados = dias.filter(
-      (x) => x.status === "T" || x.status === "FE",
-    );
-
-    for (let i = 1; i < trabalhados.length; i++) {
-      const anterior = trabalhados[i - 1];
-      const atual = trabalhados[i];
-      const jPrev = normalizarJornada(
-        anterior.jornadaAplicada || obterJornadaDoDia(anterior.weekday),
+    // Entrada/saída efetivas; sem elas, o horário configurado do dia.
+    const seq = dias
+      .slice()
+      .sort((a, b) => a.data.localeCompare(b.data))
+      .map((d) => {
+        if (!["T", "FE"].includes(d.status)) return d;
+        const j = normalizarJornada(d.jornadaAplicada || obterJornadaDoDia(d.weekday));
+        if (!j && !Number.isFinite(d.entradaMin)) return { ...d, status: "?" };
+        return { ...d, entradaMin: d.entradaMin ?? j.entrada, saidaMin: d.saidaMin ?? j.saida };
+      });
+    const ajustes = dias
+      .filter((d) => d.ajusteDescansoMin > 0 && ["T", "FE"].includes(d.status))
+      .map((d) =>
+        issue(
+          "DESCANSO_AJUSTADO",
+          "info",
+          `${d.data}: entrada atrasada em ${fmtHoras(d.ajusteDescansoMin / 60)} para garantir o descanso mínimo após o repouso (11h entre jornadas somadas às 24h de cada repouso; ${PORTARIA}, art. 4º, § 2º). A carga do dia foi mantida; confira a cobertura.`,
+          d.data,
+        ),
       );
-      const jAtual = normalizarJornada(
-        atual.jornadaAplicada || obterJornadaDoDia(atual.weekday),
-      );
-      if (!jPrev || !jAtual) continue;
-
-      const anteriorDate = dateFromKey(anterior.data);
-      const atualDate = dateFromKey(atual.data);
-      const diffDias = Math.round((atualDate - anteriorDate) / 86400000);
-
-      const diff =
-        (atual.entradaMin ?? jAtual.entrada) -
-        (anterior.saidaMin ?? jPrev.saida) +
-        diffDias * 1440;
-
-      const minimo = state.tipoEscala === "12x36" ? 2160 : 660;
-      if (diff < minimo) {
-        out.push(
-          issue(
-            "INTERJORNADA",
-            "erro",
-            `${atual.data}: intervalo entre a saída anterior e a próxima entrada é de ${fmtHoras(diff / 60)}, abaixo de ${state.tipoEscala === "12x36" ? "36h do ciclo 12×36" : "11h do art. 66 da CLT"}.`,
-            atual.data,
-          ),
-        );
-      }
-    }
-    return out;
+    return ajustes.concat(conferirDescansos(state, seq).map(({ dia, real, minimo, repousos }) =>
+      issue(
+        "INTERJORNADA",
+        "erro",
+        `${dia.data}: descanso entre a saída anterior e a próxima entrada é de ${fmtHoras(real / 60)}, abaixo de ${descricaoDescanso(state, repousos)}.${repousos > 0 ? ` O repouso semanal não se confunde com o intervalo entre jornadas: ajuste a saída anterior ou a entrada deste dia.` : ""}`,
+        dia.data,
+      ),
+    ));
   }
 
   function validarRepousoSemanal(colab, dias) {
@@ -330,50 +330,39 @@ export function createValidacao(state, jornada, feriados) {
     );
   }
 
-  function validarDomingos(colab, dias) {
+  function validarDomingos(colab, dias, completos = dias) {
     const out = [];
-    const domingos = dias.filter(
-      (x) => x.weekday === 0 && !ausenciaProgramada(x),
-    );
     const trabalhados = domingosTrabalhados(dias);
-    const folgas = domingos.filter((x) => ["F", "FC", "I"].includes(x.status));
-
-    if (trabalhados.length) {
-      if (state.atividadeComercio && !state.domingosPermitidos) {
-        out.push(
-          issue(
-            "DOMINGO",
-            "alerta",
-            "Há domingo trabalhado em atividade marcada como comércio, mas o campo de autorização específica não foi confirmado. Verifique legislação municipal e regras coletivas aplicáveis.",
-          ),
-        );
-      } else {
-        out.push(
-          issue(
-            "DOMINGO",
-            "info",
-            "Há domingo(s) trabalhado(s). O repouso semanal deve observar a legislação aplicável; para comércio, a Lei 10.101/2000 traz regra específica de coincidência com domingo e a legislação/negociação coletiva também deve ser verificada.",
-          ),
-        );
-      }
-    }
-
-    if (!folgas.length && domingos.length) {
+    if (!trabalhados.length) return out;
+    if (state.atividadeComercio && !state.domingosPermitidos)
       out.push(
         issue(
           "DOMINGO",
           "alerta",
-          "Nenhum domingo de folga aparece no período exibido. A ferramenta não considera isso automaticamente ilegal para toda atividade, mas exige conferência da regra setorial aplicável.",
+          "Há domingo trabalhado em atividade marcada como comércio, sem a confirmação de autorização. No comércio em geral, o trabalho aos domingos depende de legislação municipal e das regras da convenção coletiva (Lei nº 10.101/2000, art. 6º).",
         ),
       );
+    if (escalaFixa(state)) {
+      // Padrão semanal recorrente: o domingo trabalhado repete-se em todas as semanas.
+      for (const regra of regrasDomingo(state, colab))
+        out.push(
+          issue(
+            regra.tipo === "DOMINGO_PREFERENCIAL" ? "DOMINGO_FIXO_PREFERENCIAL" : "DOMINGO_FIXO",
+            regra.tipo === "DOMINGO_PREFERENCIAL" ? "alerta" : "erro",
+            `No padrão fixo, o domingo é trabalhado em todas as semanas e não há repouso dominical: ${regra.texto} (${regra.fundamento}). ${regra.tipo === "DOMINGO_PREFERENCIAL" ? "Considere a escala dinâmica, que organiza o rodízio dos domingos, ou fixe o domingo como repouso." : "Use a escala dinâmica para organizar o revezamento ou fixe o domingo como repouso."}`,
+          ),
+        );
+      return out;
     }
-
-    if (colab.sexo === "feminino" && trabalhados.length) {
+    const datas = new Set(dias.map((d) => d.data));
+    for (const { regra, dia } of sequenciasDomingo(state, colab, completos)) {
+      if (!datas.has(dia.data)) continue;
       out.push(
         issue(
-          "DOMINGO_MULHER",
-          "alerta",
-          "Colaboradora com domingo trabalhado: confira a escala de revezamento e a aplicação do art. 386 da CLT e da jurisprudência pertinente à atividade.",
+          regra.tipo,
+          regra.severidade,
+          `${dia.data}: ${regra.semanas} domingos seguidos trabalhados; ${regra.texto} (${regra.fundamento}).`,
+          dia.data,
         ),
       );
     }
@@ -595,6 +584,110 @@ export function createValidacao(state, jornada, feriados) {
     return out;
   }
 
+  const MESES_NOME = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+  const horasDia = (d) => (["T", "FE"].includes(d.status) ? Number(d.horasComputadasCCT ?? d.horas) || 0 : 0);
+  /** Média semanal no mês-calendário (Portaria 2.041, art. 3º): horas do mês ÷ (dias/7). */
+  function mediaDoMes(colab, todos) {
+    const mes = diasDoMes(todos, state.ano, state.mes);
+    if (mes.dias.length !== mes.n || mes.dias.some((d) => ["VA", "AF", "NC"].includes(d.status))) return null;
+    const refs = mes.dias.map((d) => referenciaDia(state, d.data, colab));
+    if (refs.some((r) => r.semLimiteJornada)) return null;
+    const horas = mes.dias.reduce((t, d) => t + horasDia(d), 0);
+    return { ...mes, horas, media: horas / (mes.n / 7), limite: Math.min(...refs.map((r) => r.horas)), nome: `${MESES_NOME[state.mes]}/${state.ano}` };
+  }
+
+  /** 12×36: média do mês-calendário acima do limite semanal gera compensação ou horas extras
+   * (Decreto 13.173, art. 3º; Portaria 2.041, art. 8º). Só existe na escala dinâmica. */
+  function validarMediaMensal(colab, todos) {
+    if (state.tipoEscala !== "12x36" || escalaFixa(state)) return [];
+    const m = mediaDoMes(colab, todos);
+    if (!m || m.media <= m.limite + 0.01) return [];
+    const instrumento = instrumentoValido(state, m.inicio, "regime12x36") && instrumentoValido(state, m.fim, "regime12x36");
+    return [
+      issue(
+        "MEDIA_12X36",
+        instrumento ? "pendencia" : "alerta",
+        `${m.nome}: ${fmtHoras(m.horas)} em ${m.n} dias, média de ${fmtHoras(m.media)} semanais no mês-calendário, ${fmtHoras(m.media - m.limite)} acima do limite de ${fmtHoras(m.limite)}. Assegure a compensação dessas horas ou o pagamento como horas extras, nos termos do ACT/CCT (${DECRETO}, art. 3º; ${PORTARIA}, art. 8º).${instrumento ? "" : " Nenhum ACT/CCT vigente para o regime 12×36 foi informado para o mês."}`,
+      ),
+    ];
+  }
+
+  /** Turnos ininterruptos de revezamento: 6h diárias, salvo ACT/CCT, com média mensal no
+   * limite semanal e dois repousos (Decreto 13.173, art. 2º; Portaria 2.041, art. 7º). */
+  function validarTurnosIninterruptos(colab, dias, todos) {
+    if (!state.turnosRevezamento || state.tipoEscala === "12x36" || escalaFixa(state)) return [];
+    if (!turnosIninterruptos(dias)) return [];
+    const longos = dias.filter((d) => horasDia(d) > 6.001);
+    if (!longos.length) return [];
+    const semAcordo = longos.filter((d) => !instrumentoValido(state, d.data, "turnosIninterruptos"));
+    const out = [];
+    const lista = (l) => l.slice(0, 5).map((d) => d.data.split("-").reverse().join("/")).join(", ") + (l.length > 5 ? "…" : "");
+    if (semAcordo.length)
+      out.push(
+        issue(
+          "TURNO_ININTERRUPTO",
+          "erro",
+          `${semAcordo[0].data}: revezamento entre turnos que alcançam os períodos diurno e noturno caracteriza turno ininterrupto, com jornada de 6h diárias salvo ACT/CCT (${DECRETO}, art. 2º; ${PORTARIA}, art. 7º). ${semAcordo.length} dia(s) acima de 6h sem instrumento que autorize: ${lista(semAcordo)}.`,
+          semAcordo[0].data,
+        ),
+      );
+    if (semAcordo.length < longos.length) {
+      const m = mediaDoMes(colab, todos);
+      if (m && m.media > m.limite + 0.01)
+        out.push(
+          issue(
+            "TURNO_ININTERRUPTO_MEDIA",
+            "erro",
+            `${m.nome}: jornada acima de 6h autorizada pelo ACT/CCT, mas a média do mês-calendário é de ${fmtHoras(m.media)} semanais, acima do limite de ${fmtHoras(m.limite)} (${DECRETO}, art. 2º).`,
+          ),
+        );
+      else
+        out.push(
+          issue(
+            "TURNO_ININTERRUPTO",
+            "pendencia",
+            `Turnos ininterruptos de revezamento com jornada acima de 6h amparada no ACT/CCT informado. Confira a cláusula; a média do mês-calendário e os dois repousos semanais continuam obrigatórios (${DECRETO}, art. 2º).`,
+          ),
+        );
+    }
+    return out;
+  }
+
+  /** Férias não podem começar nos dois dias que antecedem feriado ou repouso semanal
+   * (CLT, art. 134, § 3º; Portaria 2.041, art. 4º, § 5º). */
+  function validarInicioFerias(colab, completos, dias) {
+    const periodos = (colab.restricoes?.periodos || []).filter((p) => p.tipo === "ferias");
+    if (!periodos.length) return [];
+    const datas = new Set(dias.map((d) => d.data));
+    const porData = new Map(completos.map((d) => [d.data, d]));
+    const out = [];
+    for (const p of periodos) {
+      if (!datas.has(p.inicio)) continue;
+      for (const k of [1, 2]) {
+        const dataKey = isoDateOffset(p.inicio, k);
+        const d = porData.get(dataKey);
+        const feriado = (d?.feriado && !d.feriado.trabalhado) || (!d && feriadoDaData(dataKey));
+        const repouso =
+          d && (["F", "FC"].includes(d.status) || (["VA", "AF"].includes(d.status) && d.restricao && d.restricao.retirouTrabalho === false && !d.feriado));
+        if (!feriado && !repouso) continue;
+        out.push(
+          issue(
+            "FERIAS_INICIO",
+            "alerta",
+            `${p.inicio}: férias iniciadas ${k === 1 ? "na véspera" : "dois dias antes"} de ${feriado ? "feriado" : "dia de repouso semanal"} (${dataKey.split("-").reverse().join("/")}). É vedado o início das férias nos dois dias que antecedem feriado ou repouso semanal (CLT, art. 134, § 3º; ${PORTARIA}, art. 4º, § 5º).`,
+            p.inicio,
+          ),
+        );
+        break;
+      }
+    }
+    return out;
+  }
+  const isoDateOffset = (data, k) => {
+    const d = addDays(dateFromKey(data), k);
+    return isoDate(d.getFullYear(), d.getMonth(), d.getDate());
+  };
+
   function validarLegal(colab, dias, contexto = [], apuracao = []) {
     const modelo = contextoModelo(state);
     if (modelo !== state) return createDomain(modelo).validarLegal(colaboradorRecorrente(colab), dias, contexto, apuracao);
@@ -639,8 +732,6 @@ export function createValidacao(state, jornada, feriados) {
         }
         padroes.set(d.weekday, chave);
       }
-      if ((state.atividadeComercio || colab.sexo === "feminino") && dias.some((d) => d.weekday === 0 && ["T", "FE"].includes(d.status)))
-        problemasFixos.push(issue("DOMINGO_FIXO", "erro", "Trabalho em todos os domingos no padrão fixo não contempla o revezamento de repouso dominical aplicável ao comércio ou à colaboradora. Use o modo dinâmico para organizar o revezamento, ou fixe o domingo como folga e confira a regra da categoria."));
     }
     return [
       ...problemasFixos,
@@ -682,7 +773,10 @@ export function createValidacao(state, jornada, feriados) {
       ...validarRepousoSemanal(colab, completos).filter(
         (i) => !i.data || datas.has(i.data),
       ),
-      ...validarDomingos(colab, dias),
+      ...validarDomingos(colab, dias, completos),
+      ...validarMediaMensal(colab, unirDias(apuracao, contexto, dias)),
+      ...validarTurnosIninterruptos(colab, dias, unirDias(apuracao, contexto, dias)),
+      ...validarInicioFerias(colab, completos, dias),
       ...validarFeriados(dias),
     ];
   }
@@ -695,6 +789,9 @@ export function createValidacao(state, jornada, feriados) {
     validarRepousoSemanal,
     domingosTrabalhados,
     validarDomingos,
+    validarMediaMensal,
+    validarTurnosIninterruptos,
+    validarInicioFerias,
     validarJornadaSemanal,
     validarRegimeEscala,
     validarFeriados,

@@ -1,6 +1,6 @@
 # Estado do projeto — Reescala
 
-Atualizado em **18/11/2026**. Referência funcional: versão de regras `ec141-2026-11-18-16` ([histórico do projeto](https://github.com/WellingtonWDS/CJS-Escala/commits/main/)). Esta página resume o andamento; o [README](../README.md) detalha operação, arquitetura, configuração e testes.
+Atualizado em **18/11/2026**. Referência funcional: versão de regras `ec141-2026-11-24-17` ([histórico do projeto](https://github.com/WellingtonWDS/CJS-Escala/commits/main/)). Esta página resume o andamento; o [README](../README.md) detalha operação, arquitetura, configuração e testes.
 
 Identidade **Reescala** aplicada no login, cabeçalho, menu expandido/recolhido, carregamento, quadros de escala/impressão e ícone do navegador, usando os arquivos originais de `logos/`. A publicação inclui essa pasta e o login carrega suas imagens sem sessão; dados, chaves internas e permissões são preservados.
 
@@ -17,6 +17,10 @@ Carregamento imediato na geração atual/proposta, cálculo em Worker local, blo
 
 
 
+
+## Portaria MTE 2.041/2026 — 24/11/2026
+
+Descanso de 35h/59h com repouso, rodízio dos domingos (comércio, empregadas e preferencial), média mensal da 12×36 e dos turnos ininterruptos, início de férias e divisor do salário-hora no termo aditivo, nas escalas dinâmica e fixa. [Detalhes](portaria-2041.md).
 
 ## Minha conta: nome e e-mail — 23/11/2026
 

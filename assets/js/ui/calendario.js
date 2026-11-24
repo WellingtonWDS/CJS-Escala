@@ -171,6 +171,8 @@ export function createCalendarioUI({
     state.escalaGerada.resultado.forEach((r, indice) => {
       for (const dia of [...(r.diasContexto ?? []), ...r.dias]) {
         dia.turno = domain.obterTurno(dateFromKey(dia.data), indice);
+        // O atraso de descanso dependia dos turnos anteriores; a validação aponta o que faltar.
+        delete dia.ajusteDescansoMin;
         atualizarHorarioEfetivo(dia);
         const config =
           configDoPerfil(configDaEscala(state), r.colaborador) ||
