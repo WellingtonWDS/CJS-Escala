@@ -33,6 +33,6 @@ Resultado com 3.200 empresas e 4.800 rascunhos, comparando antes e depois em 100
 
 ## Próximos passos sugeridos
 
-- **Região das funções do Vercel:** cada ação faz de 1 a 3 chamadas do Vercel à VPS. Configurar as funções na região mais próxima da VPS (opção `regions` no `vercel.json`) reduz a latência de todas as ações.
+- **Região das funções do Vercel:** configurada em `arn1` (Estocolmo), a mais próxima da VPS em Helsinki (`regions` no `vercel.json`). Cada ação faz de 1 a 3 chamadas do Vercel à VPS, que agora ficam a poucos milissegundos.
 - **Admin geral com milhares de empresas:** paginar a lista de cartões, se os 128 ms incomodarem.
 - **Base de nomes (194 KB):** carregar só ao editar colaboradores ou importar, em vez de na abertura.
