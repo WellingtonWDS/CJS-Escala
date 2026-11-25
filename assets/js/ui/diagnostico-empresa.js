@@ -1,4 +1,5 @@
 import { createDiagnosticsService } from "../services/diagnostics.js";
+import { createBrandingService } from "../services/branding.js";
 import { getDialogs } from "./dialogs.js";
 import { escapeHtml as h } from "../shared/formatacao.js";
 import {
@@ -31,7 +32,7 @@ export function createCompanyDiagnostics({
   root.innerHTML = `<div class="diag-topo">
    <button type="button" class="diag-voltar" data-diag-backto>← Empresa</button>
    <div class="diag-titulo"><div><p class="diag-sobretitulo">Diagnóstico da empresa</p><h2 tabindex="-1" data-diag-heading>Novo diagnóstico</h2><p class="diag-empresa" data-diag-company></p></div>
-    <div class="diag-topo-acoes"><button type="button" data-diag-prefill hidden>Importar do preenchimento aberto</button><button type="button" data-diag-reopen hidden>Revisar diagnóstico</button><button type="button" data-diag-current hidden>Abrir versão atual</button><label class="diag-versoes">Versão<select data-diag-history aria-label="Revisões salvas"></select></label></div></div>
+    <div class="diag-topo-acoes"><button type="button" data-diag-pdf hidden>Exportar PDF</button><button type="button" data-diag-prefill hidden>Importar do preenchimento aberto</button><button type="button" data-diag-reopen hidden>Revisar diagnóstico</button><button type="button" data-diag-current hidden>Abrir versão atual</button><label class="diag-versoes">Versão<select data-diag-history aria-label="Revisões salvas"></select></label></div></div>
    <p class="diag-meta" data-diag-meta></p></div>
  <p data-diag-status class="diag-status" role="status" aria-live="polite" tabindex="-1"></p>
  <div data-diag-editor hidden class="diag-corpo">
@@ -159,6 +160,7 @@ export function createCompanyDiagnostics({
     el("reopen").hidden =
       !record || record.revision !== record.latestRevision || editing;
     el("save").hidden = ro;
+    el("pdf").hidden = !context;
     el("finish").hidden = ro || step !== N;
     const ctx = workspace?.context();
     el("prefill").hidden =
@@ -258,6 +260,47 @@ export function createCompanyDiagnostics({
     });
   };
   el("current").onclick = () => run(() => loadRecord(record.id));
+  // PDF do diagnóstico exibido (inclusive alterações ainda não salvas), com a marca do escritório.
+  const arquivo = (v) =>
+    String(v || "empresa").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-|-$/g, "").toLowerCase().slice(0, 60) || "empresa";
+  el("pdf").onclick = async () => {
+    const botao = el("pdf");
+    if (busy || botao.disabled || !context) return;
+    botao.disabled = true;
+    botao.setAttribute("aria-busy", "true");
+    el("status").textContent = "Preparando o PDF do diagnóstico…";
+    try {
+      const [libs, { criarPdfDiagnostico }, { carregarLogoReescala }] = await Promise.all([
+        import("/assets/vendor/pdf.js"),
+        import("../export/pdf-diagnostico.js"),
+        import("../export/logo-reescala.js"),
+      ]);
+      const [marca, logo] = await Promise.all([
+        createBrandingService().get(context.officeId).catch(() => null),
+        carregarLogoReescala(document).catch(() => null),
+      ]);
+      const bytes = criarPdfDiagnostico({
+        libs, payload, logo, marca,
+        empresa: { nome: context.companyName, cnpj: context.cnpj },
+        registro: record,
+        alteracoesNaoSalvas: dirty,
+      });
+      const url = window.URL.createObjectURL(new window.Blob([bytes], { type: "application/pdf" }));
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `diagnostico-${arquivo(context.companyName)}-${new Date().toISOString().slice(0, 10)}.pdf`;
+      a.click();
+      window.setTimeout(() => window.URL.revokeObjectURL(url), 10000);
+      el("status").textContent = dirty
+        ? "PDF gerado com as alterações desta tela, que ainda não foram salvas."
+        : "PDF do diagnóstico gerado.";
+    } catch (e) {
+      el("status").textContent = `Não foi possível gerar o PDF: ${e.message}`;
+    } finally {
+      botao.disabled = false;
+      botao.removeAttribute("aria-busy");
+    }
+  };
   el("reopen").onclick = () => {
     editing = true;
     changed();

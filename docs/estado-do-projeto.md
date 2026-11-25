@@ -18,6 +18,10 @@ Carregamento imediato na geração atual/proposta, cálculo em Worker local, blo
 
 
 
+## Diagnóstico em PDF — 25/11/2026
+
+Exportação do diagnóstico da empresa em PDF (retrato A4), com a logomarca e as cores do escritório, o resumo de pendências e as respostas por etapa.
+
 ## Desempenho — 24/11/2026
 
 Lista de empresas e telas de gestão por escritório do usuário (020), login direto pelo backend (021), front-end empacotado com cache longo. [Detalhes](desempenho.md).

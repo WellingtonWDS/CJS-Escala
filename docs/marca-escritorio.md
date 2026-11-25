@@ -1,6 +1,6 @@
 # Marca do escritório nos relatórios
 
-O Gerente (ou o Admin) define a identidade visual do escritório em **Empresas → Marca do escritório**. Ela é usada nos relatórios PDF de escala (equipe completa e individuais) de todas as empresas do escritório.
+O Gerente (ou o Admin) define a identidade visual do escritório em **Empresas → Marca do escritório**. Ela é usada nos relatórios PDF de escala (equipe completa e individuais) e no PDF do diagnóstico da empresa, em todas as empresas do escritório.
 
 ## O que pode ser definido
 
@@ -43,4 +43,4 @@ Antes da migração, os relatórios continuam com a identidade padrão e a tela 
 
 ## Validação
 
-`database/tests/branding.sql` (permissões, revisão, só PNG, cores hexadecimais, remoção), `tests/marca-escritorio.test.cjs` (contraste com cores extremas, validação da API, PDF com logomarca, cores e rodapé) e o cenário de marca em `tests/browser-empresas.cjs`.
+`database/tests/branding.sql` (permissões, revisão, só PNG, cores hexadecimais, remoção), `tests/marca-escritorio.test.cjs` (contraste com cores extremas, validação da API, PDF com logomarca, cores e rodapé) o cenário de marca em `tests/browser-empresas.cjs`, `tests/pdf-diagnostico.test.cjs` (PDF do diagnóstico com e sem marca) e a exportação em `tests/browser-diagnostico-layout.cjs`.

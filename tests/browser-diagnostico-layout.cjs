@@ -67,9 +67,21 @@ module.exports = async ({ browser, baseURL }) => {
     await root.locator('[data-diag-step="6"]').click();
     assert.match(await root.locator('[data-diag-form]').innerText(), /Conferência do diagnóstico/);
     assert.equal(await root.locator('[data-diag-finish]').isVisible(), true);
+    // Exportar PDF com a marca do escritório.
+    await page.route('**/api/branding*', r => r.fulfill({ json: { officeId: 'office-1', revision: 1, displayName: 'Contabilidade Exemplo', logo: null, primaryColor: '#c4122f', secondaryColor: '#1f7a54' } }));
+    assert.equal(await root.locator('[data-diag-pdf]').isVisible(), true);
+    const baixando = page.waitForEvent('download');
+    await root.locator('[data-diag-pdf]').click();
+    const pdf = await baixando;
+    assert.match(pdf.suggestedFilename(), /^diagnostico-padaria-pao-bom-de-comercio[\w-]*-\d{4}-\d{2}-\d{2}\.pdf$/);
+    const bytes = require('node:fs').readFileSync(await pdf.path()).toString('latin1');
+    assert.ok(bytes.startsWith('%PDF-'));
+    assert.ok(bytes.includes('Loja Centro') && bytes.includes('Contabilidade Exemplo'));
+    assert.match(bytes, /0\.769 0\.071 0\.184 rg/, 'cor principal do escritório');
+    assert.match(await root.locator('[data-diag-status]').innerText(), /PDF do diagnóstico gerado/);
     await root.locator('[data-diag-backto]').click();
     assert.equal(await page.evaluate(() => window.__voltou.companyId), 'company-1');
     assert.deepEqual(errors, []);
-    console.log('OK: diagnóstico — empresa definida pelo cartão, seis etapas com progresso, escolhas em pílulas, situação da informação, cabeçalho com a unidade, gravação, conferência e contraste claro/escuro em desktop/tablet/celular.');
+    console.log('OK: diagnóstico — empresa definida pelo cartão, seis etapas com progresso, escolhas em pílulas, situação da informação, cabeçalho com a unidade, gravação, conferência, PDF com a marca do escritório e contraste claro/escuro em desktop/tablet/celular.');
   } finally { await context.close(); }
 };

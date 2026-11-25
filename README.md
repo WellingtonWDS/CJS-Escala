@@ -101,6 +101,15 @@ O fluxo principal já inclui cadastro manual e por planilhas, importação Domí
 
 Regras **`ec141-2026-11-11-13`**: gere novamente resultados anteriores; os cadastros permanecem. Sem migração SQL, nova RPC ou variável de ambiente.
 
+## Diagnóstico em PDF — 25/11/2026
+
+No diagnóstico da empresa, **Exportar PDF** gera o documento com a logomarca e as cores do escritório. Ele traz:
+- o resumo (respondidas, pendências e estimativas);
+- a lista de pendências;
+- cada etapa com pergunta, resposta, situação e observação.
+
+O PDF reflete a tela, inclusive alterações ainda não salvas, e as indica no cabeçalho. Sem migração SQL. [Marca do escritório](docs/marca-escritorio.md).
+
 ## Desempenho — 24/11/2026
 
 Ganhos medidos:
