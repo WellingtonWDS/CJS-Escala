@@ -19,6 +19,28 @@ const COR_SITUACAO = {
   pendente: [154, 95, 15],
   nao: [110, 120, 130],
 };
+// A fonte padrão do PDF (Helvetica, WinAnsi) não tem setas, emojis e outros símbolos;
+// um único caractere fora dela desfaz o espaçamento da linha inteira.
+const WINANSI_EXTRA = "€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ";
+const TROCAS = { "→": "->", "←": "<-", "≥": ">=", "≤": "<=", "≠": "<>", "✓": "OK", "✔": "OK", "×": "x", "−": "-", "…": "..." };
+export function textoPdf(s) {
+  return Array.from(String(s ?? ""))
+    .map((c) => {
+      const n = c.codePointAt(0);
+      if (c === "\n" || (n >= 0x20 && n <= 0x7e) || (n >= 0xa0 && n <= 0xff) || WINANSI_EXTRA.includes(c)) return c;
+      return TROCAS[c] ?? "";
+    })
+    .join("");
+}
+// Listas em uma linha por item: ordem numerada; dias, faixas e condições uma por linha.
+const resposta = (q, a) => {
+  const v = a?.value;
+  if (!Array.isArray(v) || !v.length) return textoResposta(q, a);
+  if (q.tipo === "ordem") return v.map((x, i) => `${i + 1}º ${x}`).join("\n");
+  if (["horarios", "cobertura", "condicoes"].includes(q.tipo))
+    return v.map((linha) => textoResposta(q, { ...a, value: [linha] })).join("\n");
+  return textoResposta(q, a);
+};
 const dataBr = (v) =>
   v ? new Date(v).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", dateStyle: "short", timeStyle: "short" }) : "";
 
@@ -79,7 +101,7 @@ export function criarPdfDiagnostico({
   if (r.pendencias.length) {
     espaco(16);
     texto("Pendências para conferir", { tam: 12, cor: tema.titulo, negrito: true, apos: 1.5 });
-    for (const q of r.pendencias) texto(`•  ${q.titulo}`, { tam: 9.5, x: M + 2, largura: L - 2 * M - 4, apos: 0.8 });
+    for (const q of r.pendencias) texto(`•  ${textoPdf(q.titulo)}`, { tam: 9.5, x: M + 2, largura: L - 2 * M - 4, apos: 0.8 });
     y += 4;
   }
 
@@ -106,8 +128,8 @@ export function criarPdfDiagnostico({
       .map((q) => {
         const a = answers[q.id];
         const linha = [
-          q.titulo + (q.obrigatoria ? " *" : ""),
-          textoResposta(q, a) + (a?.note ? `\nObservação: ${a.note}` : ""),
+          textoPdf(q.titulo + (q.obrigatoria ? " *" : "")),
+          textoPdf(resposta(q, a) + (a?.note ? `\nObservação: ${a.note}` : "")),
           a ? CERTEZAS[a.certainty] : "Não respondida",
         ];
         linha.situacao = a ? a.certainty : "nao";
@@ -133,7 +155,7 @@ export function criarPdfDiagnostico({
       doc.setFont("helvetica", "bold");
       doc.setFontSize(12);
       doc.setTextColor(...tema.titulo);
-      doc.text(doc.splitTextToSize(marca.displayName, 60).slice(0, 2), L - M, 15, { align: "right" });
+      doc.text(doc.splitTextToSize(textoPdf(marca.displayName), 60).slice(0, 2), L - M, 15, { align: "right" });
     } else if (logo) doc.addImage(logo, "PNG", L - M - 42, 9, 42, 14, "reescala-topo", "FAST");
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
@@ -141,14 +163,14 @@ export function criarPdfDiagnostico({
     doc.text("Diagnóstico da empresa", M, 16);
     doc.setFontSize(10.5);
     doc.setTextColor(...NEUTRO);
-    doc.text(doc.splitTextToSize(`${empresa.nome || "Empresa"}${empresa.cnpj ? ` · CNPJ ${formatCnpj(empresa.cnpj)}` : ""}`, 125)[0], M, 23);
+    doc.text(doc.splitTextToSize(textoPdf(`${empresa.nome || "Empresa"}${empresa.cnpj ? ` · CNPJ ${formatCnpj(empresa.cnpj)}` : ""}`), 125)[0], M, 23);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8.5);
     doc.setTextColor(...SUAVE);
     const situacao = registro
       ? `${registro.status === "concluido" ? "Concluído" : "Rascunho"} · revisão ${registro.revision}${registro.updatedBy ? ` · ${registro.updatedBy}` : ""}${registro.updatedAt ? ` · ${dataBr(registro.updatedAt)}` : ""}`
       : "Ainda não salvo";
-    doc.text(`${situacao}${alteracoesNaoSalvas ? " · inclui alterações ainda não salvas" : ""}`, M, 29);
+    doc.text(textoPdf(`${situacao}${alteracoesNaoSalvas ? " · inclui alterações ainda não salvas" : ""}`), M, 29);
     doc.setDrawColor(210, 220, 230);
     doc.line(M, 34, L - M, 34);
     // Rodapé: escritório em destaque e indicação discreta do Reescala.
@@ -157,7 +179,7 @@ export function criarPdfDiagnostico({
     const comMarca = (temLogo || marca?.displayName) && logo;
     if (comMarca) doc.addImage(logo, "PNG", M, A - 10.4, 12, 4, "reescala-rodape", "FAST");
     doc.text(
-      `${marca?.displayName ? `${marca.displayName} • ` : ""}Elaborado no Reescala • Emitido em ${emitido.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}`,
+      textoPdf(`${marca?.displayName ? `${marca.displayName} • ` : ""}Elaborado no Reescala • Emitido em ${emitido.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}`),
       comMarca ? M + 13 : M,
       A - 7.5,
     );

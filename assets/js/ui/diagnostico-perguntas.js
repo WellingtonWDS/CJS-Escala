@@ -103,13 +103,16 @@ export function textoResposta(q, a) {
       ? "Sem ACT/CCT utilizado nesta análise"
       : [
           v.nome,
-          v.inicio && `Início: ${v.inicio}`,
-          v.fim && `Fim: ${v.fim}`,
+          v.inicio && `Início: ${dataBr(v.inicio)}`,
+          v.fim && `Fim: ${dataBr(v.fim)}`,
           v.url,
         ]
           .filter(Boolean)
           .join(" · ") || "Instrumento pendente";
+  if (q.tipo === "date") return dataBr(v) || "Não informada";
   return Array.isArray(v)
     ? v.join(q.tipo === "ordem" ? " → " : ", ")
     : v || "Não informada";
 }
+/** AAAA-MM-DD → DD/MM/AAAA (datas do questionário). */
+export const dataBr = (v) => (typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v.split("-").reverse().join("/") : v);
