@@ -102,3 +102,28 @@
     display: none !important;
   }
 }
+/* Modal "Gerar termo aditivo": seleção das cláusulas. */
+.termo-dialog { width: min(680px, calc(100% - 32px)); }
+.termo-dialog form { background: inherit; }
+.termo-dialog p.termo-modal-intro { margin: 14px 0 6px; }
+.termo-grupo { border: 1px solid #dbe4ef; border-radius: 10px; padding: 10px 14px 6px; margin: 12px 0 0; }
+.termo-grupo legend { font-weight: 700; font-size: 0.9rem; padding: 0 6px; }
+.termo-dialog p.termo-nota { margin: 2px 0 6px; font-size: 0.8rem; line-height: 1.45; }
+.termo-grupo ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0 14px; }
+.termo-dialog label.termo-opcao { display: flex; align-items: flex-start; gap: 9px; padding: 6px 0; font-weight: 500; font-size: 0.86rem; cursor: pointer; }
+.termo-dialog .termo-opcao input { width: 17px; height: 17px; margin: 2px 0 0; padding: 0; flex-shrink: 0; accent-color: #167455; }
+.termo-dialog .termo-opcao input:disabled + span { color: #42556d; }
+.termo-dialog .termo-opcao small { display: block; font-weight: 500; font-size: 0.74rem; color: #5b6e81; }
+.termo-atalhos { display: flex; gap: 8px; flex-wrap: wrap; margin: 2px 0 6px; }
+.app-dialog .termo-atalhos button { padding: 4px 10px; font-size: 0.78rem; }
+.termo-dialog p.termo-status { margin: 10px 0 0; min-height: 1.2em; font-weight: 600; color: #105c43; }
+.termo-dialog .app-dialog-actions { position: sticky; bottom: -24px; background: inherit; padding: 12px 0 24px; margin: 12px 0 -24px; border-top: 1px solid #dbe4ef; }
+.termo-dialog .app-dialog-actions button { flex: 0 1 auto; }
+@media (max-width: 520px) {
+  .termo-dialog .app-dialog-actions { display: grid; grid-template-columns: 1fr 1fr; }
+  .termo-dialog .app-dialog-actions [data-termo-fechar] { grid-column: 1 / -1; order: 3; }
+}
+html[data-theme="dark"] .termo-dialog .app-dialog-actions { border-color: #3b4e66; }
+html[data-theme="dark"] .termo-grupo { border-color: #3b4e66; }
+html[data-theme="dark"] .termo-dialog .termo-opcao small, html[data-theme="dark"] .termo-dialog .termo-opcao input:disabled + span { color: #b1bfd2; }
+html[data-theme="dark"] .termo-dialog p.termo-status { color: #9ae8c6; }

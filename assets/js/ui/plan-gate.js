@@ -22,7 +22,7 @@ export function textoUso(plan) {
   return `Uso do plano ${plan.name}: ${plan.used} de ${plan.capacity} empresas${extras} · renova em ${dataCurta(plan.renewsAt)}`;
 }
 // Controles que continuam disponíveis numa empresa arquivada (navegação e consulta).
-const LIVRES = "[data-etapa-link],[data-pendencia-etapa],[data-export-pdf],[data-export-termo],summary,[data-leitura-ok]";
+const LIVRES = "[data-etapa-link],[data-pendencia-etapa],[data-export-pdf],[data-export-termo],[data-termo-abrir],summary,[data-leitura-ok]";
 
 export function initPlanControl({
   document,

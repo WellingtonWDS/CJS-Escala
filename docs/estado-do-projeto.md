@@ -59,7 +59,7 @@ Limite de empresas por CNPJ no ciclo mensal, limite de colaboradores, troca de q
 Apresentação do sistema sem login em `/sobre` (pasta `sobre/` publicada pelo build), com contato por WhatsApp e acesso ao login. Guard libera somente `/sobre` e seus arquivos. Validação: teste de acesso e de navegador (desktop/celular, temas).
 ## Termo aditivo da EC 141 — 18/11/2026
 
-Modelo de termo aditivo por colaborador, em PDF e Word (ZIP com LEIA-ME), gerado a partir da proposta 5×2 na etapa Conversão e comparação, com prévia na tela. Salário e fundamento da distribuição diária em branco; modelo de referência a conferir pela assessoria. Sem SQL, RPC, variável ou dependência nova.
+Modelo de termo aditivo por colaborador, em PDF e Word (ZIP com LEIA-ME), gerado a partir da proposta 5×2 na etapa Conversão e comparação, com prévia na tela. O botão **Gerar termo aditivo** abre um modal para escolher as cláusulas (adequação à EC 141 e complementares) e baixar em PDF ou Word. Texto justificado; CPF do empregado, salário e fundamento da distribuição diária em branco; modelo de referência a conferir pela assessoria. Sem SQL, RPC, variável ou dependência nova.
 ## Importação SCI em PDF — 18/11/2026
 
 Nova importação do relatório Horário de Trabalho da SCI em PDF, lido no navegador com pdf.js (dependência `pdfjs-dist` 6.5.438 publicada pelo build em `assets/vendor`). CNPJ informado manualmente e validado, pois o relatório não o contém; mesma estrutura, prévia e aplicação da importação Domínio. Validação: testes unitários e de navegador com PDF fictício; conferida também com três relatórios reais fornecidos, não versionados.

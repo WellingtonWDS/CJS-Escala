@@ -94,3 +94,30 @@ test("com empresa do servidor, razão social e CNPJ cadastrados prevalecem sobre
   assert.match(termos[0].partes, /^COMERCIO OFICIAL LTDA, inscrita no CNPJ sob o nº 11\.444\.777\/0001-61/);
   assert.equal(termos[0].empresa.nome, "COMERCIO OFICIAL LTDA");
 });
+
+test("cláusulas escolhidas: obrigatórias sempre presentes, numeração contínua e parágrafos", async () => {
+  const { CATALOGO_CLAUSULAS, CLAUSULAS_PADRAO } = await import("../assets/js/export/termo-aditivo.js");
+  const ana = montar(estado(), { clausulas: ["imagem", "foro", "horasExtras"] }).termos[0];
+  assert.deepEqual(ana.clausulas.map((c) => c.id), ["objeto", "duracao", "horario", "repouso", "horasExtras", "imagem", "foro"]);
+  assert.deepEqual(ana.clausulas.map((c) => c.numero), [1, 2, 3, 4, 5, 6, 7]);
+  assert.match(ana.clausulas.find((c) => c.id === "imagem").texto, /\nParágrafo primeiro:/);
+  assert.match(ana.clausulas.find((c) => c.id === "foro").texto, /jurisdição de _{6,}/);
+  // Todas as cláusulas do catálogo podem entrar; as condicionais só quando aplicáveis.
+  const todas = montar(estado(), { clausulas: CATALOGO_CLAUSULAS.map((c) => c.id) }).termos;
+  assert.equal(todas[0].clausulas.length, CATALOGO_CLAUSULAS.length);
+  assert.equal(todas[1].clausulas.length, CATALOGO_CLAUSULAS.length - 2);
+  assert.ok(CLAUSULAS_PADRAO.includes("ratificacao") && !CLAUSULAS_PADRAO.includes("imagem"));
+  for (const c of todas[0].clausulas) assert.doesNotMatch(c.texto, /igreja|religios|eclesi|dízimo/i);
+});
+
+test("CPF do empregado sempre em branco para preenchimento, no texto e na assinatura; tudo justificado", () => {
+  const { termos, titulo } = montar(estado());
+  assert.match(termos[0].partes, /Ana Ficticia, inscrito\(a\) no CPF sob o nº _{6,}, portador\(a\) da CTPS/);
+  assert.match(termos[0].partes, /art\. 468/);
+  const documento = new TextDecoder().decode(libs.unzipSync(criarDocxTermo(termos[0], titulo, libs))["word/document.xml"]);
+  assert.match(documento, /CPF: _{6,}/);
+  assert.match(documento, /CNPJ: 11\.222\.333\/0001-81/);
+  const alinhamentos = [...documento.matchAll(/<w:jc w:val="(\w+)"\/>/g)].map((m) => m[1]);
+  assert.equal(alinhamentos.filter((a) => a === "center").length, 1, "só o título centralizado");
+  assert.ok(alinhamentos.every((a) => ["both", "center"].includes(a)));
+});
