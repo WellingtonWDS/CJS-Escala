@@ -36,7 +36,7 @@ Somente o Admin informado recebe vínculo. Outros Admins globais mantêm seu ace
 | Padaria — turnos distribuídos 06h–20h30 | 12 | Seis atendentes e seis padeiros divididos em três turnos; referência atual coberta. |
 | Padaria — pausas simultâneas: readequar | 12 | A mesma quantidade dividida entre abertura e fechamento, com pausas coincidentes; lacunas diminuem com readequação. |
 | Padaria — equipe enxuta: contratar | 4 | Dois atendentes e dois padeiros; a proposta apresenta capacidade insuficiente para a operação completa. |
-| Lanchonete — folga fixa na segunda, domingo trabalhado | 8 | Domingo trabalhado toda semana por homens e mulheres: alertas de repouso dominical na escala atual e rodízio dos domingos na proposta. |
+| Lanchonete — folga fixa na segunda, domingo trabalhado | 8 | Aberta das 18h à 1h, domingo trabalhado toda semana por homens e mulheres: alertas de repouso dominical na escala atual e rodízio dos domingos na proposta. |
 | Lanchonete — mesmo quadro marcado como comércio | 8 | O mesmo quadro com a regra do comércio (domingo a cada 3 semanas, erro). |
 
 ### Comércio
@@ -63,15 +63,18 @@ Operação **segunda a sábado, 06h–20h30**, com mínimo de um atendente e um 
 
 ### Lanchonete
 
-Aberta de **terça a domingo, 10h–22h**, fechada às segundas. Quatro atendentes e quatro cozinheiros (duas mulheres e dois homens em cada função), em dois turnos de 7h20 efetivas: 10h–18h20 e 13h40–22h, com intervalos de uma hora alternados. Na escala atual (6×1, 44h), todos folgam **só na segunda** e trabalham **todos os domingos**. Mínimo de um atendente e um cozinheiro durante todo o funcionamento.
+Baseado em um diagnóstico real, com nomes fictícios. Lanchonete noturna, aberta ao público de **terça a domingo, das 18h à 1h**, fechada às segundas. Há atividades antes da abertura: **duas pessoas entram às 16h e uma às 17h** para organização; as demais entram às 18h. Todos saem à 1h. Quatro atendentes e quatro cozinheiros (duas mulheres e dois homens em cada função); quem entra mais cedo aparece com "entra 16h" ou "entra 17h" no nome.
+
+Escala atual: 6×1, folga **só na segunda** e **todos os domingos trabalhados**. Intervalos e cargas são suposições do cenário: quem entra às 16h tem 2h de intervalo (7h por dia, 42h); quem entra às 17h, 1h (7h, 42h); quem entra às 18h, 1h (6h, 36h). Os intervalos são alternados para manter ao menos um atendente e um cozinheiro das 18h à 1h.
 
 O que aparece ao gerar a escala atual:
 
 - **Mulheres:** alerta `DOMINGO_MULHER` no 2º domingo seguido trabalhado (art. 386 da CLT: revezamento quinzenal).
 - **Todos:** alerta `DOMINGO_PREFERENCIAL` no 4º domingo seguido (Portaria 2.041/2026).
 - **Modelo comércio:** além disso, erro `DOMINGO_COMERCIO` no 3º domingo seguido (Lei 10.101/2000, art. 6º).
+- **Trabalho noturno:** pendência `TRABALHO_NOTURNO` nos dias com trabalho após as 22h, para conferir hora noturna reduzida e adicional.
 
-Na proposta (5×2, 40h, folgas distribuídas), a segunda continua fechada e a segunda folga da semana passa para o domingo em rodízio. As mulheres folgam um domingo a cada duas semanas; os homens, a cada quatro semanas, ou a cada três no modelo comércio. Os domingos de folga são alternados entre as pessoas. No modelo comércio, o rodízio mais frequente deixa pequenas lacunas de cobertura, a ajustar.
+Na proposta (5×2, folgas distribuídas), os contratos de 42h passam a 40h (8h por dia, com entrada às 16h) e os de 36h mantêm a carga (7h12 por dia), a segunda continua fechada e a segunda folga da semana vai para o domingo em rodízio. As mulheres folgam um domingo a cada duas semanas; os homens, a cada quatro semanas, ou a cada três no modelo comércio. Os domingos de folga são alternados entre as pessoas e a cobertura das 18h à 1h é mantida.
 
 ## Como interpretar a comparação
 

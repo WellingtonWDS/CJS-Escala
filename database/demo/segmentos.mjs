@@ -144,9 +144,12 @@ function padaria({ poucos = false, simultaneo = false } = {}) {
   }
   return finalizar(s);
 }
-/* Lanchonete aberta de terça a domingo (fecha às segundas): 6×1 atual com folga fixa na
- * segunda e domingo trabalhado toda semana, por homens e mulheres. Serve para testar o
- * repouso dominical (art. 386 da CLT, Lei 10.101/2000 e Portaria 2.041/2026). */
+/* Lanchonete noturna, aberta de terça a domingo das 18h à 1h (fecha às segundas), com
+ * base em um diagnóstico real (nomes fictícios): três pessoas entram antes da abertura
+ * para organização, duas às 16h e uma às 17h; as demais entram na abertura. Escala atual
+ * 6×1 com folga fixa na segunda e domingo trabalhado toda semana, por homens e mulheres.
+ * Serve para testar o repouso dominical (art. 386 da CLT, Lei 10.101/2000 e Portaria
+ * 2.041/2026). Intervalos e cargas são suposições do cenário. */
 function lanchonete({ comercio = false } = {}) {
   const s = base();
   const ABERTA = [0, 2, 3, 4, 5, 6];
@@ -154,25 +157,37 @@ function lanchonete({ comercio = false } = {}) {
   if (comercio) s.domingosPermitidos = true;
   s.diasTrabalho = [...ABERTA];
   s.folgaDiasPermitidos = [...TODOS];
-  s.jornada = horario("10:00", "13:00", "14:00", "18:20");
-  const turnos = [
-    [horario("10:00", "13:00", "14:00", "18:20"), horario("10:00", "14:00", "15:00", "18:20")],
-    [horario("13:40", "17:00", "18:00", "22:00"), horario("13:40", "18:00", "19:00", "22:00")],
-  ];
-  const sexos = ["feminino", "masculino", "masculino", "feminino"];
-  for (const cargo of ["Atendente", "Cozinheiro(a)"]) {
-    let k = 0;
-    for (const par of turnos) for (const j of par) {
-      const c = pessoa(s, cargo);
-      c.sexo = sexos[k++];
-      c.nome = `${cargo === "Atendente" ? "Atendente" : c.sexo === "feminino" ? "Cozinheira" : "Cozinheiro"} Demo ${String(c.id).padStart(2, "0")} (${c.sexo === "feminino" ? "F" : "M"})`;
+  // Horário interno: organização a partir das 16h; atendimento ao público das 18h à 1h.
+  s.jornada = horario("16:00", "19:00", "20:00", "01:00");
+  // [sexo, entrada, início e fim do intervalo, carga semanal]; todos saem à 1h.
+  const equipe = {
+    "Atendente": [
+      ["feminino", "17:00", "19:00", "20:00", 42],
+      ["masculino", "18:00", "20:00", "21:00", 36],
+      ["masculino", "18:00", "21:00", "22:00", 36],
+      ["feminino", "18:00", "22:00", "23:00", 36],
+    ],
+    "Cozinheiro(a)": [
+      ["feminino", "16:00", "19:00", "21:00", 42],
+      ["masculino", "16:00", "21:00", "23:00", 42],
+      ["masculino", "18:00", "20:00", "21:00", 36],
+      ["feminino", "18:00", "22:00", "23:00", 36],
+    ],
+  };
+  for (const [cargo, pessoas] of Object.entries(equipe)) {
+    for (const [sexo, entrada, ini, fim, horas] of pessoas) {
+      const c = pessoa(s, cargo, horas);
+      c.sexo = sexo;
+      const titulo = cargo === "Atendente" ? "Atendente" : sexo === "feminino" ? "Cozinheira" : "Cozinheiro";
+      c.nome = `${titulo} Demo ${String(c.id).padStart(2, "0")} (${sexo === "feminino" ? "F" : "M"})${entrada !== "18:00" ? ` — entra ${entrada.slice(0, 2)}h` : ""}`;
+      const j = horario(entrada, ini, fim, "01:00");
       c.quadroDominio = {
         origem: "manual", codigo: `DEMO-${c.id}`, ativo: true, tipo: "semanal", cargaConfirmada: true,
         semana: Object.fromEntries(TODOS.map((d) => [d, d === 1 ? { status: "folga" } : { status: "trabalho", jornada: structuredClone(j) }])),
         ciclo: {}, pendencias: [], linhasOriginais: [],
       };
     }
-    demanda(s, cargo, "10:00", "22:00", ABERTA);
+    demanda(s, cargo, "18:00", "01:00", ABERTA);
   }
   return finalizar(s);
 }

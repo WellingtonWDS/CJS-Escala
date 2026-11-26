@@ -87,9 +87,12 @@ test('Lanchonete: domingo trabalhado toda semana é apontado e a proposta faz o 
   assert.ok(tipos.includes('DOMINGO_MULHER|alerta'));
   assert.ok(tipos.includes('DOMINGO_PREFERENCIAL|alerta'));
   assert.equal(tipos.includes('DOMINGO_COMERCIO|erro'),comercio);
-  assert.ok(!tipos.some(t=>t.startsWith('TRABALHO_NOTURNO')));
+  assert.ok(s.demandasCobertura.every(x=>x.inicio==='18:00'&&x.fim==='01:00'));
+  assert.ok(tipos.includes('TRABALHO_NOTURNO|pendencia'),'operação noturna sinalizada para conferência');
   for(const r of atual.resultado) assert.ok(r.dias.filter(x=>x.weekday===1).every(x=>x.status!=='T'),'segunda sem trabalho');
   const c=converter(s,s.destinoConversao), p=c.proposta.config.escalaGerada;
+  assert.equal(c.comparacao.status,'suficiente');
+  assert.ok(c.comparacao.pessoas.every(x=>!x.deficits),'40h cabem no horário interno 16h–1h20');
   assert.ok(!p.validacoes.some(v=>v.issues.some(x=>/^DOMINGO/.test(x.tipo))),'proposta sem apontamento de domingo');
   for(const r of p.resultado) {
    const doms=r.dias.filter(x=>x.weekday===0).map(x=>x.status==='T');
