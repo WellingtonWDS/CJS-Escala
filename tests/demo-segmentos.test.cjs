@@ -75,6 +75,32 @@ test('Entidade: readequar grupos A/B elimina lacunas sem contratar ou encurtar 3
   }
  }
 });
+test('Lanchonete: domingo trabalhado toda semana é apontado e a proposta faz o rodízio dominical',()=>{
+ const e=empresas().at(-1);
+ assert.match(e.name,/Lanchonete/);
+ for(const [i,d] of e.drafts.entries()) {
+  const s=d.state, comercio=i===1;
+  assert.deepEqual(pendencias(s,s.destinoConversao),[]);
+  assert.deepEqual(s.diasTrabalho,[0,2,3,4,5,6]);
+  const atual=domain(s).gerarDadosEscala(), tipos=atual.validacoes.flatMap(v=>v.issues.map(x=>x.tipo+'|'+x.severidade));
+  assert.equal(atual.coberturaOperacional.lacunas.length,0);
+  assert.ok(tipos.includes('DOMINGO_MULHER|alerta'));
+  assert.ok(tipos.includes('DOMINGO_PREFERENCIAL|alerta'));
+  assert.equal(tipos.includes('DOMINGO_COMERCIO|erro'),comercio);
+  assert.ok(!tipos.some(t=>t.startsWith('TRABALHO_NOTURNO')));
+  for(const r of atual.resultado) assert.ok(r.dias.filter(x=>x.weekday===1).every(x=>x.status!=='T'),'segunda sem trabalho');
+  const c=converter(s,s.destinoConversao), p=c.proposta.config.escalaGerada;
+  assert.ok(!p.validacoes.some(v=>v.issues.some(x=>/^DOMINGO/.test(x.tipo))),'proposta sem apontamento de domingo');
+  for(const r of p.resultado) {
+   const doms=r.dias.filter(x=>x.weekday===0).map(x=>x.status==='T');
+   const limite=r.colaborador.sexo==='feminino'?2:comercio?3:4;
+   let seguidos=0;for(const t of doms){seguidos=t?seguidos+1:0;assert.ok(seguidos<limite,`${r.colaborador.nome}: ${doms}`);}
+   assert.ok(doms.some(Boolean),'nem todos folgam todo domingo');
+  }
+  assert.deepEqual(s,criarEstado(i));
+ }
+ function criarEstado(i){return empresas().at(-1).drafts[i].state;}
+});
 test('DEMO: identificadores únicos, CNPJs de teste válidos e SQL publicado sincronizado',async()=>{
  const {validCnpj}=await import('../assets/js/shared/empresas.js');
  const {readFile}=await import('node:fs/promises');const dados=empresas();

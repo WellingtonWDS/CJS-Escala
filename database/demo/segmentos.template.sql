@@ -1,4 +1,4 @@
--- Reescala: cenários FICTÍCIOS de comércio, fazenda, assistência 24h e padaria.
+-- Reescala: cenários FICTÍCIOS de comércio, fazenda, assistência 24h, padaria e lanchonete.
 -- Execução administrativa; requer migrações 001–008. Não cria contas nem senhas.
 \set ON_ERROR_STOP on
 \if :{?identity_subject}
@@ -58,5 +58,6 @@ SELECT c.name AS empresa,d.title AS preenchimento,jsonb_array_length(d.state->'c
 FROM cjs_private.companies c JOIN cjs_private.drafts d ON d.company_id=c.id
 WHERE c.office_id='de000000-0000-4000-8000-000000000001' AND c.id IN (
  'de000000-0000-4000-8000-000000000101','de000000-0000-4000-8000-000000000102',
- 'de000000-0000-4000-8000-000000000103','de000000-0000-4000-8000-000000000104')
+ 'de000000-0000-4000-8000-000000000103','de000000-0000-4000-8000-000000000104',
+ 'de000000-0000-4000-8000-000000000105')
 AND d.deleted_at IS NULL ORDER BY c.name,d.title;

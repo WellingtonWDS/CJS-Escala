@@ -135,15 +135,20 @@ export function createGerador(state, jornada, feriados, validacao) {
 
   /** Rodízio do repouso dominical (Lei 10.101/2000, art. 6º; CLT, art. 386; Portaria
    * MTE 2.041/2026, art. 5º): na semana devida, a última folga passa para o domingo.
-   * A primeira folga é preservada para não criar sete dias seguidos de trabalho. */
+   * A primeira folga é preservada para não criar sete dias seguidos de trabalho. Com a
+   * empresa fechada em algum dia da semana, resta uma única folga a escolher: ela passa
+   * para o domingo, e o dia fechado continua garantindo o repouso semanal. */
   function comDomingo(folgas, date, idx, operacionais, quantidade) {
-    if (escalaFixa(state) || quantidade !== 2 || folgas.length !== 2 || !operacionais.includes(0) || folgas.includes(0))
+    const fechada = operacionais.length < 7;
+    if (escalaFixa(state) || !operacionais.includes(0) || folgas.includes(0) || folgas.length !== quantidade
+      || !(quantidade === 2 || (quantidade === 1 && fechada)))
       return folgas;
     const colab = state.colaboradores[idx] || {};
     const permitido = (state.folgaDiasPermitidos || []).length === 0 || state.folgaDiasPermitidos.includes(0);
     // No comércio a coincidência é obrigatória e prevalece sobre a lista de dias permitidos.
     if (!permitido && !state.atividadeComercio) return folgas;
     if (!domingoDevido(state, colab, getMonday(date), idx)) return folgas;
+    if (quantidade === 1) return [0];
     const ordem = (dia) => (dia + 6) % 7;
     const ultima = ordem(folgas[0]) > ordem(folgas[1]) ? 0 : 1;
     const nova = folgas.slice();

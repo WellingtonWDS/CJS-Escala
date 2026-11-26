@@ -1,6 +1,6 @@
 # Cenários DEMO por segmento
 
-Quatro novas empresas e onze preenchimentos fictícios, no mesmo escritório **DEMO**. O segmento aparece na razão social; cada preenchimento identifica a situação a testar. O exemplo original permanece intacto. Não são recomendações de dimensionamento para empresas reais: as demandas mínimas foram escolhidas para reproduzir os testes abaixo.
+Cinco empresas e treze preenchimentos fictícios, no mesmo escritório **DEMO**. O segmento aparece na razão social; cada preenchimento identifica a situação a testar. O exemplo original permanece intacto. Não são recomendações de dimensionamento para empresas reais: as demandas mínimas foram escolhidas para reproduzir os testes abaixo.
 
 ## Instalação na VPS
 
@@ -17,7 +17,7 @@ docker exec -i postgres_apps psql -U postgres -d cjs_escala \
   < /tmp/reescala-demo-segmentos.sql
 ```
 
-O retorno lista **11 preenchimentos em quatro empresas**. O instalador cria o escritório DEMO se necessário, sem depender do instalador anterior. Atualize a página, abra **Empresa atual e Preenchimentos**, selecione DEMO, a empresa pelo segmento e o modelo; clique em abrir. Na etapa 8, gere a escala atual e, quando aplicável, a proposta.
+O retorno lista **13 preenchimentos em cinco empresas**. Reexecutar em um banco que já tem os cenários adiciona apenas o que falta (por exemplo, a Lanchonete), sem alterar os preenchimentos existentes. O instalador cria o escritório DEMO se necessário, sem depender do instalador anterior. Atualize a página, abra **Empresa atual e Preenchimentos**, selecione DEMO, a empresa pelo segmento e o modelo; clique em abrir. Na etapa 8, gere a escala atual e, quando aplicável, a proposta.
 
 Somente o Admin informado recebe vínculo. Outros Admins globais mantêm seu acesso a todos os escritórios; Gerentes e Operadores de outros escritórios não ganham acesso. CNPJs, nomes e instrumentos coletivos são fictícios. Resultados começam vazios para usar os cálculos atuais ao gerar.
 
@@ -36,6 +36,8 @@ Somente o Admin informado recebe vínculo. Outros Admins globais mantêm seu ace
 | Padaria — turnos distribuídos 06h–20h30 | 12 | Seis atendentes e seis padeiros divididos em três turnos; referência atual coberta. |
 | Padaria — pausas simultâneas: readequar | 12 | A mesma quantidade dividida entre abertura e fechamento, com pausas coincidentes; lacunas diminuem com readequação. |
 | Padaria — equipe enxuta: contratar | 4 | Dois atendentes e dois padeiros; a proposta apresenta capacidade insuficiente para a operação completa. |
+| Lanchonete — folga fixa na segunda, domingo trabalhado | 8 | Domingo trabalhado toda semana por homens e mulheres: alertas de repouso dominical na escala atual e rodízio dos domingos na proposta. |
+| Lanchonete — mesmo quadro marcado como comércio | 8 | O mesmo quadro com a regra do comércio (domingo a cada 3 semanas, erro). |
 
 ### Comércio
 
@@ -58,6 +60,18 @@ O instrumento coletivo fictício declara o regime 12×36; não presume intervalo
 ### Padaria
 
 Operação **segunda a sábado, 06h–20h30**, com mínimo de um atendente e um padeiro durante todo o período, incluindo almoço. Domingo e feriados nacionais sem operação na referência. Turnos de 7h20 efetivas: 06h–14h20, 09h–17h20 e 12h10–20h30, cada um com uma hora de intervalo. A soma de seis dias é 44h. O modelo de pausas simultâneas concentra os empregados na abertura/fechamento; o modelo enxuto tem apenas um empregado de cada função em cada um desses dois turnos.
+
+### Lanchonete
+
+Aberta de **terça a domingo, 10h–22h**, fechada às segundas. Quatro atendentes e quatro cozinheiros (duas mulheres e dois homens em cada função), em dois turnos de 7h20 efetivas: 10h–18h20 e 13h40–22h, com intervalos de uma hora alternados. Na escala atual (6×1, 44h), todos folgam **só na segunda** e trabalham **todos os domingos**. Mínimo de um atendente e um cozinheiro durante todo o funcionamento.
+
+O que aparece ao gerar a escala atual:
+
+- **Mulheres:** alerta `DOMINGO_MULHER` no 2º domingo seguido trabalhado (art. 386 da CLT: revezamento quinzenal).
+- **Todos:** alerta `DOMINGO_PREFERENCIAL` no 4º domingo seguido (Portaria 2.041/2026).
+- **Modelo comércio:** além disso, erro `DOMINGO_COMERCIO` no 3º domingo seguido (Lei 10.101/2000, art. 6º).
+
+Na proposta (5×2, 40h, folgas distribuídas), a segunda continua fechada e a segunda folga da semana passa para o domingo em rodízio. As mulheres folgam um domingo a cada duas semanas; os homens, a cada quatro semanas, ou a cada três no modelo comércio. Os domingos de folga são alternados entre as pessoas. No modelo comércio, o rodízio mais frequente deixa pequenas lacunas de cobertura, a ajustar.
 
 ## Como interpretar a comparação
 

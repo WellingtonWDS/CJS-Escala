@@ -144,6 +144,38 @@ function padaria({ poucos = false, simultaneo = false } = {}) {
   }
   return finalizar(s);
 }
+/* Lanchonete aberta de terça a domingo (fecha às segundas): 6×1 atual com folga fixa na
+ * segunda e domingo trabalhado toda semana, por homens e mulheres. Serve para testar o
+ * repouso dominical (art. 386 da CLT, Lei 10.101/2000 e Portaria 2.041/2026). */
+function lanchonete({ comercio = false } = {}) {
+  const s = base();
+  const ABERTA = [0, 2, 3, 4, 5, 6];
+  s.atividadeComercio = comercio;
+  if (comercio) s.domingosPermitidos = true;
+  s.diasTrabalho = [...ABERTA];
+  s.folgaDiasPermitidos = [...TODOS];
+  s.jornada = horario("10:00", "13:00", "14:00", "18:20");
+  const turnos = [
+    [horario("10:00", "13:00", "14:00", "18:20"), horario("10:00", "14:00", "15:00", "18:20")],
+    [horario("13:40", "17:00", "18:00", "22:00"), horario("13:40", "18:00", "19:00", "22:00")],
+  ];
+  const sexos = ["feminino", "masculino", "masculino", "feminino"];
+  for (const cargo of ["Atendente", "Cozinheiro(a)"]) {
+    let k = 0;
+    for (const par of turnos) for (const j of par) {
+      const c = pessoa(s, cargo);
+      c.sexo = sexos[k++];
+      c.nome = `${cargo === "Atendente" ? "Atendente" : c.sexo === "feminino" ? "Cozinheira" : "Cozinheiro"} Demo ${String(c.id).padStart(2, "0")} (${c.sexo === "feminino" ? "F" : "M"})`;
+      c.quadroDominio = {
+        origem: "manual", codigo: `DEMO-${c.id}`, ativo: true, tipo: "semanal", cargaConfirmada: true,
+        semana: Object.fromEntries(TODOS.map((d) => [d, d === 1 ? { status: "folga" } : { status: "trabalho", jornada: structuredClone(j) }])),
+        ciclo: {}, pendencias: [], linhasOriginais: [],
+      };
+    }
+    demanda(s, cargo, "10:00", "22:00", ABERTA);
+  }
+  return finalizar(s);
+}
 function cnpjTeste(n) {
   let value = String(n).padStart(12, "0");
   for (let len = 12; len <= 13; len++) {
@@ -177,6 +209,10 @@ export function criarCenariosSegmentos() {
       ["Padaria — turnos distribuídos 06h–20h30", "cobertura", padaria()],
       ["Padaria — pausas simultâneas: readequar", "readequacao", padaria({ simultaneo: true })],
       ["Padaria — equipe enxuta: contratar", "contratacao", padaria({ poucos: true })],
+    ]),
+    empresa(105, "Lanchonete", [
+      ["Lanchonete — folga fixa na segunda, domingo trabalhado", "domingo", lanchonete()],
+      ["Lanchonete — mesmo quadro marcado como comércio", "domingo", lanchonete({ comercio: true })],
     ]),
   ];
 }

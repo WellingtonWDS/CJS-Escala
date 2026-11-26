@@ -158,7 +158,8 @@ test('preenchimento antigo continua dinâmico, e salvar/reabrir mantém modo fix
 test('cenários de comércio, fazenda e padaria mantêm padrão fixo e distinguem cobertura de carga semanal',async()=>{
   const {criarCenariosSegmentos}=await import('../database/demo/segmentos.mjs');
   let simulados=0,ciclos=0;
-  for(const empresa of criarCenariosSegmentos()) for(const d of empresa.drafts) {
+  // A lanchonete testa o rodízio dominical, próprio da escala dinâmica.
+  for(const empresa of criarCenariosSegmentos().filter(e=>!e.name.startsWith('Lanchonete'))) for(const d of empresa.drafts) {
     const s=structuredClone(d.state);s.modeloEscala='fixa';
     if(empresa.name.startsWith('Entidade')) {
       assert.throws(()=>domain(s).gerarDadosEscala(),/12×36/);ciclos++;continue;
