@@ -348,7 +348,7 @@ export function createValidacao(state, jornada, feriados) {
         out.push(
           issue(
             regra.tipo === "DOMINGO_PREFERENCIAL" ? "DOMINGO_FIXO_PREFERENCIAL" : "DOMINGO_FIXO",
-            regra.tipo === "DOMINGO_PREFERENCIAL" ? "alerta" : "erro",
+            regra.severidade,
             `No padrão fixo, o domingo é trabalhado em todas as semanas e não há repouso dominical: ${regra.texto} (${regra.fundamento}). ${regra.tipo === "DOMINGO_PREFERENCIAL" ? "Considere a escala dinâmica, que organiza o rodízio dos domingos, ou fixe o domingo como repouso." : "Use a escala dinâmica para organizar o revezamento ou fixe o domingo como repouso."}`,
           ),
         );

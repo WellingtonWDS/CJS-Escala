@@ -129,7 +129,8 @@ test("escala fixa: domingo trabalhado em todas as semanas é apontado conforme a
   assert.ok(geral.some((i) => i.tipo === "DOMINGO_FIXO_PREFERENCIAL" && i.severidade === "alerta" && /4 semanas/.test(i.mensagem)));
   assert.ok(!geral.some((i) => i.tipo === "DOMINGO_FIXO"));
   const mulheres = todas(createDomain(estado({ ...base, colaboradores: pessoas(2, "feminino") })).gerarDadosEscala());
-  assert.ok(mulheres.some((i) => i.tipo === "DOMINGO_FIXO" && /art\. 386/.test(i.mensagem)));
+  assert.ok(mulheres.some((i) => i.tipo === "DOMINGO_FIXO" && i.severidade === "alerta" && /art\. 386/.test(i.mensagem)));
+  assert.ok(!mulheres.some((i) => /^DOMINGO/.test(i.tipo) && i.severidade === "erro"), "regra das mulheres é alerta também na escala fixa");
   // Domingo como repouso fixo não gera apontamento.
   const folgaDomingo = todas(createDomain(estado({ ...base, atividadeComercio: true, domingosPermitidos: true, folgaDiasPermitidos: [0, 1] })).gerarDadosEscala());
   assert.ok(!folgaDomingo.some((i) => /^DOMINGO/.test(i.tipo)));
