@@ -69,7 +69,28 @@
 .home-numeros dt { font-size: 11px; color: var(--home-muted); font-weight: 600; }
 .home-numeros dd { margin: 2px 0 0; font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .home-card-rodape { margin-top: auto; padding-top: 6px; display: flex; justify-content: space-between; gap: 8px; color: var(--home-muted); font-size: 12px; }
-.home-card-rodape span { color: var(--home-accent); font-weight: 700; }
+.home-card-seta { color: var(--home-accent); font-weight: 700; }
+/* Alternância cartões / lista. */
+.home-visao { display: inline-flex; align-self: flex-end; margin-left: auto; border: 1px solid var(--home-line); border-radius: 10px; overflow: hidden; background: var(--home-surface); }
+.companies-home .home-visao button:not(.home-card):not(.home-botao-pri):not(.home-voltar) { min-height: 40px; border: 0; border-radius: 0; background: transparent; color: var(--home-muted); }
+.companies-home .home-visao button:not(.home-card):not(.home-botao-pri):not(.home-voltar) + button { border-left: 1px solid var(--home-line); }
+.companies-home .home-visao button:not(.home-card):not(.home-botao-pri):not(.home-voltar)[aria-pressed="true"] { background: var(--home-accent-soft); color: var(--home-accent-strong); }
+/* Lista: uma linha por empresa, com os números alinhados em colunas. */
+.home-grade[data-view="lista"] { grid-template-columns: 1fr; gap: 0; border: 1px solid var(--home-line); border-radius: 14px; overflow: hidden; background: var(--home-surface); }
+.home-grade[data-view="lista"] li + li { border-top: 1px solid var(--home-line); }
+.home-grade[data-view="lista"] .home-card {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, auto) 20px; grid-template-areas: "topo numeros seta" "cnpj numeros seta";
+  align-items: center; column-gap: 20px; row-gap: 2px; padding: 11px 16px; border: 0; border-radius: 0; box-shadow: none;
+}
+.home-grade[data-view="lista"] .home-card:hover { transform: none; box-shadow: none; background: var(--home-raised); }
+.home-grade[data-view="lista"] .home-card:focus-visible { outline-offset: -3px; }
+.home-grade[data-view="lista"] .home-card-topo { grid-area: topo; justify-content: flex-start; align-items: center; }
+.home-grade[data-view="lista"] .home-card-nome { font-size: 15px; }
+.home-grade[data-view="lista"] .home-card-cnpj { grid-area: cnpj; font-size: 12.5px; }
+.home-grade[data-view="lista"] .home-numeros { grid-area: numeros; grid-template-columns: 96px 96px 96px; margin: 0; padding: 0; border: 0; }
+.home-grade[data-view="lista"] .home-numeros dd { font-size: 14px; }
+.home-grade[data-view="lista"] .home-card-rodape { grid-area: seta; margin: 0; padding: 0; }
+.home-grade[data-view="lista"] .home-card-autor { display: none; }
 .home-selos { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
 .home-selo { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight: 700; white-space: nowrap; }
 .home-selo-verde { background: var(--home-accent-soft); color: var(--home-accent-strong); }
@@ -98,6 +119,10 @@
   .companies-home { padding: 0 14px 32px; margin-top: 18px; }
   .companies-home h2 { font-size: 24px; }
   .home-grade { grid-template-columns: 1fr; }
+  .home-visao { margin-left: 0; }
+  .home-grade[data-view="lista"] .home-card { grid-template-columns: minmax(0, 1fr) 20px; grid-template-areas: "topo seta" "cnpj seta" "numeros seta"; }
+  .home-grade[data-view="lista"] .home-numeros { grid-template-columns: repeat(3, auto); justify-content: start; gap: 16px; margin-top: 4px; }
+  .home-grade[data-view="lista"] .home-numeros dd { font-size: 13px; }
   .home-topo .home-botao-pri { width: 100%; }
   .home-preenchimentos li:not(.home-nota) { flex-direction: column; align-items: stretch; }
 }
@@ -119,7 +144,7 @@ html[data-theme="dark"] .companies-home {
 }
 html[data-theme="dark"] .companies-home .home-botao-pri { color: #fff; }
 html[data-theme="dark"] .companies-home .home-botao-pri:hover { background: #086449; color: #fff; }
-html[data-theme="dark"] .home-sobretitulo, html[data-theme="dark"] .home-voltar, html[data-theme="dark"] .home-card-rodape span { color: #86e2bd; }
+html[data-theme="dark"] .home-sobretitulo, html[data-theme="dark"] .home-voltar, html[data-theme="dark"] .home-card-seta { color: #86e2bd; }
 html[data-theme="dark"] .home-selo-neutro { background: #24354a; color: #d3deea; }
 html[data-theme="dark"] .companies-home input, html[data-theme="dark"] .companies-home select { background: #101b29; border-color: #7d93ae; }
 html[data-theme="dark"] .companies-home input[readonly] { background: #1e2d40; }
@@ -132,6 +157,11 @@ html[data-theme="dark"] .companies-home button.home-voltar { background: transpa
 html[data-theme="dark"] .companies-home button.home-card { background: var(--home-surface) !important; border: 1px solid var(--home-line) !important; color: var(--home-ink) !important; }
 html[data-theme="dark"] .companies-home button.home-card[data-archived="true"] { background: var(--home-raised) !important; }
 html[data-theme="dark"] .companies-home button.home-card:hover { border-color: #7d93ae !important; }
+html[data-theme="dark"] .companies-home .home-grade[data-view="lista"] button.home-card { border: 0 !important; }
+html[data-theme="dark"] .companies-home .home-grade[data-view="lista"] button.home-card:hover { background: var(--home-raised) !important; }
+html[data-theme="dark"] .companies-home .home-visao button { background: transparent !important; border: 0 !important; color: var(--home-muted) !important; }
+html[data-theme="dark"] .companies-home .home-visao button:not(.home-card):not(.home-botao-pri):not(.home-voltar) + button { border-left: 1px solid var(--home-line) !important; }
+html[data-theme="dark"] .companies-home .home-visao button:not(.home-card):not(.home-botao-pri):not(.home-voltar)[aria-pressed="true"] { background: var(--home-accent-soft) !important; color: var(--home-accent-strong) !important; }
 /* Coluna direita do detalhe: dados (somente leitura até Editar) e diagnóstico. */
 .home-coluna { display: grid; gap: 18px; min-width: 0; }
 .home-dados { margin: 8px 0 0; display: grid; gap: 10px; }

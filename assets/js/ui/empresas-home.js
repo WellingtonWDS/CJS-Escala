@@ -51,9 +51,10 @@ export function createCompaniesHome({
       <div class="home-campos"><label>Escritório<select name="officeId" required></select></label><label>Razão social<input name="name" maxlength="160" required autocomplete="off"></label><label>CNPJ<input name="cnpj" maxlength="18" required placeholder="00.000.000/0000-00" autocomplete="off" inputmode="numeric"></label></div>
       <p class="home-nota" data-home-create-plan></p>
       <div class="home-acoes"><button type="submit" class="home-botao-pri">Cadastrar empresa</button><button type="button" data-home-create-cancel>Cancelar</button></div></form>
-    <div class="home-filtros" data-home-filters><label class="home-busca">Buscar empresa<input type="search" data-home-search placeholder="Razão social ou CNPJ" autocomplete="off"></label><label data-home-office-filter hidden>Escritório<select data-home-office></select></label></div>
+    <div class="home-filtros" data-home-filters><label class="home-busca">Buscar empresa<input type="search" data-home-search placeholder="Razão social ou CNPJ" autocomplete="off"></label><label data-home-office-filter hidden>Escritório<select data-home-office></select></label>
+      <div class="home-visao" role="group" aria-label="Visualização das empresas"><button type="button" data-home-view="cartoes" aria-pressed="true">Cartões</button><button type="button" data-home-view="lista" aria-pressed="false">Lista</button></div></div>
     <p data-home-status class="home-status" role="status" aria-live="polite"></p>
-    <ul class="home-grade" data-home-grid aria-label="Empresas"></ul>
+    <ul class="home-grade" data-home-grid data-view="cartoes" aria-label="Empresas"></ul>
     <div class="home-vazio" data-home-empty hidden></div>
   </div>
   <div data-home-detail hidden>
@@ -76,6 +77,16 @@ export function createCompaniesHome({
   const $ = (s) => root.querySelector(s);
   const list = $("[data-home-list]"), detail = $("[data-home-detail]"), create = $("#company-create"), edit = $("#company-edit");
   let data = { offices: [], companies: [] }, atual = null, busy = false, generation = 0;
+
+  // Visualização em cartões ou lista, guardada neste navegador para cada usuário.
+  const chaveVisao = `cjs-empresas-visao:${session?.user?.id || session?.user?.email || "anon"}`;
+  function aplicarVisao(visao, salvar = false) {
+    const v = visao === "lista" ? "lista" : "cartoes";
+    $("[data-home-grid]").dataset.view = v;
+    for (const b of root.querySelectorAll("[data-home-view]")) b.setAttribute("aria-pressed", String(b.dataset.homeView === v));
+    if (salvar) try { window.localStorage.setItem(chaveVisao, v); } catch {}
+  }
+  try { aplicarVisao(window.localStorage.getItem(chaveVisao)); } catch { aplicarVisao("cartoes"); }
 
   async function run(task, label) {
     if (busy) return;
@@ -113,7 +124,7 @@ export function createCompaniesHome({
       <span class="home-card-topo"><span class="home-card-nome">${esc(c.name)}</span><span class="home-selos">${selos}</span></span>
       <span class="home-card-cnpj">${c.cnpj ? esc(formatCnpj(c.cnpj)) : "CNPJ não informado"}${data.offices.length > 1 ? ` · ${esc(c.officeName || "")}` : ""}</span>
       ${numeros}
-      <span class="home-card-rodape">${r.autor ? `Último salvamento por ${esc(r.autor)}` : r.preenchimentos ? "" : "Nenhum preenchimento salvo"}<span aria-hidden="true">→</span></span></button></li>`;
+      <span class="home-card-rodape"><span class="home-card-autor">${r.autor ? `Último salvamento por ${esc(r.autor)}` : r.preenchimentos ? "" : "Nenhum preenchimento salvo"}</span><span class="home-card-seta" aria-hidden="true">→</span></span></button></li>`;
   }
   function renderLista() {
     const criar = data.offices.filter((o) => o.canCreate);
@@ -164,6 +175,8 @@ export function createCompaniesHome({
   $("[data-home-create-cancel]").addEventListener("click", () => { create.reset(); create.hidden = true; });
   root.addEventListener("click", (e) => {
     if (e.target.closest("[data-home-new], [data-home-new-empty]")) abrirCadastro();
+    const visao = e.target.closest("[data-home-view]");
+    if (visao) aplicarVisao(visao.dataset.homeView, true);
     if (e.target.closest("[data-home-brand]"))
       import("./marca-escritorio.js").then(({ openOfficeBranding }) =>
         openOfficeBranding({ document, window, offices: data.offices.filter((o) => o.canCreate) }));

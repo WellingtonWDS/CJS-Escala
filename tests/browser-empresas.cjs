@@ -78,6 +78,17 @@ module.exports = async ({ browser, baseURL }) => {
     await page.locator("[data-home-search]").fill("11.444");
     assert.equal(await page.locator("[data-company-card]").count(), 1);
     await page.locator("[data-home-search]").fill("");
+    // Visualização em lista, guardada para o usuário.
+    assert.equal(await page.locator("[data-home-grid]").getAttribute("data-view"), "cartoes");
+    await page.locator('[data-home-view="lista"]').click();
+    assert.equal(await page.locator("[data-home-grid]").getAttribute("data-view"), "lista");
+    assert.equal(await page.locator('[data-home-view="lista"]').getAttribute("aria-pressed"), "true");
+    assert.equal(await page.evaluate(() => localStorage.getItem("cjs-empresas-visao:anon")), "lista");
+    assert.match(await card.innerText(), /Padaria Pão Bom[\s\S]*Preenchimentos\s*2/);
+    const alturas = await page.locator("[data-company-card]").evaluateAll((els) => els.map((e) => e.getBoundingClientRect().height));
+    assert.ok(alturas.every((h) => h < 90), `linhas compactas: ${alturas}`);
+    await page.locator('[data-home-view="cartoes"]').click();
+    assert.equal(await page.evaluate(() => localStorage.getItem("cjs-empresas-visao:anon")), "cartoes");
     await page.locator("[data-home-office]").selectOption(officeB);
     assert.equal(await page.locator("[data-company-card]").count(), 1);
     await page.locator("[data-home-office]").selectOption("");
