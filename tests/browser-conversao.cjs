@@ -312,7 +312,7 @@ module.exports = async function testarConversao({ browser, baseURL }) {
     await irParaEtapa(page, "#conversao-mensagem");
     assert.match(
       await page.locator("#conversao-mensagem").innerText(),
-      /cópia automática.*falhou/,
+      /não coube no espaço deste navegador/,
     );
     assert.equal(
       await page.evaluate(() => JSON.parse(localStorage.getItem("fintria-escala-dp-v2")).conversao.desatualizada === true),

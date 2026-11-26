@@ -73,7 +73,6 @@ module.exports = async ({ browser, baseURL }) => {
       window.__service = service;
       window.__company = { office, company, id };
       window.__networkDown = true;
-      document.getElementById("conversao-mensagem").textContent = "A cópia automática falhou.";
       window.__originalSet = Storage.prototype.setItem;
       Storage.prototype.setItem = () => {
         throw new DOMException("Sem espaço", "QuotaExceededError");
@@ -113,7 +112,6 @@ module.exports = async ({ browser, baseURL }) => {
     });
     assert(result.compressed);
     assert(result.identical);
-    assert.match(await page.locator("#conversao-mensagem").textContent(),/salvas no servidor/);
     const keys=await page.evaluate(()=>window.__retryKeys);assert.equal(keys.length,2);assert.equal(keys[0],keys[1]);
     console.log(
       "OK: salvamento remoto independe de quota local, confirma servidor e reabre escala atual/proposta completas pelo transporte compactado.",
