@@ -57,6 +57,9 @@
 [data-cobertura-basica] li { margin: 2px 0; }
 html[data-theme="dark"] [data-cobertura-basica] { background: #3b2f1b !important; border-color: #6b5530 !important; border-left-color: #d89a3a !important; color: #f3e6cf; }
 
+/* Escala atual / prévia avulsa: visível sem proposta e, com proposta, só na aba da escala. */
+#sec-gerar[data-conv-aba-ativa]:not([data-conv-aba-ativa="escala"]) #conversao-resultados:not([hidden]) ~ #escala-atual-previa { display: none; }
+
 @media (max-width: 900px) {
   #conversao-visao-geral .diagnostico-executivo, .conv-acoes { grid-template-columns: 1fr; }
 }

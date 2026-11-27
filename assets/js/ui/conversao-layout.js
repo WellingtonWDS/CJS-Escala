@@ -15,6 +15,8 @@ export function initConversaoLayout(document) {
   const painel = (nome) => raiz.querySelector(`[data-conv-painel="${nome}"]`);
 
   function mostrarAba(nome, { foco = false } = {}) {
+    // "Escala atual / prévia avulsa" fica só na aba da escala proposta (ver conversao.css).
+    raiz.parentElement?.closest("section")?.setAttribute("data-conv-aba-ativa", nome);
     for (const aba of abas) {
       const ativa = aba.dataset.convAba === nome;
       aba.setAttribute("aria-selected", String(ativa));

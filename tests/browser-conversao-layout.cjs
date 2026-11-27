@@ -30,12 +30,15 @@ module.exports = async ({ browser, baseURL }) => {
     await page.keyboard.press("ArrowRight");
     assert.equal(await page.locator('[data-conv-aba="atencao"]').getAttribute("aria-selected"), "true");
     assert.ok(await page.locator("#conv-painel-atencao").isVisible());
+    // A escala atual / prévia avulsa só aparece na aba da escala proposta.
+    assert.equal(await page.locator("#escala-atual-previa").isVisible(), false);
     assert.equal(await page.locator("#conv-painel-escala").isHidden(), true);
     // Indicador de horas descobertas leva à análise da equipe.
     await page.locator('#conversao-visao-geral [data-conv-ir="analise"]').click();
     assert.ok(await page.locator("#conversao-comparacao [data-diagnostico-equipe]").isVisible());
     // Buscar ajustes pela faixa de ações e voltar à grade continua funcionando.
     await page.locator('[data-conv-aba="escala"]').click();
+    assert.equal(await page.locator("#escala-atual-previa").isVisible(), true);
     await acoes.locator("[data-ajuste-buscar]").click();
     await page.waitForFunction(() => document.querySelector("#resultado-proposta-ajustes [data-ajuste-aplicar], #resultado-proposta-ajustes [data-ajuste-mensagem]")?.textContent?.trim() || document.querySelector("#resultado-proposta-ajustes [data-ajuste-aplicar]"), null, { timeout: 60000 });
     assert.equal(await page.locator("[id='resultado-proposta-ajustes']").count(), 1, "um único painel de ajustes");
