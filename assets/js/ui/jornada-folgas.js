@@ -168,6 +168,18 @@ export function createJornadaFolgasUI({
     document.getElementById("folga-fim-semana-opcao").disabled =
       state.tipoEscala !== "5x2";
     tipo.value = fimSemana ? "fim_semana" : fixa ? "fixa" : state.folgaTipo;
+    // Motivo de cada opção indisponível, com a etapa onde a escolha é feita.
+    const bloqueios = [
+      fixa && ["Rotativas", "disponível na escala mensal dinâmica. Para usar, mude em Configuração → “Como deseja organizar a escala?” → Mensal dinâmica; no padrão fixo a mesma semana se repete e não há rodízio."],
+      state.tipoEscala !== "5x2" && ["Sábado e domingo", `disponível no tipo de escala 5×2 (atual: ${state.tipoEscala === "12x36" ? "12×36" : "6×1"}). Para usar, mude em Tipo de escala. Para a proposta 5×2, escolha “Sábado e domingo” em Folgas da proposta, na etapa Conversão e comparação.`],
+    ].filter(Boolean);
+    const lista = document.getElementById("folga-tipo-bloqueios");
+    if (lista) {
+      lista.hidden = !bloqueios.length;
+      lista.innerHTML = bloqueios.map(([opcao, motivo]) => `<li><b>${opcao}</b>: ${motivo}</li>`).join("");
+    }
+    tipo.querySelector('option[value="rotativa"]').title = fixa ? bloqueios[0][1] : "";
+    document.getElementById("folga-fim-semana-opcao").title = state.tipoEscala !== "5x2" ? bloqueios.at(-1)[1] : "";
     document.getElementById("folga-dias-wrap").hidden = fimSemana;
     document.getElementById("folga-dias-label").textContent =
       fixa || state.folgaTipo === "fixa"

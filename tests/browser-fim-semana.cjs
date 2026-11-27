@@ -44,6 +44,7 @@ module.exports = async function testarFimSemana({ browser, baseURL }) {
       );
     const anterior = await saved();
     await irParaEtapa(page, "#folga-tipo");
+    assert.equal(await page.locator("#folga-tipo-bloqueios").isHidden(), true, "5×2 dinâmica: nenhuma opção bloqueada");
     await page.locator("#folga-tipo").selectOption("fim_semana");
     assert.equal((await saved()).escalaGerada, null);
     await irParaEtapa(page, "#folga-dias-wrap");

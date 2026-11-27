@@ -26,6 +26,7 @@ module.exports = async ({ browser, baseURL }) => {
     assert.equal(await page.locator('[data-etapa-link="sec-jornada"] .etapa-numero').textContent(),'3');
     await page.locator('[data-etapa-link="sec-folgas"]').click();
     assert.equal(await page.locator('#folga-tipo option[value="rotativa"]').isDisabled(),true);
+    assert.match(await page.locator('#folga-tipo-bloqueios').innerText(),/Rotativas: disponível na escala mensal dinâmica/);
     await page.locator('[data-etapa-link="sec-config"]').click();
     await page.locator('#btn-tutorial').click();
     assert.match(await page.locator('#tutorial-contador').textContent(),/1 de 8/);

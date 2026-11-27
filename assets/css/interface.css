@@ -977,3 +977,7 @@ label:has(> .ui-switch) {
 @media(max-width:600px) { .escala-filtro label { flex-basis:100%; } }
 .escala-filtro label, .escala-filtro select, .escala-filtro p { min-width:0; }
 .escala-filtro p { overflow-wrap:anywhere; }
+/* Motivos das opções de folga indisponíveis. */
+.folga-bloqueios { list-style: none; margin-bottom: 0; padding: 0; display: grid; gap: 4px; line-height: 1.45; }
+.folga-bloqueios b { color: #33465b; }
+html[data-theme="dark"] .folga-bloqueios b { color: #d3deea; }
