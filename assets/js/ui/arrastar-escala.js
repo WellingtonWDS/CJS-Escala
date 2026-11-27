@@ -46,7 +46,16 @@ export function bindArrasteEscala({
       if (a.id !== b.id) throw Error("Escolha dois dias do mesmo colaborador.");
       const anterior = state.escalaGerada,
         assinatura = assinaturaAjustes(state);
-      const nova = trocarDias(state, a.id, a.d.data, b.d.data);
+      // Horário fora do funcionamento do dia de destino: propõe encaixá-lo nesse período.
+      let nova, ajustes = null;
+      try {
+        nova = trocarDias(state, a.id, a.d.data, b.d.data);
+      } catch (erro) {
+        if (!erro.ajustesFuncionamento) throw erro;
+        ajustes = erro.ajustesFuncionamento;
+        nova = trocarDias(state, a.id, a.d.data, b.d.data, { ajustarFuncionamento: true });
+      }
+      delete nova.ajustesFuncionamento;
       const rel = nova.coberturaOperacional;
       const faltas = (r) =>
         (r?.lacunas || []).reduce(
@@ -54,7 +63,12 @@ export function bindArrasteEscala({
           0,
         );
       const mensagem = `Trocar ${state.modeloEscala === "fixa" ? DIAS_SEMANA[a.d.weekday] : formatDateBR(dateFromKey(a.d.data))} e ${state.modeloEscala === "fixa" ? DIAS_SEMANA[b.d.weekday] : formatDateBR(dateFromKey(b.d.data))}?${state.modeloEscala === "fixa" ? " A troca se repetirá em todas as semanas do padrão." : ""}\nOs horários completos acompanham o trabalho.\n${rel?.configurada && rel.periodos?.length && !rel.avisos?.length ? `Lacunas de cobertura: ${fmtHoras(faltas(anterior.coberturaOperacional))} → ${fmtHoras(faltas(rel))} horas-pessoa. Confira as faixas após aplicar.` : "Cobertura operacional não avaliada."}`;
-      if (!(await env.confirm(mensagem, { title: "Confirmar troca de dias" })))
+      const aviso = ajustes
+        ? `${ajustes.map((x) => `${x.dia[0].toUpperCase()}${x.dia.slice(1)} funciona das ${x.funcionamento.replace("–", " às ")}. O horário ${x.antes} não cabe nesse dia e será ajustado para ${x.depois} (${x.horasDepois} de trabalho no dia, antes ${x.horasAntes}).`).join("\n")}\nA carga da semana pode ficar menor; confira o resumo semanal depois da troca.\n\n`
+        : "";
+      if (!(await env.confirm(aviso + mensagem, ajustes
+        ? { title: "Ajustar ao horário de funcionamento", confirmText: "Ajustar e trocar" }
+        : { title: "Confirmar troca de dias" })))
         return;
       if (
         state.escalaGerada !== anterior ||

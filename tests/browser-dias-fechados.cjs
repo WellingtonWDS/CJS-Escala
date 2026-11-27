@@ -21,7 +21,8 @@ module.exports = async ({ browser, baseURL }) => {
       await page.locator('[data-etapa-link="sec-gerar"]').click();
       await clicarCalculo(page, "#btn-converter");
       const saved = () => page.evaluate(() => JSON.parse(localStorage.getItem("fintria-escala-dp-v2")));
-      const snapshot = await saved(), config = snapshot.conversao.proposta.config;
+      let snapshot = await saved();
+      const config = snapshot.conversao.proposta.config;
       const r = config.escalaGerada.resultado[0];
       const dias = diasDoModelo(config, r.dias);
       const seg = dias.find(d => d.weekday === 1 && d.status === "T");
@@ -58,12 +59,25 @@ module.exports = async ({ browser, baseURL }) => {
       await form.locator("[data-dialog-accept]").click();
       await bloqueado();
       const sab = dias.find(d => d.weekday === 6 && d.data > seg.data);
+      // Sábado reduzido: a troca propõe encaixar o horário no funcionamento do dia.
+      const confirmar = page.locator('dialog[data-app-dialog="confirm"][open]');
       await card(seg).dragTo(card(sab));
-      await bloqueado(/funcionamento da empresa.*Sáb.*08:00–12:00/);
+      await confirmar.waitFor();
+      assert.match(await confirmar.textContent(), /Ajustar ao horário de funcionamento[\s\S]*Sábado funciona das 08:00 às 12:00[\s\S]*será ajustado para 08:00–12:00, sem intervalo/);
+      await confirmar.locator("[data-dialog-cancel]").click();
+      await confirmar.waitFor({ state: "hidden" });
+      assert.deepEqual(await saved(), snapshot, "cancelar não altera a escala");
       await panel.locator("[data-troca-selecionar]").click();
       await card(sab).click();
       await card(seg).click();
-      await bloqueado(/funcionamento da empresa.*Sáb.*08:00–12:00/);
+      await confirmar.waitFor();
+      assert.match(await confirmar.locator("[data-dialog-accept]").textContent(), /Ajustar e trocar/);
+      await confirmar.locator("[data-dialog-accept]").click();
+      await confirmar.waitFor({ state: "hidden" });
+      await page.waitForFunction((data) => JSON.parse(localStorage.getItem("fintria-escala-dp-v2")).conversao.proposta.config.escalaGerada.resultado[0].dias.find((d) => d.data === data).status === "T", sab.data);
+      const ajustado = (await saved()).conversao.proposta.config.escalaGerada.resultado[0].dias.find((d) => d.data === sab.data);
+      assert.deepEqual([ajustado.entradaMin, ajustado.saidaMin, ajustado.intervaloInicioMin ?? null], [480, 720, null]);
+      snapshot = await saved();
       for (const [entrada,saida] of [["07:59","12:00"],["09:00","13:00"],["08:00","12:01"]]) {
         await card(sab).click();
         await prompt.waitFor();
@@ -76,7 +90,7 @@ module.exports = async ({ browser, baseURL }) => {
         await bloqueado(/funcionamento da empresa.*08:00–12:00/);
       }
       assert.deepEqual(errors, []);
-      console.log(`OK: ${fixa ? "fixa" : "dinâmica"} bloqueia domingo fechado e sábado fora de 08–12 por arraste, seleção e formulário, sem alterar dados salvos.`);
+      console.log(`OK: ${fixa ? "fixa" : "dinâmica"} bloqueia domingo fechado, ajusta a troca ao sábado de 08–12 após confirmação e bloqueia horário fora do funcionamento no formulário.`);
     } finally { await ctx.close(); }
   }
 };

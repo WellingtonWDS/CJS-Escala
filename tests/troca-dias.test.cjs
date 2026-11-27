@@ -37,7 +37,7 @@ test("empresa fechada impede troca de trabalho com domingo nos dois sentidos, mo
     }
   }
 });
-test("sábado reduzido bloqueia jornada longa nos dois sentidos antes dos avisos legais, sem troca parcial", async () => {
+test("sábado reduzido: sem confirmação nada muda; com confirmação o horário cabe no funcionamento", async () => {
   const { trocarDias } = await import("../assets/js/domain/troca-dias.js");
   for (const fixa of [false, true]) for (const atual of [false, true]) {
     const s = await estado(fixa, false, atual), r = s.escalaGerada.resultado[0];
@@ -45,10 +45,33 @@ test("sábado reduzido bloqueia jornada longa nos dois sentidos antes dos avisos
     const b = r.dias.find(d => d.weekday === 6 && d.data > a.data);
     const snapshot = structuredClone(s);
     for (const [de, para] of [[a,b],[b,a]]) {
-      assert.throws(() => trocarDias(s,r.colaborador.id,de.data,para.data), /funcionamento da empresa.*Sáb.*08:00–12:00/);
+      let erro;
+      assert.throws(() => { try { trocarDias(s,r.colaborador.id,de.data,para.data); } catch (e) { erro = e; throw e; } }, /não cabe no funcionamento de sábado \(08:00–12:00\)/);
+      assert.equal(erro.ajustesFuncionamento[0].dia, "sábado");
+      assert.match(erro.ajustesFuncionamento[0].depois, /^08:00–12:00, sem intervalo$/);
       assert.deepEqual(s,snapshot);
+      const nova = trocarDias(s,r.colaborador.id,de.data,para.data,{ ajustarFuncionamento: true });
+      assert.deepEqual(s,snapshot, "o estado original não muda");
+      const sab = nova.resultado[0].dias.find(d => d.data === b.data);
+      assert.equal(sab.status, "T");
+      assert.equal(sab.entradaMin, 480);
+      assert.equal(sab.saidaMin, 720);
+      assert.equal(sab.intervaloInicioMin ?? null, null);
+      assert.equal(nova.resultado[0].dias.find(d => d.data === a.data).status, b.status === "F" ? "F" : "T", "a segunda recebe o que havia no sábado");
     }
   }
+});
+test("ajuste ao funcionamento: intervalo pela duração do trabalho e limite de horas do dia", async () => {
+  const { ajustarAoFuncionamento } = await import("../assets/js/domain/troca-dias.js");
+  const seg = { entrada: "08:00", intInicio: "11:00", intFim: "13:00", saida: "18:00" };
+  // Sábado 08h–14h: 5h45 de trabalho com 15 min de intervalo no início do intervalo original.
+  assert.deepEqual(ajustarAoFuncionamento(seg, { entrada: 480, saida: 840 }), { entrada: "08:00", saida: "14:00", intInicio: "11:00", intFim: "11:15" });
+  // Limite de 4h no dia: sem intervalo.
+  assert.deepEqual(ajustarAoFuncionamento(seg, { entrada: 480, saida: 840 }, { maxTrabalho: 240 }), { entrada: "08:00", saida: "12:00", intInicio: "", intFim: "" });
+  // Período maior: mantém o intervalo original de 2h quando ainda sobra mais de 6h.
+  assert.deepEqual(ajustarAoFuncionamento({ entrada: "08:00", intInicio: "12:00", intFim: "14:00", saida: "18:00" }, { entrada: 540, saida: 1080 }), { entrada: "09:00", saida: "18:00", intInicio: "12:00", intFim: "14:00" });
+  // Funcionamento curto demais para o trabalho.
+  assert.equal(ajustarAoFuncionamento(seg, { entrada: 480, saida: 520 }), null);
 });
 test("troca atômica por data e padrão, horários completos, origem intacta e desfazer", async () => {
   const { trocarDias, desfazerTroca } =
