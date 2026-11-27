@@ -68,3 +68,35 @@
 html[data-theme="dark"] .busca-auditoria { --busca-linha:var(--dark-line); --busca-fundo:var(--dark-raised); }
 .diagnostico-premissas { padding: 0 16px 16px; }
 .diagnostico-subtitulo { font-size: 15px; font-weight: 700; margin-top: 20px; }
+/* Conferência com o diagnóstico da empresa. */
+[data-diag-conferencia] .conf-nota { font-size: 12.5px; color: #52657c; margin: 0 0 10px; line-height: 1.5; }
+.conf-topo { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; margin-bottom: 12px; }
+.conf-topo label { display: grid; gap: 4px; font-size: 12px; font-weight: 600; color: #52657c; }
+.conf-topo select { min-height: 38px; padding: 6px 10px; border: 1px solid #b5c5d8; border-radius: 7px; background: #fff; font: inherit; font-size: 13px; }
+.conf-topo button { min-height: 38px; padding: 6px 14px; border: 1px solid #cbd5e1; border-radius: 7px; background: #fff; font-weight: 600; font-size: 13px; cursor: pointer; }
+.conf-resumo { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
+.conf-selo { padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #eef2f5; color: #3d4f62; }
+.conf-selo[data-nivel="divergencia"] { background: #fdecec; color: #9b2c30; }
+.conf-selo[data-nivel="alerta"] { background: #fff4dd; color: #8a4b00; }
+.conf-selo[data-nivel="conferir"] { background: #e7f0fa; color: #1f5d99; }
+.conf-selo[data-nivel="ok"] { background: #e5f4ed; color: #105c43; }
+.conf-lista { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 8px; }
+.conf-lista li { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 12px; padding: 10px 12px; border: 1px solid #dbe4ef; border-left: 4px solid #9fb0c2; border-radius: 8px; background: #fff; }
+.conf-lista li[data-nivel="divergencia"] { border-left-color: #b43d41; }
+.conf-lista li[data-nivel="alerta"] { border-left-color: #b87913; }
+.conf-lista li[data-nivel="conferir"] { border-left-color: #2f6fae; }
+.conf-lista li[data-nivel="ok"] { border-left-color: #087e63; }
+.conf-nivel { font-size: 11px; font-weight: 750; letter-spacing: .05em; text-transform: uppercase; color: #52657c; padding-top: 2px; }
+.conf-lista p { margin: 0; font-size: 13px; line-height: 1.5; color: #33465b; overflow-wrap: anywhere; }
+.conf-lista .conf-titulo { font-weight: 700; color: #102b49; margin-bottom: 2px; }
+.conf-titulo small { font-weight: 600; color: #8a4b00; }
+@media (max-width: 600px) { .conf-lista li { grid-template-columns: 1fr; gap: 4px; } }
+html[data-theme="dark"] .conf-lista li, html[data-theme="dark"] .conf-topo select, html[data-theme="dark"] .conf-topo button { background: #162130; border-color: #3b4e66; color: #e8eef7; }
+html[data-theme="dark"] .conf-lista p, html[data-theme="dark"] [data-diag-conferencia] .conf-nota, html[data-theme="dark"] .conf-nivel, html[data-theme="dark"] .conf-topo label { color: #b1bfd2; }
+html[data-theme="dark"] .conf-lista .conf-titulo { color: #e8eef7; }
+html[data-theme="dark"] .conf-titulo small { color: #ffdaa0; }
+html[data-theme="dark"] .conf-selo { background: #24354a; color: #d3deea; }
+html[data-theme="dark"] .conf-selo[data-nivel="divergencia"] { background: #4a1f24; color: #ffc9cc; }
+html[data-theme="dark"] .conf-selo[data-nivel="alerta"] { background: #3b2f1b; color: #ffdaa0; }
+html[data-theme="dark"] .conf-selo[data-nivel="conferir"] { background: #1a354e; color: #a9cdf5; }
+html[data-theme="dark"] .conf-selo[data-nivel="ok"] { background: #143b30; color: #9ae8c6; }

@@ -93,6 +93,7 @@ if (session) {
     planControl = initPlanControl({ document, window, workspace, state: app.state });
     env.planGate = planControl.exigir;
     env.empresaServidor = planControl.empresa;
+    env.contextoServidor = () => workspace.context();
     // Marca do escritório para os relatórios PDF (cache por escritório; renovado ao salvar).
     const { createBrandingService } = await import("./services/branding.js");
     const branding = createBrandingService(), marcas = new Map();

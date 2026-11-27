@@ -57,6 +57,10 @@ Limite de empresas por CNPJ no ciclo mensal, limite de colaboradores, troca de q
 ## Página pública /sobre — 18/11/2026
 
 Apresentação do sistema sem login em `/sobre` (pasta `sobre/` publicada pelo build), com contato por WhatsApp e acesso ao login. Guard libera somente `/sobre` e seus arquivos. Validação: teste de acesso e de navegador (desktop/celular, temas).
+## Conferência com o diagnóstico — 27/11/2026
+
+Painel na etapa de conversão que confere a proposta 5×2 com o diagnóstico da empresa aberta: funcionamento, mínimo por função, alterações aceitas, ACT/CCT, comércio, equipe, implantação e prioridade. Itens por nível (divergência, alerta, conferir, coerente). Sem SQL, RPC ou variável nova.
+
 ## Termo aditivo da EC 141 — 18/11/2026
 
 Modelo de termo aditivo por colaborador, em PDF e Word (ZIP com LEIA-ME), gerado a partir da proposta 5×2 na etapa Conversão e comparação, com prévia na tela. O botão **Gerar termo aditivo** abre um modal para escolher as cláusulas (adequação à EC 141 e complementares) e baixar em PDF ou Word. Texto justificado; CPF do empregado, salário e fundamento da distribuição diária em branco; modelo de referência a conferir pela assessoria. Sem SQL, RPC, variável ou dependência nova.
