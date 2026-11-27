@@ -1,6 +1,6 @@
 import { escapeHtml as e } from "../shared/formatacao.js";
 import { fmtHoras, minToTime, formatDateBR, dateFromKey } from "../domain/datas-horas.js";
-import { escalaFixa } from "../domain/modelo-escala.js";
+import { escalaFixa, explicacaoSemanaFixa } from "../domain/modelo-escala.js";
 import { renderDiagnosticoEquipe } from "./diagnostico-equipe.js";
 import { analisarRateioSemanal } from "../domain/rateio-semanal.js";
 
@@ -50,6 +50,7 @@ export function renderDetalhesConversao(c) {
   const m = c.comparacao, config = c.proposta.config, fixa = escalaFixa(config);
   const hora = n => n === 1440 ? "24:00" : minToTime(n);
   return `<section class="diagnostico-conversao"><h3>${fixa ? "Comparação dos padrões semanais · 6×1 → 5×2" : "Comparação e suficiência da equipe"}</h3><p id="conversao-diagnostico">${c.desatualizada ? "Comparação desatualizada. Gere novamente antes de utilizar." : m.baseCobertura === "escala_atual" ? (m.status === "insuficiente" ? "O quadro atual é insuficiente para manter a presença atual, se essa cobertura continuar necessária." : "Sem demanda operacional confirmada, não é possível concluir se a equipe atende toda a empresa. A comparação usa a presença da escala atual.") : titulos[m.status]}</p>
+  ${fixa && !c.desatualizada && explicacaoSemanaFixa(config) ? `<aside class="diagnostico-nota" data-semana-calculo><p><b>Semana de cálculo.</b> ${e(explicacaoSemanaFixa(config))}</p></aside>` : ""}
   ${c.desatualizada ? "" : renderDiagnosticoEquipe(m.diagnostico)}
   ${rateios(config)}
   ${c.desatualizada ? "" : domingos(m)}
@@ -60,5 +61,5 @@ export function renderDetalhesConversao(c) {
   ${tabela("Capacidade por função no período",["Função","Demanda (h-pessoa)","Trabalho proposto (h)","Lacunas (h-pessoa)","Pico de faltantes","Explicação"],m.funcoes.map(f=>`<tr><th scope="row">${e(f.funcao)}</th><td>${fmtHoras(f.necessarias)}</td><td>${fmtHoras(f.disponiveis)}</td><td>${fmtHoras(f.faltantes)}</td><td>${f.pico}</td><td>${e(f.insuficiencias.join(" ") || (f.faltantes ? "Revise a distribuição: insuficiência do quadro não comprovada." : "Referência atendida."))}</td></tr>`))}
   ${tabela(fixa ? "Antes e depois por colaborador — semana recorrente" : "Antes e depois por colaborador — mesmo mês da proposta",["Colaborador","Função","Horas 6×1 → 5×2","Dias de trabalho","Dias sem trabalho","Semanas abaixo do alvo"],m.pessoas.map(p=>`<tr><th scope="row">${e(p.nome)}</th><td>${e(p.funcao || "Não informada")}</td><td>${fmtHoras(p.horasAntes)} → ${fmtHoras(p.horasDepois)}</td><td>${p.diasAntes} → ${p.diasDepois}</td><td>${p.folgasAntes} → ${p.folgasDepois}</td><td>${p.deficits}</td></tr>`))}
   ${m.lacunas.length ? tabela(`Horários descobertos (${m.lacunas.length} faixas)`,[fixa?"Referência da semana":"Data","Função","Horário","Necessários","Presentes","Faltantes"],m.lacunas.map(l=>`<tr><td>${formatDateBR(dateFromKey(l.data))}</td><td>${e(l.funcao)}</td><td>${hora(l.inicioMin)}–${hora(l.fimMin)}</td><td>${l.necessarios}</td><td>${l.presentes}</td><td>${l.faltantes}</td></tr>`)) : ""}
-  <p class="diagnostico-rodape">A origem foi preservada. ${fixa ? "Uma semana recorrente, sem feriados; a data de referência determina a fase jurídica." : `Os dois padrões foram comparados em ${config.mes + 1}/${config.ano}, com feriados e restrições desse período.`} Saldo de horas não garante cobertura em todos os horários. A análise orienta a decisão e não certifica a regularidade da escala.</p></section>`;
+  <p class="diagnostico-rodape">A origem foi preservada. ${fixa ? "Uma semana recorrente, sem feriados; as datas são da semana de cálculo explicada acima, e a data de referência determina a fase jurídica." : `Os dois padrões foram comparados em ${config.mes + 1}/${config.ano}, com feriados e restrições desse período.`} Saldo de horas não garante cobertura em todos os horários. A análise orienta a decisão e não certifica a regularidade da escala.</p></section>`;
 }

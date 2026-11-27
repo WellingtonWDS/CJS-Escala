@@ -47,6 +47,7 @@ module.exports = async ({ browser, baseURL }) => {
     assert.equal(convertido.conversao.comparacao.status,'suficiente');
     assert.equal(await page.locator('#resultado-proposta [data-fixo-colaborador]').count(),5);
     assert.match(await page.locator('#conversao-comparacao').textContent(),/semanais/);
+    assert.match(await page.locator('#conversao-comparacao [data-semana-calculo]').textContent(),/Semana de cálculo\. Na escala mensal fixa.*primeira semana completa.*= todos os sábados/);
     const [download]=await Promise.all([page.waitForEvent('download'),baixarCsvLegado(page, true)]);
     assert.equal(download.suggestedFilename(),'proposta-5x2-fixa.csv');
     await page.setViewportSize({width:390,height:844});

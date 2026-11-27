@@ -1,6 +1,21 @@
 import { addDays, dateFromKey, getMonday, isoDate } from "./datas-horas.js";
 
 export const escalaFixa = (config) => config.modeloEscala === "fixa";
+
+const MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+const SEMANA = ["domingo", "segunda-feira", "terça-feira", "quarta-feira", "quinta-feira", "sexta-feira", "sábado"];
+/** Explica por que as datas da análise da escala fixa são as da semana de cálculo,
+ * e não a data de referência informada. Vazio fora da escala fixa. */
+export function explicacaoSemanaFixa(config) {
+  if (!escalaFixa(config)) return "";
+  let periodo;
+  try { periodo = periodoModelo(config); } catch { return ""; }
+  const ref = dateFromKey(config.dataReferenciaFixa), inicio = dateFromKey(periodo.inicio);
+  const primeiro = new Date(ref.getFullYear(), ref.getMonth(), 1);
+  const br = (d) => `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
+  const mes = `${MESES[ref.getMonth()]} de ${ref.getFullYear()}`;
+  return `Na escala mensal fixa, as contas usam a primeira semana completa, de segunda a domingo, do mês da data de referência. A data de referência é ${br(ref)}; ${mes} começa ${primeiro.getDay() === 0 || primeiro.getDay() === 6 ? "num" : "numa"} ${SEMANA[primeiro.getDay()]}, então a primeira semana completa vai de segunda ${br(inicio)} a domingo ${br(addDays(inicio, 6))}. As datas desta análise são dessa semana e valem para o mesmo dia da semana em todas as semanas (por exemplo, ${br(addDays(inicio, 5))} = todos os sábados). A fase da jornada segue a data de referência, não essa semana.`;
+}
 export function dataReferenciaFixa(config) {
   const value = config.dataReferenciaFixa;
   const date = typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)

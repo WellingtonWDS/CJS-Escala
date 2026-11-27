@@ -190,3 +190,11 @@ test('descanso interjornada continua sendo verificado na passagem de domingo par
   const e=domain(s).gerarDadosEscala();
   assert(erros(e).some(i=>i.tipo==='INTERJORNADA' && i.mensagem.includes('abaixo de 11h')));
 });
+test('escala fixa explica a semana de cálculo usada nas datas da análise',async()=>{
+  const {explicacaoSemanaFixa}=await import('../assets/js/domain/modelo-escala.js');
+  const texto=explicacaoSemanaFixa({modeloEscala:'fixa',dataReferenciaFixa:'2026-12-16',colaboradores:[]});
+  assert.match(texto,/data de referência é 16\/12\/2026; dezembro de 2026 começa numa terça-feira, então a primeira semana completa vai de segunda 07\/12\/2026 a domingo 13\/12\/2026/);
+  assert.match(texto,/12\/12\/2026 = todos os sábados/);
+  assert.match(explicacaoSemanaFixa({modeloEscala:'fixa',dataReferenciaFixa:'2027-02-10',colaboradores:[]}),/começa numa segunda-feira, então a primeira semana completa vai de segunda 01\/02\/2027/);
+  assert.equal(explicacaoSemanaFixa({modeloEscala:'dinamica',colaboradores:[]}),'');
+});

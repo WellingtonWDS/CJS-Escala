@@ -10,6 +10,7 @@ import {
 } from "../domain/datas-horas.js";
 import { validarDemanda, normalizarFuncao } from "../domain/cobertura.js";
 import { escapeHtml } from "../shared/formatacao.js";
+import { explicacaoSemanaFixa } from "../domain/modelo-escala.js";
 const hora = (m) => (m === 1440 ? "24:00" : minToTime(m));
 
 export function createCoberturaUI({
@@ -159,7 +160,8 @@ export function createCoberturaUI({
       : relatorio.periodos.length
         ? '<p class="text-fintria-verde">Todas as faixas aplicáveis estão cobertas na escala atual.</p>'
         : '<p class="text-slate-500">Nenhuma faixa válida se aplica ao período selecionado. Confira os dias da semana, o dia inicial e a opção de feriados.</p>';
-    return `${renderDiagnosticoEquipe(diagnosticarEquipe(state, resultado, relatorio))}<section id="relatorio-cobertura" class="border rounded-lg p-4 mb-4">${titulo}${avisos}${conteudo}<p class="text-xs text-slate-500 mt-2">Presentes = pessoas alocadas na função para a qual estão habilitadas e trabalhando no período, sem contar intervalos, folgas ou funções diferentes. Horas-pessoa somam a duração de cada falta multiplicada pela quantidade necessária.</p></section>`;
+    const semana = explicacaoSemanaFixa(state);
+    return `${semana ? `<aside class="diagnostico-nota" data-semana-calculo><p><b>Semana de cálculo.</b> ${escapeHtml(semana)}</p></aside>` : ""}${renderDiagnosticoEquipe(diagnosticarEquipe(state, resultado, relatorio))}<section id="relatorio-cobertura" class="border rounded-lg p-4 mb-4">${titulo}${avisos}${conteudo}<p class="text-xs text-slate-500 mt-2">Presentes = pessoas alocadas na função para a qual estão habilitadas e trabalhando no período, sem contar intervalos, folgas ou funções diferentes. Horas-pessoa somam a duração de cada falta multiplicada pela quantidade necessária.</p></section>`;
   }
   function bindEvents() {
     document.getElementById("tg-cobertura").onchange = (e) => {
