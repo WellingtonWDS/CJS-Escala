@@ -454,10 +454,14 @@ html[data-theme="dark"] .readonly-banner { background: #3a2a0c; border-color: #8
 html[data-theme="dark"] .workspace-plan { color: #b1bfd2; }
 html[data-theme="dark"] .workspace-plan[data-alerta="true"] { color: #f2c46d; }
 /* Empresa aberta no cabeçalho (computador). */
-.header-empresa { display: inline-flex; flex-direction: column; align-items: flex-end; max-width: 300px; margin-right: 6px; line-height: 1.25; color: #102b49; }
+.header-acoes { flex: 1 1 0; justify-content: flex-end; min-width: 0; }
+/* No computador, o nome da empresa quebra em linhas; os botões ficam na mesma linha. */
+@media (min-width: 1280px) { .header-acoes { flex-wrap: nowrap; } .header-acoes > button { flex-shrink: 0; } }
+.header-empresa { display: inline-flex; flex-direction: column; align-items: flex-end; flex: 0 1 340px; min-width: 140px; margin-right: 6px; line-height: 1.25; color: #102b49; }
 .header-empresa small { font-size: 10px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #52657c; }
-.header-empresa strong { max-width: 100%; font-size: 13px; font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.header-empresa strong { max-width: 100%; font-size: 13px; font-weight: 650; text-align: right; white-space: normal; overflow-wrap: anywhere; }
 .header-empresa[hidden] { display: none; }
-@media (max-width: 900px) { .header-empresa { display: none; } }
+@media (max-width: 900px) { .header-empresa { display: none; } .header-acoes { flex: 0 1 auto; } }
 html[data-theme="dark"] .header-empresa { color: #e8eef7; }
 html[data-theme="dark"] .header-empresa small { color: #b1bfd2; }
+@media (min-width: 1024px) { .app-header > div:first-child { flex-shrink: 0; } }
