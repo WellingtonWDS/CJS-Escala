@@ -256,7 +256,7 @@ export function createCalendarioUI({
     }));
     const cobertura = validarCobertura(resultado);
     const coberturaBasica = cobertura.length
-      ? `<p class="text-sm border rounded-lg p-3 mb-3"><b>Confira a cobertura:</b> ${cobertura.map((x) => escapeHtml(x.mensagem)).join(" ")}</p>` : "";
+      ? `<div data-cobertura-basica class="text-sm"><b>Confira a cobertura:</b><ul>${cobertura.map((x) => `<li>${escapeHtml(x.mensagem)}</li>`).join("")}</ul></div>` : "";
     let html = renderAvisosEscala(validacoes, { erros: true });
 
     // ---------------------------------------------------------

@@ -60,5 +60,7 @@ export function bindConferenciaDiagnostico(state, env, service = createDiagnosti
     alvo.querySelector("[data-conf-repetir]").addEventListener("click", conferir);
     await conferir();
   }
+  // A aba "Conferência com o diagnóstico" chama a conferência ao ser aberta.
+  painel._conferir = abrir;
   painel.ontoggle = () => { if (painel.open) abrir(); };
 }

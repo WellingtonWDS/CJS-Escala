@@ -1,0 +1,92 @@
+/* Etapa Conversão e comparação: resumo compacto, faixa de ações e abas. */
+.conv-resultados { margin-top: 28px; padding-top: 24px; border-top: 1px solid #e2e8f0; }
+.conv-titulo { font-size: 1.15rem; font-weight: 650; color: #102b49; margin: 0 0 14px; }
+
+/* Resumo da decisão: texto à esquerda, indicadores clicáveis à direita. */
+#conversao-visao-geral .diagnostico-executivo { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 6px 24px; align-items: start; margin: 0 0 16px; padding: 18px 22px; border-radius: 14px; border-top-width: 0; border-left: 5px solid #b87913; }
+#conversao-visao-geral .diagnostico-executivo[data-situacao="suficiente"] { border-left-color: #087e63; }
+#conversao-visao-geral .diagnostico-executivo[data-situacao="insuficiente"], #conversao-visao-geral .diagnostico-executivo[data-situacao="incompativel"] { border-left-color: #b43d41; }
+#conversao-visao-geral .diagnostico-executivo h3 { font-size: 1.12rem; margin: 0 0 4px; }
+#conversao-visao-geral .diagnostico-executivo-texto p { font-size: 13px; color: #52657c; margin: 0; }
+#conversao-visao-geral .diagnostico-etiqueta { margin-bottom: 4px; }
+#conversao-visao-geral .diagnostico-indicadores { margin: 0; gap: 8px; }
+#conversao-visao-geral .diagnostico-indicadores button { text-align: left; border: 1px solid #dce5ee; border-radius: 10px; padding: 10px 12px; background: #fff; font: inherit; color: inherit; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
+#conversao-visao-geral .diagnostico-indicadores button:hover { border-color: #9fb3c8; box-shadow: 0 4px 14px #102b4914; }
+#conversao-visao-geral .diagnostico-indicadores button:focus-visible { outline: 3px solid #237cbe; outline-offset: 2px; }
+#conversao-visao-geral .diagnostico-indicadores strong { font-size: 20px; margin: 2px 0; }
+#conversao-visao-geral .diagnostico-indicadores span, #conversao-visao-geral .diagnostico-indicadores small { font-size: 11.5px; line-height: 1.35; }
+#conversao-visao-geral .diagnostico-indicadores [data-erro="true"] strong { color: #b43d41; }
+#conversao-visao-geral .diagnostico-indicadores [data-alerta="true"] strong { color: #9a5b00; }
+#conversao-visao-geral .diagnostico-proximo { grid-column: 1 / -1; margin: 6px 0 0; padding-top: 10px; font-size: 13.5px; }
+
+/* Faixa de ações: ajustar a escala e documentos, sempre visíveis. */
+.conv-acoes { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 14px; align-items: start; margin-bottom: 22px; }
+.conv-card { border: 1px solid #cfdbe7; border-radius: 14px; background: linear-gradient(180deg, #f7fbff, #fff 60%); padding: 18px 20px; box-shadow: 0 6px 20px #102b490d; min-width: 0; }
+.conv-card-titulo, .conv-card-ajustes section > h3 { font-family: "Space Grotesk", Inter, sans-serif; font-size: 1rem !important; font-weight: 650; color: #102b49; margin: 0 0 4px !important; }
+.conv-card-texto, .conv-card-ajustes .ajustes-resumo { font-size: 13px !important; color: #52657c !important; margin: 0 0 12px !important; }
+.conv-botoes { display: flex; flex-wrap: wrap; gap: 8px; }
+.conv-btn, .conv-card-ajustes [data-ajuste-desfazer], .conv-card-ajustes [data-ajuste-cancelar], .conv-card-ajustes [data-ajuste-configurar] {
+  min-height: 42px; padding: 9px 16px !important; border: 1px solid #b8c7d6 !important; border-radius: 9px !important; background: #fff; color: #102b49; font-weight: 600; font-size: 14px !important; cursor: pointer;
+}
+.conv-btn:hover { border-color: #7f96ad !important; background: #f4f8fb; }
+.conv-btn-pri, .conv-card-ajustes [data-ajuste-buscar] {
+  min-height: 42px; padding: 9px 18px !important; border: 1px solid #167455 !important; border-radius: 9px !important; background: #167455 !important; color: #fff !important; font-weight: 650; font-size: 14px !important; box-shadow: 0 4px 12px #16745533; cursor: pointer;
+}
+.conv-btn-pri:hover, .conv-card-ajustes [data-ajuste-buscar]:hover:not(:disabled) { background: #105c43 !important; }
+.conv-card-ajustes [data-ajuste-buscar]:disabled { opacity: .55; box-shadow: none; cursor: not-allowed; }
+.conv-card-ajustes section { border: 0 !important; background: transparent !important; padding: 0 !important; margin: 0 !important; }
+.conv-card-ajustes[hidden] { display: none; }
+.conv-mais { margin-top: 12px; font-size: 13px; color: #52657c; }
+.conv-mais > summary, .ajustes-como > summary { cursor: pointer; font-weight: 600; color: #1f5d99; font-size: 13px; }
+.conv-mais p { margin: 8px 0 0; line-height: 1.55; }
+
+/* Abas. */
+.conv-abas { display: flex; gap: 4px; border-bottom: 1px solid #d9e2ec; margin-bottom: 16px; overflow-x: auto; scrollbar-width: thin; }
+.conv-abas [role="tab"] { flex-shrink: 0; border-radius: 0; display: inline-flex; align-items: center; gap: 8px; padding: 11px 16px; border: 0; border-bottom: 3px solid transparent; background: none; color: #52657c; font-weight: 600; font-size: 14px; cursor: pointer; margin-bottom: -1px; }
+.conv-abas [role="tab"]:hover { color: #102b49; }
+.conv-abas [role="tab"][aria-selected="true"] { color: #102b49; border-bottom-color: #167455; }
+.conv-abas [role="tab"]:focus-visible { outline: 3px solid #237cbe; outline-offset: -3px; border-radius: 6px; }
+.conv-contador { min-width: 22px; padding: 1px 7px; border-radius: 999px; font-size: 12px; font-weight: 700; text-align: center; background: #fff4dd; color: #8a4b00; }
+.conv-contador[data-nivel="erro"] { background: #fdecec; color: #9b2c30; }
+.conv-painel-intro { font-size: 13px; color: #52657c; margin: 0 0 12px; }
+#conv-painel-analise .diagnostico-conversao { margin-top: 0; border: 0; padding: 0; background: transparent; }
+#conv-painel-analise .diagnostico-conversao > h3 { margin-bottom: 4px; }
+/* "Confira a cobertura" na aba Pontos de atenção. */
+[data-cobertura-basica] { border: 1px solid #ecd9b3 !important; border-left: 4px solid #b87913 !important; border-radius: 10px !important; background: #fffaf0; padding: 12px 16px !important; margin-bottom: 12px; }
+[data-cobertura-basica] ul { margin: 6px 0 0; padding-left: 18px; list-style: disc; }
+[data-cobertura-basica] li { margin: 2px 0; }
+html[data-theme="dark"] [data-cobertura-basica] { background: #3b2f1b !important; border-color: #6b5530 !important; border-left-color: #d89a3a !important; color: #f3e6cf; }
+
+@media (max-width: 900px) {
+  #conversao-visao-geral .diagnostico-executivo, .conv-acoes { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  #conversao-visao-geral .diagnostico-executivo { padding: 14px 16px; }
+  #conversao-visao-geral .diagnostico-indicadores { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+  #conversao-visao-geral .diagnostico-indicadores button { padding: 8px; }
+  #conversao-visao-geral .diagnostico-indicadores strong { font-size: 17px; }
+  #conversao-visao-geral .diagnostico-indicadores span, #conversao-visao-geral .diagnostico-indicadores small { font-size: 10.5px; }
+  .conv-botoes > button, .conv-card-ajustes .flex > button { flex: 1 1 100%; }
+  .conv-abas [role="tab"] { padding: 10px 12px; font-size: 13px; }
+}
+@media print {
+  .conv-abas, .conv-acoes { display: none !important; }
+}
+
+html[data-theme="dark"] .conv-resultados { border-top-color: #3b4e66; }
+html[data-theme="dark"] .conv-titulo, html[data-theme="dark"] .conv-card-titulo, html[data-theme="dark"] .conv-card-ajustes section > h3 { color: #e8eef7 !important; }
+html[data-theme="dark"] .conv-card { background: #162130; border-color: #3b4e66; box-shadow: none; }
+html[data-theme="dark"] .conv-card-texto, html[data-theme="dark"] .conv-card-ajustes .ajustes-resumo, html[data-theme="dark"] .conv-mais, html[data-theme="dark"] .conv-painel-intro { color: #b1bfd2 !important; }
+html[data-theme="dark"] .conv-mais > summary, html[data-theme="dark"] .ajustes-como > summary { color: #a9cdf5; }
+html[data-theme="dark"] .conv-card button.conv-btn:not(.conv-btn-pri), html[data-theme="dark"] .conv-card-ajustes [data-ajuste-desfazer], html[data-theme="dark"] .conv-card-ajustes [data-ajuste-cancelar], html[data-theme="dark"] .conv-card-ajustes [data-ajuste-configurar] { background: #1e2d40 !important; border-color: #7d93ae !important; color: #e8eef7 !important; }
+html[data-theme="dark"] .conv-card button.conv-btn-pri, html[data-theme="dark"] .conv-card-ajustes button[data-ajuste-buscar] { background: #087657 !important; border-color: #9ae8c6 !important; color: #fff !important; }
+html[data-theme="dark"] .conv-abas { border-bottom-color: #3b4e66; }
+html[data-theme="dark"] .conv-abas button[role="tab"] { color: #b1bfd2 !important; background: none !important; border: 0 !important; border-bottom: 3px solid transparent !important; border-radius: 0 !important; }
+html[data-theme="dark"] .conv-abas button[role="tab"]:hover { color: #e8eef7 !important; background: none !important; }
+html[data-theme="dark"] .conv-abas button[role="tab"][aria-selected="true"] { color: #e8eef7 !important; border-bottom-color: #2fbf8f !important; }
+html[data-theme="dark"] .conv-contador { background: #3b2f1b; color: #ffdaa0; }
+html[data-theme="dark"] .conv-contador[data-nivel="erro"] { background: #4a1f24; color: #ffc9cc; }
+html[data-theme="dark"] #conversao-visao-geral .diagnostico-indicadores button { background: #162130 !important; border-color: #3b4e66 !important; color: #e8eef7 !important; }
+html[data-theme="dark"] #conversao-visao-geral .diagnostico-indicadores [data-erro="true"] strong { color: #ffb1b5; }
+html[data-theme="dark"] #conversao-visao-geral .diagnostico-indicadores [data-alerta="true"] strong { color: #ffd38a; }
+html[data-theme="dark"] #conversao-visao-geral .diagnostico-executivo-texto p { color: #b1bfd2 !important; }

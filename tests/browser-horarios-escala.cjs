@@ -54,7 +54,9 @@ module.exports=async({browser,baseURL})=>{
    await abrir(6,'T');await preencher({entrada:'08:00',intInicio:'',intFim:'',saida:'12:00'});await salvar();
    assert.match(await badge().getAttribute('class'),/text-fintria-vermelho/);
    assert.match(await resumo.textContent(),/44:00/);
-   assert(await result.locator('[data-erros-escala]').isVisible());
+   // Na proposta, a validação fica na aba "Pontos de atenção", com o contador em nível de erro.
+   assert(await page.locator('#conv-painel-atencao [data-erros-escala]').count());
+   assert.equal(await page.locator('[data-conv-contador]').getAttribute('data-nivel'),'erro');
    await abrir(6,'F');await page.waitForFunction(()=>!document.querySelector('dialog[open]'));
    assert.match(await badge().getAttribute('class'),/text-fintria-verde/);
    if(fixa){

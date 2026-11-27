@@ -78,13 +78,17 @@ module.exports = async function ({ browser, baseURL }) {
         ),
         true,
       );
-      const analises = container.locator("[data-analises-escala]");
+      // Na proposta, a validação fica na aba "Pontos de atenção".
+      const proposta = id === "resultado-proposta";
+      if (proposta) await page.locator('[data-conv-aba="atencao"]').click();
+      const analises = (proposta ? page.locator("#conv-painel-atencao") : container).locator("[data-analises-escala]");
       assert.equal(await analises.getAttribute("open"), null);
       await analises.locator("summary").first().click();
       await waitForDialogs(page);
       assert.ok(await analises.locator("div").first().isVisible());
       await analises.locator("summary").first().click();
       await waitForDialogs(page);
+      if (proposta) await page.locator('[data-conv-aba="escala"]').click();
       for (const viewport of [
         { width: 1280, height: 900 },
         { width: 640, height: 450 },

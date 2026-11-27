@@ -371,6 +371,7 @@ const { chromium } = require("playwright");
     await require("./browser-sobre.cjs")({ browser, baseURL: `http://127.0.0.1:${server.address().port}/` });
     await require("./browser-termo-aditivo.cjs")({ browser, baseURL: `http://127.0.0.1:${server.address().port}/` });
     await require("./browser-conferencia-diagnostico.cjs")({ browser, baseURL: `http://127.0.0.1:${server.address().port}/` });
+    await require("./browser-conversao-layout.cjs")({ browser, baseURL: `http://127.0.0.1:${server.address().port}/` });
     await require("./browser-planos.cjs")({ browser, baseURL: `http://127.0.0.1:${server.address().port}/` });
     await require("./browser-empresas.cjs")({ browser, baseURL: `http://127.0.0.1:${server.address().port}/` });
     await require("./browser-senha.cjs")({ browser, baseURL: `http://127.0.0.1:${server.address().port}/` });

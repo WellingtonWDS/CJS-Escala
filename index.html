@@ -19,6 +19,7 @@
 <link rel="stylesheet" href="./assets/css/empresas.css">
 <link rel="stylesheet" href="./assets/css/diagnosticos.css">
 <link rel="stylesheet" href="./assets/css/avisos-escala.css">
+<link rel="stylesheet" href="./assets/css/conversao.css">
 <link rel="stylesheet" href="./assets/css/diagnostico-empresa.css">
 <link rel="stylesheet" href="./assets/css/interface.css?v=reescala-2">
 <link rel="stylesheet" href="/assets/css/theme.css">
@@ -391,13 +392,42 @@
         <button id="btn-converter" type="button" class="w-full bg-fintria-navy text-white px-6 py-4 rounded-lg font-display font-semibold text-lg shadow-md hover:bg-fintria-navySoft">Gerar proposta 5×2 e comparar</button>
         <p id="conversao-mensagem" role="alert" class="text-sm text-fintria-vermelho mt-3"></p>
       </div>
-      <div id="conversao-resultados" hidden class="mt-5">
-        <h3 class="font-display text-fintria-navy text-lg font-semibold mb-3">3. Compare a operação atual com a proposta</h3>
-        <div class="no-print border border-slate-200 rounded-lg p-3 my-3"><p class="font-semibold text-fintria-navy">Documentos da proposta 5×2</p><p class="text-xs text-slate-500 my-2">Empregador: quadro resumido de horários, carga semanal e pontos de atenção. Colaboradores: PDFs individuais detalhados em um ZIP.</p><div class="flex flex-wrap gap-2"><button type="button" data-export-pdf="empregador" data-origem="proposta" class="bg-fintria-navy text-white px-4 py-2 rounded-md font-semibold">Baixar PDF do empregador</button><button type="button" data-export-pdf="colaboradores" data-origem="proposta" class="border border-slate-300 px-4 py-2 rounded-md font-semibold">Baixar PDFs dos colaboradores (ZIP)</button></div>
-          <div class="border-t border-slate-200 mt-3 pt-3" data-termo-aditivo><p class="font-semibold text-fintria-navy">Termo aditivo ao contrato de trabalho — modelo de cláusulas</p><p class="text-xs text-slate-500 my-2">Um termo por colaborador, preenchido com o horário, as folgas e a carga da proposta 5×2, para adequação à EC 141. Escolha as cláusulas a incluir e baixe em PDF ou Word. CPF, salário e fundamento da distribuição diária ficam em branco para o escritório completar. Modelo de referência: confira com a assessoria jurídica e contábil e a convenção coletiva antes da assinatura.</p><div class="flex flex-wrap gap-2"><button type="button" data-termo-abrir class="border border-slate-300 px-4 py-2 rounded-md font-semibold">Gerar termo aditivo</button></div><details data-termo-previa class="mt-3"><summary class="cursor-pointer text-sm font-semibold text-fintria-navy">Ver prévia do termo aditivo</summary><div data-termo-previa-conteudo class="mt-2"></div></details></div></div>
-        <details class="no-print border border-slate-200 rounded-lg p-3 my-3" data-diag-conferencia><summary class="cursor-pointer font-semibold text-fintria-navy">Conferência com o diagnóstico da empresa</summary><p class="text-xs text-slate-500 mt-2">Confere se a proposta respeita as respostas do diagnóstico: funcionamento, mínimo por função, alterações aceitas, ACT/CCT, prioridades e equipe.</p><div data-diag-conferencia-conteudo class="mt-3"></div></details>
+      <div id="conversao-resultados" hidden class="conv-resultados">
+        <h3 class="conv-titulo font-display">3. Resultado da proposta 5×2</h3>
         <div id="conversao-visao-geral"></div>
-        <details class="border border-slate-200 rounded-lg p-3 mb-4" open><summary id="proposta-resumo-grade" class="cursor-pointer font-semibold text-fintria-navy">Escala proposta 5×2 — clique nas células para ajustar</summary><div id="resultado-proposta" class="mt-4"></div></details>
+        <section class="conv-acoes no-print" aria-label="Ações da proposta">
+          <div class="conv-card conv-card-ajustes" data-conv-slot-ajustes></div>
+          <div class="conv-card conv-card-docs" data-termo-aditivo>
+            <h4 class="conv-card-titulo">Documentos da proposta</h4>
+            <p class="conv-card-texto">Quadro do empregador, PDFs individuais e termos aditivos de cada colaborador.</p>
+            <div class="conv-botoes">
+              <button type="button" data-export-pdf="empregador" data-origem="proposta" class="conv-btn conv-btn-pri">Baixar PDF do empregador</button>
+              <button type="button" data-export-pdf="colaboradores" data-origem="proposta" class="conv-btn">Baixar PDFs dos colaboradores (ZIP)</button>
+              <button type="button" data-termo-abrir class="conv-btn">Gerar termo aditivo</button>
+            </div>
+            <details data-termo-previa class="conv-mais"><summary>Ver prévia do termo aditivo</summary><div data-termo-previa-conteudo class="mt-2"></div></details>
+            <details class="conv-mais"><summary>Sobre estes documentos</summary><p><b>Empregador:</b> quadro resumido de horários, carga semanal e pontos de atenção. <b>Colaboradores:</b> PDFs individuais detalhados em um ZIP.</p><p><b>Termo aditivo ao contrato de trabalho — modelo de cláusulas:</b> um termo por colaborador, preenchido com o horário, as folgas e a carga da proposta 5×2, para adequação à EC 141. Escolha as cláusulas a incluir e baixe em PDF ou Word. CPF, salário e fundamento da distribuição diária ficam em branco para o escritório completar. Modelo de referência: confira com a assessoria jurídica e contábil e a convenção coletiva antes da assinatura.</p></details>
+          </div>
+        </section>
+        <div class="conv-abas no-print" role="tablist" aria-label="Detalhes da proposta">
+          <button type="button" role="tab" id="conv-aba-escala" aria-controls="conv-painel-escala" aria-selected="true" data-conv-aba="escala">Escala proposta</button>
+          <button type="button" role="tab" id="conv-aba-atencao" aria-controls="conv-painel-atencao" aria-selected="false" tabindex="-1" data-conv-aba="atencao">Pontos de atenção <span class="conv-contador" data-conv-contador hidden></span></button>
+          <button type="button" role="tab" id="conv-aba-analise" aria-controls="conv-painel-analise" aria-selected="false" tabindex="-1" data-conv-aba="analise">Análise da equipe</button>
+          <button type="button" role="tab" id="conv-aba-diagnostico" aria-controls="conv-painel-diagnostico" aria-selected="false" tabindex="-1" data-conv-aba="diagnostico">Conferência com o diagnóstico</button>
+        </div>
+        <div role="tabpanel" id="conv-painel-escala" aria-labelledby="conv-aba-escala" data-conv-painel="escala" class="conv-painel">
+          <details class="border border-slate-200 rounded-lg p-3 mb-4" open><summary id="proposta-resumo-grade" class="cursor-pointer font-semibold text-fintria-navy">Escala proposta 5×2 — clique nas células para ajustar</summary><div id="resultado-proposta" class="mt-4"></div></details>
+        </div>
+        <div role="tabpanel" id="conv-painel-atencao" aria-labelledby="conv-aba-atencao" data-conv-painel="atencao" class="conv-painel" hidden>
+          <p class="conv-painel-intro">Validação da escala proposta: incompatibilidades para corrigir primeiro, depois conferências e orientações. As mensagens acompanham cada ajuste na grade.</p>
+          <div data-conv-alertas></div>
+        </div>
+        <div role="tabpanel" id="conv-painel-analise" aria-labelledby="conv-aba-analise" data-conv-painel="analise" class="conv-painel" hidden>
+          <div id="conversao-comparacao"></div>
+        </div>
+        <div role="tabpanel" id="conv-painel-diagnostico" aria-labelledby="conv-aba-diagnostico" data-conv-painel="diagnostico" class="conv-painel" hidden>
+          <div class="no-print" data-diag-conferencia><p class="conv-painel-intro">Confere se a proposta respeita as respostas do diagnóstico: funcionamento, mínimo por função, alterações aceitas, ACT/CCT, prioridades e equipe.</p><div data-diag-conferencia-conteudo></div></div>
+        </div>
       </div>
       <details id="escala-atual-previa" class="mt-4 border border-slate-200 rounded-lg p-3"><summary class="cursor-pointer font-semibold text-fintria-navy">Escala atual / prévia avulsa</summary>
         <button id="btn-gerar" class="w-full mt-3 border border-slate-300 bg-white text-fintria-navy px-4 py-2 rounded-lg font-semibold text-sm">Pré-visualizar escala atual / gerar escala avulsa</button>
@@ -406,7 +436,6 @@
         <p id="geracao-orientacao-edicao" class="text-slate-500 text-xs mt-3">Após gerar, clique nas células para ajustar trabalho e folgas. As validações e os totais acompanham cada alteração. Use FC somente quando houver folga compensatória efetivamente prevista.</p>
         <div id="resultado-gerar" class="mt-4"></div>
       </details>
-      <div id="conversao-comparacao" class="mt-4"></div>
     </section>
 
     <div class="etapas-acoes no-print" aria-label="Navegação entre etapas">

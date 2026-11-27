@@ -13,11 +13,10 @@ module.exports = async ({ browser, baseURL }) => {
     await page.waitForFunction(() => document.documentElement.dataset.ready === "true");
     await page.locator('[data-etapa-link="sec-gerar"]').click();
     await clicarCalculo(page, "#btn-converter");
-    const painel = page.locator("[data-diag-conferencia]");
     // Sem empresa do servidor aberta, o painel orienta a abrir pela tela Empresas.
-    await painel.locator("summary").click();
+    await page.locator('[data-conv-aba="diagnostico"]').click();
     await page.waitForFunction(() => /Abra a empresa/.test(document.querySelector("[data-diag-conferencia-conteudo]").textContent));
-    await painel.locator("summary").click();
+    await page.locator('[data-conv-aba="escala"]').click();
     // Com empresa aberta: dois diagnósticos; o concluído é escolhido primeiro.
     await page.evaluate(async () => {
       const { bindConferenciaDiagnostico } = await import("/assets/js/ui/conferencia-diagnostico.js");
@@ -38,7 +37,7 @@ module.exports = async ({ browser, baseURL }) => {
       };
       bindConferenciaDiagnostico(state, { document, contextoServidor: () => ({ officeId: "o", companyId: "c" }) }, service);
     });
-    await painel.locator("summary").click();
+    await page.locator('[data-conv-aba="diagnostico"]').click();
     await page.waitForFunction(() => /Loja Centro/.test(document.querySelector("[data-conf-resultado]")?.textContent || ""));
     const texto = await page.locator("[data-conf-resultado]").innerText();
     assert.match(texto, /concluído · revisão 3/);

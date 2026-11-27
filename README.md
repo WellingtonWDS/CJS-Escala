@@ -4,6 +4,10 @@ Para cadastrar um escritório/empresa com cinco colaboradores e preenchimento fi
 
 Ferramenta para configurar, gerar e revisar escalas de trabalho e comparar a escala atual 6×1 com uma proposta 5×2. A interface e os cálculos usam HTML, CSS e módulos JavaScript nativos no navegador, sem bundler ou compilação do JavaScript da aplicação. A autenticação depende de código no servidor: middleware e função de login na Vercel. Por padrão, os cadastros e as escalas ficam no navegador. O modo individual com PostgreSQL e n8n é opcional e exige a configuração de homologação descrita adiante.
 
+## Etapa Conversão e comparação reorganizada — 27/11/2026
+
+O resultado da proposta passou a ter três camadas, sem mudar as informações: (1) **resumo da decisão** compacto, com os indicadores (horas-pessoa descobertas, incompatibilidades, alertas) clicáveis; (2) **faixa de ações** sempre visível, com a busca de ajustes de cobertura (e desfazer) e os documentos (PDF do empregador, PDFs dos colaboradores, termo aditivo); (3) **abas**: *Escala proposta* (a grade, como antes), *Pontos de atenção* (incompatibilidades, conferências, “Confira a cobertura” e referência da 6×1, com contador), *Análise da equipe* (diagnóstico, rateio, domingos, tabelas) e *Conferência com o diagnóstico*. Textos longos ficaram em “Como funciona a busca” e “Sobre estes documentos”. As abas funcionam com teclado (setas, Home, End). Módulos: `ui/conversao-layout.js` e `assets/css/conversao.css`; teste `tests/browser-conversao-layout.cjs`.
+
 ## Conferência da proposta com o diagnóstico — 27/11/2026
 
 Em **Conversão e comparação**, o painel **Conferência com o diagnóstico da empresa** carrega os diagnósticos da empresa aberta no servidor (o concluído mais recente primeiro; há seleção quando existem vários) e confere a proposta 5×2 com as respostas. Cada item mostra o nível — **divergência**, **alerta**, **conferir** ou **coerente** — e avisa quando a resposta é estimativa ou está pendente.

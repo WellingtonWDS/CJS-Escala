@@ -40,6 +40,8 @@ module.exports = async ({ browser, baseURL }) => {
     assert.equal(dias.length, 5);
     assert(dias.every(d => Math.round(d.horas * 60) === 504));
     assert.match(await page.locator("#resultado-proposta").innerText(), /08:24/);
+    // Rateio, diagnóstico da equipe e tabelas ficam na aba "Análise da equipe".
+    await page.locator('[data-conv-aba="analise"]').click();
     assert.match(await page.locator(".diagnostico-rateio").innerText(), /Rateio aplicado/);
     assert.match(await page.locator(".diagnostico-rateio").innerText(), /08:24/);
     assert(await page.locator("#conversao-visao-geral").evaluate(el => !!(el.compareDocumentPosition(document.querySelector("#resultado-proposta")) & Node.DOCUMENT_POSITION_FOLLOWING)));
@@ -50,6 +52,7 @@ module.exports = async ({ browser, baseURL }) => {
     const executivo = page.locator("#conversao-visao-geral");
     assert.match(await executivo.innerText(), /manter a presença atual.*reforçar a equipe/s);
     assert.match(await executivo.innerText(), /Não é uma demanda operacional confirmada/);
+    await page.locator('[data-conv-aba="analise"]').click();
     const diagnostico = page.locator("#conversao-comparacao [data-diagnostico-equipe]");
     assert.match(await diagnostico.innerText(), /necessidade de reforço é condicional/);
     assert.equal(await diagnostico.getAttribute("data-status"), "capacidade_insuficiente");

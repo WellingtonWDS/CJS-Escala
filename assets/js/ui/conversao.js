@@ -6,6 +6,7 @@ import { createCalendarioUI } from "./calendario.js";
 import { createDomain } from "../domain/index.js";
 import { PRIMEIRA_FASE, VERSAO_REGRAS } from "../domain/ec141.js";
 import { escalaFixa } from "../domain/modelo-escala.js";
+import { initConversaoLayout } from "./conversao-layout.js";
 
 export function createConversaoUI({
   state,
@@ -98,6 +99,7 @@ export function createConversaoUI({
     renderConversao,
     marcarDesatualizada,
     bindEvents() {
+      initConversaoLayout(document);
       for (const campo of ["periodo", "fase", "folgas"])
         el(`conversao-${campo}`).onchange = () => {
           atualizarOpcao42();
