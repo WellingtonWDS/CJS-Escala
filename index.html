@@ -41,6 +41,7 @@
     <span id="storage-description" class="text-slate-300 text-sm">Calculadora de horas e migração 6×1 → 5×2 · dados salvos apenas neste navegador</span>
   </div>
   <div class="flex items-center gap-2 flex-wrap">
+    <span id="header-empresa" class="header-empresa" hidden><small>Empresa aberta</small><strong data-header-empresa-nome></strong></span>
     <button id="btn-remote-workspace" hidden type="button" class="no-print text-white text-xs border border-white/50 rounded-md px-3 py-1.5">Empresa atual e Preenchimentos</button>
     <button id="btn-tutorial" type="button" class="no-print text-white text-xs border border-white/50 hover:bg-white/10 rounded-md px-3 py-1.5" aria-haspopup="dialog">Tutorial guiado</button>
     <button id="btn-theme" type="button" class="theme-toggle no-print" data-theme-toggle role="switch" aria-checked="false" aria-label="Tema escuro"><span data-theme-icon aria-hidden="true">☀</span><span class="sidebar-label">Tema escuro</span><span class="theme-switch" aria-hidden="true"></span></button>
@@ -399,14 +400,15 @@
           <div class="conv-card conv-card-ajustes" data-conv-slot-ajustes></div>
           <div class="conv-card conv-card-docs" data-termo-aditivo>
             <h4 class="conv-card-titulo">Documentos da proposta</h4>
-            <p class="conv-card-texto">Quadro do empregador, PDFs individuais e termos aditivos de cada colaborador.</p>
+            <p class="conv-card-texto">Relatório do empregador, quadro simples da escala, PDFs individuais e termos aditivos de cada colaborador.</p>
             <div class="conv-botoes">
               <button type="button" data-export-pdf="empregador" data-origem="proposta" class="conv-btn conv-btn-pri">Baixar PDF do empregador</button>
+              <button type="button" data-export-pdf="quadro" data-origem="proposta" class="conv-btn">Baixar quadro da escala (PDF)</button>
               <button type="button" data-export-pdf="colaboradores" data-origem="proposta" class="conv-btn">Baixar PDFs dos colaboradores (ZIP)</button>
               <button type="button" data-termo-abrir class="conv-btn">Gerar termo aditivo</button>
             </div>
             <details data-termo-previa class="conv-mais"><summary>Ver prévia do termo aditivo</summary><div data-termo-previa-conteudo class="mt-2"></div></details>
-            <details class="conv-mais"><summary>Sobre estes documentos</summary><p><b>Empregador:</b> quadro resumido de horários, carga semanal e pontos de atenção. <b>Colaboradores:</b> PDFs individuais detalhados em um ZIP.</p><p><b>Termo aditivo ao contrato de trabalho — modelo de cláusulas:</b> um termo por colaborador, preenchido com o horário, as folgas e a carga da proposta 5×2, para adequação à EC 141. Escolha as cláusulas a incluir e baixe em PDF ou Word. CPF, salário e fundamento da distribuição diária ficam em branco para o escritório completar. Modelo de referência: confira com a assessoria jurídica e contábil e a convenção coletiva antes da assinatura.</p></details>
+            <details class="conv-mais"><summary>Sobre estes documentos</summary><p><b>Empregador:</b> quadro resumido de horários, carga semanal e pontos de atenção. <b>Quadro da escala:</b> só a grade, semana a semana, com o horário e o intervalo de cada colaborador ou a folga. <b>Colaboradores:</b> PDFs individuais detalhados em um ZIP.</p><p><b>Termo aditivo ao contrato de trabalho — modelo de cláusulas:</b> um termo por colaborador, preenchido com o horário, as folgas e a carga da proposta 5×2, para adequação à EC 141. Escolha as cláusulas a incluir e baixe em PDF ou Word. CPF, salário e fundamento da distribuição diária ficam em branco para o escritório completar. Modelo de referência: confira com a assessoria jurídica e contábil e a convenção coletiva antes da assinatura.</p></details>
           </div>
         </section>
         <div class="conv-abas no-print" role="tablist" aria-label="Detalhes da proposta">
@@ -432,7 +434,7 @@
       <details id="escala-atual-previa" class="mt-4 border border-slate-200 rounded-lg p-3"><summary class="cursor-pointer font-semibold text-fintria-navy">Escala atual / prévia avulsa</summary>
         <button id="btn-gerar" class="w-full mt-3 border border-slate-300 bg-white text-fintria-navy px-4 py-2 rounded-lg font-semibold text-sm">Pré-visualizar escala atual / gerar escala avulsa</button>
 
-        <div class="no-print border border-slate-200 rounded-lg p-3 my-3"><p class="font-semibold text-fintria-navy">Documentos da escala atual</p><p class="text-xs text-slate-500 my-2">Empregador: quadro resumido de horários, carga semanal e pontos de atenção. Colaboradores: PDFs individuais detalhados em um ZIP.</p><div class="flex flex-wrap gap-2"><button type="button" data-export-pdf="empregador" data-origem="atual" class="bg-fintria-navy text-white px-4 py-2 rounded-md font-semibold">Baixar PDF do empregador</button><button type="button" data-export-pdf="colaboradores" data-origem="atual" class="border border-slate-300 px-4 py-2 rounded-md font-semibold">Baixar PDFs dos colaboradores (ZIP)</button></div></div>
+        <div class="no-print border border-slate-200 rounded-lg p-3 my-3"><p class="font-semibold text-fintria-navy">Documentos da escala atual</p><p class="text-xs text-slate-500 my-2">Empregador: quadro resumido de horários, carga semanal e pontos de atenção. Colaboradores: PDFs individuais detalhados em um ZIP.</p><div class="flex flex-wrap gap-2"><button type="button" data-export-pdf="empregador" data-origem="atual" class="bg-fintria-navy text-white px-4 py-2 rounded-md font-semibold">Baixar PDF do empregador</button><button type="button" data-export-pdf="quadro" data-origem="atual" class="border border-slate-300 px-4 py-2 rounded-md font-semibold">Baixar quadro da escala (PDF)</button><button type="button" data-export-pdf="colaboradores" data-origem="atual" class="border border-slate-300 px-4 py-2 rounded-md font-semibold">Baixar PDFs dos colaboradores (ZIP)</button></div></div>
         <p id="geracao-orientacao-edicao" class="text-slate-500 text-xs mt-3">Após gerar, clique nas células para ajustar trabalho e folgas. As validações e os totais acompanham cada alteração. Use FC somente quando houver folga compensatória efetivamente prevista.</p>
         <div id="resultado-gerar" class="mt-4"></div>
       </details>

@@ -4,6 +4,12 @@ Para cadastrar um escritório/empresa com cinco colaboradores e preenchimento fi
 
 Ferramenta para configurar, gerar e revisar escalas de trabalho e comparar a escala atual 6×1 com uma proposta 5×2. A interface e os cálculos usam HTML, CSS e módulos JavaScript nativos no navegador, sem bundler ou compilação do JavaScript da aplicação. A autenticação depende de código no servidor: middleware e função de login na Vercel. Por padrão, os cadastros e as escalas ficam no navegador. O modo individual com PostgreSQL e n8n é opcional e exige a configuração de homologação descrita adiante.
 
+## Quadro da escala em PDF e empresa aberta no cabeçalho — 27/11/2026
+
+Ao lado do PDF do empregador (proposta e escala atual), o botão **Baixar quadro da escala (PDF)** gera um relatório simples só com a grade: uma tabela por semana (segunda a domingo), colaboradores nas linhas e, em cada dia, o horário com o intervalo ou a situação (folga, férias, feriado…). Na escala fixa, uma única tabela com o padrão semanal. Usa a marca do escritório como os demais PDFs. Módulo `export/pdf-quadro.js`; teste `tests/pdf-quadro.test.cjs`.
+
+No computador, o cabeçalho mostra **Empresa aberta** com o nome da empresa, ao lado do botão de empresas e preenchimentos (oculto em telas estreitas).
+
 ## Etapa Conversão e comparação reorganizada — 27/11/2026
 
 O resultado da proposta passou a ter três camadas, sem mudar as informações: (1) **resumo da decisão** compacto, com os indicadores (horas-pessoa descobertas, incompatibilidades, alertas) clicáveis; (2) **faixa de ações** sempre visível, com a busca de ajustes de cobertura (e desfazer) e os documentos (PDF do empregador, PDFs dos colaboradores, termo aditivo); (3) **abas**: *Escala proposta* (a grade, como antes), *Pontos de atenção* (incompatibilidades, conferências, “Confira a cobertura” e referência da 6×1, com contador), *Análise da equipe* (diagnóstico, rateio, domingos, tabelas) e *Conferência com o diagnóstico*. Textos longos ficaram em “Como funciona a busca” e “Sobre estes documentos”. As abas funcionam com teclado (setas, Home, End). Módulos: `ui/conversao-layout.js` e `assets/css/conversao.css`; teste `tests/browser-conversao-layout.cjs`.

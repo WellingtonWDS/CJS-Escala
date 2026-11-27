@@ -43,7 +43,8 @@ export function bindPdfEvents(state, env) {
             libs,
             logo,
             marca,
-            empregador: true,
+            empregador: button.dataset.exportPdf !== "quadro",
+            quadro: button.dataset.exportPdf === "quadro",
           });
         const url = env.URL.createObjectURL(
           new env.Blob([bytes], {
@@ -52,7 +53,7 @@ export function bindPdfEvents(state, env) {
         );
         const a = env.document.createElement("a");
         a.href = url;
-        a.download = `${prefix}${lote ? "-colaboradores.zip" : ".pdf"}`;
+        a.download = `${prefix}${lote ? "-colaboradores.zip" : button.dataset.exportPdf === "quadro" ? "-quadro.pdf" : ".pdf"}`;
         a.click();
         env.setTimeout(() => env.URL.revokeObjectURL(url), 10000);
       } catch (e) {

@@ -78,6 +78,9 @@ module.exports = async ({ browser, baseURL }) => {
         throw new DOMException("Sem espaço", "QuotaExceededError");
       };
     });
+    // Empresa aberta exibida no cabeçalho, ao lado do botão de empresas (computador).
+    await page.waitForFunction(() => !document.getElementById("header-empresa").hidden);
+    assert.match(await page.locator("#header-empresa").innerText(), /Empresa aberta\s*Empresa teste/i);
     await page.locator("#btn-workspace-fab").click();
     await page.locator("[data-remote-save]").click();
     await page.waitForFunction(()=>document.querySelector('[data-current-status]').textContent.includes('apenas nesta aba'));

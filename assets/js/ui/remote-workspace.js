@@ -81,6 +81,14 @@ export async function initRemoteWorkspace({
     current("office").textContent = c
       ? officeName
       : "Selecione uma empresa para salvar e compartilhar o preenchimento.";
+    // Nome da empresa aberta no cabeçalho, ao lado do botão de empresas (computador).
+    const cabecalho = document.getElementById("header-empresa");
+    if (cabecalho) {
+      const nome = c ? companyName || "" : "";
+      cabecalho.hidden = !nome;
+      cabecalho.title = nome ? `Empresa aberta: ${nome}${officeName ? ` · ${officeName}` : ""}` : "";
+      cabecalho.querySelector("[data-header-empresa-nome]").textContent = nome;
+    }
   }
   function activeContext() {
     const c = workspace.context();

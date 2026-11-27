@@ -33,7 +33,7 @@ module.exports = async ({ browser, baseURL }) => {
       await clicarCalculo(page, "#btn-converter");
       await abrirEscalaAtual(page);
       for (const origem of ["atual", "proposta"])
-        for (const tipo of ["empregador", "colaboradores"]) {
+        for (const tipo of ["empregador", "quadro", "colaboradores"]) {
           const button = page.locator(
             `[data-export-pdf="${tipo}"][data-origem="${origem}"]`,
           );
@@ -41,7 +41,11 @@ module.exports = async ({ browser, baseURL }) => {
           await button.click();
           const download = await waiting;
           const bytes = await fs.readFile(await download.path());
-          if (tipo === "empregador") {
+          if (tipo === "quadro") {
+            assert.match(download.suggestedFilename(), /-quadro\.pdf$/);
+            assert(bytes.toString("latin1").startsWith("%PDF-"));
+            assert(bytes.toString("latin1").includes("Quadro da escala"));
+          } else if (tipo === "empregador") {
             assert(bytes.toString("latin1").startsWith("%PDF-"));
             assert(bytes.toString("latin1").includes("/Subtype /Image"));
             await fs.writeFile(

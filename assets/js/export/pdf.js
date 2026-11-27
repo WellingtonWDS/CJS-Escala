@@ -1,10 +1,11 @@
 import { VERSAO_REGRAS, referenciaDia } from "../domain/ec141.js";
 import { renderPdfEmpregador } from "./pdf-empregador.js";
+import { renderPdfQuadro } from "./pdf-quadro.js";
 import { temaPdf, caixaLogo } from "./marca-pdf.js";
 export async function criarPdf(
   rel,
   pessoas,
-  { logo, marca = null, empregador = false, libs, emitido = new Date() },
+  { logo, marca = null, empregador = false, quadro = false, libs, emitido = new Date() },
 ) {
   const { jsPDF, autoTable } = libs;
   const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
@@ -41,6 +42,7 @@ export async function criarPdf(
   const nova = () => doc.addPage();
   const titulares = new Map();
   if (empregador) renderPdfEmpregador({ doc, rel, pessoas, tabela, cor: navy, folga: azul });
+  else if (quadro) renderPdfQuadro({ doc, rel, pessoas, tabela, cor: navy, folga: azul, textoFolga: tema.textoFolga });
   else
     for (let pi = 0; pi < pessoas.length; pi++) {
       if (pi || empregador) nova();
@@ -147,7 +149,7 @@ export async function criarPdf(
     } else if (logo) doc.addImage(logo, "PNG", 241, 9, 42, 14, undefined, "FAST");
     doc.setFont("helvetica", "bold");
     texto(
-      `${rel.tipo} • ${empregador ? "Equipe completa" : "Escala individual"}`,
+      `${rel.tipo} • ${empregador ? "Equipe completa" : quadro ? "Quadro da escala" : "Escala individual"}`,
       14,
       14,
     );

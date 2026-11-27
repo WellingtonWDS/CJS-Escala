@@ -84,6 +84,18 @@ export function prepararRelatorio(
       nome: r.colaborador.nome,
       cargo: r.colaborador.cargo || "",
       semanas,
+      // Quadro da escala: uma célula por dia (horário e intervalo, ou a situação).
+      quadro: dias.map((d) => {
+        const t = ["T", "FE"].includes(d.status);
+        const situacao = d.sabadoCompensado ? "Compensado" : d.restricao?.descricao
+          || (d.feriado && !t ? `Feriado${d.feriado.nome ? `\n${d.feriado.nome}` : ""}` : status[d.status] || d.status);
+        return {
+          data: d.data, weekday: d.weekday, trabalho: t,
+          texto: t
+            ? `${horarioComDia(d.entradaMin)}–${horarioComDia(d.saidaMin)}${d.intervaloInicioMin != null ? `\nInt. ${horarioComDia(d.intervaloInicioMin)}–${horarioComDia(d.intervaloFimMin)}` : ""}${d.status === "FE" ? "\nFeriado" : ""}`
+            : situacao,
+        };
+      }),
       linhas: dias.map((d) => {
         const t = ["T", "FE"].includes(d.status);
         return [
