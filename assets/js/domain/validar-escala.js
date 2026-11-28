@@ -1,4 +1,5 @@
 import { planejamento5x2 } from "./janelas-planejamento.js";
+import { semanaComSabadoQuinzenal } from "./revezamento-quinzenal.js";
 import { habilitadoPara, funcaoDoDia, validarAlocacoesFuncao } from "./funcoes.js";
 import { contextoModelo, escalaFixa, colaboradorRecorrente } from "./modelo-escala.js";
 import { validarRestricoesEscala, ausenciaProgramada } from "./restricoes.js";
@@ -430,6 +431,13 @@ export function createValidacao(state, jornada, feriados) {
       ) {
         const diferenca = apuracao.computadas - apuracao.alvo;
         const verbo = diferenca > 0 ? "acima" : "abaixo";
+        // Semana com sábado no revezamento quinzenal: o sábado reduzido deixa a semana
+        // abaixo do alvo, sem reduzir salário nem carga contratual.
+        if (diferenca < 0 && semanaComSabadoQuinzenal(state, semana)) {
+          out.push(issue("REVEZAMENTO_QUINZENAL", "info",
+            `${primeiraData}: semana com sábado no revezamento quinzenal — ${fmtHoras(apuracao.computadas)} computadas, ${fmtHoras(Math.abs(diferenca))} abaixo do alvo semanal de ${fmtHoras(apuracao.alvo)} por causa do sábado reduzido. Na semana seguinte, de segunda a sexta, o alvo é cumprido. As horas a menos não reduzem o salário nem a carga contratual de ${fmtHoras(jornadaContratual)} (art. 2º da EC 141).`,
+            primeiraData));
+        } else
         out.push(
           issue(
             "JORNADA_CONTRATUAL",

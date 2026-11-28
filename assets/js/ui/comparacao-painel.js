@@ -15,6 +15,7 @@ const motivosRateio = {
   aplicado: "Carga semanal distribuída nos horários da proposta.",
   janela: "Os horários disponíveis não comportam todo o alvo semanal; reveja a janela de trabalho, os dias permitidos e o intervalo mínimo aplicável.",
   disponibilidade: "Os dias de trabalho disponíveis não comportam a distribuição habitual; confira férias, afastamentos, folgas e restrições individuais.",
+  revezamento_quinzenal: "Semana com sábado no revezamento quinzenal: o sábado reduzido deixa a semana abaixo do alvo; na semana seguinte, de segunda a sexta, o alvo é cumprido. Sem redução de salário nem da carga contratual (art. 2º da EC 141).",
   fundamento_coletivo: "A distribuição exigiria ultrapassar o limite diário autorizado. Confira o período da distribuição transitória sem ACT/CCT ou a vigência e as condições do instrumento coletivo informado.",
 };
 const numeros = (m) => `<div class="diagnostico-indicadores"><button type="button" data-conv-ir="analise" data-alerta="${m.faltantesDepois > 0}"><span>Horas-pessoa descobertas</span><strong>${fmtHoras(m.faltantesDepois)}</strong><small>Antes: ${fmtHoras(m.faltantesAntes)}</small></button><button type="button" data-conv-ir="atencao" data-erro="${m.erros > 0}"><span>Incompatibilidades</span><strong>${m.erros}</strong><small>Conferir antes de adotar</small></button><button type="button" data-conv-ir="atencao" data-alerta="${m.pendencias > 0}"><span>Alertas e pendências</span><strong>${m.pendencias}</strong><small>Detalhes na validação da escala</small></button></div>`;
@@ -54,6 +55,7 @@ export function renderDetalhesConversao(c) {
   ${c.desatualizada ? "" : renderDiagnosticoEquipe(m.diagnostico)}
   ${rateios(config)}
   ${c.desatualizada ? "" : domingos(m)}
+  ${!c.desatualizada && config.folgasQuinzenal ? `<aside class="diagnostico-nota" data-revezamento-quinzenal><p><b>Revezamento quinzenal do sábado.</b> Em semanas alternadas, cada colaborador trabalha de segunda a sexta ou trabalha no sábado e folga em um dia útil; a equipe é dividida para cobrir todos os sábados. Nas semanas com sábado, a carga fica abaixo do alvo semanal porque o sábado é reduzido — isso não reduz o salário nem a carga contratual (art. 2º da EC 141) e aparece como informação, não como alerta. Para compensar horas entre as duas semanas, é preciso acordo de compensação ou ACT/CCT.</p></aside>` : ""}
   ${!c.desatualizada && m.jornadaCurta?.length ? `<aside class="diagnostico-nota" data-jornada-curta>${m.jornadaCurta.map((t) => `<p>${e(t)}</p>`).join("")}</aside>` : ""}
   ${c.buscaParcial || config.escalaGerada.limiteBuscaIntervalos ? '<aside class="diagnostico-nota">A busca atingiu seu limite de processamento. As sugestões não comprovam que esta seja a melhor escala possível nem que toda lacuna exija contratação.</aside>' : ""}
   ${(m.avisos || []).length ? `<aside class="diagnostico-nota">${m.avisos.map(a=>`<p>${e(a)}</p>`).join("")}</aside>` : ""}

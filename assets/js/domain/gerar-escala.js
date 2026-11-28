@@ -22,6 +22,7 @@ import {
   VERSAO_REGRAS,
 } from "./ec141.js";
 import { createPlanejadorFolgas } from "./folgas-semana.js";
+import { ehPlanoQuinzenal, folgasDoPlanoQuinzenal } from "./revezamento-quinzenal.js";
 import { domingoDevido, conferirDescansos, descansoMinimo, repousoDoDia } from "./descanso.js";
 import { createDomain } from "./index.js";
 import {
@@ -81,8 +82,10 @@ export function createGerador(state, jornada, feriados, validacao) {
       0,
       operacionais.length - alvo,
     );
-    const planoConversao =
+    let planoConversao =
       state.planoFolgasConversao?.[state.colaboradores[idx]?.id];
+    // Revezamento quinzenal: alterna a semana com sábado e a de segunda a sexta.
+    if (ehPlanoQuinzenal(planoConversao)) planoConversao = folgasDoPlanoQuinzenal(planoConversao, getMonday(date));
     if (Array.isArray(planoConversao))
       return comDomingo(
         planoConversao

@@ -7,6 +7,7 @@ import { createDomain } from "../domain/index.js";
 import { PRIMEIRA_FASE, VERSAO_REGRAS } from "../domain/ec141.js";
 import { escalaFixa } from "../domain/modelo-escala.js";
 import { initConversaoLayout } from "./conversao-layout.js";
+import { motivoSemQuinzenal } from "../domain/revezamento-quinzenal.js";
 
 export function createConversaoUI({
   state,
@@ -55,7 +56,26 @@ export function createConversaoUI({
     });
     calendario.renderEscalaGerada();
   }
+  // Explica a opção de folgas escolhida e bloqueia o revezamento quinzenal quando não se aplica.
+  function atualizarFolgas() {
+    const select = el("conversao-folgas"), ajuda = el("conversao-folgas-ajuda");
+    const opcao = select?.querySelector?.('[value="quinzenal"]');
+    if (!select || !opcao) return;
+    const motivo = motivoSemQuinzenal(state);
+    opcao.disabled = !!motivo;
+    opcao.title = motivo;
+    if (motivo && select.value === "quinzenal") {
+      select.value = "distribuir";
+      if (state.destinoConversao) state.destinoConversao.folgas = "distribuir";
+    }
+    if (ajuda) ajuda.textContent = {
+      distribuir: "Cada colaborador recebe o segundo repouso no dia que melhor ajuda a cobertura, repetido todas as semanas.",
+      quinzenal: "Semanas alternadas: em uma, de segunda a sexta; na outra, trabalha no sábado e folga em um dia útil. A equipe é dividida para cobrir todos os sábados. A semana com sábado reduzido fica abaixo do alvo sem reduzir salário.",
+      fim_semana: "Todos folgam aos sábados e domingos.",
+    }[select.value] + (motivo ? ` Revezamento quinzenal indisponível: ${motivo}` : "");
+  }
   function atualizarOpcao42() {
+    atualizarFolgas();
     const select=el("conversao-fase");
     const option=select.querySelector?.('[value="transicao42"]');
     if(!option)return;

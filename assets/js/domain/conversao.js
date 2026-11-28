@@ -5,6 +5,7 @@ import { configDaEscala } from "./contexto-escala.js";
 import { diagnosticarEquipe, compararPresencaAtual } from "./diagnostico-equipe.js";
 import { aplicarRestricoesDia, validarRestricoes } from "./restricoes.js";
 import { apurarComputoCCT } from "./computo-cct.js";
+import { semanaComSabadoQuinzenal, planosQuinzenais, motivoSemQuinzenal, sabadoComIntervalo } from "./revezamento-quinzenal.js";
 import { createDomain } from "./index.js";
 import {
   analisarCobertura,
@@ -225,7 +226,7 @@ function pontuacao(config, escala, cache, alvoDomingo = null) {
     if (!valor) {
       valor = [domain.validarLegal(r.colaborador, r.dias, r.diasContexto, r.diasApuracao)
         .filter((i) => i.severidade === "erro").length,
-      [...semanas(r.dias).values()].map((dias) => apurarSemana(r.colaborador, dias, config))
+      [...semanas(r.dias).values()].filter((dias) => !semanaComSabadoQuinzenal(config, dias)).map((dias) => apurarSemana(r.colaborador, dias, config))
         .filter((a) => a.completa)
         .reduce((s, a) => s + Math.max(0, Math.round((a.alvo - a.computadas) * 60)), 0)];
       cache.set(r, valor);
@@ -299,7 +300,8 @@ function ordenarPlanos(planos, cota) {
   // Garante que planos com folga no domingo sejam avaliados mesmo quando a cota
   // da busca não cobre todas as combinações.
   if (planos.length <= cota) return planos;
-  return [...planos.filter((p) => p.includes(0)), ...planos.filter((p) => !p.includes(0))];
+  const domingo = (p) => Array.isArray(p) && p.includes(0);
+  return [...planos.filter(domingo), ...planos.filter((p) => !domingo(p))];
 }
 export function resumoDominical(config, resultado) {
   const operacional = (config.diasTrabalho || []).includes(0);
@@ -359,8 +361,10 @@ export function converterEscala(state, opcoes = {}) {
     throw new Error(
       "A exigência do segundo repouso começa em dezembro de 2026. Escolha um período dessa fase ou uma simulação explícita.",
     );
-  if (!["distribuir", "fim_semana"].includes(opcoes.folgas))
+  if (!["distribuir", "fim_semana", "quinzenal"].includes(opcoes.folgas))
     throw new Error("Escolha como distribuir as folgas da proposta.");
+  if (opcoes.folgas === "quinzenal" && motivoSemQuinzenal(state))
+    throw new Error(motivoSemQuinzenal(state));
   for (const c of state.colaboradores)
     if (
       !String(c.nome).trim() ||
@@ -428,6 +432,7 @@ export function converterEscala(state, opcoes = {}) {
   config.modoRegime = opcoes.fase === "automatico" ? "automatico" : "simulacao";
   if (opcoes.fase !== "automatico") config.regimeJornada = opcoes.fase;
   config.folgasFimSemana = opcoes.folgas === "fim_semana";
+  config.folgasQuinzenal = opcoes.folgas === "quinzenal";
   config.folgaTipo = "fixa";
   config.planoFolgasConversao = {};
   // Horários atuais são referência; restrições explícitas e ACT/CCT limitam a proposta.
@@ -437,7 +442,14 @@ export function converterEscala(state, opcoes = {}) {
     const fonte = state.horarioPorDia ? state.jornadaPorDia[dia] || state.jornada : state.jornada;
     config.jornadaPorDia[dia] = structuredClone(fonte);
   }
-  const planosPorPessoa = config.colaboradores.map((c) => planosPossiveis(config, state, c));
+  // No revezamento quinzenal, o sábado sem intervalo ficaria limitado a 4h de trabalho
+  // (art. 71, § 1º, da CLT). Com funcionamento maior, prevê 15 min de intervalo para
+  // aproveitar o período aberto (até 6h de trabalho).
+  if (config.folgasQuinzenal) config.jornadaPorDia[6] = sabadoComIntervalo(config.jornadaPorDia[6]);
+  const planosPorPessoa = config.colaboradores.map((c) => {
+    const planos = planosPossiveis(config, state, c);
+    return config.folgasQuinzenal ? planosQuinzenais(planos) : planos;
+  });
   if (planosPorPessoa.some((p) => !p.length))
     throw new Error(
       "Os dias permitidos para folga não comportam o 5×2. Revise as restrições de folga.",
@@ -538,6 +550,7 @@ export function compararConversao(conversao) {
     const trabalho = (list) =>
       list.filter((d) => ["T", "FE"].includes(d.status)).length;
     const deficits = [...semanas(escalaFixa(config) ? dias : r.dias).values()]
+      .filter((s) => !semanaComSabadoQuinzenal(config, s))
       .map((s) => apurarSemana(r.colaborador, s, config))
       .filter((s) => s.completa && s.estado === "abaixo");
     return {

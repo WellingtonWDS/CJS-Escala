@@ -4,6 +4,12 @@ Para cadastrar um escritório/empresa com cinco colaboradores e preenchimento fi
 
 Ferramenta para configurar, gerar e revisar escalas de trabalho e comparar a escala atual 6×1 com uma proposta 5×2. A interface e os cálculos usam HTML, CSS e módulos JavaScript nativos no navegador, sem bundler ou compilação do JavaScript da aplicação. A autenticação depende de código no servidor: middleware e função de login na Vercel. Por padrão, os cadastros e as escalas ficam no navegador. O modo individual com PostgreSQL e n8n é opcional e exige a configuração de homologação descrita adiante.
 
+## Revezamento quinzenal do sábado na proposta — 28/11/2026
+
+Em **Folgas da proposta**, além de *Distribuir para buscar cobertura — rodízio semanal* e *Fixar sábado e domingo*, há **Revezamento quinzenal do sábado**: em semanas alternadas, cada colaborador trabalha de segunda a sexta (folga no sábado) ou trabalha no sábado e folga em um dia útil. A busca escolhe o dia útil e a fase de cada um para cobrir todos os sábados. O sábado sem intervalo e com mais de 4h15 de funcionamento recebe 15 min de intervalo (art. 71, § 1º, da CLT), para usar o período aberto (até 6h de trabalho).
+
+A semana com sábado reduzido fica abaixo do alvo semanal: isso aparece como **informação** (`REVEZAMENTO_QUINZENAL`), não como alerta de jornada, não conta como déficit na comparação nem na busca e não sugere redução de carga ou salário (art. 2º da EC 141). Compensar horas entre as duas semanas exige acordo de compensação ou ACT/CCT. Disponível na escala mensal dinâmica, com funcionamento de segunda a sábado e domingo fechado; fora disso a opção fica bloqueada com o motivo. Módulo `domain/revezamento-quinzenal.js`; testes `tests/revezamento-quinzenal.test.cjs` e `tests/browser-revezamento-quinzenal.cjs`.
+
 ## Quadro da escala em PDF e empresa aberta no cabeçalho — 27/11/2026
 
 Ao lado do PDF do empregador (proposta e escala atual), o botão **Baixar quadro da escala (PDF)** gera um relatório simples só com a grade: uma tabela por semana (segunda a domingo), colaboradores nas linhas e, em cada dia, o horário com o intervalo ou a situação (folga, férias, feriado…). Na escala fixa, uma única tabela com o padrão semanal. Usa a marca do escritório como os demais PDFs. Módulo `export/pdf-quadro.js`; teste `tests/pdf-quadro.test.cjs`.

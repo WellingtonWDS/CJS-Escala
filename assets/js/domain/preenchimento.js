@@ -245,7 +245,7 @@ export function pendenciasPreenchimento(state, destino) {
       );
     if (!["automatico", "transicao42", "definitivo40"].includes(destino.fase))
       add("sec-gerar", "#conversao-fase", "Selecione a referência da mudança.");
-    if (!["distribuir", "fim_semana"].includes(destino.folgas))
+    if (!["distribuir", "fim_semana", "quinzenal"].includes(destino.folgas))
       add(
         "sec-gerar",
         "#conversao-folgas",

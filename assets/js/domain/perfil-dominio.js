@@ -1,3 +1,4 @@
+import { sabadoComIntervalo } from "./revezamento-quinzenal.js";
 import { ciclo12x36 } from "./computo-cct.js";
 import {
   normalizarJornada,
@@ -97,6 +98,10 @@ export function configDoPerfil(state, c) {
       (h.status === "compensado" && jornadaValidaEstrutural(h.jornada))
     )
       config.jornadaPorDia[d] = h.jornada;
+  // Revezamento quinzenal na proposta: sábado sem intervalo ganha 15 min para permitir
+  // até 6h de trabalho dentro do funcionamento (ver revezamento-quinzenal.js).
+  if (proposta && state.folgasQuinzenal && config.jornadaPorDia[6])
+    config.jornadaPorDia[6] = sabadoComIntervalo(config.jornadaPorDia[6], state.jornadaPorDia?.[6]);
   if (config.sabadoCompensado)
     config.jornadaPorDia[6] = p.semana[6].jornada || {
       entrada: "",

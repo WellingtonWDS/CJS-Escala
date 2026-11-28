@@ -3,6 +3,7 @@ import { limiteDiarioPlanejado } from "./ec141.js";
 import { configDoPerfil } from "./perfil-dominio.js";
 import { diasDoModelo, escalaFixa } from "./modelo-escala.js";
 import { dateFromKey, weekKey } from "./datas-horas.js";
+import { semanaComSabadoQuinzenal } from "./revezamento-quinzenal.js";
 
 /** Diagnóstico do rateio, calculado a partir do resultado vigente (inclusive
  * edições). Restrições explícitas continuam obrigatórias na nova distribuição. */
@@ -44,8 +45,8 @@ export function analisarRateioSemanal(config, resultado) {
         horasPorDiaMax,
         acrescimoMedioMin: Math.ceil(faltantesMin / trabalho.length),
         viavelLegalmente,
-        motivo: !faltantesMin ? "aplicado" : !viavelLegalmente ? "fundamento_coletivo" : trabalho.length < 5 ? "disponibilidade" : "janela",
-        aplicado: faltantesMin === 0,
+        motivo: !faltantesMin ? "aplicado" : semanaComSabadoQuinzenal(config, dias) ? "revezamento_quinzenal" : !viavelLegalmente ? "fundamento_coletivo" : trabalho.length < 5 ? "disponibilidade" : "janela",
+        aplicado: faltantesMin === 0 || semanaComSabadoQuinzenal(config, dias),
         // Horas trabalhadas e créditos ficam separados: um feriado abonado não
         // vira minutos a recuperar e férias não são redistribuídas como trabalho.
         creditosMin,
