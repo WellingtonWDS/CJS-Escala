@@ -149,11 +149,24 @@ export function createCalendarioUI({
         await alert("A escala mudou durante a edição. Abra o dia novamente.");
         return;
       }
+      const antesDoDia = structuredClone(obj);
       try {
         state.escalaGerada = aplicarHorarioManual(state, colaborador.id, obj.data, status, jornada);
       } catch (error) {
         await alert(error.message);
         return;
+      }
+      // Replicar o horário editado para outros dias de trabalho, se o usuário quiser.
+      if (jornada && env.document?.createElement) {
+        const { perguntarReplicacao, destinosReplicacao, replicarHorario } = await import("./replicar-horario.js");
+        const escolha = await perguntarReplicacao(env, state, colaborador.id, obj, antesDoDia);
+        if (escolha) {
+          const destinos = destinosReplicacao(state, colaborador.id, obj.data, escolha.weekdays, escolha.escopo);
+          const resultado = replicarHorario(state, colaborador.id, destinos, status, jornada);
+          state.escalaGerada = resultado.escala;
+          if (resultado.ignorados.length)
+            await alert(`Horário replicado em ${resultado.aplicados.length} dia(s). Não aplicado em ${resultado.ignorados.length}:\n${resultado.ignorados.slice(0, 5).map((x) => `• ${state.modeloEscala === "fixa" ? DIAS_SEMANA[x.dia.weekday] : x.dia.data.split("-").reverse().join("/")}: ${x.motivo}`).join("\n")}`, { title: "Replicação do horário" });
+        }
       }
       renderEscalaGerada();
       onEscalaChange();

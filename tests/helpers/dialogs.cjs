@@ -7,8 +7,14 @@ async function respondToDialogs(page, handler) {
   const state = { handler };
   states.set(page, state);
   await page.exposeBinding("__respondAppDialog", async (_source, data) => {
-    if (!state.handler) return;
     const root = page.locator("dialog[data-app-dialog][open]").last();
+    // Pergunta de replicar horário: os testes gerais não replicam (há teste próprio).
+    if (data.type === "replicar") {
+      if (state.replicar) return state.replicar(root);
+      await root.locator("[data-replicar-nao]").click();
+      return;
+    }
+    if (!state.handler) return;
     const response = {
       type: () => data.type,
       message: () => data.message,

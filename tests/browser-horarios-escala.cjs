@@ -32,7 +32,9 @@ module.exports=async({browser,baseURL})=>{
    }
    const form=page.locator('dialog[data-app-dialog="form"][open]');
    async function preencher(values){for(const [k,v]of Object.entries(values))await form.locator(`[data-dialog-time="${k}"]`).fill(v);}
-   async function salvar(){await form.locator('[data-dialog-accept]').click();await form.waitFor({state:'hidden'});await page.waitForFunction(()=>!document.querySelector('dialog[open]'));}
+   // Após salvar um horário, a pergunta de replicar para outros dias é respondida com "Não replicar".
+   async function semReplicar(){const rep=page.locator('dialog[data-app-dialog="replicar"][open]');if(await rep.waitFor({timeout:1500}).then(()=>true,()=>false))await rep.locator('[data-replicar-nao]').click();}
+   async function salvar(){await form.locator('[data-dialog-accept]').click();await form.waitFor({state:'hidden'});await semReplicar();await page.waitForFunction(()=>!document.querySelector('dialog[open]'));}
    const data=await abrir(2,'T');
    // Horários reais, inclusive o intervalo da jornada gerada, preenchem o formulário.
    assert.equal(await form.locator('[data-dialog-time="entrada"]').inputValue(),'08:00');
