@@ -13,7 +13,7 @@ function base() {
     colaboradores: [], proximoId: 1, coberturaAtiva: true, demandasCobertura: [],
     diasTrabalho: [...COMERCIAIS], folgaDiasPermitidos: [...TODOS],
     jornada: { ...hLoja }, horarioPorDia: false, folgaTipo: "rotativa",
-    destinoConversao: { periodo: "2028-02", fase: "automatico", folgas: "distribuir" },
+    destinoConversao: { periodo: "2027-01", fase: "automatico", folgas: "distribuir" },
   });
   return s;
 }
@@ -159,6 +159,8 @@ function lanchonete({ comercio = false } = {}) {
   s.folgaDiasPermitidos = [...TODOS];
   // Horário interno: organização a partir das 16h; atendimento ao público das 18h à 1h.
   s.jornada = horario("16:00", "19:00", "20:00", "01:00");
+  // Fechamento do caixa até 1h30 (margem da aba Jornada): cabe a fase de 42h (8h24 por dia).
+  s.margemDepoisFechamento = 30;
   // [sexo, entrada, início e fim do intervalo, carga semanal]; todos saem à 1h.
   const equipe = {
     "Atendente": [

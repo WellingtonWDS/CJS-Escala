@@ -1,6 +1,6 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
-test('DEMO preenchido: cinco colaboradores, origem 44h e proposta 40h sem lacunas',async()=>{
+test('DEMO preenchido: cinco colaboradores, origem 44h e proposta de janeiro/2027 com 42h sem lacunas',async()=>{
  const {criarEstadoDemo}=await import('../database/demo/state.mjs');
  const {pendenciasPreenchimento}=await import('../assets/js/domain/preenchimento.js');
  const {gerarReferenciaAtual,converterEscala}=await import('../assets/js/domain/conversao.js');
@@ -17,8 +17,8 @@ test('DEMO preenchido: cinco colaboradores, origem 44h e proposta 40h sem lacuna
   assert.equal(semana.reduce((v,d)=>v+d.horas,0),44);
  }
  for(const r of nova.proposta.config.escalaGerada.resultado){
-  const semana=r.dias.filter(d=>d.data>='2028-02-07' && d.data<='2028-02-13');
-  assert.equal(semana.reduce((v,d)=>v+d.horas,0),40);
+  const semana=r.dias.filter(d=>d.data>='2027-01-11' && d.data<='2027-01-17');
+  assert.equal(Math.round(semana.reduce((v,d)=>v+d.horas,0)*100)/100,42);
   assert.equal(semana.filter(d=>d.status==='F').length,2);
  }
  assert.deepEqual(state,original);

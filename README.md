@@ -4,6 +4,12 @@ Para cadastrar um escritório/empresa com cinco colaboradores e preenchimento fi
 
 Ferramenta para configurar, gerar e revisar escalas de trabalho e comparar a escala atual 6×1 com uma proposta 5×2. A interface e os cálculos usam HTML, CSS e módulos JavaScript nativos no navegador, sem bundler ou compilação do JavaScript da aplicação. A autenticação depende de código no servidor: middleware e função de login na Vercel. Por padrão, os cadastros e as escalas ficam no navegador. O modo individual com PostgreSQL e n8n é opcional e exige a configuração de homologação descrita adiante.
 
+## Contratação na proposta, carga abaixo de 44h e exemplos em janeiro de 2027 — 28/11/2026
+
+- **Contratação sugerida na proposta:** com capacidade insuficiente, o resumo da proposta sugere quantas pessoas contratar por função (pico de pessoas faltando ao mesmo tempo), com a carga da fase. **Incluir na proposta** gera a proposta de novo com “A contratar 1 — Função”, com horário e folgas na grade; **Remover contratações** volta ao quadro atual. As pessoas a contratar não entram na escala atual nem nos termos aditivos.
+- **Carga abaixo de 44h mantida:** quem tem contrato menor (ex.: 22h) mantém a carga semanal em cinco dias. Se o horário atual não tem intervalo e o dia precisa passar de 4h, a proposta prevê 15 min (1h acima de 6h), como exige o art. 71 da CLT.
+- **Exemplos DEMO em janeiro de 2027:** os cenários passam a usar janeiro de 2027 (fase de 42h). A Lanchonete ganhou 30 min de margem depois do fechamento para caber as 8h24.
+
 ## Padrão de horário, sábado, 42h antecipada, ACT/CCT e replicar horário — 28/11/2026
 
 - **Busca de ajustes mantém o padrão:** na escala dinâmica, uma mudança de entrada, saída ou intervalo vale para todos os dias em que o colaborador tinha o mesmo horário no mês (na fixa, para o mesmo dia em todas as semanas). A busca não deixa horários diferentes de um dia para outro; em outro mês, a proposta pode ter outro horário. A cobertura alcançada pode ser um pouco menor que escalonando dia a dia, em troca de previsibilidade.

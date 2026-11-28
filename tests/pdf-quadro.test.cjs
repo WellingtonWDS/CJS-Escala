@@ -31,8 +31,8 @@ test("PDF do quadro: semanas na escala dinâmica e padrão semanal na fixa", asy
   const dinamica = await criarPdf(preparar(estado(false), { proposta: true }), preparar(estado(false), { proposta: true }).pessoas, { libs, quadro: true });
   const t = textos(dinamica);
   assert.match(t, /Quadro da escala/);
-  assert.match(t, /Semana de 31\/01 a 06\/02\/2028/);
-  assert.match(t, /Ter 01\/02/);
+  assert.match(t, /Semana de 04\/01 a 10\/01\/2027/);
+  assert.match(t, /Seg 04\/01/);
   const relFixa = preparar(estado(true), { proposta: true });
   const fixa = textos(await criarPdf(relFixa, relFixa.pessoas, { libs, quadro: true }));
   assert.match(fixa, /Padr\\?\S*o semanal recorrente/);

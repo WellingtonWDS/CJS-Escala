@@ -408,7 +408,7 @@ export function createCalendarioUI({
                       : x.obj.status === "FC"
                         ? "FC"
                         : x.obj.status;
-                return `<button data-ri="${x.ri}" data-di="${x.r.dias.indexOf(x.obj)}" class="escala-colaborador w-full text-left mb-2 last:mb-0 rounded border ${cls} hover:opacity-80" title="${escapeHtml(x.obj.restricao?.descricao || (trabalho ? "Trabalho" : x.obj.status === "NC" ? "Anterior à admissão" : "Folga"))}${trabalho && x.obj.intervaloInicioMin != null ? ` · Intervalo ${horarioComDia(x.obj.intervaloInicioMin)}–${horarioComDia(x.obj.intervaloFimMin)}` : ""} — clique para alterar">
+                return `<button data-ri="${x.ri}" data-di="${x.r.dias.indexOf(x.obj)}"${x.r.colaborador.aContratar ? " data-a-contratar" : ""} class="escala-colaborador w-full text-left mb-2 last:mb-0 rounded border ${cls} hover:opacity-80" title="${escapeHtml(x.obj.restricao?.descricao || (trabalho ? "Trabalho" : x.obj.status === "NC" ? "Anterior à admissão" : "Folga"))}${trabalho && x.obj.intervaloInicioMin != null ? ` · Intervalo ${horarioComDia(x.obj.intervaloInicioMin)}–${horarioComDia(x.obj.intervaloFimMin)}` : ""} — clique para alterar">
               <div class="escala-colaborador-nome">${escapeHtml(x.r.colaborador.nome || "(sem nome)")}</div>
               ${trabalho && (x.obj.funcaoAlocada || x.obj.alocacoesFuncao?.length) ? `<div class="escala-colaborador-detalhe font-semibold">Função: ${escapeHtml(descricaoFuncoes(x.r.colaborador, x.obj))}</div>` : ""}
               ${x.obj.intervaloSugerido ? `<div class="escala-colaborador-detalhe font-semibold">Intervalo sugerido para cobertura</div>` : ""}

@@ -93,3 +93,14 @@ html[data-theme="dark"] #conversao-visao-geral .diagnostico-indicadores button {
 html[data-theme="dark"] #conversao-visao-geral .diagnostico-indicadores [data-erro="true"] strong { color: #ffb1b5; }
 html[data-theme="dark"] #conversao-visao-geral .diagnostico-indicadores [data-alerta="true"] strong { color: #ffd38a; }
 html[data-theme="dark"] #conversao-visao-geral .diagnostico-executivo-texto p { color: #b1bfd2 !important; }
+
+/* Contratação sugerida / incluída no resumo da proposta. */
+#conversao-visao-geral .conv-contratacao { grid-column: 1 / -1; margin-top: 10px; padding: 12px 14px; border: 1px dashed #b87913; border-radius: 10px; background: #fff; }
+#conversao-visao-geral .conv-contratacao p { margin: 0 0 10px; font-size: 13.5px; color: #33465b; }
+html[data-theme="dark"] #conversao-visao-geral .conv-contratacao { background: #162130; border-color: #d89a3a; }
+html[data-theme="dark"] #conversao-visao-geral .conv-contratacao p { color: #d3deea; }
+
+/* Pessoa a contratar na grade da proposta. */
+.escala-colaborador[data-a-contratar] { border-style: dashed !important; border-width: 2px !important; }
+.escala-colaborador[data-a-contratar]::before { content: "a contratar"; display: inline-block; margin-bottom: 3px; padding: 1px 7px; border-radius: 999px; background: #fff4dd; color: #8a4b00; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+html[data-theme="dark"] .escala-colaborador[data-a-contratar]::before { background: #3b2f1b; color: #ffdaa0; }

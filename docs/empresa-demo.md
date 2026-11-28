@@ -27,7 +27,7 @@ A identidade acima é a do proprietário informado na implantação, não seu UU
 - Segunda a sexta: 08h–18h, intervalo de 11h–13h (8h efetivas); sábado: 08h–12h, sem intervalo (4h).
 - Três atendentes e dois supervisores, com nomes e dados fictícios.
 - Cobertura: um atendente e um supervisor, de segunda a sexta, 09h–11h e 14h–17h. Não há demanda mínima cadastrada no sábado.
-- Proposta: fevereiro de 2028, fase automática de 40h já consolidada, folgas fixas no sábado/domingo. O quadro é suficiente nas faixas cadastradas. A referência de outubro e o destino são fixos para tornar os testes repetíveis.
+- Proposta: janeiro de 2027, fase automática de 42h (até 8h24 por dia sem ACT/CCT), folgas fixas no sábado/domingo. O quadro é suficiente nas faixas cadastradas. A referência de outubro e o destino são fixos para tornar os testes repetíveis.
 - Feriados nacionais seguem o sistema; sem autorizações coletivas fictícias, restrições individuais ou exceções especiais. Pendências jurídicas que o sistema produzir continuam visíveis.
 - Os resultados ficam inicialmente vazios: clique para gerar e testar os cálculos atuais, sem carregar uma escala certificada ou antiga.
 

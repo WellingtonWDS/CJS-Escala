@@ -74,11 +74,11 @@ O que aparece ao gerar a escala atual:
 - **Modelo comércio:** além disso, erro `DOMINGO_COMERCIO` no 3º domingo seguido (Lei 10.101/2000, art. 6º).
 - **Trabalho noturno:** pendência `TRABALHO_NOTURNO` nos dias com trabalho após as 22h, para conferir hora noturna reduzida e adicional.
 
-Na proposta (5×2, folgas distribuídas), os contratos de 42h passam a 40h (8h por dia, com entrada às 16h) e os de 36h mantêm a carga (7h12 por dia), a segunda continua fechada e a segunda folga da semana vai para o domingo em rodízio. As mulheres folgam um domingo a cada duas semanas; os homens, a cada quatro semanas, ou a cada três no modelo comércio. Os domingos de folga são alternados entre as pessoas e a cobertura das 18h à 1h é mantida.
+Na proposta (janeiro de 2027, 5×2, folgas distribuídas), os contratos de 42h ficam com 8h24 por dia, usando a margem de 30 min depois do fechamento (fechamento do caixa até 1h30, aba Jornada), e os de 36h mantêm a carga (7h12 por dia), a segunda continua fechada e a segunda folga da semana vai para o domingo em rodízio. As mulheres folgam um domingo a cada duas semanas; os homens, a cada quatro semanas, ou a cada três no modelo comércio. Os domingos de folga são alternados entre as pessoas e a cobertura das 18h à 1h é mantida.
 
 ## Como interpretar a comparação
 
-As referências são fixas em outubro de 2026; propostas em fevereiro de 2028, fase consolidada de 40h. A fazenda fixa fins de semana; comércio e padaria distribuem folgas para buscar cobertura nos dias de operação.
+As referências são fixas em outubro de 2026; propostas em janeiro de 2027, fase de 42h (até 8h24 por dia sem ACT/CCT). A fazenda fixa fins de semana; comércio e padaria distribuem folgas para buscar cobertura nos dias de operação.
 
 **Cobertura suficiente não significa todas as condições resolvidas.** No comércio, trabalhar o sábado curto e mais quatro dias de oito horas pode somar 36h. Na padaria, cinco jornadas atuais de 7h20 somam 36h40. Desde a revisão de 04/11/2026, a proposta pode reorganizar os horários de referência e ratear a carga dentro dos limites legais/coletivos, preservando restrições individuais explícitas. A padaria com turnos distribuídos passa a completar a carga e cobrir o padrão fixo no teste; modelos com intervalo insuficiente, indisponibilidade ou cobertura restante ainda podem indicar **ajustes**. É necessário rever horários/disponibilidades, não presumir automaticamente novas contratações ou compensação coletiva.
 

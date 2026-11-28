@@ -17,7 +17,7 @@ export function criarEstadoDemo() {
     folgaTipo: "fixa",
     folgaDiasPermitidos: [0],
     coberturaAtiva: true,
-    destinoConversao: { periodo: "2028-02", fase: "automatico", folgas: "fim_semana" },
+    destinoConversao: { periodo: "2027-01", fase: "automatico", folgas: "fim_semana" },
   });
   state.jornadaPorDia = Object.fromEntries([1,2,3,4,5,6].map(d => [d,
     d === 6 ? {entrada:"08:00", intInicio:"", intFim:"", saida:"12:00"} : structuredClone(state.jornada)

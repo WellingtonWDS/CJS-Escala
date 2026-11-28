@@ -25,6 +25,7 @@ import {
   PRIMEIRA_FASE,
   VERSAO_REGRAS,
   dataValida,
+  referenciaDia,
 } from "./ec141.js";
 import { apurarSemana } from "./resumo-semanal.js";
 import {
@@ -403,6 +404,20 @@ export function converterEscala(state, opcoes = {}) {
       }
     : gerarReferenciaAtual(state);
   const config = copiarConfig(state);
+  // Contratações simuladas: pessoas "a contratar" entram só na proposta, com a carga
+  // da fase (42h ou 40h) e horário e folgas definidos pela própria busca.
+  const contratacoes = (opcoes.contratacoes || []).filter((x) => String(x?.funcao || "").trim()).slice(0, 30);
+  if (contratacoes.length) {
+    const numericos = config.colaboradores.every((c) => Number.isInteger(c.id));
+    let proximo = numericos ? Math.max(0, ...config.colaboradores.map((c) => c.id)) + 1 : 1;
+    contratacoes.forEach((x, i) => config.colaboradores.push({
+      id: numericos ? proximo++ : `a-contratar-${i + 1}`,
+      nome: `A contratar ${i + 1} — ${String(x.funcao).trim()}`,
+      cargo: String(x.funcao).trim(),
+      horasSemana: Math.min(44, Math.max(1, Number(x.horasSemana) || 40)),
+      aContratar: true,
+    }));
+  }
   config.ano = ano;
   config.mes = mes - 1;
   config.diaInicio = 1;
@@ -614,8 +629,15 @@ export function compararConversao(conversao) {
         : dadosIncompletos || pessoas.some((p) => p.deficits)
           ? "ajustes"
           : "suficiente";
+  // Contratação sugerida: funções com capacidade insuficiente, pelo pico de faltantes.
+  const cargaContratacao = referenciaDia(config, isoDate(config.ano, config.mes, 1)).horas;
+  const contratacaoSugerida = [...grupos.values()]
+    .filter((g) => g.insuficiencias.length && g.pico > 0)
+    .map((g) => ({ funcao: g.funcao, quantidade: Math.min(10, g.pico), horasSemana: Math.min(44, cargaContratacao || 40) }));
   return {
     status,
+    contratacaoSugerida,
+    contratados: config.colaboradores.filter((c) => c.aContratar).map((c) => ({ id: c.id, nome: c.nome, funcao: c.cargo, horasSemana: c.horasSemana })),
     jornadaCurta: recomendacoesJornadaCurta(config, escala, cobertura.lacunas),
     domingo: {
       antes: resumoDominical(config, conversao.referencia.escala.resultado),

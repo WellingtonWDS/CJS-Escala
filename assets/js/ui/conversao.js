@@ -132,6 +132,16 @@ export function createConversaoUI({
     marcarDesatualizada,
     bindEvents() {
       initConversaoLayout(document);
+      // Incluir/remover pessoas a contratar e gerar a proposta de novo.
+      document.getElementById("conversao-visao-geral")?.addEventListener?.("click", (e) => {
+        const incluir = e.target.closest?.("[data-conv-contratar]"), remover = e.target.closest?.("[data-conv-sem-contratacao]");
+        if (!incluir && !remover) return;
+        const atuais = state.destinoConversao?.contratacoes || [];
+        const novas = remover ? [] : [...atuais, ...(state.conversao?.comparacao?.contratacaoSugerida || [])
+          .flatMap((x) => Array.from({ length: x.quantidade }, () => ({ funcao: x.funcao, horasSemana: x.horasSemana })))];
+        state.destinoConversao = { ...(state.destinoConversao || {}), contratacoes: novas };
+        el("btn-converter").click();
+      });
       for (const campo of ["periodo", "fase", "folgas", "consecutiva"])
         el(`conversao-${campo}`).onchange = () => {
           atualizarOpcao42();
@@ -141,6 +151,7 @@ export function createConversaoUI({
             fase: el("conversao-fase").value,
             folgas: el("conversao-folgas").value,
             consecutiva: Number(el("conversao-consecutiva")?.value || 0),
+            contratacoes: state.destinoConversao?.contratacoes || [],
           };
           marcarDesatualizada();
           salvar();
@@ -157,6 +168,7 @@ export function createConversaoUI({
             fase: el("conversao-fase").value,
             folgas: el("conversao-folgas").value,
             consecutiva: Number(el("conversao-consecutiva")?.value || 0),
+            contratacoes: state.destinoConversao?.contratacoes || [],
           };
           await executarCalculoEscala({ state, env, botao: el("btn-converter"), operacao: "converter", opcoes,
             fallback: () => converterEscala(state, opcoes),

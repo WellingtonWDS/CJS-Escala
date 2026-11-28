@@ -42,7 +42,7 @@ test("divergências: dia fechado, função ausente, mínimo maior, alterações 
   answers.q11 = A([{ funcao: "Caixa", minimo: 1, diasSemana: [5], inicio: "18:00", fim: "22:00" },
     { funcao: "Atendente", minimo: 4, diasSemana: [6], inicio: "20:00", fim: "22:00" }]);
   answers.q27 = A(["Nenhuma alteração"]);
-  answers.q03 = A("2028-02-01");
+  answers.q03 = A("2027-01-04");
   const s = lanchonete();
   const r = conferir({ answers }, s);
   assert.match(item(r, "Trabalho em dia sem funcionamento").detalhe, /domingo/);
@@ -56,6 +56,9 @@ test("divergências: dia fechado, função ausente, mínimo maior, alterações 
   const r2 = conferir({ answers }, s);
   assert.equal(item(r2, "Data de implantação").nivel, "alerta");
   assert.equal(item(r2, "Data de implantação").certeza, "Estimativa");
+  // Implantação já na fase de 40h com proposta de 42h: divergência.
+  answers.q03 = A("2028-02-01");
+  assert.equal(item(conferir({ answers }, s), "Fase da jornada").nivel, "divergencia");
 });
 
 test("preenchimento sem as informações do diagnóstico: ACT/CCT, comércio, multifunção, restrições e textos livres", () => {

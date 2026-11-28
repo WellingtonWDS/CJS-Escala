@@ -19,6 +19,8 @@ module.exports = async ({ browser, baseURL }) => {
       );
       const seed = criarEstadoDemo();
       seed.modeloEscala = fixa ? "fixa" : "dinamica";
+      // Cenário de 40h: proposta em fevereiro de 2028 (42h indisponível nesse mês).
+      seed.destinoConversao = { ...seed.destinoConversao, periodo: "2028-02" };
       seed.atividadeComercio = false;
       seed.coberturaAtiva = false;
       seed.diasTrabalho = [0, 1, 2, 3, 4, 5, 6];

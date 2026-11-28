@@ -114,7 +114,8 @@ export function montarTermosAditivos(state, { empresa = "", servidor = null, cla
   const cnpjBase = servidor?.nome ? servidor.cnpj : e.cnpj;
   const cnpj = cnpjBase ? formatCnpj(cnpjBase) : LINHA;
   const termos = [];
-  for (const r of config.escalaGerada.resultado) {
+  // Pessoas a contratar (simulação) não têm contrato a aditar.
+  for (const r of config.escalaGerada.resultado.filter((x) => !x.colaborador.aContratar)) {
     const c = r.colaborador, padrao = padraoSemanal(config, r);
     if (!padrao) continue;
     const dias = padrao.dias;
