@@ -54,34 +54,44 @@ function conferirPlano(cfg, plano) {
   return nova;
 }
 
-test("otimização global fecha a cobertura quando a troca de folgas exige escalonar almoços", () => {
+const sig = (d) => [d.entradaMin, d.saidaMin, d.intervaloInicioMin, d.intervaloFimMin].join("|");
+/** A busca mantém o padrão do colaborador no mês: dias que tinham o mesmo horário
+ * terminam com o mesmo horário (ex.: não escalona o almoço só em alguns dias). */
+function conferirPadrao(cfg, plano) {
+  for (const a of plano.alteracoes) {
+    if (!["T", "FE"].includes(a.antes.status) || !["T", "FE"].includes(a.depois.status) || sig(a.antes) === sig(a.depois)) continue;
+    const r = cfg.escalaGerada.resultado.find((x) => x.colaborador.id === a.colaboradorId);
+    for (const d of r.dias.filter((d) => d.data.slice(0, 7) === a.data.slice(0, 7) && ["T", "FE"].includes(d.status) && sig(d) === sig(a.antes) && !d.ajusteManual)) {
+      const mudou = plano.alteracoes.find((x) => x.colaboradorId === a.colaboradorId && x.data === d.data);
+      assert.ok(mudou, `${a.colaboradorId} ${d.data}: o padrão de ${a.data} também vale neste dia`);
+      // Dia que virou folga numa troca de folgas não tem horário a comparar.
+      if (["T", "FE"].includes(mudou.depois.status))
+        assert.equal(sig(mudou.depois), sig(a.depois), `${a.colaboradorId} ${d.data}: mesmo horário do padrão`);
+    }
+  }
+}
+test("otimização global escalona almoços mantendo o padrão de cada colaborador no mês", () => {
   const cfg = juntarAlmocos(empresa({ n: 4, minimo: 2 })), original = structuredClone(cfg);
   const plano = buscar(cfg, opcoes);
   assert(plano.antes.minutosFaltantes > 0);
-  assert.equal(plano.depois.minutosFaltantes, 0);
+  assert(plano.depois.minutosFaltantes <= plano.antes.minutosFaltantes * 0.2, `${plano.antes.minutosFaltantes} → ${plano.depois.minutosFaltantes}`);
   assert(plano.acoes.some((a) => a.tipo === "otimizacao_global"));
   assert.deepEqual(cfg, original);
+  conferirPadrao(cfg, plano);
   const nova = conferirPlano(cfg, plano);
-  assert.equal(total(analisar(cfg, nova.resultado)), 0);
+  assert.equal(total(analisar(cfg, nova.resultado)), plano.depois.minutosFaltantes);
   assert.deepEqual(desfazer({ ...cfg, escalaGerada: nova }).resultado, original.escalaGerada.resultado);
 });
 
-test("quando não há solução completa, chega ao mínimo e o comprova com a explicação do almoço", () => {
+test("sem solução completa com o padrão mantido, reduz a lacuna sem ficar abaixo do limite inferior", () => {
   // 5 pessoas para 3 presentes o dia inteiro: dias com 4 pessoas têm 1h
   // inevitável, pois os almoços obrigatórios ocorrem entre 11h e 14h.
   const cfg = juntarAlmocos(empresa({ n: 5, minimo: 3 }));
   const plano = buscar(cfg, opcoes);
   assert(plano.depois.minutosFaltantes < plano.antes.minutosFaltantes);
-  assert.equal(plano.limitesCobertura.comprovado, true);
-  assert.equal(plano.depois.minutosFaltantes, plano.limitesCobertura.limiteInferiorMin);
-  const textos = plano.limitesCobertura.explicacoes.join(" ");
-  assert.match(textos, /Resultado ótimo comprovado/);
-  assert.match(textos, /almoços obrigatórios/);
+  assert(plano.depois.minutosFaltantes >= plano.limitesCobertura.limiteInferiorMin);
+  conferirPadrao(cfg, plano);
   conferirPlano(cfg, plano);
-  // Nova busca sobre o resultado não tem o que melhorar.
-  const nova = aplicar(cfg, plano);
-  const outra = buscar({ ...cfg, escalaGerada: nova }, opcoes);
-  assert.equal(outra.alteracoes.length, 0);
 });
 
 test("o limite inferior nunca supera a lacuna alcançada", () => {

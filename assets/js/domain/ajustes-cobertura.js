@@ -364,8 +364,47 @@ function* trocasEntrePessoas(config, escala, c, d, de, primeiras) {
 }
 /** No padrão fixo uma sugestão é uma alteração semanal, inclusive nas
  * semanas de contexto usadas para validar os descansos na virada. */
+const CAMPOS_HORARIO = ["entradaMin", "saidaMin", "intervaloInicioMin", "intervaloFimMin"];
+const assinaturaHorario = (d) => CAMPOS_HORARIO.map((k) => d?.[k] ?? "").join("|");
+/** Copia para `dia` apenas os campos que o ajuste mudou (data e metadados ficam). */
+function copiarMudancas(a, dia) {
+  const depois = structuredClone(dia);
+  for (const key of new Set([...Object.keys(a.antes), ...Object.keys(a.depois)])) {
+    if (["data", "dia", "weekday"].includes(key)) continue;
+    if (JSON.stringify(a.antes[key]) === JSON.stringify(a.depois[key])) continue;
+    if (Object.hasOwn(a.depois, key)) depois[key] = structuredClone(a.depois[key]);
+    else delete depois[key];
+  }
+  return depois;
+}
+/** Escala dinâmica: a busca mantém o padrão de horários do colaborador no mês. Uma
+ * mudança de entrada, saída ou intervalo vale para todos os dias em que ele tinha o
+ * mesmo horário (ex.: segunda a sexta), em vez de mudar só um dia da semana. Em outro
+ * mês, a proposta pode ter outro horário. */
+function manterPadraoMensal(config, escala, alteracoes) {
+  const mapa = new Map(alteracoes.map((a) => [`${a.colaboradorId}:${a.data}`, a]));
+  const grupos = new Set();
+  for (const a of alteracoes) {
+    if (!trabalha(a.antes) || !trabalha(a.depois) || assinaturaHorario(a.antes) === assinaturaHorario(a.depois)) continue;
+    const grupo = `${a.colaboradorId}|${assinaturaHorario(a.antes)}`;
+    if (grupos.has(grupo)) continue;
+    grupos.add(grupo);
+    const r = escala.resultado.find((x) => x.colaborador.id === a.colaboradorId);
+    for (const d of r?.dias || []) {
+      if (d.data === a.data || !trabalha(d) || assinaturaHorario(d) !== assinaturaHorario(a.antes) ||
+          !podeMudar(config, r.colaborador, d)) continue;
+      const chave = `${a.colaboradorId}:${d.data}`, existente = mapa.get(chave);
+      // Outro ajuste no mesmo dia: prevalece o horário do padrão; os demais campos ficam.
+      const base = existente ? existente.depois : d;
+      const depois = copiarMudancas(a, base);
+      for (const k of CAMPOS_HORARIO) if (Object.hasOwn(a.depois, k)) depois[k] = a.depois[k];
+      mapa.set(chave, { colaboradorId: a.colaboradorId, data: d.data, antes: structuredClone(existente?.antes || d), depois });
+    }
+  }
+  return [...mapa.values()];
+}
 function expandirRecorrencia(config, escala, alteracoes) {
-  if (config.modeloEscala !== "fixa") return alteracoes;
+  if (config.modeloEscala !== "fixa") return manterPadraoMensal(config, escala, alteracoes);
   const mapa = new Map();
   for (const a of alteracoes) {
     const r = escala.resultado.find((r) => r.colaborador.id === a.colaboradorId);
