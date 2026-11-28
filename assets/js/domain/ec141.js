@@ -119,8 +119,11 @@ export function distribuicaoTransitoria42(state, value, c = {}) {
   const data = state.modeloEscala === "fixa" ? state.dataReferenciaFixa : chaveData(value);
   if (!dataValida(data)) return false;
   const referencia = referenciaDia(state, data, c);
+  // Antecipação da fase de 42h (proposta antes de 16/12/2026): a distribuição de até
+  // 8h24 depende de acordo de compensação no mês (art. 59, § 6º, da CLT) — pendência.
+  const antecipada = state.antecipacao42 === true && data < TRANSICAO_42_SEM_ACT.inicio && data >= PUBLICACAO;
   return TRANSICAO_42_SEM_ACT.ativa &&
-    data >= TRANSICAO_42_SEM_ACT.inicio && data <= TRANSICAO_42_SEM_ACT.fim &&
+    (antecipada || (data >= TRANSICAO_42_SEM_ACT.inicio && data <= TRANSICAO_42_SEM_ACT.fim)) &&
     state.tipoEscala === "5x2" &&
     state.instrumentoCompensacao === "nenhuma" &&
     referencia.horas === 42 && !referencia.semLimiteJornada;

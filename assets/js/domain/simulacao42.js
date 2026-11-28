@@ -29,6 +29,8 @@ export function permiteSimular42(state, periodo) {
     tipoEscala: "5x2",
     modoRegime: "simulacao",
     regimeJornada: "transicao42",
+    // Meses antes de 16/12/2026 podem antecipar a fase de 42h (ver ec141.js).
+    antecipacao42: true,
   };
   const i = state.instrumentoColetivo || {};
   const coletivo = (data) =>
@@ -64,6 +66,14 @@ export function diagnosticoSimulacao42(state, periodo) {
   const fim = TRANSICAO_42_SEM_ACT.fim;
   const br = (data) => data.split("-").reverse().join("/");
   const intervalo = `${br(inicio)} a ${br(fim)}`;
+  const antecipa = fixa ? state.dataReferenciaFixa < inicio : /^\d{4}-\d{2}$/.test(periodo || "") && `${periodo}-01` < inicio;
+  if (permitida && antecipa && semInstrumento)
+    return {
+      permitida,
+      motivo: "antecipacao",
+      rotulo: "Simular fase de 42h (antecipada)",
+      mensagem: `Antecipação da fase de 42h: a proposta usa 42h e dois repousos já ${fixa ? "na referência deste padrão" : "desde o início do mês"}. Antes de ${br(inicio)}, a distribuição de até 8h24 por dia depende de acordo de compensação no mês (art. 59, § 6º, da CLT) ou de ACT/CCT; esses dias ficam como pendência para formalizar. A partir de ${br(inicio)}, vale a regra transitória sem ACT/CCT.`,
+    };
   if (permitida)
     return {
       permitida,

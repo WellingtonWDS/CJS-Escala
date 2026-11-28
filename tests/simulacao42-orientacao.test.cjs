@@ -7,18 +7,19 @@ before(async () => {
     "../assets/js/domain/simulacao42.js"
   ));
 });
-test("fixa em 01/12 explica a data fora da transição, sem exigir preenchimento de ACT", () => {
+test("fixa em 01/12 antecipa a fase de 42h, com acordo de compensação como pendência, sem exigir ACT", () => {
   const s = base();
   s.modeloEscala = "fixa";
   s.dataReferenciaFixa = "2026-12-01";
   const antes = structuredClone(s),
     r = diagnostico(s, "2027-02");
-  assert.equal(r.permitida, false);
-  assert.equal(r.motivo, "referencia_fora_transicao");
-  assert.match(r.mensagem, /01\/12\/2026/);
-  assert.match(r.mensagem, /16\/12\/2026/);
-  assert.match(r.mensagem, /Não é necessário cadastrar ACT\/CCT/);
+  assert.equal(r.permitida, true);
+  assert.equal(r.motivo, "antecipacao");
+  assert.match(r.mensagem, /Antes de 16\/12\/2026/);
+  assert.match(r.mensagem, /art\. 59, § 6º, da CLT/);
   assert.deepEqual(s, antes);
+  s.dataReferenciaFixa = "2027-12-16";
+  assert.equal(diagnostico(s, "2027-02").motivo, "referencia_fora_transicao");
   for (const data of ["2026-12-16", "2027-12-15"]) {
     s.dataReferenciaFixa = data;
     const livre = diagnostico(s, "2027-02");
@@ -29,12 +30,12 @@ test("fixa em 01/12 explica a data fora da transição, sem exigir preenchimento
 });
 test("dinâmica explica mês fora do período e libera meses válidos, inclusive fronteiras", () => {
   const s = base();
-  for (const periodo of ["2026-11", "2028-01"]) {
-    const r = diagnostico(s, periodo);
-    assert(!r.permitida);
-    assert.equal(r.motivo, "periodo_fora_transicao");
-  }
-  for (const periodo of ["2026-12", "2027-02", "2027-12"])
+  const r = diagnostico(s, "2028-01");
+  assert(!r.permitida);
+  assert.equal(r.motivo, "periodo_fora_transicao");
+  // Antes de 16/12/2026: antecipação da fase de 42h.
+  assert.equal(diagnostico(s, "2026-11").motivo, "antecipacao");
+  for (const periodo of ["2026-11", "2026-12", "2027-02", "2027-12"])
     assert(diagnostico(s, periodo).permitida);
   assert.equal(diagnostico(s, "").motivo, "periodo_invalido");
   s.modeloEscala = "fixa";

@@ -56,8 +56,9 @@ test('fixa usa a referência legal e não as datas sintéticas do calendário', 
 });
 test('seleção de 42h aceita origem 6x1 e meses de fronteira, sem liberar fora do período', () => {
   const s = estado(); s.tipoEscala = '6x1';
-  for (const mes of ['2026-12', '2027-02', '2027-12']) assert.equal(permiteSimular42(s, mes), true, mes);
-  for (const mes of ['', '2027-13', '2026-11', '2028-01']) assert.equal(permiteSimular42(s, mes), false, mes);
+  // Meses antes de 16/12/2026 antecipam a fase de 42h (acordo de compensação como pendência).
+  for (const mes of ['2026-11', '2026-12', '2027-02', '2027-12']) assert.equal(permiteSimular42(s, mes), true, mes);
+  for (const mes of ['', '2027-13', '2028-01']) assert.equal(permiteSimular42(s, mes), false, mes);
 });
 function converter(contrato = 44, fixa = false) {
   const s = estado(); s.tipoEscala = '6x1';
@@ -109,9 +110,11 @@ test('meses de fronteira calculam o teto por data; não prolongam a exceção em
     s.jornada = { entrada: '08:00', intInicio: '11:00', intFim: '13:00', saida: '18:00' };
     const config = converterEscala(s, { periodo, fase: 'transicao42', folgas: 'fim_semana' }).proposta.config;
     for (const d of config.escalaGerada.resultado[0].dias) {
-      const dentro = d.data >= '2026-12-16' && d.data <= '2027-12-15';
-      assert(d.horas <= (dentro ? 8.4 : 8) + 0.001, d.data);
+      // Antes de 16/12/2026 a fase de 42h é antecipada; depois de 15/12/2027 a exceção não se prolonga.
+      const permitido = d.data <= '2027-12-15';
+      assert(d.horas <= (permitido ? 8.4 : 8) + 0.001, d.data);
     }
+    if (periodo === '2026-12') assert(config.escalaGerada.validacoes.flatMap(v => v.issues).some(i => i.tipo === 'ANTECIPACAO_42'));
   }
 });
 test('buscar ajustes pode recuperar as 2h faltantes sem ACT na transição', async () => {

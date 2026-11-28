@@ -154,7 +154,12 @@ export function createValidacao(state, jornada, feriados) {
         );
       }
     });
-    if (datas.some(d => distribuicaoTransitoria42(state, d.data, colab) && d.horas > 8 && d.horas <= 8.401))
+    const antecipados = datas.filter(d => state.antecipacao42 && d.data < "2026-12-16" && distribuicaoTransitoria42(state, d.data, colab) && d.horas > 8.001);
+    if (antecipados.length)
+      out.push(issue("ANTECIPACAO_42", "pendencia",
+        `Fase de 42h antecipada: ${antecipados.length} dia(s) antes de 16/12/2026 com mais de 8h (até 8h24). Antes dessa data, essa distribuição depende de acordo de compensação no mês (art. 59, § 6º, da CLT) ou de ACT/CCT. Formalize o acordo antes de aplicar a escala.`,
+        antecipados[0].data));
+    if (datas.some(d => d.data >= "2026-12-16" && distribuicaoTransitoria42(state, d.data, colab) && d.horas > 8 && d.horas <= 8.401))
       out.push(issue("TRANSICAO_42_SEM_ACT", "info",
         "Distribuição transitória de 42h em cinco dias: até 8h24 diárias sem ACT/CCT, de 16/12/2026 a 15/12/2027, conforme a liminar informada nas ADIs 8041/8042, sujeita a referendo. Os 24 minutos além de 8h integram a jornada ordinária nessa hipótese; intervalos e repousos permanecem obrigatórios."));
     return out;

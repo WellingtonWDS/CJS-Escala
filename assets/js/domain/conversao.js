@@ -434,6 +434,9 @@ export function converterEscala(state, opcoes = {}) {
   config.tipoEscala = "5x2";
   config.aplicarProposta5x2 = true;
   config.modoRegime = opcoes.fase === "automatico" ? "automatico" : "simulacao";
+  // 42h antes de 16/12/2026: antecipação, com 8h24 diárias como pendência de acordo.
+  config.antecipacao42 = opcoes.fase === "transicao42" &&
+    (escalaFixa(state) ? String(state.dataReferenciaFixa) < PRIMEIRA_FASE : `${opcoes.periodo}-01` < PRIMEIRA_FASE);
   if (opcoes.fase !== "automatico") config.regimeJornada = opcoes.fase;
   config.folgasFimSemana = opcoes.folgas === "fim_semana";
   config.folgasQuinzenal = opcoes.folgas === "quinzenal";

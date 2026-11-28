@@ -57,7 +57,7 @@ module.exports = async ({ browser, baseURL }) => {
       await irParaEtapa(page, "#conversao-fase");
       if (!fixa) {
         for (const [periodo, disabled] of [
-          ["2026-11", true],
+          ["2026-11", false],
           ["2026-12", false],
           ["2027-12", false],
           ["2028-01", true],
@@ -77,23 +77,20 @@ module.exports = async ({ browser, baseURL }) => {
         await irParaEtapa(page, "#cfg-referencia-fixa");
         await page.locator("#cfg-referencia-fixa").fill("2026-12-01");
         await irParaEtapa(page, "#conversao-fase");
+        // Antes de 16/12/2026: a fase de 42h pode ser antecipada.
         assert.equal(
           await page
             .locator('#conversao-fase option[value="transicao42"]')
             .isDisabled(),
-          true,
+          false,
         );
         assert.equal(
           await page.locator("#conversao-regra42").getAttribute("data-motivo"),
-          "referencia_fora_transicao",
+          "antecipacao",
         );
         assert.match(
           await page.locator("#conversao-regra42").innerText(),
-          /01\/12\/2026/,
-        );
-        assert.match(
-          await page.locator("#conversao-regra42").innerText(),
-          /16\/12\/2026/,
+          /Antes de 16\/12\/2026.*acordo de compensação/,
         );
         await irParaEtapa(page, "#cfg-referencia-fixa");
         await page.locator("#cfg-referencia-fixa").fill("2026-12-16");
