@@ -452,7 +452,10 @@ export function converterEscala(state, opcoes = {}) {
   // No revezamento quinzenal, o sábado sem intervalo ficaria limitado a 4h de trabalho
   // (art. 71, § 1º, da CLT). Com funcionamento maior, prevê 15 min de intervalo para
   // aproveitar o período aberto (até 6h de trabalho).
-  if (config.folgasQuinzenal) config.jornadaPorDia[6] = sabadoComIntervalo(config.jornadaPorDia[6]);
+  // Também quando a cobertura exige gente no sábado: permite um sábado de até 6h.
+  config.sabadoComPausa = config.folgasQuinzenal ||
+    (config.coberturaAtiva !== false && (config.demandasCobertura || []).some((d) => d.diasSemana?.includes(6)));
+  if (config.sabadoComPausa) config.jornadaPorDia[6] = sabadoComIntervalo(config.jornadaPorDia[6]);
   // Folga consecutiva periódica: neste mês, parte de cada função tem a segunda folga
   // colada ao domingo (sábado ou segunda); nos meses seguintes, os demais.
   const consecutivos = consecutivosNoMes(config.colaboradores, config.ano, config.mes, cadaMeses);

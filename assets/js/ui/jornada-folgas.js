@@ -81,7 +81,22 @@ export function createJornadaFolgasUI({
     saveState();
   }
 
+  function renderMargemFuncionamento() {
+    for (const [id, campo] of [["margem-antes", "margemAntesAbertura"], ["margem-depois", "margemDepoisFechamento"]]) {
+      const input = document.getElementById(id);
+      if (!input) continue;
+      input.value = String(Number(state[campo]) || 0);
+      input.onchange = () => {
+        const v = Math.round(Math.min(240, Math.max(0, Number(input.value) || 0)) / 5) * 5;
+        input.value = String(v);
+        state[campo] = v;
+        invalidarEscala();
+        saveState();
+      };
+    }
+  }
   function renderJornadaSection() {
+    renderMargemFuncionamento();
     const oculta = ["12x36"].includes(state.tipoEscala);
     document.getElementById("ciclo-12x36-config").hidden = !oculta;
     document.getElementById("dias-trabalho-wrap").style.display = oculta

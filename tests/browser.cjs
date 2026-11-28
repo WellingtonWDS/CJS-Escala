@@ -374,6 +374,7 @@ const { chromium } = require("playwright");
     await require("./browser-conversao-layout.cjs")({ browser, baseURL: `http://127.0.0.1:${server.address().port}/` });
     await require("./browser-revezamento-quinzenal.cjs")({ browser, baseURL: `http://127.0.0.1:${server.address().port}/` });
     await require("./browser-replicar-horario.cjs")({ browser, baseURL: `http://127.0.0.1:${server.address().port}/` });
+    await require("./browser-margem-act.cjs")({ browser, baseURL: `http://127.0.0.1:${server.address().port}/` });
     await require("./browser-planos.cjs")({ browser, baseURL: `http://127.0.0.1:${server.address().port}/` });
     await require("./browser-empresas.cjs")({ browser, baseURL: `http://127.0.0.1:${server.address().port}/` });
     await require("./browser-senha.cjs")({ browser, baseURL: `http://127.0.0.1:${server.address().port}/` });

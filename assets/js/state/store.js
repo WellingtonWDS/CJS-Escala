@@ -62,6 +62,9 @@ export function createDefaultState(now = new Date()) {
     horarioPorDia: false,
     turnosRevezamento: false,
     entradaTurnoB: "14:00",
+    // Atividades fora do funcionamento (minutos antes da abertura / depois do fechamento).
+    margemAntesAbertura: 0,
+    margemDepoisFechamento: 0,
     ancora12x36: "2026-01-01",
     diasTrabalho: [1, 2, 3, 4, 5, 6],
     folgaTipo: "rotativa",

@@ -23,7 +23,11 @@ export function funcionamentoDoDia(config, weekday) {
     entrada = entrada == null ? j.entrada : Math.min(entrada, j.entrada);
     saida = saida == null ? j.saida : Math.max(saida, j.saida);
   }
-  return entrada == null ? null : { ...(geral || {}), entrada, saida };
+  if (entrada == null) return null;
+  // Margem para atividades antes da abertura / depois do fechamento (aba Jornada).
+  const antes = Math.max(0, Math.min(240, Number(config.margemAntesAbertura) || 0));
+  const depois = Math.max(0, Math.min(240, Number(config.margemDepoisFechamento) || 0));
+  return { ...(geral || {}), entrada: entrada - antes, saida: saida + depois };
 }
 /** Menor pausa usada para caber a jornada no funcionamento: a pausa preenchida
  * pode ser reduzida até 1h (art. 71 da CLT), nunca abaixo disso. */
