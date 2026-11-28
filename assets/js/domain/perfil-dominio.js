@@ -73,7 +73,9 @@ export function configDoPerfil(state, c) {
     jornada: fonte,
     jornadaPorDia: {},
     horarioPorDia: true,
-    turnosRevezamento: false,
+    // Na proposta, os turnos A/B da aba Jornada também valem para quem tem horário
+    // importado: o Turno A segue a entrada da empresa e o B, a entrada declarada.
+    turnosRevezamento: !!(proposta && state.turnosRevezamento && p.tipo === "semanal" && !plantao12),
     folgasFimSemana: proposta ? state.folgasFimSemana : false,
     folgaTipo: "fixa",
     usarHorasQuadro: !proposta,

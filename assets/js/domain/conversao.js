@@ -6,6 +6,7 @@ import { diagnosticarEquipe, compararPresencaAtual } from "./diagnostico-equipe.
 import { aplicarRestricoesDia, validarRestricoes } from "./restricoes.js";
 import { apurarComputoCCT } from "./computo-cct.js";
 import { semanaComSabadoQuinzenal, planosQuinzenais, motivoSemQuinzenal, sabadoComIntervalo } from "./revezamento-quinzenal.js";
+import { motivoSemConsecutiva, consecutivosNoMes, planosConsecutivos } from "./folga-consecutiva.js";
 import { createDomain } from "./index.js";
 import {
   analisarCobertura,
@@ -365,6 +366,9 @@ export function converterEscala(state, opcoes = {}) {
     throw new Error("Escolha como distribuir as folgas da proposta.");
   if (opcoes.folgas === "quinzenal" && motivoSemQuinzenal(state))
     throw new Error(motivoSemQuinzenal(state));
+  const cadaMeses = opcoes.folgas === "fim_semana" ? 0 : Number(opcoes.consecutiva) || 0;
+  if (![0, 2, 3].includes(cadaMeses)) throw new Error("Escolha a periodicidade da folga consecutiva.");
+  if (cadaMeses && motivoSemConsecutiva(state)) throw new Error(motivoSemConsecutiva(state));
   for (const c of state.colaboradores)
     if (
       !String(c.nome).trim() ||
@@ -446,9 +450,17 @@ export function converterEscala(state, opcoes = {}) {
   // (art. 71, § 1º, da CLT). Com funcionamento maior, prevê 15 min de intervalo para
   // aproveitar o período aberto (até 6h de trabalho).
   if (config.folgasQuinzenal) config.jornadaPorDia[6] = sabadoComIntervalo(config.jornadaPorDia[6]);
+  // Folga consecutiva periódica: neste mês, parte de cada função tem a segunda folga
+  // colada ao domingo (sábado ou segunda); nos meses seguintes, os demais.
+  const consecutivos = consecutivosNoMes(config.colaboradores, config.ano, config.mes, cadaMeses);
+  config.folgaConsecutiva = cadaMeses ? { cadaMeses, ids: [...consecutivos], semOpcao: [] } : null;
   const planosPorPessoa = config.colaboradores.map((c) => {
-    const planos = planosPossiveis(config, state, c);
-    return config.folgasQuinzenal ? planosQuinzenais(planos) : planos;
+    const base = planosPossiveis(config, state, c);
+    const planos = config.folgasQuinzenal ? planosQuinzenais(base) : base;
+    if (!consecutivos.has(c.id)) return planos;
+    const juntos = planosConsecutivos(planos);
+    if (!juntos.length) config.folgaConsecutiva.semOpcao.push(c.id);
+    return juntos.length ? juntos : planos;
   });
   if (planosPorPessoa.some((p) => !p.length))
     throw new Error(

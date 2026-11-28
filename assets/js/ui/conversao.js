@@ -8,6 +8,7 @@ import { PRIMEIRA_FASE, VERSAO_REGRAS } from "../domain/ec141.js";
 import { escalaFixa } from "../domain/modelo-escala.js";
 import { initConversaoLayout } from "./conversao-layout.js";
 import { motivoSemQuinzenal } from "../domain/revezamento-quinzenal.js";
+import { motivoSemConsecutiva } from "../domain/folga-consecutiva.js";
 
 export function createConversaoUI({
   state,
@@ -73,6 +74,16 @@ export function createConversaoUI({
       quinzenal: "Semanas alternadas: em uma, de segunda a sexta; na outra, trabalha no sábado e folga em um dia útil. A equipe é dividida para cobrir todos os sábados. A semana com sábado reduzido fica abaixo do alvo sem reduzir salário.",
       fim_semana: "Todos folgam aos sábados e domingos.",
     }[select.value] + (motivo ? ` Revezamento quinzenal indisponível: ${motivo}` : "");
+    // Folga consecutiva periódica: não se aplica a sábado e domingo fixos (já consecutivos).
+    const consecutiva = el("conversao-consecutiva"), ajudaC = el("conversao-consecutiva-ajuda");
+    if (consecutiva) {
+      const motivoC = select.value === "fim_semana" ? "Com sábado e domingo fixos, as folgas já são consecutivas." : motivoSemConsecutiva(state);
+      consecutiva.disabled = !!motivoC;
+      if (motivoC) consecutiva.value = "0";
+      if (ajudaC) ajudaC.textContent = motivoC || (consecutiva.value === "0"
+        ? "A segunda folga fica no dia que melhor ajuda a cobertura, colada ou não ao domingo."
+        : `Domingo como folga fixa: a cada ${consecutiva.value} meses, cada colaborador tem a segunda folga no sábado ou na segunda. Neste mês, ${consecutiva.value === "2" ? "metade" : "um terço"} de cada função; no mês seguinte, outro grupo.`);
+    }
   }
   function atualizarOpcao42() {
     atualizarFolgas();
@@ -103,6 +114,7 @@ export function createConversaoUI({
       ? "definitivo40" : state.destinoConversao?.fase || "automatico";
     el("conversao-folgas").value =
       state.destinoConversao?.folgas || "distribuir";
+    if (el("conversao-consecutiva")) el("conversao-consecutiva").value = String(state.destinoConversao?.consecutiva || 0);
     atualizarOpcao42();
     const c = state.conversao;
     if (c && !c.desatualizada && c.versaoRegras === VERSAO_REGRAS) c.comparacao = compararConversao(c);
@@ -120,7 +132,7 @@ export function createConversaoUI({
     marcarDesatualizada,
     bindEvents() {
       initConversaoLayout(document);
-      for (const campo of ["periodo", "fase", "folgas"])
+      for (const campo of ["periodo", "fase", "folgas", "consecutiva"])
         el(`conversao-${campo}`).onchange = () => {
           atualizarOpcao42();
           state.destinoConversao = {
@@ -128,6 +140,7 @@ export function createConversaoUI({
             periodo: el("conversao-periodo").value,
             fase: el("conversao-fase").value,
             folgas: el("conversao-folgas").value,
+            consecutiva: Number(el("conversao-consecutiva")?.value || 0),
           };
           marcarDesatualizada();
           salvar();
@@ -143,6 +156,7 @@ export function createConversaoUI({
             periodo: el("conversao-periodo").value,
             fase: el("conversao-fase").value,
             folgas: el("conversao-folgas").value,
+            consecutiva: Number(el("conversao-consecutiva")?.value || 0),
           };
           await executarCalculoEscala({ state, env, botao: el("btn-converter"), operacao: "converter", opcoes,
             fallback: () => converterEscala(state, opcoes),

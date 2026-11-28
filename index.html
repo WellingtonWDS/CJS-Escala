@@ -382,13 +382,13 @@
       <h2 class="font-display text-fintria-navy text-lg font-semibold mb-1">Converter escala 6×1 para 5×2</h2>
       <p class="text-slate-500 text-sm mb-4">2. Escolha o destino. A escala atual será preservada e a proposta manterá os dias de funcionamento da empresa. Cadastre a cobertura por função para avaliar se a equipe atende à operação.</p>
       <div class="mt-4">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 mb-4">
           <div><label for="conversao-periodo" class="block text-xs font-semibold mb-1.5">Mês da proposta 5×2</label><input id="conversao-periodo" type="month" min="2026-01" max="2100-12" class="w-full border border-slate-300 rounded-md p-2 bg-white"></div>
           <div><label for="conversao-fase" class="block text-xs font-semibold mb-1.5">Referência da mudança</label><select id="conversao-fase" aria-describedby="conversao-regra42" class="w-full border border-slate-300 rounded-md p-2 bg-white"><option value="automatico">Automática — vigência nas datas</option><option value="transicao42">Simular fase de 42h</option><option value="definitivo40">Simular fase de 40h</option></select></div>
           <div><label for="conversao-folgas" class="block text-xs font-semibold mb-1.5">Folgas da proposta</label><select id="conversao-folgas" class="w-full border border-slate-300 rounded-md p-2 bg-white"><option value="distribuir">Distribuir para buscar cobertura — rodízio semanal</option>
 <option value="quinzenal">Revezamento quinzenal do sábado</option>
 <option value="fim_semana">Fixar sábado e domingo</option>
-</select><p id="conversao-folgas-ajuda" class="text-xs text-slate-500 mt-1.5" aria-live="polite"></p></div>
+</select><p id="conversao-folgas-ajuda" class="text-xs text-slate-500 mt-1.5" aria-live="polite"></p></div><div><label for="conversao-consecutiva" class="block text-xs font-semibold mb-1.5">Folga consecutiva</label><select id="conversao-consecutiva" class="w-full border border-slate-300 rounded-md p-2 bg-white"><option value="0">Não prever</option><option value="2">A cada 2 meses</option><option value="3">A cada 3 meses</option></select><p id="conversao-consecutiva-ajuda" class="text-xs text-slate-500 mt-1.5" aria-live="polite"></p></div>
         </div>
         <p id="conversao-regra42" class="text-xs text-slate-600 mb-3" role="status" aria-live="polite"></p>
         <p class="text-xs text-slate-500 mb-3">Os horários atuais servem de referência: a proposta pode ratear a carga e sugerir novas saídas, respeitando intervalos, descanso e restrições individuais. As folgas seguem os dias permitidos; quando a empresa abre aos domingos, há preferência por esse repouso, sem prejudicar jornada ou cobertura. A escala 5×2 não fecha a empresa aos sábados.</p>

@@ -35,7 +35,13 @@ export const pausaMinimaPlanejada = (intervalo) => (intervalo > 60 ? 60 : Math.m
 export function janelaPlanejada(config, colaborador, dia, fonte, explorar = false) {
   const j = normalizarJornada(fonte);
   if (!j) return null;
-  const delta = dia.turno === "B" ? timeToMin(config.entradaTurnoB) - j.entrada : 0;
+  let delta = dia.turno === "B" ? timeToMin(config.entradaTurnoB) - j.entrada : 0;
+  // Horário importado em empresa com dois turnos: o Turno A começa na entrada da empresa.
+  if (dia.turno === "A" && config.turnosRevezamento && config.perfilDominioId && config.funcionamentoEmpresa) {
+    const e = config.funcionamentoEmpresa;
+    const empresa = normalizarJornada(e.horarioPorDia ? e.jornadaPorDia?.[dia.weekday] || e.jornada : e.jornada);
+    if (empresa && Number.isFinite(empresa.entrada)) delta = empresa.entrada - j.entrada;
+  }
   const deslocamento = Number.isFinite(delta) ? delta : 0;
   let inicio = j.entrada + deslocamento, fim = j.saida + deslocamento;
   if (planejamento5x2(config)) {

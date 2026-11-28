@@ -4,6 +4,12 @@ Para cadastrar um escritório/empresa com cinco colaboradores e preenchimento fi
 
 Ferramenta para configurar, gerar e revisar escalas de trabalho e comparar a escala atual 6×1 com uma proposta 5×2. A interface e os cálculos usam HTML, CSS e módulos JavaScript nativos no navegador, sem bundler ou compilação do JavaScript da aplicação. A autenticação depende de código no servidor: middleware e função de login na Vercel. Por padrão, os cadastros e as escalas ficam no navegador. O modo individual com PostgreSQL e n8n é opcional e exige a configuração de homologação descrita adiante.
 
+## Folga consecutiva periódica e turnos A/B com horário importado — 28/11/2026
+
+**Folga consecutiva** (proposta): *Não prever*, *A cada 2 meses* ou *A cada 3 meses*. Com o domingo como folga fixa (empresa fechada aos domingos), em cada mês metade (ou um terço) de cada função recebe a segunda folga colada ao domingo — sábado ou segunda; no mês seguinte, outro grupo. No revezamento quinzenal, a semana de segunda a sexta já tem sábado e domingo; para o grupo do mês, a folga da semana com sábado fica na segunda. A nota da análise lista quem tem a folga consecutiva no mês. Indisponível com domingo aberto ou na escala fixa; ignorada com sábado e domingo fixos. Módulo `domain/folga-consecutiva.js`.
+
+**Turnos A/B com horário importado** (correção): na proposta, quem tem horário individual importado (Domínio/SCI) passa a seguir os dois turnos da aba Jornada, alternando por semana — Turno A na entrada da empresa (ex.: 07:30) e Turno B na entrada declarada (ex.: 08:00). Antes todos ficavam no horário importado e o início do funcionamento ficava descoberto. Testes em `tests/folga-consecutiva.test.cjs`.
+
 ## Revezamento quinzenal do sábado na proposta — 28/11/2026
 
 Em **Folgas da proposta**, além de *Distribuir para buscar cobertura — rodízio semanal* e *Fixar sábado e domingo*, há **Revezamento quinzenal do sábado**: em semanas alternadas, cada colaborador trabalha de segunda a sexta (folga no sábado) ou trabalha no sábado e folga em um dia útil. A busca escolhe o dia útil e a fase de cada um para cobrir todos os sábados. O sábado sem intervalo e com mais de 4h15 de funcionamento recebe 15 min de intervalo (art. 71, § 1º, da CLT), para usar o período aberto (até 6h de trabalho).

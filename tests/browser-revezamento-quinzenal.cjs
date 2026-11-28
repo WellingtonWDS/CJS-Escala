@@ -18,6 +18,8 @@ module.exports = async ({ browser, baseURL }) => {
     assert.equal(await folgas.locator('option[value="quinzenal"]').isDisabled(), false);
     await folgas.selectOption("quinzenal");
     assert.match(await page.locator("#conversao-folgas-ajuda").innerText(), /Semanas alternadas/);
+    await page.locator("#conversao-consecutiva").selectOption("2");
+    assert.match(await page.locator("#conversao-consecutiva-ajuda").innerText(), /a cada 2 meses/);
     await clicarCalculo(page, "#btn-converter");
     const salvo = await page.evaluate(() => JSON.parse(localStorage.getItem("fintria-escala-dp-v2")));
     assert.equal(salvo.destinoConversao.folgas, "quinzenal");
@@ -26,6 +28,8 @@ module.exports = async ({ browser, baseURL }) => {
     // Análise: nota do revezamento; Pontos de atenção: semanas com sábado como informação.
     await page.locator('[data-conv-aba="analise"]').click();
     assert.match(await page.locator("[data-revezamento-quinzenal]").innerText(), /não reduz o salário/);
+    assert.match(await page.locator("[data-folga-consecutiva]").innerText(), /Folga consecutiva a cada 2 meses[\s\S]*colada ao domingo/);
+    assert.equal(salvo.destinoConversao.consecutiva, 2);
     assert.match(await page.locator(".diagnostico-rateio").innerText(), /revezamento quinzenal/);
     assert.match(await page.locator("#conv-painel-atencao").textContent(), /semana com sábado no revezamento quinzenal/);
     // Escala fixa: opção indisponível, com o motivo.
@@ -36,8 +40,9 @@ module.exports = async ({ browser, baseURL }) => {
     assert.equal(await folgas.locator('option[value="quinzenal"]').isDisabled(), true);
     assert.notEqual(await folgas.inputValue(), "quinzenal");
     assert.match(await page.locator("#conversao-folgas-ajuda").innerText(), /indisponível: .*escala mensal dinâmica/);
+    assert.equal(await page.locator("#conversao-consecutiva").isDisabled(), true);
     assert.deepEqual(errors, []);
-    console.log("OK: revezamento quinzenal do sábado na proposta (opção, geração, informação sem alerta e indisponível na escala fixa)");
+    console.log("OK: revezamento quinzenal do sábado e folga consecutiva periódica na proposta (opções, geração, notas e indisponíveis na escala fixa)");
   } finally {
     await ctx.close();
   }

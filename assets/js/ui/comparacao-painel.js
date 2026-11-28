@@ -47,6 +47,12 @@ function domingos(m) {
     : `${d.comFolga} de ${d.pessoas} colaborador(es) com ao menos um domingo de repouso no período (escala atual: ${a?.comFolga ?? 0}). A preferência é aplicada depois da legalidade, da carga contratual e da cobertura informada. ${m.baseCobertura === "escala_atual" ? "Sem cobertura cadastrada, cada função mantém no domingo ao menos a presença atual reduzida na proporção de 6 para 5 dias de trabalho." : "A cobertura cadastrada para o domingo é preservada."} Confira também as regras setoriais de revezamento dominical.`;
   return `<aside class="diagnostico-nota" data-domingo-preferencial><p><b>Repouso aos domingos · art. 7º, XV.</b> ${e(texto)}</p></aside>`;
 }
+function folgaConsecutiva(config) {
+  const { cadaMeses, ids, semOpcao = [] } = config.folgaConsecutiva;
+  const nome = (id) => config.colaboradores.find((x) => x.id === id)?.nome || id;
+  const lista = ids.map(nome);
+  return `<aside class="diagnostico-nota" data-folga-consecutiva><p><b>Folga consecutiva a cada ${cadaMeses} meses.</b> Com o domingo como folga fixa, neste mês ${lista.length ? `têm a segunda folga colada ao domingo (sábado ou segunda): ${e(lista.join(", "))}` : "nenhum colaborador está no grupo da folga consecutiva"}. Nos próximos meses, os demais grupos de cada função recebem a folga consecutiva; gere a proposta de cada mês para ver o rodízio.${semOpcao.length ? ` Sem dia permitido para a folga consecutiva: ${e(semOpcao.map(nome).join(", "))} (confira os dias permitidos de folga).` : ""}</p></aside>`;
+}
 export function renderDetalhesConversao(c) {
   const m = c.comparacao, config = c.proposta.config, fixa = escalaFixa(config);
   const hora = n => n === 1440 ? "24:00" : minToTime(n);
@@ -55,6 +61,7 @@ export function renderDetalhesConversao(c) {
   ${c.desatualizada ? "" : renderDiagnosticoEquipe(m.diagnostico)}
   ${rateios(config)}
   ${c.desatualizada ? "" : domingos(m)}
+  ${!c.desatualizada && config.folgaConsecutiva ? folgaConsecutiva(config) : ""}
   ${!c.desatualizada && config.folgasQuinzenal ? `<aside class="diagnostico-nota" data-revezamento-quinzenal><p><b>Revezamento quinzenal do sábado.</b> Em semanas alternadas, cada colaborador trabalha de segunda a sexta ou trabalha no sábado e folga em um dia útil; a equipe é dividida para cobrir todos os sábados. Nas semanas com sábado, a carga fica abaixo do alvo semanal porque o sábado é reduzido — isso não reduz o salário nem a carga contratual (art. 2º da EC 141) e aparece como informação, não como alerta. Para compensar horas entre as duas semanas, é preciso acordo de compensação ou ACT/CCT.</p></aside>` : ""}
   ${!c.desatualizada && m.jornadaCurta?.length ? `<aside class="diagnostico-nota" data-jornada-curta>${m.jornadaCurta.map((t) => `<p>${e(t)}</p>`).join("")}</aside>` : ""}
   ${c.buscaParcial || config.escalaGerada.limiteBuscaIntervalos ? '<aside class="diagnostico-nota">A busca atingiu seu limite de processamento. As sugestões não comprovam que esta seja a melhor escala possível nem que toda lacuna exija contratação.</aside>' : ""}
